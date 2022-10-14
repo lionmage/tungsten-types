@@ -1,0 +1,96 @@
+package tungsten.types.functions.impl;
+
+import tungsten.types.Numeric;
+import tungsten.types.Range;
+import tungsten.types.annotations.Differentiable;
+import tungsten.types.exceptions.CoercionException;
+import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.UnaryFunction;
+import tungsten.types.numerics.*;
+import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.MathUtils;
+import tungsten.types.util.RangeUtils;
+import tungsten.types.util.UnicodeTextEffects;
+
+import java.lang.reflect.ParameterizedType;
+import java.math.BigInteger;
+import java.math.MathContext;
+
+public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+    private final Class<R> outputClazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
+            .getGenericSuperclass()).getActualTypeArguments()[1]);
+    private final Numeric exponent;
+
+    public Pow(long n) {
+        super("x");
+        exponent = new IntegerImpl(BigInteger.valueOf(n));
+    }
+
+    public Pow(RationalType rationalExponent) {
+        super("x");
+        if (rationalExponent.isCoercibleTo(IntegerType.class)) {
+            exponent = rationalExponent.reduce().numerator();
+        } else {
+            exponent = rationalExponent;
+        }
+    }
+
+    @Override
+    public R apply(ArgVector<T> arguments) {
+        T arg = arguments.elementAt(0L);
+        MathContext ctx = arguments.getMathContext() != null ? arguments.getMathContext() : arg.getMathContext();
+        NumericHierarchy h = NumericHierarchy.forNumericType(arg.getClass());
+        try {
+            switch (h) {
+                case COMPLEX:
+                    return (R) MathUtils.generalizedExponent((ComplexType) arg, exponent, ctx).coerceTo(outputClazz);
+                case REAL:
+                    return (R) MathUtils.generalizedExponent((RealType) arg, exponent, ctx).coerceTo(outputClazz);
+                default:
+                    RealType coerced = (RealType) arg.coerceTo(RealType.class);
+                    return (R) MathUtils.generalizedExponent(coerced, exponent, ctx).coerceTo(outputClazz);
+            }
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Type incompatibility while computing exponent.");
+        }
+    }
+
+    public Numeric getExponent() {
+        return exponent;
+    }
+
+    @Differentiable
+    public UnaryFunction<T, R> diff() {
+        final Numeric diffExponent = exponent.subtract(new IntegerImpl(BigInteger.ONE));
+        try {
+            R coeff = (R) exponent.coerceTo(outputClazz);
+            if (Zero.isZero(diffExponent)) return new Const<T, R>(coeff);
+            if (diffExponent instanceof RationalType) {
+                return new Product<>(new Const<>(coeff),
+                        new Pow<>((RationalType) diffExponent));
+            } else {
+                final long n = ((IntegerType) diffExponent.coerceTo(IntegerType.class)).asBigInteger().longValueExact();
+                return new Product<>(new Const<>(coeff), new Pow<>(n));
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public Range<RealType> inputRange(String argName) {
+        return RangeUtils.ALL_REALS;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder().append(expectedArguments()[0]);
+        if (exponent instanceof IntegerType) {
+            buf.append(UnicodeTextEffects.numericSuperscript(((IntegerType) exponent).asBigInteger().intValueExact()));
+        } else {
+            buf.append("^").append(exponent);
+        }
+        return buf.toString();
+    }
+}

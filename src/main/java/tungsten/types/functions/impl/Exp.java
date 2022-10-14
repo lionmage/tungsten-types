@@ -1,0 +1,43 @@
+package tungsten.types.functions.impl;
+
+import tungsten.types.Range;
+import tungsten.types.annotations.Differentiable;
+import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.UnaryFunction;
+import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.Euler;
+import tungsten.types.util.RangeUtils;
+
+public class Exp extends UnaryFunction<RealType, RealType> {
+    public Exp() {
+        super("x");
+    }
+
+    public Exp(String varName) {
+        super(varName);
+    }
+
+    @Override
+    public RealType apply(ArgVector<RealType> arguments) {
+        if (!checkArguments(arguments)) {
+            throw new IllegalArgumentException("Expected argument " + getArgumentName() + " is not present in input vector.");
+        }
+        final Euler e = Euler.getInstance(arguments.elementAt(0L).getMathContext());
+        return e.exp(arguments.elementAt(0L));
+    }
+
+    @Override
+    public Range<RealType> inputRange(String argName) {
+        return RangeUtils.ALL_REALS;
+    }
+
+    @Differentiable
+    public UnaryFunction<RealType, RealType> diff() {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "\u212Fˣ";
+    }
+}
