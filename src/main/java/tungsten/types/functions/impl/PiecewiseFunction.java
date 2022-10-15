@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
     private final Map<Range<T>, UnaryFunction<T, R>> internalMap = new HashMap<>();
+    private boolean boundsChecked = false;
 
     public PiecewiseFunction() {
         super("x");
@@ -27,6 +28,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
             throw new IllegalArgumentException("Range " + range + " is a subset of an existing range.");
         }
         internalMap.put(range, func);
+        boundsChecked = false;  // mappings have changed, so force a re-check before using this function again
     }
 
 
@@ -35,13 +37,25 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
 
     @Override
     public R apply(ArgVector<T> arguments) {
+        if (!boundsChecked) throw new IllegalStateException("checkAggregateBounds() must be called before applying this function");
         T arg = arguments.elementAt(0L);
         Range<T> key = internalMap.keySet().parallelStream().filter(r -> r.contains(arg)).findAny().orElseThrow(outOfBounds);
         return internalMap.get(key).apply(arg);
     }
 
+    /**
+     * Checks the current {@link Range} to {@link UnaryFunction} mappings to ensure
+     * that ranges are non-overlapping and have complementary bound types
+     * (i.e., open vs. closed) where they touch.
+     * <br/>
+     * Note that this current implementation requires calling this method before
+     * attempting to apply this function.  Without performing this check first,
+     * it's possible to get completely undefined results, or no results at all.
+     *
+     * @return true if no problems are found, false otherwise
+     */
     public boolean checkAggregateBounds() {
-        if (internalMap.size() < 2) return true;
+        if (internalMap.size() < 2) return true;  // no chance of conflicts, so bail out quickly
         List<Range<T>> sortedRanges = internalMap.keySet().stream().sorted(Comparator.comparing(Range::getLowerBound))
                 .collect(Collectors.toList());
         // ensure that none of the ranges overlap
@@ -57,6 +71,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
                 if (sortedRanges.get(index).isLowerClosed() == sortedRanges.get(index - 1).isUpperClosed()) return false;
             }
         }
+        boundsChecked = true;
         return true; // if we passed the gantlet, return success
     }
 
