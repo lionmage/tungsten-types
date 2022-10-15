@@ -13,11 +13,11 @@ numeric types:
 * There is a distinction between rational and irrational numbers.
 * Numerics that are actually comparable implement the Comparable interface.
 * Full support for complex numbers in both polar and rectangular form.
-* There is implicit coercion during most math operations, as well as explicit.
+* There is implicit coercion during most math operations, as well as explicit coercion available to the developer.
 
 Systems like Sage leverage a lot of small Unix-like apps to do the work,
 which adheres to the Unix philosophy that each application should only do
-one thing and you should aggregate these apps together using e.g. shell
+one thing, and you should aggregate these apps together using e.g. shell
 scripts.  There's nothing wrong with this philosophy, except:
 * Performance can't be as good as a monolithic app designed for higher math.
 * The world isn't just Unix or Linux, and Windows ports can be problematic.
