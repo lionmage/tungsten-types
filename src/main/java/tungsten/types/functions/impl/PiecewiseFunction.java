@@ -9,6 +9,8 @@ import tungsten.types.numerics.RealType;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
@@ -67,8 +69,14 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
         // ensure that adjacent bounds have complementary bound types
         for (int index = 1; index < sortedRanges.size(); index++) {
             if (sortedRanges.get(index).getLowerBound().equals(sortedRanges.get(index - 1).getUpperBound())) {
-                // we can't have ranges touching unless one bound is closed and the complementary bound is open
-                if (sortedRanges.get(index).isLowerClosed() == sortedRanges.get(index - 1).isUpperClosed()) return false;
+                // we can't have ranges touching unless at least one bound is open
+                if (sortedRanges.get(index).isLowerClosed() && sortedRanges.get(index - 1).isUpperClosed()) return false;
+                // we should log a warning, however, if both bounds are open since this creates a discontinuity
+                if (!sortedRanges.get(index).isLowerClosed() && !sortedRanges.get(index - 1).isUpperClosed()) {
+                    Logger.getLogger(PiecewiseFunction.class.getName())
+                            .log(Level.WARNING, "Bounds as specified will create a discontinuity at {} = {}.",
+                            new Object[] {getArgumentName(), sortedRanges.get(index).getLowerBound()});
+                }
             }
         }
         boundsChecked = true;
@@ -91,5 +99,9 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
         } catch (CoercionException e) {
             throw new IllegalStateException("Could not coerce bounds to real.", e);
         }
+    }
+
+    protected Map<Range<T>, UnaryFunction<T, R>> viewOfFunctionMap() {
+        return Collections.unmodifiableMap(internalMap);
     }
 }
