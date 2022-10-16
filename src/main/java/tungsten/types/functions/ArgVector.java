@@ -203,4 +203,10 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         }
         return args.values().iterator().next().getMathContext();
     }
+
+    @Override
+    public String toString() {
+        return args.entrySet().stream().sequential().map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining(", ", "<", ">"));
+    }
 }

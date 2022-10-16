@@ -90,7 +90,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                 if (method.getParameterCount() > 0) continue;
                 if (UnaryFunction.class.isAssignableFrom(method.getReturnType())) {
                     try {
-                        return (UnaryFunction<T, T>) method.invoke(original, null);
+                        return (UnaryFunction<T, T>) method.invoke(original, (Object[]) null);
                     } catch (IllegalAccessException | InvocationTargetException sevEx) {
                         Logger.getLogger(SimpleDerivative.class.getName())
                                 .log(Level.SEVERE,
