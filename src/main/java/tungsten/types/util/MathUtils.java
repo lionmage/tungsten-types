@@ -742,6 +742,23 @@ public class MathUtils {
         }
     }
 
+    public static IntegerType trunc(Numeric val) {
+        NumericHierarchy hval = NumericHierarchy.forNumericType(val.getClass());
+        switch (hval) {
+            case RATIONAL:
+                IntegerType[] wholeAndFrac = ((RationalType) val).divideWithRemainder();
+                return wholeAndFrac[0];
+            case REAL:
+                RealType rval = (RealType) val;
+                return new IntegerImpl(rval.asBigDecimal().toBigInteger(),
+                        rval.isExact() && rval.isCoercibleTo(IntegerType.class));
+            case INTEGER:
+                return (IntegerType) val;
+            default:
+                throw new ArithmeticException("Cannot truncate " + val);
+        }
+    }
+
     public static ComplexType ln(ComplexType z) {
         return new ComplexRectImpl(ln(z.magnitude()), z.argument());
     }

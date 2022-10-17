@@ -27,7 +27,6 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     }
 
     public ArgVector(String[] argLabels, ArgMap<T> source, T defaultValue) {
-        if (source.arity() < argLabels.length) throw new IllegalArgumentException("Mismatched arity.");
         Arrays.stream(argLabels).forEachOrdered(label -> {
             append(label, source.getOrDefault(label, defaultValue));
         });

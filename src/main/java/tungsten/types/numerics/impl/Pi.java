@@ -34,6 +34,7 @@ import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.impl.Sum;
 import tungsten.types.numerics.*;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
@@ -229,21 +230,51 @@ public class Pi implements RealType {
 
     private final Range<RealType> INNER_RANGE = new Range<>(new RealImpl(BigDecimal.ZERO, MathContext.UNLIMITED), Range.BoundType.INCLUSIVE,
             RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED), Range.BoundType.EXCLUSIVE);
-    private static final BigInteger SIXTEEN = BigInteger.valueOf(16L);
+    private static final IntegerType SIXTEEN = new IntegerImpl(BigInteger.valueOf(16L));
+    private static BigInteger longestCalculation = BigInteger.ZERO;
+    private static long highestDigit = 0L;
+    private static final ReentrantLock stateLock = new ReentrantLock();
+
+    private void calculate() {
+        long n = mctx.getPrecision() + 2;
+        if (n > highestDigit) {
+            stateLock.lock();  // the lock ensures only one constructor mutates these common values at a time
+            try {
+                for (long k = highestDigit; k <= n; k++) {
+                    RationalType sum = computeSpigotSum(k);
+                    // discard the non-fraction part
+                    RationalType fraction = new RationalImpl(sum.modulus(),
+                            sum.denominator(), mctx);
+                    IntegerType digit = MathUtils.trunc(fraction.multiply(SIXTEEN));
+//                    assert HEX_DIGIT_RANGE.contains(digit);
+                    longestCalculation = longestCalculation.shiftLeft(4).or(digit.asBigInteger());
+                }
+                highestDigit = n;
+            } finally {
+                stateLock.unlock();
+            }
+        }
+        // check how many digits we actually have and scale so that there's only 1 digit to the left of the decimal point
+        IntegerType calculatedState = new IntegerImpl(longestCalculation);
+        this.value = new BigDecimal(longestCalculation, (int) (calculatedState.numberOfDigits() - 1L), mctx);
+    }
+
+//    private static final Range<IntegerType> HEX_DIGIT_RANGE = new Range<>(new IntegerImpl(BigInteger.ZERO),
+//            new IntegerImpl(BigInteger.valueOf(15L)), Range.BoundType.INCLUSIVE);
 
     private NumericFunction<IntegerType, RationalType> computeSpigotTermFunction(long koffset) {
         final IntegerType offset = new IntegerImpl(BigInteger.valueOf(koffset));
 
-        return new NumericFunction<IntegerType, RationalType>() {
+        return new NumericFunction<>() {
             @Override
             public RationalType apply(ArgVector<IntegerType> arguments) {
                 IntegerType k = arguments.forVariableName("k");
                 IntegerType n = arguments.forVariableName("n");
                 IntegerType kplusOffset = (IntegerType) k.add(offset);
-                BigInteger exp = ((IntegerType) n.subtract(k)).asBigInteger();
+                IntegerType exp = (IntegerType) n.subtract(k);
                 // modular exponentiation makes this very efficient to compute
-                IntegerType numerator = new IntegerImpl(SIXTEEN.modPow(exp, kplusOffset.asBigInteger()));
-                return new RationalImpl(numerator, kplusOffset);
+                IntegerType numerator = SIXTEEN.powMod(exp, kplusOffset);
+                return new RationalImpl(numerator, kplusOffset, mctx);
             }
 
             @Override
@@ -253,7 +284,7 @@ public class Pi implements RealType {
 
             @Override
             public String[] expectedArguments() {
-                return new String[] {"k", "n"};
+                return new String[]{"k", "n"};
             }
 
             @Override
@@ -295,21 +326,30 @@ public class Pi implements RealType {
             }
         };
         return LongStream.rangeClosed(0L, n).mapToObj(BigInteger::valueOf).map(IntegerImpl::new)
-                .map(aggregate::apply).reduce((r1, r2) -> (RationalType) r1.add(r2)).orElseThrow();
+                .map(aggregate::apply).reduce(Pi::safeReduce).orElseThrow();
+    }
+
+    protected static RationalType safeReduce(RationalType A, RationalType B) {
+        Numeric sum = A.add(B);
+        try {
+            return (RationalType) sum.coerceTo(RationalType.class);
+        } catch (CoercionException e) {
+            throw new IllegalStateException(e);
+        }
     }
     
     /*
     Computes the value of pi using the BBP formula.
     */
-    private void calculate() {
-        BigDecimal value = BigDecimal.ZERO;
-        // compute a few extra digits so we can round off later
-        MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
-        for (int k = 0; k < mctx.getPrecision() - 1; k++) {
-            value = value.add(computeKthTerm(k, compctx), compctx);
-        }
-        this.value = value.round(mctx);
-    }
+//    private void calculate() {
+//        BigDecimal value = BigDecimal.ZERO;
+//        // compute a few extra digits so we can round off later
+//        MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
+//        for (int k = 0; k < mctx.getPrecision() - 1; k++) {
+//            value = value.add(computeKthTerm(k, compctx), compctx);
+//        }
+//        this.value = value.round(mctx);
+//    }
     
     private static final BigDecimal TWO  = BigDecimal.valueOf(2L);
     private static final BigDecimal FOUR = BigDecimal.valueOf(4L);

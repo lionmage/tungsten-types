@@ -230,6 +230,16 @@ public class IntegerImpl implements IntegerType {
     }
 
     @Override
+    public IntegerType powMod(long n, IntegerType m) {
+        return new IntegerImpl(val.modPow(BigInteger.valueOf(n), m.asBigInteger()));
+    }
+
+    @Override
+    public IntegerType powMod(IntegerType n, IntegerType m) {
+        return new IntegerImpl(val.modPow(n.asBigInteger(), m.asBigInteger()));
+    }
+
+    @Override
     public BigInteger asBigInteger() {
         return val;
     }

@@ -65,6 +65,15 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
      * @return this raised to the {@code exponent} power
      */
     public Numeric pow(IntegerType exponent);
+
+    /**
+     * Compute this<sup>n</sup> mod m.
+     * @param n the exponent
+     * @param m the modulus
+     * @return this<sup>n</sup> mod m
+     */
+    public IntegerType powMod(long n, IntegerType m);
+    public IntegerType powMod(IntegerType n, IntegerType m);
     
     @Override
     public IntegerType sqrt();

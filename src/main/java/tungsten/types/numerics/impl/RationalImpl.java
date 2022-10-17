@@ -95,6 +95,13 @@ public class RationalImpl implements RationalType {
         this.exact = numerator.isExact() && denominator.isExact();
         mctx = pickBestMC(numerator.getMathContext(), denominator.getMathContext());
     }
+
+    public RationalImpl(IntegerType numerator, IntegerType denominator, MathContext mctx) {
+        this.numerator = numerator.asBigInteger();
+        this.denominator = denominator.asBigInteger();
+        this.exact = numerator.isExact() && denominator.isExact();
+        this.mctx = mctx;
+    }
     
     private MathContext pickBestMC(MathContext first, MathContext second) {
         int precision = Math.min(first.getPrecision(), second.getPrecision());
@@ -129,6 +136,13 @@ public class RationalImpl implements RationalType {
         final RationalImpl result = new RationalImpl(numerator.negate(), denominator, exact);
         result.setMathContext(mctx);
         return result;
+    }
+
+    @Override
+    public IntegerType[] divideWithRemainder() {
+        BigInteger[] results = numerator.divideAndRemainder(denominator);
+        // the exactness of the whole number part depends on whether there is in fact a fraction
+        return new IntegerType[] {new IntegerImpl(results[0], BigInteger.ZERO.equals(results[1])), new IntegerImpl(results[1])};
     }
 
     @Override
@@ -263,7 +277,8 @@ public class RationalImpl implements RationalType {
             try {
                 return this.coerceTo(subtrahend.getClass()).subtract(subtrahend);
             } catch (CoercionException ex) {
-                Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during rational subtract.", ex);
+                Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during rational subtract.", ex);
             }
         }
         throw new UnsupportedOperationException("Subtraction operation unsupported.");
@@ -278,6 +293,7 @@ public class RationalImpl implements RationalType {
                     exact && that.isExact()).reduce();
         } else if (multiplier instanceof IntegerType) {
             final IntegerType that = (IntegerType) multiplier;
+            if (that.equals(denominator())) return numerator();  // small optimization
             final RationalType intermediate = new RationalImpl(numerator.multiply(that.asBigInteger()),
                     denominator, exact && that.isExact()).reduce();
             if (intermediate.isCoercibleTo(IntegerType.class)) {
@@ -288,7 +304,8 @@ public class RationalImpl implements RationalType {
             try {
                 return this.coerceTo(multiplier.getClass()).multiply(multiplier);
             } catch (CoercionException ex) {
-                Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during rational multiply.", ex);
+                Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during rational multiply.", ex);
             }
         }
         throw new UnsupportedOperationException("Multiplication operation unsupported.");
@@ -296,7 +313,15 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (divisor instanceof IntegerType) {
+            return new RationalImpl(numerator(), (IntegerType) denominator().multiply(divisor), mctx);
+        }
         return this.multiply(divisor.inverse());
+    }
+
+    @Override
+    public IntegerType modulus() {
+        return new IntegerImpl(numerator.mod(denominator));
     }
 
     @Override
@@ -311,8 +336,10 @@ public class RationalImpl implements RationalType {
 
     /**
      * This implementation of square root relies on the identity
-     * sqrt(a/b) = sqrt(a)/sqrt(b).
-     * @return an approximation of the square root of this fraction
+     * sqrt(a/b) = sqrt(a)/sqrt(b). The result will only be exact
+     * if the numerator and denominator are both perfect squares.
+     *
+     * @return the square root of this fraction
      * @see IntegerImpl#sqrt()  
      */
     @Override

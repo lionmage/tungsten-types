@@ -59,4 +59,6 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
     public Sign sign();
     public IntegerType floor();
     public IntegerType ceil();
+    public IntegerType[] divideWithRemainder();
+    public IntegerType modulus();
 }
