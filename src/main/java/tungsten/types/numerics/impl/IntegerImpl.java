@@ -25,9 +25,11 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.*;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.numerics.RationalType;
+import tungsten.types.numerics.Sign;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -36,7 +38,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  *
@@ -44,7 +45,7 @@ import java.util.stream.Stream;
  */
 public class IntegerImpl implements IntegerType {
     private boolean exact = true;
-    private BigInteger val;
+    private final BigInteger val;
     private static final BigInteger TWO = BigInteger.valueOf(2L);
     private static final BigInteger NINE = BigInteger.valueOf(9L);
 
@@ -71,12 +72,12 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public IntegerType magnitude() {
-        return new IntegerImpl(val.abs());
+        return new IntegerImpl(val.abs(), exact);
     }
 
     @Override
     public IntegerType negate() {
-        return new IntegerImpl(val.negate());
+        return new IntegerImpl(val.negate(), exact);
     }
 
     @Override
@@ -135,7 +136,7 @@ public class IntegerImpl implements IntegerType {
         BigInteger sum = BigInteger.ZERO;
 
         for (long idx = 0L; idx < temp.numberOfDigits(); idx++) {
-            sum = sum.add(BigInteger.valueOf((long) temp.digitAt(idx)));
+            sum = sum.add(BigInteger.valueOf(temp.digitAt(idx)));
         }
         return new IntegerImpl(sum);
     }
@@ -162,7 +163,7 @@ public class IntegerImpl implements IntegerType {
 
         numDigitsLock.lock();
         try {
-            if (numDigitsCache > 0) {
+            if (numDigitsCache > 0L) {
                 return numDigitsCache;
             }
 
@@ -221,22 +222,35 @@ public class IntegerImpl implements IntegerType {
     
     @Override
     public Numeric pow(IntegerType exponent) {
-        if (exponent.sign() == Sign.NEGATIVE) {
+        final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
+        Sign expSign = exponent.sign();
+        if (exponent.asBigInteger().abs().compareTo(MAX_INT) > 0) {
+            IntegerType halfExponent = new IntegerImpl(exponent.asBigInteger().shiftRight(1));
+            if (expSign == Sign.NEGATIVE) halfExponent = halfExponent.negate();
+            IntegerType intermediate = (IntegerType) this.pow(halfExponent);
+            intermediate = (IntegerType) intermediate.multiply(intermediate); // square the intermediate result
+            if (exponent.isOdd()) {
+                // and handle the corner case where we had an odd exponent
+                intermediate = (IntegerType) intermediate.multiply(this);
+            }
+            return expSign == Sign.NEGATIVE ? new RationalImpl(BigInteger.ONE, intermediate.asBigInteger()) : intermediate;
+        }
+        if (expSign == Sign.NEGATIVE) {
             IntegerType negexp = exponent.negate();
             return new RationalImpl(BigInteger.ONE,
-                    val.pow(negexp.asBigInteger().intValueExact()));
+                    val.pow(negexp.asBigInteger().intValueExact()), this.isExact());
         }
-        return new IntegerImpl(val.pow(exponent.asBigInteger().intValueExact()));
+        return new IntegerImpl(val.pow(exponent.asBigInteger().intValueExact()), this.isExact());
     }
 
     @Override
     public IntegerType powMod(long n, IntegerType m) {
-        return new IntegerImpl(val.modPow(BigInteger.valueOf(n), m.asBigInteger()));
+        return new IntegerImpl(val.modPow(BigInteger.valueOf(n), m.asBigInteger()), exact && m.isExact());
     }
 
     @Override
     public IntegerType powMod(IntegerType n, IntegerType m) {
-        return new IntegerImpl(val.modPow(n.asBigInteger(), m.asBigInteger()));
+        return new IntegerImpl(val.modPow(n.asBigInteger(), m.asBigInteger()), exact && m.isExact());
     }
 
     @Override
@@ -279,7 +293,7 @@ public class IntegerImpl implements IntegerType {
     public Numeric add(Numeric addend) {
         if (addend instanceof IntegerType) {
             IntegerType that = (IntegerType) addend;
-            return new IntegerImpl(this.asBigInteger().add(that.asBigInteger()));
+            return new IntegerImpl(this.asBigInteger().add(that.asBigInteger()), exact && that.isExact());
         } else {
             try {
                 return this.coerceTo(addend.getClass()).add(addend);
@@ -292,14 +306,25 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
-        return this.add(subtrahend.negate());
+        if (subtrahend instanceof IntegerType) {
+            IntegerType that = (IntegerType) subtrahend;
+            return new IntegerImpl(this.asBigInteger().subtract(that.asBigInteger()), exact && that.isExact());
+        } else {
+            try {
+                return this.coerceTo(subtrahend.getClass()).subtract(subtrahend);
+            } catch (CoercionException ex) {
+                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer add.", ex);
+            }
+        }
+        throw new UnsupportedOperationException("Addition operation unsupported");
     }
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        final boolean exactness = this.isExact() && multiplier.isExact();
         if (multiplier instanceof IntegerType) {
             final IntegerType that = (IntegerType) multiplier;
-            return new IntegerImpl(this.asBigInteger().multiply(that.asBigInteger()));
+            return new IntegerImpl(this.asBigInteger().multiply(that.asBigInteger()), exactness);
         } else if (multiplier instanceof RationalType) {
             final RationalType that = (RationalType) multiplier;
             BigInteger numResult = val.multiply(that.numerator().asBigInteger());
@@ -307,9 +332,9 @@ public class IntegerImpl implements IntegerType {
             final BigInteger gcd = numResult.gcd(denomResult);
             if (gcd.equals(denomResult)) {
                 // reducing would give a denominator of 1, so result is an integer
-                return new IntegerImpl(numResult.divide(gcd));
+                return new IntegerImpl(numResult.divide(gcd), exactness);
             } else {
-                return new RationalImpl(numResult, denomResult).reduce();
+                return new RationalImpl(numResult, denomResult, exactness).reduce();
             }
         } else {
             try {
@@ -325,13 +350,16 @@ public class IntegerImpl implements IntegerType {
     public Numeric divide(Numeric divisor) {
         if (divisor instanceof IntegerType) {
             final IntegerType that = (IntegerType) divisor;
+            final boolean exactness = this.isExact() && divisor.isExact();
             BigInteger[] resultAndRemainder = val.divideAndRemainder(that.asBigInteger());
             // if the remainder is 0, we can return an integer
             if (resultAndRemainder[1].equals(BigInteger.ZERO)) {
-                return new IntegerImpl(resultAndRemainder[0]);
+                return new IntegerImpl(resultAndRemainder[0], exactness);
             } else {
-                return new RationalImpl(val, that.asBigInteger()).reduce();
+                return new RationalImpl(val, that.asBigInteger(), exactness).reduce();
             }
+        } else if (divisor instanceof RationalType) {
+            return this.multiply(divisor.inverse());
         } else {
             try {
                 return this.coerceTo(divisor.getClass()).divide(divisor);
@@ -350,7 +378,7 @@ public class IntegerImpl implements IntegerType {
         } else if (val.equals(BigInteger.ZERO)) {
             throw new ArithmeticException("Cannot compute inverse of 0.");
         }
-        return new RationalImpl(BigInteger.ONE, val);
+        return new RationalImpl(BigInteger.ONE, val, exact);
     }
 
     /**

@@ -107,6 +107,11 @@ public class RationalImpl implements RationalType {
         int precision = Math.min(first.getPrecision(), second.getPrecision());
         return new MathContext(precision, first.getRoundingMode());
     }
+
+    public RationalImpl(long numerator, long denominator, MathContext mctx) {
+        this(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator));
+        setMathContext(mctx);
+    }
     
     /**
      * Convenience constructor to convert {@link IntegerType}

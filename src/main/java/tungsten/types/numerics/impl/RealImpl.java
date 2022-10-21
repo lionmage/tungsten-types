@@ -27,12 +27,10 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
-//import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,8 +44,6 @@ public class RealImpl implements RealType {
     private boolean exact = true;
     private final BigDecimal val;
     private MathContext mctx = MathContext.UNLIMITED;
-    
-    private static final BigDecimal TWO = BigDecimal.valueOf(2L);
     
     public RealImpl(BigDecimal init) {
         val = init;
@@ -88,6 +84,9 @@ public class RealImpl implements RealType {
     }
     
     public RealImpl(RationalType init, MathContext mctx) {
+        if (mctx.getPrecision() > init.getMathContext().getPrecision()) {
+            init = new RationalImpl(init.numerator(), init.denominator(), mctx);
+        }
         this.val = init.asBigDecimal();
         this.exact = init.isExact();
         this.irrational = false;
@@ -135,7 +134,7 @@ public class RealImpl implements RealType {
 
     @Override
     public BigDecimal asBigDecimal() {
-        return val;
+        return val.round(mctx);
     }
 
     @Override

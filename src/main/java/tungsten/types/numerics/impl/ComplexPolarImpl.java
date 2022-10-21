@@ -32,7 +32,6 @@ import tungsten.types.functions.impl.Sin;
 import tungsten.types.numerics.*;
 import tungsten.types.set.impl.NumericSet;
 import tungsten.types.util.MathUtils;
-import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
 import java.math.BigDecimal;
@@ -295,7 +294,7 @@ public class ComplexPolarImpl implements ComplexType {
 
     @Override
     public Numeric sqrt() {
-        assert(modulus.sign() != Sign.NEGATIVE);
+        assert modulus.sign() != Sign.NEGATIVE;
         try {
             RealType modnew = (RealType) modulus.sqrt().coerceTo(RealType.class);
             RealType argnew = (RealType) argument.divide(TWO);
@@ -336,7 +335,15 @@ public class ComplexPolarImpl implements ComplexType {
     public Set<ComplexType> nthRoots(long n) {
         return nthRoots(new IntegerImpl(BigInteger.valueOf(n), true));
     }
-    
+
+    /**
+     * A strict test for equality.  The algorithm makes no attempt to normalize the argument (phase angle)
+     * of this value nor that of any {@link ComplexType} supplied as a parameter. If you need a more forgiving
+     * comparison, use {@link #equalToWithin(ComplexPolarImpl, ComplexPolarImpl, RealType)} instead.
+     *
+     * @param o the object with which to compare this
+     * @return true if and only if this complex value is exactly equal to o
+     */
     @Override
     public boolean equals(Object o) {
         if (o instanceof Zero) {
@@ -352,6 +359,23 @@ public class ComplexPolarImpl implements ComplexType {
             return this.modulus.equals(that.magnitude()) && this.argument.equals(that.argument());
         }
         return isCoercibleTo(RealType.class) && real().equals(o);
+    }
+
+    /**
+     * Compare two {@link ComplexPolarImpl} values to within a given precision denoted by {@code epsilon}.
+     * The normalized arguments of the two complex values are compared, unlike with {@link #equals(Object)},
+     * making this method more flexible when dealing with polar complex values, albeit potentially slower.
+     *
+     * @param A       the first complex polar value to compare
+     * @param B       the second complex polar value to compare
+     * @param epsilon the accuracy to within which A and B are compared
+     * @return true if and only if the modulus and normalized phase angles of A and B match, false otherwise
+     */
+    public static boolean equalToWithin(ComplexPolarImpl A, ComplexPolarImpl B, RealType epsilon) {
+        if (MathUtils.areEqualToWithin(A.magnitude(), B.magnitude(), epsilon)) {
+            return MathUtils.areEqualToWithin(A.normalizeArgument(), B.normalizeArgument(), epsilon);
+        }
+        return false;
     }
     
     private boolean testEquals(BigDecimal A, BigDecimal B) {
