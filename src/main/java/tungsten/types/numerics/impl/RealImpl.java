@@ -72,6 +72,11 @@ public class RealImpl implements RealType {
         this(representation);
         this.exact = exact;
     }
+
+    public RealImpl(String representation, MathContext ctx) {
+        this(representation);
+        this.mctx = ctx;
+    }
     
     /**
      * Convenience constructor to convert a rational to a real.
@@ -235,7 +240,9 @@ public class RealImpl implements RealType {
         if (subtrahend instanceof RealType) {
             // corner case where both operands are real, to avoid intermediate object creation
             RealType that = (RealType) subtrahend;
-            return new RealImpl(val.subtract(that.asBigDecimal(), mctx), this.exact && that.isExact());
+            RealImpl result = new RealImpl(val.subtract(that.asBigDecimal(), mctx), this.exact && that.isExact());
+            result.setMathContext(mctx);
+            return result;
         }
         return add(subtrahend.negate());
     }
@@ -348,7 +355,7 @@ public class RealImpl implements RealType {
         }
         if (sign() == Sign.NEGATIVE) {
             try {
-                final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class); // new RealImpl(BigDecimal.ZERO, true);
+                final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
                 ComplexRectImpl cplx = new ComplexRectImpl(this, zero, exact);
                 cplx.setMathContext(mctx);
                 return cplx.sqrt();

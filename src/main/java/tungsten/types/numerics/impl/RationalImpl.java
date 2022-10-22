@@ -83,6 +83,11 @@ public class RationalImpl implements RationalType {
         this(representation);
         this.exact = exact;
     }
+
+    public RationalImpl(String representation, MathContext mctx) {
+        this(representation);
+        this.mctx = mctx;
+    }
     
     /**
      * Convenience constructor which takes {@link IntegerType} arguments.
@@ -112,7 +117,7 @@ public class RationalImpl implements RationalType {
         this(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator));
         setMathContext(mctx);
     }
-    
+
     /**
      * Convenience constructor to convert {@link IntegerType}
      * to a rational.

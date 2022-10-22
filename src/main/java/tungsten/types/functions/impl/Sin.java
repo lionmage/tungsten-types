@@ -72,7 +72,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), epsilon.getMathContext());
         final IntegerType four = new IntegerImpl("4");
         final RealType ten = new RealImpl(BigDecimal.TEN, epsilon.getMathContext());
-        final RationalType oneHalf = new RationalImpl("1/2");
+        final RationalType oneHalf = new RationalImpl("1/2", epsilon.getMathContext());
         final RealType sqrtTwo = (RealType) two.sqrt();
         final RealType sqrtThree = (RealType) new RealImpl(BigDecimal.valueOf(3L), epsilon.getMathContext()).sqrt();
         final RealType sqrtFive = (RealType) new RealImpl(BigDecimal.valueOf(5L), epsilon.getMathContext()).sqrt();
@@ -94,32 +94,33 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
                 (RealType) sqrtTwo.add(two).sqrt().divide(two));
         knownValues.put(piFraction(new RationalImpl("2/5")),
                 (RealType) ten.add(two.multiply(sqrtFive)).sqrt().divide(four));
-        knownValues.put(piFraction(new RationalImpl("5/12")),
+        knownValues.put(piFraction(new RationalImpl("5/12", pi.getMathContext())),
                 (RealType) sqrtThree.add(one).multiply(sqrtTwo).divide(four));
         knownValues.put(piDividedBy(2L), one);
-        knownValues.put(piFraction(new RationalImpl("7/12")),
+        knownValues.put(piFraction(new RationalImpl("7/12", pi.getMathContext())),
                 (RealType) sqrtThree.add(one).multiply(sqrtTwo).divide(four));
-        knownValues.put(piFraction(new RationalImpl("2/3")), (RealType) sqrtThree.divide(two));
+        knownValues.put(piFraction(new RationalImpl("2/3", pi.getMathContext())), (RealType) sqrtThree.divide(two));
         knownValues.put(piFraction(new RationalImpl("3/4")), (RealType) sqrtTwo.divide(two));
-        knownValues.put(piFraction(new RationalImpl("5/6")), new RealImpl(oneHalf));
-        knownValues.put(piFraction(new RationalImpl("11/12")),
+        knownValues.put(piFraction(new RationalImpl("5/6", pi.getMathContext())), new RealImpl(oneHalf, pi.getMathContext()));
+        knownValues.put(piFraction(new RationalImpl("11/12", pi.getMathContext())),
                 (RealType) sqrtThree.subtract(one).multiply(sqrtTwo).divide(four));
         knownValues.put(pi, zero);
-        knownValues.put(piFraction(new RationalImpl("13/12")),
+        knownValues.put(piFraction(new RationalImpl("13/12", pi.getMathContext())),
                 (RealType) sqrtThree.subtract(one).divide(two.multiply(sqrtTwo)).negate());
-        knownValues.put(piFraction(new RationalImpl("7/6")),
+        knownValues.put(piFraction(new RationalImpl("7/6", pi.getMathContext())),
                 new RealImpl(oneHalf.negate()));
         knownValues.put(piFraction(new RationalImpl("5/4")), (RealType) sqrtTwo.divide(two).negate());
-        knownValues.put(piFraction(new RationalImpl("4/3")), (RealType) sqrtThree.divide(two).negate());
-        knownValues.put(piFraction(new RationalImpl("17/12")),
+        knownValues.put(piFraction(new RationalImpl("4/3", pi.getMathContext())), (RealType) sqrtThree.divide(two).negate());
+        knownValues.put(piFraction(new RationalImpl("17/12", pi.getMathContext())),
                 ((RealType) sqrtThree.add(one).multiply(sqrtTwo).divide(four)).negate());
         knownValues.put(piFraction(new RationalImpl("3/2")), one.negate());
-        knownValues.put(piFraction(new RationalImpl("19/12")),
+        knownValues.put(piFraction(new RationalImpl("19/12", pi.getMathContext())),
                 ((RealType) sqrtThree.add(one).multiply(sqrtTwo).divide(four)).negate());
-        knownValues.put(piFraction(new RationalImpl("5/3")), (RealType) sqrtThree.divide(two).negate());
+        knownValues.put(piFraction(new RationalImpl("5/3", pi.getMathContext())), (RealType) sqrtThree.divide(two).negate());
         knownValues.put(piFraction(new RationalImpl("7/4")), (RealType) sqrtTwo.divide(two).negate());
-        knownValues.put(piFraction(new RationalImpl("11/6")), new RealImpl(oneHalf.negate()));
-        knownValues.put(piFraction(new RationalImpl("23/12")),
+        knownValues.put(piFraction(new RationalImpl("11/6", pi.getMathContext())),
+                new RealImpl(oneHalf.negate(), pi.getMathContext()));
+        knownValues.put(piFraction(new RationalImpl("23/12", pi.getMathContext())),
                 ((RealType) sqrtThree.subtract(one).multiply(sqrtTwo).divide(four)).negate());
         knownValues.put((RealType) pi.multiply(two), zero);
     }
@@ -149,7 +150,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
             TaylorPolynomial<RealType, RealType> p = polynomialMap.get(key);
             if (p != null) return p.apply(arg);
             // if we got here, we have no choice but to compute a new polynomial
-            p = computeToN(order, a0);
+            p = generateTaylorPolynomial(a0).getForNTerms(order);
             polynomialMap.put(key, p);
             result = p.apply(arg);
         }
@@ -158,10 +159,10 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
 
     private final Map<Long, UnaryFunction<RealType, RealType>> derivatives = new TreeMap<>();
 
-    protected TaylorPolynomial<RealType, RealType> computeToN(long N, RealType a0) {
+    protected TaylorPolynomial<RealType, RealType> generateTaylorPolynomial(RealType a0) {
         final SimpleDerivative<RealType> diffEngine = new SimpleDerivative<>(epsilon);
 
-        return new TaylorPolynomial<RealType, RealType>(getArgumentName(), this, a0) {
+        return new TaylorPolynomial<>(getArgumentName(), this, a0) {
             @Override
             protected UnaryFunction<RealType, RealType> f_n(long n) {
                 UnaryFunction<RealType, RealType> diff = derivatives.get(n);
