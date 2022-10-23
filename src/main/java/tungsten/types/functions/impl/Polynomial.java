@@ -55,7 +55,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         for (String termInit : strTerms) {
             Matcher m = constPattern.matcher(termInit);
             if (m.matches()) {
-                terms.add(new ConstantTerm<T, R>(termInit.stripLeading()));
+                terms.add(new ConstantTerm<>(termInit.stripLeading()));
                 continue;
             }
             if (termInit.contains("/")) {
@@ -95,7 +95,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                 PolyTerm<T, R> old = matchingTerm.get();
                 List<Long> exponents = Arrays.stream(arg.expectedArguments())
                         .map(arg::order).collect(Collectors.toList());
-                PolyTerm<T, R> updated = new PolyTerm<T, R>((R) term.coefficient().add(old.coefficient()),
+                PolyTerm<T, R> updated = new PolyTerm<>((R) term.coefficient().add(old.coefficient()),
                         Arrays.asList(term.expectedArguments()), exponents);
                 terms.remove(old);
                 terms.add(updated);
@@ -125,10 +125,11 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             R aggConst = terms.stream().filter(Term::isConstant).map(Term::coefficient)
                     .reduce(term.coefficient(), (c1, c2) -> (R) c1.add(c2));
             terms.removeIf(Term::isConstant);
-            terms.add(new ConstantTerm<T, R>(aggConst));
+            terms.add(new ConstantTerm<>(aggConst));
+        } else {
+            // if we're not sure what to do with it, throw an exception
+            throw new IllegalArgumentException("This polynomial does not know how to handle a term of type " + term.getClass().getTypeName());
         }
-        // if we're not sure what to do with it, throw an exception
-        throw new IllegalArgumentException("This polynomial does not know how to handle a term of type " + term.getClass().getTypeName());
     }
 
     /**

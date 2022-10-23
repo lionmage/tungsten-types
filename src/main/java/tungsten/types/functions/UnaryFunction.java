@@ -62,7 +62,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
      * @return a new function that is the composition with this and {@code before}
      */
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
-        return new UnaryFunction<T, R>(before.argumentName) {
+        return new UnaryFunction<>(before.argumentName) {
             {
                 originalFunction = UnaryFunction.this;
                 composedFunction = before;
@@ -103,7 +103,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     }
 
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
-        return new UnaryFunction<T, R2>(UnaryFunction.this.argumentName) {
+        return new UnaryFunction<>(UnaryFunction.this.argumentName) {
             {
                 originalFunction = UnaryFunction.this;
                 composingFunction = after;
@@ -122,6 +122,21 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
                 return originalFunction.inputRange(originalFunction.argumentName);
             }
         };
+    }
+
+    protected void setOriginalFunction(UnaryFunction<T, R> f) {
+        if (originalFunction == null) {
+            originalFunction = f;
+        }
+        throw new IllegalStateException("Cannot set the original function reference more than once.");
+    }
+
+    protected void setComposedFunction(UnaryFunction<? super T, T> before) {
+        composedFunction = before;
+    }
+
+    protected void setComposingFunction(UnaryFunction<R, ? extends R> after) {
+        composingFunction = after;
     }
 
     protected String getArgumentName() {

@@ -40,10 +40,9 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Override
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
-        if (before instanceof Negate) {
-            return this.getOriginalFunction().isPresent() ?
-                    this.getOriginalFunction().get() :
-                    (UnaryFunction<? super T, R>) this.getComposingFunction().orElseThrow();
+        if (before instanceof Negate && this.getComposedFunction().isEmpty()) {
+            return (UnaryFunction<? super T, R>) this.getComposingFunction()
+                    .orElse((UnaryFunction<R, ? extends R>) this.getOriginalFunction().orElseThrow());
         }
         return super.composeWith(before);
     }
@@ -52,7 +51,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     @Override
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
         if (after instanceof Negate) {
-            return (UnaryFunction<T, R2>) after.getOriginalFunction().orElseThrow();
+            return (UnaryFunction<T, R2>) this.getOriginalFunction().orElseThrow();
         }
         return super.andThen(after);
     }
@@ -66,7 +65,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
             throw new IllegalStateException("Unable to obtain -1 for type " + outputClazz.getTypeName(), e);
         }
 
-        return new UnaryFunction<T, R>("x") {
+        return new UnaryFunction<>("x") {
             @Override
             public R apply(ArgVector<T> arguments) {
                 return response;

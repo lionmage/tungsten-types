@@ -8,6 +8,7 @@ import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.RangeUtils;
@@ -65,7 +66,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         final Numeric diffExponent = exponent.subtract(new IntegerImpl(BigInteger.ONE));
         try {
             R coeff = (R) exponent.coerceTo(outputClazz);
-            if (Zero.isZero(diffExponent)) return new Const<T, R>(coeff);
+            if (Zero.isZero(diffExponent)) return new Const<>(coeff);
             if (diffExponent instanceof RationalType) {
                 return new Product<>(new Const<>(coeff),
                         new Pow<>((RationalType) diffExponent));
@@ -76,6 +77,33 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         } catch (CoercionException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
+        return super.composeWith(before);
+    }
+
+    @Override
+    public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
+        if (after instanceof Pow) {
+            final Pow<R, R2> afterPow = (Pow<R, R2>) after;
+            Numeric expProd = this.exponent.multiply(afterPow.getExponent());
+            if (One.isUnity(expProd)) {
+                return (UnaryFunction<T, R2>) getOriginalFunction().orElseThrow();
+            }
+            // create a new instance of Pow with a merged exponent
+            Pow<T, R2> pow;
+            if (expProd instanceof RationalType) {
+                pow = new Pow<>((RationalType) expProd);
+            } else {
+                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
+            }
+            pow.setOriginalFunction((UnaryFunction<T, R2>) this.getOriginalFunction().orElseThrow());
+            pow.setComposingFunction(afterPow.getComposingFunction().orElse(null));
+            return pow;
+        }
+        return super.andThen(after);
     }
 
     @Override

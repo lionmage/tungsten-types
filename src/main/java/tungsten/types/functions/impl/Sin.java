@@ -20,6 +20,7 @@ import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.*;
 
 /**
@@ -47,7 +48,8 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
     public Sin(String argName, RealType epsilon) {
         super(argName);
         this.epsilon = epsilon;
-        pi = Pi.getInstance(epsilon.getMathContext());
+        pi = Pi.getInstance(new MathContext(epsilon.getMathContext().getPrecision() + 1,
+                epsilon.getMathContext().getRoundingMode()));
         internalRange = new Range<>(new RealImpl(BigDecimal.ZERO),
                 Range.BoundType.INCLUSIVE,
                 (RealType) pi.multiply(new RealImpl(BigDecimal.valueOf(2L), epsilon.getMathContext())),
