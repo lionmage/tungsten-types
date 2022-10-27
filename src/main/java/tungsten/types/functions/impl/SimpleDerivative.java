@@ -6,10 +6,10 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.*;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.ClassTools;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,7 +109,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         final UnaryFunction<T, T> outerDerivative = SimpleDerivative.this.apply(outer);
         final UnaryFunction<T, T> innerDerivative = SimpleDerivative.this.apply(inner);
 
-        return new UnaryFunction<T, T>(outer.expectedArguments()[0]) {
+        return new UnaryFunction<>(outer.expectedArguments()[0]) {
             @Override
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.elementAt(0L);
@@ -142,7 +142,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         UnaryFunction<T, T> combinedDenom = quotient.getDenominator().andThen(new Pow<>(2L));
         UnaryFunction<T, T> combinedNumerator =
                 new Sum<>(new Product<>(numDiff, quotient.getDenominator()),
-                        new Product<>(quotient.getNumerator(), denomDiff).andThen(new Negate<>()));
+                        new Product<>(quotient.getNumerator(), denomDiff).andThen(new Negate<>() {}));
         return new Quotient<>(combinedNumerator, combinedDenom);
     }
 
@@ -156,23 +156,22 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
             Sum<T, T> sumTerm = new Sum<>(argName);
             // f'/f
             product.parallelStream().map(f -> new Quotient<>(argName, this.apply(f), f)).forEach(sumTerm::add);
-            return new Product<T, T>(argName, product, sumTerm);
+            return new Product<>(argName, product, sumTerm);
         }
     }
 
     protected UnaryFunction<T, T> baseStrategy(UnaryFunction<T, T> input) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
         final String varName = input.expectedArguments()[0];
         final RealType two = new RealImpl(BigDecimal.valueOf(2L));
 
-        return new UnaryFunction<T, T>(varName) {
+        return new UnaryFunction<>(varName) {
             @Override
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.forVariableName(varName);
                 try {
+                    // we should be able to get away with this since T is declared as extending RealType
                     return (T) input.apply((T) arg.add(epsilon)).subtract(input.apply((T) arg.subtract(epsilon)))
-                            .divide(two.multiply(epsilon)).coerceTo(clazz);
+                            .divide(two.multiply(epsilon)).coerceTo(RealType.class);
                 } catch (CoercionException e) {
                     throw new IllegalStateException(e);
                 }

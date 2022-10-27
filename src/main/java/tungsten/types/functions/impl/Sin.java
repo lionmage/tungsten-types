@@ -110,7 +110,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         knownValues.put(piFraction(new RationalImpl("13/12", pi.getMathContext())),
                 (RealType) sqrtThree.subtract(one).divide(two.multiply(sqrtTwo)).negate());
         knownValues.put(piFraction(new RationalImpl("7/6", pi.getMathContext())),
-                new RealImpl(oneHalf.negate()));
+                new RealImpl(oneHalf.negate(), pi.getMathContext()));
         knownValues.put(piFraction(new RationalImpl("5/4")), (RealType) sqrtTwo.divide(two).negate());
         knownValues.put(piFraction(new RationalImpl("4/3", pi.getMathContext())), (RealType) sqrtThree.divide(two).negate());
         knownValues.put(piFraction(new RationalImpl("17/12", pi.getMathContext())),

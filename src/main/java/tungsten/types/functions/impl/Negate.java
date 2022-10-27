@@ -5,12 +5,14 @@ import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 /**
  * A representation of the function &fnof;(x)&nbsp;=&nbsp;&minus;x
@@ -21,17 +23,16 @@ import java.lang.reflect.ParameterizedType;
  * @param <R> the type of the function's output
  */
 public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
-    private final Class<R> outputClazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1]);
-
     public Negate() {
         super("x");
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
+        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
+        System.out.println("R response type reported as " + argClasses.get(1));
         try {
-            return (R) arguments.elementAt(0L).negate().coerceTo(outputClazz);
+            return (R) arguments.elementAt(0L).negate().coerceTo((Class<R>) argClasses.get(1));
         } catch (CoercionException e) {
             throw new ArithmeticException("Could not coerce result of negation.");
         }
@@ -60,22 +61,16 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     public UnaryFunction<T, R> diff() {
         final R response;
         try {
-            response = outputClazz.getConstructor(String.class).newInstance("-1");
+            List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
+            // TODO create a utility to ensure that if we get an interface type back, we can map
+            // it to a concrete class of that type that has a constructor that takes a String
+            response = ((Class<R>) argClasses.get(1)).getConstructor(String.class).newInstance("-1");
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new IllegalStateException("Unable to obtain -1 for type " + outputClazz.getTypeName(), e);
+            throw new IllegalStateException("Unable to obtain -1 for return type ", e);
         }
 
-        return new UnaryFunction<>("x") {
-            @Override
-            public R apply(ArgVector<T> arguments) {
-                return response;
-            }
-
-            @Override
-            public Range<RealType> inputRange(String argName) {
-                return RangeUtils.ALL_REALS;
-            }
-        };
+        // TODO make Negate and Const abstract and create a factory method to create an anonymous subclass.
+        return new Const<>(response) {};
     }
 
     @Override

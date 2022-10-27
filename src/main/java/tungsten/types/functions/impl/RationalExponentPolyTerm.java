@@ -8,15 +8,16 @@ import tungsten.types.functions.Term;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.impl.*;
+import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.One;
+import tungsten.types.numerics.impl.RationalImpl;
+import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,11 +26,11 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     private static final char DOT_OPERATOR = '\u22C5';
     private final Map<String, RationalType> powers = new TreeMap<>();
     private R coeff;
-    private final Class<R> rtnClass = (Class<R>) ((Class) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1]);
+    private final Class<R> rtnClass;
 
     public RationalExponentPolyTerm(List<String> variableNames, List<RationalType> exponents) {
         super(variableNames);
+        rtnClass = getReturnClass();
         if (variableNames.size() != exponents.size()) {
             throw new IllegalArgumentException("var and exponent lists must match");
         }
@@ -45,6 +46,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
 
     public RationalExponentPolyTerm(PolyTerm<T, R> toCopy) {
         super(toCopy.expectedArguments());
+        rtnClass = getReturnClass();
         this.coeff = toCopy.coefficient();
         for (int idx = 0; idx < varNames.size(); idx++) {
             String varName = varNames.get(idx);
@@ -57,10 +59,12 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
 
     public RationalExponentPolyTerm(String init) {
         super(Collections.emptyList()); // force superclass to instantiate a usable collection
+        rtnClass = getReturnClass();
         int startOfVars = 0;
         Matcher coeffMatcher = coeffPattern.matcher(init);
         if (coeffMatcher.find()) {
             try {
+                // TODO create a utility to map from an interface to a concrete subclass if we get an interface back
                 this.coeff = (R) rtnClass.getConstructor(String.class).newInstance(coeffMatcher.group(1));
                 startOfVars = coeffMatcher.end();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
@@ -196,4 +200,6 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
             throw new IllegalStateException("Error while trying to coerce zero", e);
         }
     }
+
+    // TODO this needs a toString method!
 }

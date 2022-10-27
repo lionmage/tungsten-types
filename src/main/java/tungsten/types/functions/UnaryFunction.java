@@ -135,7 +135,19 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
         composedFunction = before;
     }
 
-    protected void setComposingFunction(UnaryFunction<R, ? extends R> after) {
+    /**
+     * Caution!  By all rights, this should be protected, not public, but
+     * declaring this method protected causes issues in the few subclasses
+     * that actually need to use it.  This method essentially bypasses the
+     * usual mechanism provided by {@link #andThen(UnaryFunction)} and is
+     * primarily intended for use in (possibly anonymous) subclass constructors,
+     * as well as implementations that override {@link #andThen(UnaryFunction)}
+     * or {@link #composeWith(UnaryFunction)}.
+     *
+     * @param after the composing function &mdash; given this function is g(x), and
+     *              given the composition f(g(x)), the composing function is f(x)
+     */
+    public void setComposingFunction(UnaryFunction<R, ? extends R> after) {
         composingFunction = after;
     }
 

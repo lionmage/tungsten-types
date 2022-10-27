@@ -13,7 +13,6 @@ import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
@@ -27,8 +26,6 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     private static final char DOT_OPERATOR = '\u22C5';
     private final Map<String, Long> powers = new TreeMap<>();
     private R coeff;
-    private final Class<R> rtnClass = (Class<R>) ((Class) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1]);
 
     public PolyTerm(List<String> variableNames, List<Long> exponents) {
         super(variableNames);
@@ -50,11 +47,12 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
 
     public PolyTerm(String init) {
         super(Collections.emptyList()); // force superclass to instantiate a usable collection
+        Class<R> rtnClass = getReturnClass();
         int startOfVars = 0;
         Matcher coeffMatcher = coeffPattern.matcher(init);
         if (coeffMatcher.find()) {
             try {
-                this.coeff = (R) rtnClass.getConstructor(String.class).newInstance(coeffMatcher.group(1));
+                this.coeff = rtnClass.getConstructor(String.class).newInstance(coeffMatcher.group(1));
                 startOfVars = coeffMatcher.end();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
                 throw new IllegalStateException("Unable to instantiate " + rtnClass.getTypeName() +
@@ -90,7 +88,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                 accum = accum.multiply(intermediate);
             }
             try {
-                return (R) accum.coerceTo(rtnClass);
+                return (R) accum.coerceTo(getReturnClass());
             } catch (CoercionException e) {
                 throw new IllegalStateException(e);
             }
@@ -130,7 +128,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     @Override
     public R coefficient() {
         try {
-            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(rtnClass) : coeff;
+            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnClass()) : coeff;
         } catch (CoercionException e) {
             throw new IllegalStateException("Error while trying to coerce unity", e);
         }

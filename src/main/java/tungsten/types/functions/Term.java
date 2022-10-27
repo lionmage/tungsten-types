@@ -3,10 +3,10 @@ package tungsten.types.functions;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.ClassTools;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public abstract class Term<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final Map<String, Range<RealType>> rangeMap = new TreeMap<>();
@@ -98,5 +98,10 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
     @Override
     public int hashCode() {
         return Objects.hash(rangeMap, varNames);
+    }
+
+    protected Class<R> getReturnClass() {
+        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
+        return (Class<R>) argClasses.get(1);
     }
 }
