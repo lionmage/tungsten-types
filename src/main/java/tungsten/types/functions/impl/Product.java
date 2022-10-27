@@ -6,9 +6,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
-import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
@@ -37,7 +35,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply)
                     .coerceTo(resultClass);
-            if (!One.isUnity(prodOfConstants)) terms.add(new Const<>(prodOfConstants));
+            if (!One.isUnity(prodOfConstants)) terms.add(Const.getInstance(prodOfConstants));
         } catch (CoercionException e) {
             throw new IllegalArgumentException("Constant sum cannot be coerced to function return type", e);
         }
@@ -57,7 +55,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
                         .reduce(((Const) term).inspect(), Numeric::multiply)
                         .coerceTo(resultClass);
                 terms.removeIf(Const.class::isInstance);
-                if (!One.isUnity(prodOfConstants)) terms.add(new Const<>(prodOfConstants));
+                if (!One.isUnity(prodOfConstants)) terms.add(Const.getInstance(prodOfConstants));
             } catch (CoercionException e) {
                 throw new IllegalArgumentException("Constant sum cannot be coerced to function return type", e);
             }

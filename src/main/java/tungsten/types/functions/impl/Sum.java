@@ -2,7 +2,6 @@ package tungsten.types.functions.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.Range;
-import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
@@ -37,7 +36,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add)
                     .coerceTo(resultClass);
-            if (!Zero.isZero(sumOfConstants)) terms.add(new Const<>(sumOfConstants));
+            if (!Zero.isZero(sumOfConstants)) terms.add(Const.getInstance(sumOfConstants));
         } catch (CoercionException e) {
             throw new IllegalArgumentException("Constant sum cannot be coerced to function return type", e);
         }
@@ -56,7 +55,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                         .reduce(((Const) term).inspect(), Numeric::add)
                         .coerceTo(resultClass);
                 terms.removeIf(Const.class::isInstance);
-                if (!Zero.isZero(sumOfConstants)) terms.add(new Const<>(sumOfConstants));
+                if (!Zero.isZero(sumOfConstants)) terms.add(Const.getInstance(sumOfConstants));
             } catch (CoercionException e) {
                 throw new IllegalArgumentException("Constant sum cannot be coerced to function return type", e);
             }

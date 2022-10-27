@@ -213,7 +213,7 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
 
     @Differentiable
     public UnaryFunction<RealType, RealType> diff() {
-        return new Sin(getArgumentName(), epsilon).andThen(new Negate<>() {});
+        return new Sin(getArgumentName(), epsilon).andThen(Negate.getInstance());
     }
 
     @Override

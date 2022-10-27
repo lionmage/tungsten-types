@@ -6,7 +6,6 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.*;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
-import tungsten.types.util.ClassTools;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -142,7 +141,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         UnaryFunction<T, T> combinedDenom = quotient.getDenominator().andThen(new Pow<>(2L));
         UnaryFunction<T, T> combinedNumerator =
                 new Sum<>(new Product<>(numDiff, quotient.getDenominator()),
-                        new Product<>(quotient.getNumerator(), denomDiff).andThen(new Negate<>() {}));
+                        new Product<>(quotient.getNumerator(), denomDiff).andThen(Negate.getInstance()));
         return new Quotient<>(combinedNumerator, combinedDenom);
     }
 

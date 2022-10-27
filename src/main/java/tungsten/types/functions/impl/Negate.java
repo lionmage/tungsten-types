@@ -23,14 +23,17 @@ import java.util.List;
  * @param <R> the type of the function's output
  */
 public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
-    public Negate() {
+    private Negate() {
         super("x");
+    }
+
+    public static <T extends Numeric, R extends Numeric> Negate<T, R> getInstance() {
+        return new Negate<>() {};  // anonymous subclass to aid in reification of type parameters
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
         List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
-        System.out.println("R response type reported as " + argClasses.get(1));
         try {
             return (R) arguments.elementAt(0L).negate().coerceTo((Class<R>) argClasses.get(1));
         } catch (CoercionException e) {
@@ -69,8 +72,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
             throw new IllegalStateException("Unable to obtain -1 for return type ", e);
         }
 
-        // TODO make Negate and Const abstract and create a factory method to create an anonymous subclass.
-        return new Const<>(response) {};
+        return Const.getInstance(response);
     }
 
     @Override

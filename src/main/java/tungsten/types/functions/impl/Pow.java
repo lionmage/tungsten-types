@@ -67,13 +67,13 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         final Numeric diffExponent = exponent.subtract(new IntegerImpl(BigInteger.ONE));
         try {
             R coeff = (R) exponent.coerceTo(outputClazz);
-            if (Zero.isZero(diffExponent)) return new Const<>(coeff);
+            if (Zero.isZero(diffExponent)) return Const.getInstance(coeff);
             if (diffExponent instanceof RationalType) {
-                return new Product<>(new Const<>(coeff),
+                return new Product<>(Const.getInstance(coeff),
                         new Pow<>((RationalType) diffExponent));
             } else {
                 final long n = ((IntegerType) diffExponent.coerceTo(IntegerType.class)).asBigInteger().longValueExact();
-                return new Product<>(new Const<>(coeff), new Pow<>(n));
+                return new Product<>(Const.getInstance(coeff), new Pow<>(n));
             }
         } catch (CoercionException e) {
             throw new IllegalStateException(e);

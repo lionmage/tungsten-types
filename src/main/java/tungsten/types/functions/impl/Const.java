@@ -16,9 +16,13 @@ import java.lang.reflect.ParameterizedType;
 public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
     final R value;
 
-    public Const(R init) {
+    private Const(R init) {
         super("x");
         value = init;
+    }
+
+    public static <T extends Numeric, R extends Numeric> Const<T, R> getInstance(R init) {
+        return new Const<>(init) {};  // anonymous subclass to aid in reification of type parameters
     }
 
     @Override
