@@ -4,6 +4,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.Periodic;
 import tungsten.types.functions.Proxable;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.CompositeKey;
@@ -26,7 +27,7 @@ import java.util.*;
 /**
  * A function that implements sin(x) for real-valued inputs.
  */
-public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType> {
+public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType>, Periodic {
     private final RealType epsilon;
     private final Pi pi;
     private final Range<RealType> internalRange;
@@ -237,5 +238,16 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         buf.append('(').append(getArgumentName()).append(')');
 
         return buf.toString();
+    }
+
+    @Override
+    public Range<RealType> principalRange() {
+        return internalRange;
+    }
+
+    @Override
+    public RealType period() {
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L));
+        return (RealType) pi.multiply(two);
     }
 }

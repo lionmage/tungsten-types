@@ -3,6 +3,7 @@ package tungsten.types.functions.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.Periodic;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Optional;
 
-public class Tan extends Quotient<RealType, RealType> {
+public class Tan extends Quotient<RealType, RealType> implements Periodic {
     private final RealType epsilon;
     private final RealType halfPi;
 
@@ -70,8 +71,14 @@ public class Tan extends Quotient<RealType, RealType> {
         return super.apply(arguments);
     }
 
+    @Override
     public Range<RealType> principalRange() {
         return tanRange;
+    }
+
+    @Override
+    public RealType period() {
+        return Pi.getInstance(tanRange.getUpperBound().getMathContext());
     }
 
     @Override
