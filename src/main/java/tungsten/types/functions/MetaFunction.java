@@ -7,13 +7,21 @@ import tungsten.types.numerics.RealType;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * A basic implementation of a metafunction, which takes a function as an argument
+ * and returns another, transformed function.
+ *
+ * @param <T>  the input parameter type
+ * @param <R>  the return type of the original function
+ * @param <R2> the return type of the generated function
+ */
 public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 extends Numeric>
         implements Function<NumericFunction<T, R>, NumericFunction<T, R2>> {
     private ArgMap<T> curryMap = new ArgMap<>();
 
     protected MetaFunction() {
         // default, don't do much for now
-    }//        UnaryFunction<T, T> numFunc = new Sum<>()
+    }
 
 
     protected MetaFunction(Map<String, T> sourceArgs) {
@@ -49,10 +57,11 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
             // only one argument left, so return a UnaryFunction
             final String varName = curryMap.keySet().stream().filter(n -> !argList.contains(n))
                     .findFirst().orElseThrow();
-            return new UnaryFunction<T, R>(varName) {
+            return new UnaryFunction<>(varName) {
                 @Override
                 public R apply(ArgVector<T> arguments) {
-                    if (!arguments.hasVariableName(varName)) throw new ArithmeticException("Argument not found: " + varName);
+                    if (!arguments.hasVariableName(varName))
+                        throw new ArithmeticException("Argument not found: " + varName);
                     argsCopy.put(varName, arguments.forVariableName(varName));
                     ArgVector<T> allArgs = new ArgVector<>(inputFunction.expectedArguments(), argsCopy);
                     return inputFunction.apply(allArgs);
@@ -67,7 +76,7 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
                 }
             };
         } else {
-            return new NumericFunction<T, R>() {
+            return new NumericFunction<>() {
                 @Override
                 public R apply(ArgVector<T> arguments) {
                     for (String varName : this.expectedArguments()) {

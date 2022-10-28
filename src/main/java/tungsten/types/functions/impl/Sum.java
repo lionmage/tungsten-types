@@ -17,6 +17,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * A function that represents a sum of two or more functions.
+ * Formally, &sum;&fnof;<sub>n</sub>(x) = &fnof;<sub>1</sub>(x) + &fnof;<sub>2</sub>(x) + &ctdot; + &fnof;<sub>N</sub>(x)<br/>
+ * This function is entirely intended for composition, and is fully
+ * differentiable.
+ *
+ * @param <T> the input parameter type
+ * @param <R> the output parameter type
+ */
 public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
     private final Class<R> resultClass = (Class<R>) ((Class) ((ParameterizedType) this.getClass()
                     .getGenericSuperclass()).getActualTypeArguments()[1]);
@@ -47,7 +56,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         terms.addAll(init);
     }
 
-    public void add(UnaryFunction<T, R> term) {
+    public void appendTerm(UnaryFunction<T, R> term) {
         if (term instanceof Const) {
             try {
                 R sumOfConstants = (R) parallelStream().filter(Const.class::isInstance)
@@ -62,6 +71,35 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         } else {
             terms.add(term);
         }
+    }
+
+    /**
+     * Combine two {@link Sum}s into a single {@link Sum}, effectively adding
+     * the two functions together.  All constants are combined into a single constant term.
+     *
+     * @param s1 the first sum function to be combined
+     * @param s2 the second sum function to be combined
+     * @return the sum of {@code s1} and {@code s2}, a combined function
+     * @param <T> the input parameter type for {@code s1}, {@code s2}, and {@code s3}
+     * @param <R> the return type of {@code s1}, {@code s2}, and the combined result
+     */
+    public static <T extends Numeric, R extends Numeric> Sum<T, R> combineTerms(Sum<T, R> s1, Sum<T, R> s2) {
+        final String argName = s1.getArgumentName().equals(s2.getArgumentName()) ? s1.getArgumentName() : "x";
+        Sum<T, R> s3 = new Sum<>(argName);
+        s3.terms.addAll(s1.terms);
+        s3.terms.addAll(s2.terms);
+        try {
+            R sumOfConstants = (R) s3.parallelStream().filter(Const.class::isInstance)
+                    .map(Const.class::cast).map(Const::inspect)
+                    .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add)
+                    .coerceTo(s1.resultClass);
+            s3.terms.removeIf(Const.class::isInstance);
+            if (!Zero.isZero(sumOfConstants)) s3.terms.add(Const.getInstance(sumOfConstants));
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Problem combining two sums", e);
+        }
+
+        return s3;
     }
 
     public long termCount() {

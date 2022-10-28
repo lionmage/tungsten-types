@@ -12,6 +12,12 @@ import tungsten.types.util.OptionalOperations;
 import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 
+/**
+ * A representation of a constant polynomial term.
+ *
+ * @param <T> the input parameter type, which is ignored
+ * @param <R> the output parameter type, which refers to the constant value
+ */
 public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     private final R value;
 

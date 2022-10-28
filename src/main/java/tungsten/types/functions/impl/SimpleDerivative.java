@@ -36,7 +36,8 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         super();
         this.epsilon = (T) epsilon.magnitude();
         if (!epsilonRange.contains(epsilon)) {
-            Logger.getLogger(getClass().getName()).warning("Epsilon value is out of recommended range: " + epsilon);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                    "Epsilon value {} is out of recommended range {}", new Object[]{epsilon, epsilonRange});
         }
     }
 
@@ -129,7 +130,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
 
     protected UnaryFunction<T, T> sumStrategy(Sum<T, T> summation) {
         Sum<T, T> diffResult = new Sum<>();
-        summation.stream().map(this::apply).forEach(diffResult::add);
+        summation.stream().map(this::apply).forEach(diffResult::appendTerm);
         return diffResult;
     }
 
@@ -154,7 +155,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
             // generalized product rule
             Sum<T, T> sumTerm = new Sum<>(argName);
             // f'/f
-            product.parallelStream().map(f -> new Quotient<>(argName, this.apply(f), f)).forEach(sumTerm::add);
+            product.parallelStream().map(f -> new Quotient<>(argName, this.apply(f), f)).forEach(sumTerm::appendTerm);
             return new Product<>(argName, product, sumTerm);
         }
     }

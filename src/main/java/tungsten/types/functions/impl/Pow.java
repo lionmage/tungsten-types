@@ -19,6 +19,15 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Optional;
 
+/**
+ * A function that raises a value to a given power.  More formally, given x,
+ * this function computes x<sup>n</sup>, where n is an integer or rational value.
+ * <br/>This function is intended for composition with other functions, and is
+ * fully differentiable.
+ *
+ * @param <T> the input parameter type
+ * @param <R> the output type
+ */
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
     private final Class<R> outputClazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1]);

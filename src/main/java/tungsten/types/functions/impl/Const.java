@@ -13,6 +13,12 @@ import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
 
+/**
+ * A function that represents a constant.
+ *
+ * @param <T> the input parameter type, mostly ignored
+ * @param <R> the output type
+ */
 public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
     final R value;
 
@@ -44,8 +50,7 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         if (Zero.isZero(value)) {
             return this;
         } else {
-            final Class<R> resultClass = (Class<R>)
-                    ((Class) ((ParameterizedType) this.getClass()
+            final Class<R> resultClass = (Class<R>)((Class) ((ParameterizedType) this.getClass()
                             .getGenericSuperclass()).getActualTypeArguments()[1]);
             try {
                 return new Const<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(resultClass));
