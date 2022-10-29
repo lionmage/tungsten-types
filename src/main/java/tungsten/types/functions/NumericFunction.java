@@ -2,6 +2,7 @@ package tungsten.types.functions;
 
 import tungsten.types.Numeric;
 import tungsten.types.Range;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 
 import java.util.Arrays;
@@ -58,4 +59,32 @@ public abstract class NumericFunction<T extends Numeric, R extends Numeric> impl
      *  or null if no range is defined for this argument
      */
     public abstract Range<RealType> inputRange(String argName);
+
+    public <R2 extends Numeric> NumericFunction<T, R2> forReturnType(Class<R2> clazz) {
+        return new NumericFunction<>() {
+            @Override
+            public R2 apply(ArgVector<T> arguments) {
+                try {
+                    return (R2) NumericFunction.this.apply(arguments).coerceTo(clazz);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+
+            @Override
+            public long arity() {
+                return NumericFunction.this.arity();
+            }
+
+            @Override
+            public String[] expectedArguments() {
+                return NumericFunction.this.expectedArguments();
+            }
+
+            @Override
+            public Range<RealType> inputRange(String argName) {
+                return NumericFunction.this.inputRange(argName);
+            }
+        };
+    }
 }

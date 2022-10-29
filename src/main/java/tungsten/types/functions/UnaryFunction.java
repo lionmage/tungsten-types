@@ -4,6 +4,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
@@ -163,6 +164,33 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     @Override
     public long arity() {
         return 1L;
+    }
+
+    @Override
+    public <R2 extends Numeric> UnaryFunction<T, R2> forReturnType(Class<R2> clazz) {
+        final Class<R> rtnClass = (Class<R>)
+                ((Class) ((ParameterizedType) this.getClass()
+                        .getGenericSuperclass()).getActualTypeArguments()[1]);
+        if (clazz == rtnClass || clazz.isAssignableFrom(rtnClass)) {
+            // R and R2 are the same, or R2 is a supertype of R
+            return (UnaryFunction<T, R2>) this;
+        }
+        return new UnaryFunction<>(argumentName) {
+            @Override
+            public R2 apply(ArgVector<T> arguments) {
+                try {
+                    return (R2) UnaryFunction.this.apply(arguments).coerceTo(clazz);
+                } catch (CoercionException e) {
+                    throw new ArithmeticException("Cannot convert function return value: " +
+                            e.getMessage());
+                }
+            }
+
+            @Override
+            public Range<RealType> inputRange(String argName) {
+                return UnaryFunction.this.inputRange(argName);
+            }
+        };
     }
 
     @Override
