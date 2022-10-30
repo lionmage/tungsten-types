@@ -17,7 +17,7 @@ import java.util.function.Function;
  */
 public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 extends Numeric>
         implements Function<NumericFunction<T, R>, NumericFunction<T, R2>> {
-    private ArgMap<T> curryMap = new ArgMap<>();
+    private final ArgMap<T> curryMap = new ArgMap<>();
 
     protected MetaFunction() {
         // default, don't do much for now
@@ -42,6 +42,8 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
     public boolean containsCurryMapping(String varName) {
         return curryMap.containsKey(varName);
     }
+
+    protected ArgMap<T> mappedArgsView() { return new ArgMap<>(Collections.unmodifiableMap(curryMap)); }
 
     public void retainOnly(String[] argNames) {
         final Set<String> args = new TreeSet<>();
