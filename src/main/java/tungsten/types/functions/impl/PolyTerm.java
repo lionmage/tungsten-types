@@ -10,9 +10,9 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.UnicodeTextEffects;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
@@ -51,15 +51,8 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         int startOfVars = 0;
         Matcher coeffMatcher = coeffPattern.matcher(init);
         if (coeffMatcher.find()) {
-            try {
-                this.coeff = rtnClass.getConstructor(String.class).newInstance(coeffMatcher.group(1));
-                startOfVars = coeffMatcher.end();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
-                throw new IllegalStateException("Unable to instantiate " + rtnClass.getTypeName() +
-                        " from coefficient argument " + coeffMatcher.group(1), fatal);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No String constructor available for " + rtnClass.getTypeName(), e);
-            }
+            this.coeff = OptionalOperations.dynamicInstantiate(rtnClass, coeffMatcher.group(1));
+            startOfVars = coeffMatcher.end();
         }
         // this probably isn't strictly necessary, but helps the regex matcher avoid
         // non-matching stuff at the beginning of the input string

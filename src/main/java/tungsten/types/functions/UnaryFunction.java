@@ -4,7 +4,6 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
-import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
@@ -72,7 +71,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             @Override
             public R apply(ArgVector<T> arguments) {
                 final Class<T> argClass = (Class<T>)
-                        ((Class) ((ParameterizedType) UnaryFunction.this.getClass()
+                        ((Class) ((ParameterizedType) before.getClass()
                                 .getGenericSuperclass()).getActualTypeArguments()[0]);
                 try {
                     T arg = (T) arguments.elementAt(0L).coerceTo(argClass);
@@ -112,7 +111,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
             @Override
             public R2 apply(ArgVector<T> arguments) {
-                return after.apply(originalFunction.apply(arguments.elementAt(0L)));
+                return after.apply(originalFunction.apply(arguments));
             }
 
             @Override

@@ -11,24 +11,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class OptionalOperations {
-    private static final Map<Class<? extends Numeric>, Class<? extends Numeric>> defaultTypeMappings;
-
-    static {
-        HashMap<Class<? extends Numeric>, Class<? extends Numeric>> classMappings = new HashMap<>();
-        classMappings.put(IntegerType.class, IntegerImpl.class);
-        classMappings.put(RationalType.class, RationalImpl.class);
-        classMappings.put(RealType.class, RealImpl.class);
-        classMappings.put(ComplexType.class, ComplexRectImpl.class);
-        defaultTypeMappings = Collections.unmodifiableMap(classMappings);
-    }
-
     private OptionalOperations() {
         // this class should never be instantiable
     }
 
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, String strValue) {
-        final Class<? extends T> toInstantiate =
-                clazz.isInterface() ? (Class<? extends T>) defaultTypeMappings.get(clazz) : clazz;
+        final Class<? extends T> toInstantiate = ClassTools.reify(clazz);
         try {
             return (T) toInstantiate.getConstructor(String.class).newInstance(strValue);
         }  catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {

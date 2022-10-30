@@ -1,5 +1,15 @@
 package tungsten.types.util;
 
+import tungsten.types.Numeric;
+import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
+import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.ComplexRectImpl;
+import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.RationalImpl;
+import tungsten.types.numerics.impl.RealImpl;
+
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,5 +100,27 @@ public class ClassTools {
             typeArgumentsAsClasses.add(getClass(baseType));
         }
         return typeArgumentsAsClasses;
+    }
+
+    private static final Map<Class<? extends Numeric>, Class<? extends Numeric>> reificationMap;
+
+    static {
+        reificationMap = new HashMap<>();
+        reificationMap.put(IntegerType.class, IntegerImpl.class);
+        reificationMap.put(RationalType.class, RationalImpl.class);
+        reificationMap.put(RealType.class, RealImpl.class);
+        reificationMap.put(ComplexType.class, ComplexRectImpl.class);
+    }
+
+    public static <T extends Numeric> Class<? extends T> reify(Class<T> potential) {
+        if (!potential.isInterface()) {
+            // it's already a concrete type, so return it
+            return potential;
+        }
+        Class<? extends Numeric> ourClass = reificationMap.get(potential);
+        if (ourClass == null) {
+            throw new IllegalArgumentException("There is no concrete class for type " + potential.getTypeName());
+        }
+        return (Class<? extends T>) ourClass;
     }
 }

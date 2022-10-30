@@ -9,9 +9,9 @@ import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -55,22 +55,16 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     @Override
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
         if (after instanceof Negate) {
-            return (UnaryFunction<T, R2>) this.getOriginalFunction().orElseThrow();
+            List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, after.getClass());
+            return this.getOriginalFunction().orElseThrow().forReturnType((Class<R2>) argClasses.get(1));
         }
         return super.andThen(after);
     }
 
     @Differentiable
     public UnaryFunction<T, R> diff() {
-        final R response;
-        try {
-            List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
-            // TODO create a utility to ensure that if we get an interface type back, we can map
-            // it to a concrete class of that type that has a constructor that takes a String
-            response = ((Class<R>) argClasses.get(1)).getConstructor(String.class).newInstance("-1");
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new IllegalStateException("Unable to obtain -1 for return type ", e);
-        }
+        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
+        final R response = OptionalOperations.dynamicInstantiate((Class<? extends R>) argClasses.get(1), "-1");
 
         return Const.getInstance(response);
     }

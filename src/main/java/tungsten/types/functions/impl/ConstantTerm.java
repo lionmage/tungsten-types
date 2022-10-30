@@ -44,7 +44,7 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
             return this;
         }
         if (multiplier instanceof ConstantTerm) {
-            return new ConstantTerm<T, R>((R) value.multiply(multiplier.coefficient()));
+            return new ConstantTerm<>((R) value.multiply(multiplier.coefficient()));
         }
         // TODO add a few other special cases?
 
@@ -57,7 +57,7 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
         final Class<R> clazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[1]);  // class for R
         try {
-            return new ConstantTerm<T, R>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(clazz));
+            return new ConstantTerm<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(clazz));
         } catch (CoercionException e) {
             throw new IllegalStateException(e);
         }

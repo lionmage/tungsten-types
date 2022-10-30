@@ -13,8 +13,8 @@ import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
@@ -63,16 +63,8 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         int startOfVars = 0;
         Matcher coeffMatcher = coeffPattern.matcher(init);
         if (coeffMatcher.find()) {
-            try {
-                // TODO create a utility to map from an interface to a concrete subclass if we get an interface back
-                this.coeff = (R) rtnClass.getConstructor(String.class).newInstance(coeffMatcher.group(1));
-                startOfVars = coeffMatcher.end();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
-                throw new IllegalStateException("Unable to instantiate " + rtnClass.getTypeName() +
-                        " from coefficient argument " + coeffMatcher.group(1), fatal);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("No String constructor available for " + rtnClass.getTypeName(), e);
-            }
+            this.coeff = OptionalOperations.dynamicInstantiate(rtnClass, coeffMatcher.group(1));
+            startOfVars = coeffMatcher.end();
         }
         // this probably isn't strictly necessary, but helps the regex matcher avoid
         // non-matching stuff at the beginning of the input string
@@ -123,7 +115,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         List<RationalType> ourExponents = varNames.stream().map(this::exponentFor).collect(Collectors.toList());
         R mergedCoeff = (R) coefficient().multiply(multiplier.coefficient());
         if (multiplier.isConstant()) {
-            return new RationalExponentPolyTerm<T, R>(mergedCoeff, varNames, ourExponents);
+            return new RationalExponentPolyTerm<>(mergedCoeff, varNames, ourExponents);
         }
         Set<String> mergedVars = new LinkedHashSet<>(varNames);
         Arrays.stream(multiplier.expectedArguments()).forEachOrdered(mergedVars::add);
