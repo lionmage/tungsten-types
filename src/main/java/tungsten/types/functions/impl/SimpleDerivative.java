@@ -162,7 +162,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
 
     protected UnaryFunction<T, T> baseStrategy(UnaryFunction<T, T> input) {
         final String varName = input.expectedArguments()[0];
-        final RealType two = new RealImpl(BigDecimal.valueOf(2L));
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), epsilon.getMathContext());
 
         return new UnaryFunction<>(varName) {
             @Override

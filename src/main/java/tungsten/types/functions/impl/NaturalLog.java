@@ -32,8 +32,9 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     }
 
     private static final Range<RealType> lnRange = new Range<>(new RealImpl(BigDecimal.ZERO),
-            (RealType) RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED),
+            RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED),
             Range.BoundType.EXCLUSIVE);
+
     @Override
     public Range<RealType> inputRange(String argName) {
         return lnRange;
@@ -47,7 +48,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     @Differentiable
     public UnaryFunction<RealType, RealType> diff() {
         // The derivative of ln(x) is 1/x over the positive reals
-        return new Pow<RealType, RealType>(-1L) {
+        return new Pow<>(-1L) {
             @Override
             public Range<RealType> inputRange(String argName) {
                 return lnRange;
