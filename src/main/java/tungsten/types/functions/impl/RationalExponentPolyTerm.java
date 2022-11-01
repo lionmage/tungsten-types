@@ -193,5 +193,14 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         }
     }
 
-    // TODO this needs a toString method!
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        boolean first = false;
+        for (String argName : expectedArguments()) {
+            if (!first) first = true;
+            else buf.append(DOT_OPERATOR);
+            buf.append(argName).append("^{").append(exponentFor(argName)).append('}');
+        }
+        return buf.toString();
+    }
 }

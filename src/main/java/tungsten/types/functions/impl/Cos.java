@@ -228,13 +228,17 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
                 if (exponent instanceof IntegerType) {
                     int n = ((IntegerType) exponent).asBigInteger().intValueExact();
                     buf.append(UnicodeTextEffects.numericSuperscript(n));
+                } else {
+                    buf.append("^{").append(exponent).append("}\u2009"); // postpend thin space to help offset closing brace
                 }
-                // TODO figure out what to do with rational exponents
             }  else if (f instanceof Negate) {
                 buf.insert(0, '\u2212'); // insert a minus sign
             }
         });
-        buf.append('(').append(getArgumentName()).append(')');
+        buf.append('(');
+        getComposedFunction().ifPresentOrElse(buf::append,
+                () -> buf.append(getArgumentName()));
+        buf.append(')');
 
         return buf.toString();
     }

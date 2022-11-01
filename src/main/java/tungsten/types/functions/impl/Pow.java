@@ -131,7 +131,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (exponent instanceof IntegerType) {
             buf.append(UnicodeTextEffects.numericSuperscript(((IntegerType) exponent).asBigInteger().intValueExact()));
         } else {
-            buf.append('^').append(exponent);
+            buf.append('^').append(exponent).append('\u2009');
         }
         return buf.toString();
     }
