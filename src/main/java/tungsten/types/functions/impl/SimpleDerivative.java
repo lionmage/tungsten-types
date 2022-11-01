@@ -86,11 +86,14 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         // check to see if the function has a method annotated with @Differentiable
         for (Method method : original.getClass().getMethods()) {
             if (method.isAnnotationPresent(Differentiable.class)) {
-                // check that the method is zero-arg and returns a UnaryFunction
-                if (method.getParameterCount() > 0) continue;
+                // check that the method is zero-arg, or single-arg that takes a SimpleDerivative, and returns a UnaryFunction
+                if (method.getParameterCount() > 1) continue;
+                if (method.getParameterCount() == 1 &&
+                        !method.getParameterTypes()[0].isAssignableFrom(SimpleDerivative.class)) continue;
                 if (UnaryFunction.class.isAssignableFrom(method.getReturnType())) {
+                    Object[] args = method.getParameterCount() == 0 ? null : new Object[] {this};
                     try {
-                        return (UnaryFunction<T, T>) method.invoke(original, (Object[]) null);
+                        return (UnaryFunction<T, T>) method.invoke(original, args);
                     } catch (IllegalAccessException | InvocationTargetException sevEx) {
                         Logger.getLogger(SimpleDerivative.class.getName())
                                 .log(Level.SEVERE,
@@ -105,7 +108,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         return baseStrategy(original);
     }
 
-    protected UnaryFunction<T, T> chainRuleStrategy(UnaryFunction<T, T> outer, UnaryFunction<T, T> inner) {
+    public UnaryFunction<T, T> chainRuleStrategy(UnaryFunction<T, T> outer, UnaryFunction<T, T> inner) {
         final UnaryFunction<T, T> outerDerivative = SimpleDerivative.this.apply(outer);
         final UnaryFunction<T, T> innerDerivative = SimpleDerivative.this.apply(inner);
 

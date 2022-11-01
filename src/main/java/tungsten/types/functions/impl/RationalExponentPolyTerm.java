@@ -193,6 +193,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         }
     }
 
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         boolean first = false;
