@@ -52,7 +52,8 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     @Differentiable
     public UnaryFunction<RealType, RealType> diff(SimpleDerivative<RealType> diffEngine) {
         BigInteger numerator = BigInteger.ONE;
-        if (getComposedFunction().isPresent() && getComposedFunction().get() instanceof Pow) {
+        if (getComposedFunction().isPresent() && getComposedFunction().get() instanceof Pow &&
+                getComposedFunction().get().getComposedFunction().isEmpty()) {
             Numeric exponent = ((Pow<?, ?>) getComposedFunction().get()).getExponent();
             if (exponent instanceof IntegerType) numerator = ((IntegerType) exponent).asBigInteger();
             // TODO what to do about rational exponents?
