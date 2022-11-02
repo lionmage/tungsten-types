@@ -3,6 +3,7 @@ package tungsten.types.functions.impl;
 import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
@@ -32,12 +33,15 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     }
 
     @Differentiable
-    public UnaryFunction<RealType, RealType> diff() {
-        return this;
+    public UnaryFunction<RealType, RealType> diff(SimpleDerivative<RealType> diffEngine) {
+        if (getComposedFunction().isEmpty()) return this;
+        return new Product<>(diffEngine.apply((NumericFunction<RealType, RealType>) getComposedFunction().get()),
+                this);
     }
 
     @Override
     public String toString() {
-        return "\u212Fˣ";
+        if (getComposedFunction().isEmpty()) return "\u212Fˣ";
+        return "exp(\u2009" + getComposedFunction().get() + "\u2009)";
     }
 }

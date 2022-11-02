@@ -10,6 +10,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,6 +50,11 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         }
     }
 
+    protected boolean hasDerivativeMethod(Class<? extends UnaryFunction> clazz) {
+        return Arrays.stream(clazz.getMethods()).filter(m -> m.getParameterCount() < 2)
+                .anyMatch(m -> m.isAnnotationPresent(Differentiable.class));
+    }
+
     @Override
     public UnaryFunction<T, T> apply(NumericFunction<T, T> inputFunction) {
         final UnaryFunction<T, T> original;
@@ -63,22 +69,25 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         } else {
             original = (UnaryFunction<T, T>) inputFunction;
         }
-        if (original.getComposedFunction().isPresent()) {
-            UnaryFunction<T, T> innerfunc = (UnaryFunction<T, T>) original.getComposedFunction().get();
-            UnaryFunction<T, T> outerfunc = original.getOriginalFunction().orElseThrow();
-            if (original.getComposingFunction().isPresent()) {
-                // One more level of composition to deal with...
-                UnaryFunction<T, T> afterfunc = (UnaryFunction<T, T>) original.getComposingFunction().get();
-                UnaryFunction<T,T> intermediate = (UnaryFunction<T, T>) outerfunc.composeWith(innerfunc);
+        // if the function provided has its own derivative method, skip the chain rule logic for now
+        if (!hasDerivativeMethod(original.getClass())) {
+            if (original.getComposedFunction().isPresent()) {
+                UnaryFunction<T, T> innerfunc = (UnaryFunction<T, T>) original.getComposedFunction().get();
+                UnaryFunction<T, T> outerfunc = original.getOriginalFunction().orElseThrow();
+                if (original.getComposingFunction().isPresent()) {
+                    // One more level of composition to deal with...
+                    UnaryFunction<T, T> afterfunc = (UnaryFunction<T, T>) original.getComposingFunction().get();
+                    UnaryFunction<T, T> intermediate = (UnaryFunction<T, T>) outerfunc.composeWith(innerfunc);
 
-                return chainRuleStrategy(afterfunc, intermediate);
+                    return chainRuleStrategy(afterfunc, intermediate);
+                }
+                return chainRuleStrategy(outerfunc, innerfunc);
             }
-            return chainRuleStrategy(outerfunc, innerfunc);
-        }
-        if (original.getComposingFunction().isPresent()) {
-            UnaryFunction<T, T> innerfunc = original.getOriginalFunction().orElseThrow();
-            UnaryFunction<T, T> outerfunc = (UnaryFunction<T, T>) original.getComposingFunction().get();
-            return chainRuleStrategy(outerfunc, innerfunc);
+            if (original.getComposingFunction().isPresent()) {
+                UnaryFunction<T, T> innerfunc = original.getOriginalFunction().orElseThrow();
+                UnaryFunction<T, T> outerfunc = (UnaryFunction<T, T>) original.getComposingFunction().get();
+                return chainRuleStrategy(outerfunc, innerfunc);
+            }
         }
         if (original instanceof Sum) return sumStrategy((Sum<T, T>) original);
         if (original instanceof Quotient) return quotientStrategy((Quotient<T, T>) original);
