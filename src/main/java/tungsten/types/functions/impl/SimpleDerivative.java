@@ -6,11 +6,13 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.*;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.ClassTools;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -152,9 +154,11 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         UnaryFunction<T, T> numDiff = this.apply(quotient.getNumerator());
         UnaryFunction<T, T> denomDiff = this.apply(quotient.getDenominator());
         UnaryFunction<T, T> combinedDenom = quotient.getDenominator().andThen(new Pow<>(2L));
+        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, quotient.getClass());
+        Class<T> clazz = argClasses.get(1) == null ?  (Class<T>) RealType.class : (Class<T>) argClasses.get(1);
         UnaryFunction<T, T> combinedNumerator =
                 new Sum<>(new Product<>(numDiff, quotient.getDenominator()),
-                        new Product<>(quotient.getNumerator(), denomDiff).andThen(Negate.getInstance()));
+                        new Product<>(quotient.getNumerator(), denomDiff).andThen(Negate.getInstance(clazz)));
         return new Quotient<>(combinedNumerator, combinedDenom);
     }
 

@@ -23,19 +23,22 @@ import java.util.List;
  * @param <R> the type of the function's output
  */
 public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+    private Class<R> rtnClazz;
+
     private Negate() {
         super("x");
     }
 
-    public static <T extends Numeric, R extends Numeric> Negate<T, R> getInstance() {
-        return new Negate<>() {};  // anonymous subclass to aid in reification of type parameters
+    public static <T extends Numeric, R extends Numeric> Negate<T, R> getInstance(Class<R> clazz) {
+        Negate<T, R> instance = new Negate<>() {};
+        instance.rtnClazz = clazz;
+        return instance;  // anonymous subclass to aid in reification of type parameters
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
-        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
         try {
-            return (R) arguments.elementAt(0L).negate().coerceTo((Class<R>) argClasses.get(1));
+            return (R) arguments.elementAt(0L).negate().coerceTo(rtnClazz);
         } catch (CoercionException e) {
             throw new ArithmeticException("Could not coerce result of negation.");
         }
@@ -56,7 +59,8 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
         if (after instanceof Negate) {
             List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, after.getClass());
-            return this.getOriginalFunction().orElseThrow().forReturnType((Class<R2>) argClasses.get(1));
+            Class<R2> clazz = argClasses.get(1) == null ? (Class<R2>) rtnClazz : (Class<R2>) argClasses.get(1);
+            return this.getOriginalFunction().orElseThrow().forReturnType(clazz);
         }
         return super.andThen(after);
     }
