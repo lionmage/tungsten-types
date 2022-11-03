@@ -30,9 +30,9 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     }
 
     public static <T extends Numeric, R extends Numeric> Negate<T, R> getInstance(Class<R> clazz) {
-        Negate<T, R> instance = new Negate<>() {};
+        Negate<T, R> instance = new Negate<>();
         instance.rtnClazz = clazz;
-        return instance;  // anonymous subclass to aid in reification of type parameters
+        return instance;
     }
 
     @Override
@@ -67,8 +67,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Differentiable
     public UnaryFunction<T, R> diff() {
-        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
-        final R response = OptionalOperations.dynamicInstantiate((Class<? extends R>) argClasses.get(1), "-1");
+        final R response = OptionalOperations.dynamicInstantiate(rtnClazz, "-1");
 
         return Const.getInstance(response);
     }
