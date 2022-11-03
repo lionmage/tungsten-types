@@ -23,8 +23,9 @@ public class Exp extends UnaryFunction<RealType, RealType> {
         if (!checkArguments(arguments)) {
             throw new IllegalArgumentException("Expected argument " + getArgumentName() + " is not present in input vector.");
         }
-        final Euler e = Euler.getInstance(arguments.elementAt(0L).getMathContext());
-        return e.exp(arguments.elementAt(0L));
+        final RealType arg = arguments.elementAt(0L);
+        final Euler e = Euler.getInstance(arg.getMathContext());
+        return e.exp(arg);
     }
 
     @Override
