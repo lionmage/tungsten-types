@@ -34,6 +34,10 @@ public class Exp extends UnaryFunction<RealType, RealType> {
 
     @Differentiable
     public UnaryFunction<RealType, RealType> diff(SimpleDerivative<RealType> diffEngine) {
+        if (getComposingFunction().isPresent()) {
+            UnaryFunction<RealType, RealType> outer = (UnaryFunction<RealType, RealType>) getComposingFunction().get();
+            return diffEngine.chainRuleStrategy(outer, this.getOriginalFunction().get());
+        }
         if (getComposedFunction().isEmpty()) return this;
         final UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
         // Note that if we got here, "this" refers to a composed function of Exp and inner, exactly what we want.
