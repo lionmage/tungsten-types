@@ -17,7 +17,6 @@ import tungsten.types.util.UnicodeTextEffects;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Optional;
 
 /**
  * A function that raises a value to a given power.  More formally, given x,
@@ -99,23 +98,22 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (after instanceof Pow) {
             final Pow<R, R2> afterPow = (Pow<R, R2>) after;
             Numeric expProd = this.exponent.multiply(afterPow.getExponent());
-            Optional<UnaryFunction<T, R>> orig = this.getOriginalFunction();
-            if (orig.isPresent()) {
-                if (One.isUnity(expProd)) {
-                    return (UnaryFunction<T, R2>) orig.get();
-                }
-                // create a new instance of Pow with a merged exponent
-                Pow<T, R2> pow;
-                if (expProd instanceof RationalType) {
-                    pow = new Pow<>((RationalType) expProd);
-                } else {
-                    pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
-                }
-                pow.setOriginalFunction((UnaryFunction<T, R2>) orig.get());
-                afterPow.getComposingFunction().ifPresent(pow::setComposingFunction);
-                orig.get().setComposingFunction((UnaryFunction<R, ? extends R2>) pow);
-                return pow;
+            // TODO figure out if we need to reverse the order here
+            UnaryFunction<T, R> orig = this.getOriginalFunction().orElse((UnaryFunction<T, R>) this.getComposedFunction().orElseThrow());
+            if (One.isUnity(expProd)) {
+                return (UnaryFunction<T, R2>) orig;
             }
+            // create a new instance of Pow with a merged exponent
+            Pow<T, R2> pow;
+            if (expProd instanceof RationalType) {
+                pow = new Pow<>((RationalType) expProd);
+            } else {
+                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
+            }
+            pow.setOriginalFunction((UnaryFunction<T, R2>) orig);
+            afterPow.getComposingFunction().ifPresent(pow::setComposingFunction);
+            orig.setComposingFunction((UnaryFunction<R, ? extends R2>) pow);
+            return pow;
         }
         return super.andThen(after);
     }
@@ -127,7 +125,10 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder().append(getArgumentName());
+        StringBuilder buf = new StringBuilder();
+        getComposedFunction().ifPresentOrElse(f -> {
+            buf.append('(').append(f).append(')');
+        }, () -> buf.append(getArgumentName()));
         if (exponent instanceof IntegerType) {
             buf.append(UnicodeTextEffects.numericSuperscript(((IntegerType) exponent).asBigInteger().intValueExact()));
         } else {
