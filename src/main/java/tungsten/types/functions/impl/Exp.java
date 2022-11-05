@@ -36,7 +36,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     public UnaryFunction<RealType, RealType> diff(SimpleDerivative<RealType> diffEngine) {
         if (getComposingFunction().isPresent()) {
             UnaryFunction<RealType, RealType> outer = (UnaryFunction<RealType, RealType>) getComposingFunction().get();
-            return diffEngine.chainRuleStrategy(outer, this.getOriginalFunction().get());
+            return diffEngine.chainRuleStrategy(outer, this.getOriginalFunction().orElseThrow(IllegalStateException::new));
         }
         if (getComposedFunction().isEmpty()) return this;
         final UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
