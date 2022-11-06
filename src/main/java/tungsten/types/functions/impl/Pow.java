@@ -160,7 +160,6 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             } else {
                 pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
             }
-            pow.setOriginalFunction((UnaryFunction<R, R2>) orig.forReturnType(myOutputClazz));
             afterPow.getComposingFunction().ifPresent(pow::setComposingFunction);
             if (orig == null) return (UnaryFunction<T, R2>) pow;
             return orig.andThen(pow);
@@ -176,9 +175,8 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        getComposedFunction().ifPresentOrElse(f -> {
-            buf.append('(').append(f).append(')');
-        }, () -> buf.append(getArgumentName()));
+        getComposedFunction().ifPresentOrElse(f -> buf.append('(').append(f).append(')'),
+                () -> buf.append(getArgumentName()));
         if (exponent instanceof IntegerType) {
             buf.append(UnicodeTextEffects.numericSuperscript(((IntegerType) exponent).asBigInteger().intValueExact()));
         } else {
