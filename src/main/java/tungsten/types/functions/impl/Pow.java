@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * @param <R> the output type
  */
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
-    public static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
+    private static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
     private final Class<R> outputClazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1]);
     private final Numeric exponent;
@@ -135,25 +135,35 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
+        final Class<R2> myOutputClazz = (Class<R2>) ((Class) ((ParameterizedType) after.getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[1]);
         if (after instanceof Pow) {
             final Pow<R, R2> afterPow = (Pow<R, R2>) after;
             Numeric expProd = this.exponent.multiply(afterPow.getExponent());
-            // TODO figure out if we need to reverse the order here
-            UnaryFunction<T, R> orig = this.getOriginalFunction().orElse((UnaryFunction<T, R>) this.getComposedFunction().orElseThrow());
+            UnaryFunction<T, R> orig = this.getOriginalFunction()
+                    .orElse((UnaryFunction<T, R>) this.getComposedFunction()
+                            .orElse(null));
             if (One.isUnity(expProd)) {
-                return (UnaryFunction<T, R2>) orig;
+                if (orig != null)
+                    return (UnaryFunction<T, R2>) orig;
+            } else if (Zero.isZero(expProd)) {
+                try {
+                    return Const.getInstance((R2) One.getInstance(MathContext.UNLIMITED).coerceTo(myOutputClazz));
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("Could not coerce unity to " + myOutputClazz.getTypeName());
+                }
             }
             // create a new instance of Pow with a merged exponent
-            Pow<T, R2> pow;
+            Pow<R, R2> pow;
             if (expProd instanceof RationalType) {
                 pow = new Pow<>((RationalType) expProd);
             } else {
                 pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
             }
-            pow.setOriginalFunction((UnaryFunction<T, R2>) orig);
+            pow.setOriginalFunction((UnaryFunction<R, R2>) orig);
             afterPow.getComposingFunction().ifPresent(pow::setComposingFunction);
-            orig.setComposingFunction((UnaryFunction<R, ? extends R2>) pow);
-            return pow;
+            if (orig == null) return (UnaryFunction<T, R2>) pow;
+            return orig.andThen(pow);
         }
         return super.andThen(after);
     }
