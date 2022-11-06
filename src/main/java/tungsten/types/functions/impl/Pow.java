@@ -145,7 +145,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                             .orElse(null));
             if (One.isUnity(expProd)) {
                 if (orig != null)
-                    return (UnaryFunction<T, R2>) orig;
+                    return orig.forReturnType(myOutputClazz);
             } else if (Zero.isZero(expProd)) {
                 try {
                     return Const.getInstance((R2) One.getInstance(MathContext.UNLIMITED).coerceTo(myOutputClazz));
@@ -160,7 +160,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             } else {
                 pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
             }
-            pow.setOriginalFunction((UnaryFunction<R, R2>) orig);
+            pow.setOriginalFunction((UnaryFunction<R, R2>) orig.forReturnType(myOutputClazz));
             afterPow.getComposingFunction().ifPresent(pow::setComposingFunction);
             if (orig == null) return (UnaryFunction<T, R2>) pow;
             return orig.andThen(pow);
