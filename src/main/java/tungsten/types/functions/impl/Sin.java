@@ -23,6 +23,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A function that implements sin(x) for real-valued inputs.
@@ -213,9 +215,20 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         };
     }
 
+    private UnaryFunction<RealType, RealType> diffCache;
+    private final Lock diffCacheLock = new ReentrantLock();
+
     @Differentiable
     public UnaryFunction<RealType, RealType> diff() {
-        return new Cos(getArgumentName(), epsilon);
+        diffCacheLock.lock();
+        try {
+            if (diffCache == null) {
+                diffCache = new Cos(getArgumentName(), epsilon);
+            }
+            return diffCache;
+        } finally {
+            diffCacheLock.unlock();
+        }
     }
 
     @Override

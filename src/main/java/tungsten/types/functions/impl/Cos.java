@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType>, Periodic {
     private final RealType epsilon;
@@ -212,9 +214,20 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         };
     }
 
+    private UnaryFunction<RealType, RealType> diffCache;
+    private final Lock diffCacheLock = new ReentrantLock();
+
     @Differentiable
     public UnaryFunction<RealType, RealType> diff() {
-        return new Sin(getArgumentName(), epsilon).andThen(Negate.getInstance(RealType.class));
+        diffCacheLock.lock();
+        try {
+            if (diffCache == null) {
+                diffCache = new Sin(getArgumentName(), epsilon).andThen(Negate.getInstance(RealType.class));
+            }
+            return diffCache;
+        } finally {
+            diffCacheLock.unlock();
+        }
     }
 
     @Override
