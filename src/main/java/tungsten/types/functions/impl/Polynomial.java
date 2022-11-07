@@ -15,6 +15,7 @@ import tungsten.types.util.RangeUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.math.MathContext;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,27 +56,28 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         for (String termInit : strTerms) {
             Matcher m = constPattern.matcher(termInit);
             if (m.matches()) {
-                terms.add(new ConstantTerm<>(termInit.stripLeading()));
+                terms.add(new ConstantTerm<>(termInit.stripLeading(), rtnClass));
                 continue;
             }
             if (termInit.contains("/")) {
                 // probably a rational exp term
-                terms.add(new RationalExponentPolyTerm<>(termInit));
+                terms.add(new RationalExponentPolyTerm<>(termInit, rtnClass));
                 continue;
             }
-            terms.add(new PolyTerm<>(termInit));
+            terms.add(new PolyTerm<>(termInit, rtnClass));
         }
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
+        final MathContext ctx = arguments.getMathContext() == null ? arguments.elementAt(0L).getMathContext() : arguments.getMathContext();
         // on the off chance that summing the result of evaluating two or more terms
         // gives us something other than the desired response type,
         // keep everything as a Numeric until we're ready to return
         // Note: this avoids dealing with checked exceptions inside the stream
         Numeric result = terms.parallelStream().map(t -> t.apply(arguments))
                 .map(Numeric.class::cast)
-                .reduce(ExactZero.getInstance(arguments.getMathContext()), Numeric::add);
+                .reduce(ExactZero.getInstance(ctx), Numeric::add);
 
         try {
             return (R) result.coerceTo(rtnClass);

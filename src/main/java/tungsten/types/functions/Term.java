@@ -3,7 +3,6 @@ package tungsten.types.functions;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.numerics.RealType;
-import tungsten.types.util.ClassTools;
 
 import java.util.*;
 import java.util.function.Function;
@@ -11,31 +10,35 @@ import java.util.function.Function;
 public abstract class Term<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final Map<String, Range<RealType>> rangeMap = new TreeMap<>();
     protected final List<String> varNames;
+    protected final Class<R> rtnClazz;
 
-    protected Term() {
+    protected Term(Class<R> clazz) {
         varNames = Collections.emptyList();
+        rtnClazz = clazz;
     }
 
-    protected Term(Collection<String> variableNames) {
+    protected Term(Collection<String> variableNames, Class<R> clazz) {
         varNames = new ArrayList<>(variableNames);
+        rtnClazz = clazz;
     }
 
-    protected Term(Collection<String> variableNames, Map<String, Range<RealType>> inputRanges) {
-        this(variableNames);
+    protected Term(Collection<String> variableNames, Map<String, Range<RealType>> inputRanges, Class<R> clazz) {
+        this(variableNames, clazz);
         varNames.stream().forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
     }
 
-    protected Term(String... variableNames) {
+    protected Term(Class<R> clazz, String... variableNames) {
         final List<String> vars = Arrays.asList(variableNames);
         HashSet<String> tester = new HashSet<>();
         if (vars.stream().map(tester::add).anyMatch(b -> b == Boolean.FALSE)) {
             throw new IllegalArgumentException("Argument names must be unique");
         }
         this.varNames = vars;
+        this.rtnClazz = clazz;
     }
 
-    protected Term(Map<String, Range<RealType>> inputRanges, String... variableNames) {
-        this(variableNames);
+    protected Term(Class<R> clazz, Map<String, Range<RealType>> inputRanges, String... variableNames) {
+        this(clazz, variableNames);
         // only copy the ranges that apply
         varNames.stream().forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
     }
@@ -100,8 +103,7 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
         return Objects.hash(rangeMap, varNames);
     }
 
-    protected Class<R> getReturnClass() {
-        List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
-        return (Class<R>) argClasses.get(1);
+    public Class<R> getReturnClass() {
+        return rtnClazz;
     }
 }

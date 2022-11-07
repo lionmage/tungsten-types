@@ -3,6 +3,7 @@ package tungsten.types.functions;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 
+import java.math.MathContext;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,5 +43,10 @@ public class UnaryArgVector<T extends Numeric> extends ArgVector<T> {
                     "Failure during vector normalization", e);
             throw new ArithmeticException("Failed to normalize.");
         }
+    }
+
+    @Override
+    public MathContext getMathContext() {
+        return elementAt(0L).getMathContext();
     }
 }

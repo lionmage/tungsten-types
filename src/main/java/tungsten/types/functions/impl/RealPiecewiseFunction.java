@@ -8,6 +8,12 @@ import tungsten.types.numerics.RealType;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A real-valued piecewise function.  Currently, the {@code epsilon} argument is solely specified
+ * for differentiation, since there is no guarantee that any of the component functions are themselves
+ * differentiable.  However, this same threshold value may allow us to apply &ldquo;smoothing&rdquo;
+ * to the regions where we transition from one function's domain to the next.
+ */
 public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType> {
     final RealType epsilon;
 

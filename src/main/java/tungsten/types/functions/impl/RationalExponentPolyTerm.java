@@ -26,11 +26,9 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     private static final char DOT_OPERATOR = '\u22C5';
     private final Map<String, RationalType> powers = new TreeMap<>();
     private R coeff;
-    private final Class<R> rtnClass;
 
-    public RationalExponentPolyTerm(List<String> variableNames, List<RationalType> exponents) {
-        super(variableNames);
-        rtnClass = getReturnClass();
+    public RationalExponentPolyTerm(List<String> variableNames, List<RationalType> exponents, Class<R> rtnClass) {
+        super(variableNames, rtnClass);
         if (variableNames.size() != exponents.size()) {
             throw new IllegalArgumentException("var and exponent lists must match");
         }
@@ -40,13 +38,12 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     }
 
     public RationalExponentPolyTerm(R coefficient, List<String> variableNames, List<RationalType> exponents) {
-        this(variableNames, exponents);
+        this(variableNames, exponents, (Class<R>) coefficient.getClass());
         this.coeff = coefficient;
     }
 
     public RationalExponentPolyTerm(PolyTerm<T, R> toCopy) {
-        super(toCopy.expectedArguments());
-        rtnClass = getReturnClass();
+        super(toCopy.getReturnClass(), toCopy.expectedArguments());
         this.coeff = toCopy.coefficient();
         for (int idx = 0; idx < varNames.size(); idx++) {
             String varName = varNames.get(idx);
@@ -57,9 +54,8 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     private static final Pattern coeffPattern = Pattern.compile("^\\s*([+-]?\\d+[./]?\\d*)\\s?");
     private static final Pattern varPattern = Pattern.compile("(\\w+)\\^([+-]?\\d+/\\d+)\\s?");
 
-    public RationalExponentPolyTerm(String init) {
-        super(Collections.emptyList()); // force superclass to instantiate a usable collection
-        rtnClass = getReturnClass();
+    public RationalExponentPolyTerm(String init, Class<R> rtnClass) {
+        super(Collections.emptyList(), rtnClass); // force superclass to instantiate a usable collection
         int startOfVars = 0;
         Matcher coeffMatcher = coeffPattern.matcher(init);
         if (coeffMatcher.find()) {
@@ -102,7 +98,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
                         accum = accum.multiply(intermediate);
                     }
                 }
-                return (R) accum.coerceTo(rtnClass);
+                return (R) accum.coerceTo(getReturnClass());
             } catch (CoercionException e) {
                 throw new IllegalStateException(e);
             }
@@ -151,7 +147,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     public Term<T, R> differentiate(String argName) {
         RationalType exponent = exponentFor(argName);
         try {
-            R dcoeff = (R) coefficient().multiply(exponent).coerceTo(rtnClass);
+            R dcoeff = (R) coefficient().multiply(exponent).coerceTo(getReturnClass());
             List<String> dargs = new ArrayList<>(varNames);
             TreeMap<String, RationalType> dpowers = new TreeMap<>(powers);
             exponent = (RationalType) exponent.subtract(One.getInstance(dcoeff.getMathContext())).coerceTo(RationalType.class);
@@ -172,7 +168,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     @Override
     public R coefficient() {
         try {
-            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(rtnClass) : coeff;
+            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnClass()) : coeff;
         } catch (CoercionException e) {
             throw new IllegalStateException("Error while trying to coerce unity", e);
         }
@@ -202,6 +198,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
             else buf.append(DOT_OPERATOR);
             buf.append(argName).append("^{").append(exponentFor(argName)).append('}');
         }
+        buf.append('\u2009'); // thin space to set off the last closed curly brace
         return buf.toString();
     }
 }

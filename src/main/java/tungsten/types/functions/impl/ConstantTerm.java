@@ -22,14 +22,12 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
     private final R value;
 
     public ConstantTerm(R init) {
-        super();
+        super((Class<R>) init.getClass());
         value = init;
     }
 
-    public ConstantTerm(String init) {
-        super();
-        final Class<R> clazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[1]);  // class for R
+    public ConstantTerm(String init, Class<R> clazz) {
+        super(clazz);
         value = OptionalOperations.dynamicInstantiate(clazz, init);
     }
 

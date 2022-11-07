@@ -27,8 +27,8 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     private final Map<String, Long> powers = new TreeMap<>();
     private R coeff;
 
-    public PolyTerm(List<String> variableNames, List<Long> exponents) {
-        super(variableNames);
+    public PolyTerm(List<String> variableNames, List<Long> exponents, Class<R> rtnClass) {
+        super(variableNames, rtnClass);
         if (variableNames.size() != exponents.size()) {
             throw new IllegalArgumentException("var and exponent lists must match");
         }
@@ -38,16 +38,15 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     }
 
     public PolyTerm(R coefficient, List<String> variableNames, List<Long> exponents) {
-        this(variableNames, exponents);
+        this(variableNames, exponents, (Class<R>) coefficient.getClass());
         this.coeff = coefficient;
     }
 
     private static final Pattern coeffPattern = Pattern.compile("^\\s*([+-]?\\d+[./]?\\d*)\\s?");
     private static final Pattern varPattern = Pattern.compile("(\\w+)\\^([+-]?\\d+)\\s?");
 
-    public PolyTerm(String init) {
-        super(Collections.emptyList()); // force superclass to instantiate a usable collection
-        Class<R> rtnClass = getReturnClass();
+    public PolyTerm(String init, Class<R> rtnClass) {
+        super(Collections.emptyList(), rtnClass); // force superclass to instantiate a usable collection
         int startOfVars = 0;
         Matcher coeffMatcher = coeffPattern.matcher(init);
         if (coeffMatcher.find()) {
