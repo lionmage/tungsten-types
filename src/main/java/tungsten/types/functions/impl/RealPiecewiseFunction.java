@@ -16,10 +16,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * A real-valued piecewise function.  Currently, the {@code epsilon} argument is solely specified
- * for differentiation, since there is no guarantee that any of the component functions are themselves
- * differentiable.  However, this same threshold value may allow us to apply &ldquo;smoothing&rdquo;
- * to the regions where we transition from one function's domain to the next.
+ * A real-valued piecewise function.  The {@code epsilon} argument serves two functions:
+ * to support differentiation, and to be used in smoothing transitions between functions.
+ * For {@link SmoothingType#SIGMOID}, the {@code alpha} parameter can override this.
  */
 public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType> {
     public enum SmoothingType { NONE, LINEAR, SIGMOID }
