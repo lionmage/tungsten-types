@@ -81,12 +81,38 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
     }
 
     public void setAlpha(RealType alpha) {
+        if (alpha == null) throw new IllegalArgumentException("Supplied alpha must be non-null");
+        if (smoothing != SmoothingType.SIGMOID) {
+            Logger.getLogger(RealPiecewiseFunction.class.getName()).warning("Alpha value mainly applies when smoothing = SIGMOID");
+        }
         if (alpha.sign() != Sign.POSITIVE) {
             throw new IllegalArgumentException("Alpha must be a positive value.");
         }
         this.alpha = alpha;
         if (viewOfFunctionMap().size() > 1) {
             computeTransitionZones();
+        }
+    }
+
+    /**
+     * Set the smooothing type for this piecewise function.
+     * This method will also reset internal state on any collections containing
+     * transition zone ranges or sigmoid instances if the chosen smoothing
+     * type does not need them.
+     *
+     * @param smoothing the chosen type of smoothing to apply
+     */
+    public void setSmoothing(SmoothingType smoothing) {
+        if (smoothing == SmoothingType.NONE) {
+            transitionZones = Collections.emptyList();
+        }
+        if (smoothing != SmoothingType.SIGMOID) {
+            sigmoids = Collections.emptyList();
+        }
+        this.smoothing = smoothing;
+        if (alpha != null) {
+            Logger.getLogger(RealPiecewiseFunction.class.getName())
+                    .warning("Potential stale alpha value: " + alpha);
         }
     }
 
@@ -98,7 +124,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
 
         RealType arg = arguments.elementAt(0);
 
-        Optional<Range<RealType>> rangeForTransition = transitionZones.stream().filter(range -> range.contains(arg)).findFirst();
+        Optional<Range<RealType>> rangeForTransition = smoothing == SmoothingType.NONE ? Optional.empty() : transitionZones.stream().filter(range -> range.contains(arg)).findFirst();
         switch (smoothing) {
             case NONE:
                 return super.apply(arguments);
