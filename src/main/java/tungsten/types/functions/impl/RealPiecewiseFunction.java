@@ -95,7 +95,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
     }
 
     /**
-     * Set the smooothing type for this piecewise function.
+     * Set the smoothing type for this piecewise function.
      * This method will also reset internal state on any collections containing
      * transition zone ranges or sigmoid instances if the chosen smoothing
      * type does not need them.
