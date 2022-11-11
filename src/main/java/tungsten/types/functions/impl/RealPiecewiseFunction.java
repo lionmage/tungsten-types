@@ -127,7 +127,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         this.smoothing = smoothing;
         if (alpha != null && smoothing == SmoothingType.SIGMOID) {
             Logger.getLogger(RealPiecewiseFunction.class.getName())
-                    .warning("Potential stale alpha value: " + alpha);
+                    .warning("Potential stale \uD835\uDEFC value: " + alpha);
         }
     }
 
@@ -140,7 +140,8 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
 
         RealType arg = arguments.elementAt(0);
 
-        Optional<Range<RealType>> rangeForTransition = smoothing == SmoothingType.NONE ? Optional.empty() : transitionZones.stream().filter(range -> range.contains(arg)).findFirst();
+        Optional<Range<RealType>> rangeForTransition = smoothing == SmoothingType.NONE ? Optional.empty() :
+                transitionZones.stream().filter(range -> range.contains(arg)).findFirst();
         switch (smoothing) {
             case NONE:
                 return super.apply(arguments);
@@ -186,11 +187,14 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
     public UnaryFunction<RealType, RealType> diff() {
         final SimpleDerivative<RealType> diffMachine = new SimpleDerivative<>(epsilon);
         RealPiecewiseFunction result = new RealPiecewiseFunction(getArgumentName(), epsilon);
-        viewOfFunctionMap().values().parallelStream().forEach(f -> {
+        viewOfFunctionMap().entrySet().parallelStream().forEach(entry -> {
+            UnaryFunction<RealType, RealType> f = entry.getValue();
             String f_argName = f.expectedArguments()[0];
             UnaryFunction<RealType, RealType> f_diff = diffMachine.apply(f);
             Range<RealType> f_range = Range.chooseNarrowest(f.inputRange(f_argName), f_diff.inputRange(f_argName));
-            result.addFunctionForRange(f_range, f_diff);
+            // now grab the original Range mapped to the original function and clip it with the range computed above
+            Range<RealType> mapRange = Range.chooseNarrowest(entry.getKey(), f_range);
+            result.addFunctionForRange(mapRange, f_diff);
         });
 
         if (!result.checkAggregateBounds()) {
