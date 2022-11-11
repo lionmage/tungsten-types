@@ -80,10 +80,25 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         sigmoids = sigFunctions;
     }
 
+    /**
+     * Sets the &#x1D6FC; value which governs transition zone width. This value is ignored for
+     * {@link SmoothingType#NONE}.  For {@link SmoothingType#LINEAR}, the current implementation
+     * treats &#x1D6FC; as an override for &#x1D700; (denoted {@code epsilon} in method and function
+     * arguments).<br/>
+     * In the case of {@link SmoothingType#SIGMOID}, &#x1D6FC; is directly supplied as the
+     * {@code alpha} parameter to the {@link Sigmoid} constructor. For the sake of simplicity, the
+     * same &#x1D6FC; value is applied to all internally generated {@link Sigmoid} instances unless
+     * a gap between ranges is encountered which requires broader coverage.
+     *
+     * @param alpha the value of &#x1D6FC;
+     */
     public void setAlpha(RealType alpha) {
         if (alpha == null) throw new IllegalArgumentException("Supplied alpha must be non-null");
         if (smoothing != SmoothingType.SIGMOID) {
-            Logger.getLogger(RealPiecewiseFunction.class.getName()).warning("Alpha value mainly applies when smoothing = SIGMOID");
+            // I originally intended to throw an IllegalStateException here, but alpha can be
+            // useful for swamping epsilon, so a warning will suffice for now.
+            Logger.getLogger(RealPiecewiseFunction.class.getName())
+                    .warning("Alpha value mainly applies when smoothing = SIGMOID; currently smoothing = " + smoothing);
         }
         if (alpha.sign() != Sign.POSITIVE) {
             throw new IllegalArgumentException("Alpha must be a positive value.");
@@ -110,7 +125,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
             sigmoids = Collections.emptyList();
         }
         this.smoothing = smoothing;
-        if (alpha != null) {
+        if (alpha != null && smoothing == SmoothingType.SIGMOID) {
             Logger.getLogger(RealPiecewiseFunction.class.getName())
                     .warning("Potential stale alpha value: " + alpha);
         }
