@@ -133,7 +133,8 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
 
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
-        if (transitionZones.size() != viewOfFunctionMap().size() - 1) {
+        if (transitionZones.size() != viewOfFunctionMap().size() - 1 ||
+                (smoothing == SmoothingType.SIGMOID && sigmoids.size() != transitionZones.size())) {
             computeTransitionZones();
         }
 
