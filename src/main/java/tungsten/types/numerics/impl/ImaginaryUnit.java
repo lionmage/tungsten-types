@@ -45,18 +45,19 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Constant(name = "imaginary unit", representation = "\u2148")
 public class ImaginaryUnit implements ComplexType {
-    private static final RealType TWO = new RealImpl(BigDecimal.valueOf(2L));
+    private final RealType TWO;
 
     private final MathContext mctx;
     
     private ImaginaryUnit(MathContext mctx) {
         this.mctx = mctx;
+        this.TWO = new RealImpl(BigDecimal.valueOf(2L), mctx);
     }
 
     private static final Map<MathContext, ImaginaryUnit> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
 
-    public static Numeric getInstance(MathContext mctx) {
+    public static ComplexType getInstance(MathContext mctx) {
         instanceLock.lock();
         try {
             ImaginaryUnit instance = instanceMap.get(mctx);
@@ -109,7 +110,8 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public Set<ComplexType> nthRoots(IntegerType n) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ComplexPolarImpl polar = new ComplexPolarImpl(magnitude(), argument(), true);
+        return polar.nthRoots(n);
     }
 
     @Override
@@ -125,8 +127,10 @@ public class ImaginaryUnit implements ComplexType {
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (!isCoercibleTo(numtype)) {
-            throw new CoercionException("i can only be converted to ComplexType", this.getClass(), numtype);
+            throw new CoercionException(String.format("%s can only be converted to ComplexType", this),
+                    this.getClass(), numtype);
         }
+        if (numtype == Numeric.class) return this;
         return new ComplexRectImpl(real(), imaginary());
     }
 
@@ -158,7 +162,13 @@ public class ImaginaryUnit implements ComplexType {
             final ComplexType val = (ComplexType) multiplier;
             return new ComplexRectImpl(val.imaginary().negate(), val.real());
         }
-        return multiplier.multiply(this);
+        try {
+            // scale the imaginary unit by the multiplier
+            return new ComplexRectImpl((RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class),
+                    (RealType) multiplier.coerceTo(RealType.class));
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Could not coerce " + multiplier + " to a real type.");
+        }
     }
 
     @Override
