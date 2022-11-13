@@ -124,10 +124,16 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         if (smoothing != SmoothingType.SIGMOID) {
             sigmoids = Collections.emptyList();
         }
+        boolean hasChanged = smoothing != this.smoothing;
         this.smoothing = smoothing;
         if (alpha != null && smoothing == SmoothingType.SIGMOID) {
             Logger.getLogger(RealPiecewiseFunction.class.getName())
                     .warning("Potential stale \uD835\uDEFC value: " + alpha);
+        }
+        if (hasChanged && smoothing != SmoothingType.NONE) {
+            Logger.getLogger(RealPiecewiseFunction.class.getName())
+                            .info("Computing transition zones for smoothing type " + smoothing);
+            computeTransitionZones();
         }
     }
 
