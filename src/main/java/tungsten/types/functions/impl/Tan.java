@@ -29,7 +29,12 @@ public class Tan extends Quotient<RealType, RealType> implements Periodic {
         MathContext ctx = new MathContext(epsilon.getMathContext().getPrecision() + 1,
                 epsilon.getMathContext().getRoundingMode());
         halfPi = (RealType) Pi.getInstance(ctx).divide(new RealImpl(BigDecimal.valueOf(2L), ctx));
-        tanRange = new Range<>(halfPi.negate(), halfPi, Range.BoundType.EXCLUSIVE);
+        tanRange = new Range<>(halfPi.negate(), halfPi, Range.BoundType.EXCLUSIVE) {
+            @Override
+            public String toString() {
+                return "(\u2212\uD835\uDF0B/2, \uD835\uDF0B/2)";
+            }
+        };
     }
 
     public Tan(RealType epsilon) {
