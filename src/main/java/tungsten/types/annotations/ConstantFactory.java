@@ -39,7 +39,24 @@ import java.math.MathContext;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ConstantFactory {
+    /**
+     * Most constant factory methods take a single argument,
+     * and for most of those it's a {@link MathContext}.  For
+     * these cases, this annotation value will suffice &mdash; and
+     * it defaults to {@code MathContext.class} for convenience.
+     * @return the {@link Class} describing the single argument of this annotated factory method
+     */
     Class<?> argType() default MathContext.class;
+
+    /**
+     * An optional array of argument types for when the factory method being annotated
+     * has more than one argument.  If specified, this value is used in preference
+     * to {@link #argType()}.  The ordering of the array must match the order in
+     * which method parameters are encountered, left-to-right.
+     * @return the array of {@link Class}es describing the arguments of this annotated factory method in proper order
+     */
+    Class<?>[] argTypes() default {}; // note: clients/processors will need to test for arrayLength > 0
+
     /**
      * This can be used to report back the concrete type expected from
      * the factory class, which may be a subtype of the declared return type.

@@ -12,6 +12,12 @@ import javax.tools.Diagnostic;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Annotation processor to ensure that {@code @Polar} annotations are
+ * only applied to classes implementing {@link ComplexType}.
+ *
+ * @author Robert Poole <Tarquin.AZ@gmail.com>
+ */
 public class PolarProcessor extends AbstractProcessor {
     public PolarProcessor() { super(); }
 
@@ -20,7 +26,7 @@ public class PolarProcessor extends AbstractProcessor {
         final Messager messager = processingEnv.getMessager();
         for (TypeElement typeElement : annotations) {
             for (Element element : env.getElementsAnnotatedWith(typeElement)) {
-                // if Columnar ever gets any values, they can be extracted and validated here
+                // if Polar ever gets any values, they can be extracted and validated here
 //                Polar annotation = element.getAnnotation(Polar.class);
                 TypeMirror typeMirror = element.asType();
 
