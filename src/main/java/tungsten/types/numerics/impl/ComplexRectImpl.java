@@ -114,7 +114,7 @@ public class ComplexRectImpl implements ComplexType {
     /**
      * A convenience constructor for converting a real into a complex.
      *
-     * @param realValue
+     * @param realValue a real-valued number to be converted
      */
     public ComplexRectImpl(RealType realValue) {
         mctx = realValue.getMathContext();
@@ -364,17 +364,17 @@ public class ComplexRectImpl implements ComplexType {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(real.toString());
+        buf.append(real);
         switch (imag.sign()) {
             case ZERO:
             case POSITIVE:
-                buf.append(" + ").append(imag.toString());
+                buf.append(" + ").append(imag);
                 break;
             case NEGATIVE:
-                buf.append(" - ").append(imag.negate().toString());
+                buf.append(" - ").append(imag.negate());
                 break;
         }
-        buf.append('i');
+        buf.append('\u2148');
         return buf.toString();
     }
 

@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -200,6 +201,11 @@ public class ImaginaryUnit implements ComplexType {
             return that.isExact() && Zero.isZero(that.real()) && One.isUnity(that.imaginary());
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 5 + 11 * Objects.hashCode(mctx);
     }
 
     @Override
