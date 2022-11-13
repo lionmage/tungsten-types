@@ -76,5 +76,4 @@ public class ColumnarProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         return Collections.singleton(Columnar.class.getName());
     }
-    
 }

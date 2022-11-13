@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
@@ -122,11 +123,16 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
+        if (numtype.isAnnotationPresent(Polar.class)) return true;  // special case
         return numtype.isAssignableFrom(ComplexType.class);
     }
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
+        if (numtype.isAnnotationPresent(Polar.class)) {
+            // an exact representation of pi/2 is not possible, so marking this as not exact
+            return new ComplexPolarImpl(magnitude(), argument(), false);
+        }
         if (!isCoercibleTo(numtype)) {
             throw new CoercionException(String.format("%s can only be converted to ComplexType", this),
                     this.getClass(), numtype);

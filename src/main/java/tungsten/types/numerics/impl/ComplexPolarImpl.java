@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.Set;
+import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.impl.Cos;
 import tungsten.types.functions.impl.Sin;
@@ -49,6 +50,7 @@ import java.util.logging.Logger;
  *
  * @author tarquin
  */
+@Polar
 public class ComplexPolarImpl implements ComplexType {
     private final RealType modulus;
     private final RealType argument;

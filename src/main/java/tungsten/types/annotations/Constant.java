@@ -23,6 +23,8 @@
  */
 package tungsten.types.annotations;
 
+import tungsten.types.Numeric;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -37,6 +39,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Constant {
-    public String name();
-    public String representation();
+    String name();
+    String representation();
 }

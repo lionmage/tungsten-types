@@ -23,10 +23,9 @@
  */
 package tungsten.types.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import tungsten.types.Matrix;
+
+import java.lang.annotation.*;
 
 /**
  * Annotation to denote certain {@link Matrix} implementations
@@ -35,6 +34,7 @@ import java.lang.annotation.Target;
  *
  * @author Robert Poole
  */
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Columnar {
