@@ -23,14 +23,11 @@
  */
 package tungsten.types.numerics.impl;
 
-//import ch.obermuhlner.math.big.BigDecimalMath;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
-//import tungsten.types.util.MathUtils;
-//import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -125,16 +122,12 @@ public class ComplexRectImpl implements ComplexType {
     
     public void setMathContext(MathContext context) {
         this.mctx = context;
-//        OptionalOperations.setMathContext(real, mctx);
-//        OptionalOperations.setMathContext(imag, mctx);
     }
 
     @Override
     public RealType magnitude() {
         RealType resq = (RealType) real.multiply(real);
-//        OptionalOperations.setMathContext(resq, mctx);
         RealType imsq = (RealType) imag.multiply(imag);
-//        OptionalOperations.setMathContext(imsq, mctx);
         return (RealType) resq.add(imsq).sqrt();
     }
 
