@@ -71,8 +71,8 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public T elementAt(long position) {
-        if (position < 0L) throw new ArrayIndexOutOfBoundsException("Negative indices are unsupported");
-        return args.values().stream().sequential().skip(position).findFirst().orElseThrow();
+        if (position < 0L) throw new IndexOutOfBoundsException("Negative indices are unsupported");
+        return args.values().stream().sequential().skip(position).findFirst().orElseThrow(IndexOutOfBoundsException::new);
     }
 
     public T forVariableName(String label) {
