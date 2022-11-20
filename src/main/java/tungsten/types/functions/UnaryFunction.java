@@ -70,16 +70,8 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
             @Override
             public R apply(ArgVector<T> arguments) {
-                final Class<T> argClass = (Class<T>)
-                        ((Class) ((ParameterizedType) before.getClass()
-                                .getGenericSuperclass()).getActualTypeArguments()[0]);
-                try {
-                    T arg = (T) arguments.elementAt(0L).coerceTo(argClass);
-                    return originalFunction.apply(before.apply(arg));
-                } catch (CoercionException e) {
-                    throw new IllegalArgumentException("Argument " + arguments.elementAt(0L) +
-                            " could not be coerced to an appropriate argument type", e);
-                }
+                T arg = arguments.elementAt(0L);
+                return originalFunction.apply(before.apply(arg));
             }
 
             @Override

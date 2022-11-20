@@ -8,9 +8,7 @@ import tungsten.types.numerics.impl.ExactZero;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -193,6 +191,21 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     @Override
     public RealType computeAngle(Vector<T> other) {
         throw new UnsupportedOperationException("We may never need this.");
+    }
+
+    public <T2 extends Numeric> ArgVector<T2> coerceToArgVectorOf(Class<T2> clazz) {
+        ArgMap<T2> coercedArgs = new ArgMap<>();
+        List<String> argNames = new LinkedList<>();
+        try {
+            for (Map.Entry<String, T> entry : args.entrySet()) {
+                argNames.add(entry.getKey());
+                coercedArgs.put(entry.getKey(), (T2) entry.getValue().coerceTo(clazz));
+            }
+            return new ArgVector<>(argNames.toArray(String[]::new), coercedArgs);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot convert arg vector " + this +
+                    " to an arg vector of element type " + clazz.getTypeName());
+        }
     }
 
     @Override

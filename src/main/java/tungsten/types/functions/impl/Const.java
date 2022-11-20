@@ -8,10 +8,12 @@ import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
+import java.math.MathContext;
 
 /**
  * A function that represents a constant.
@@ -34,6 +36,47 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
     @Override
     public R apply(ArgVector<T> arguments) {
         return value;
+    }
+
+    public static boolean isConstEquivalent(UnaryFunction<?, ?> fn) {
+        if (fn instanceof Const) return true;
+        if (fn instanceof Product) {
+            Product<?, ?> prod = (Product<?, ?>) fn;
+            return prod.stream().allMatch(Const::isConstEquivalent);
+        }
+        if (fn instanceof Sum) {
+            Sum<?, ?> sum = (Sum<?, ?>) fn;
+            return sum.stream().allMatch(Const::isConstEquivalent);
+        }
+
+        return false;
+    }
+
+    public static Const<? super RealType, RealType> getConstEquivalent(UnaryFunction<?, ?> fn) {
+        if (!isConstEquivalent(fn)) throw new IllegalArgumentException("Argument is not constant-equivalent.");
+        try {
+            if (fn instanceof Const) {
+                RealType realVal = (RealType) ((Const<?, ?>) fn).inspect().coerceTo(RealType.class);
+                return new Const<>(realVal);
+            }
+            if (fn instanceof Product) {
+                Product<?, ?> prod = (Product<?, ?>) fn;
+                Numeric val = prod.stream().map(Const::getConstEquivalent).map(Const::inspect)
+                        .map(Numeric.class::cast)
+                        .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply);
+                return new Const<>((RealType) val.coerceTo(RealType.class));
+            }
+            if (fn instanceof Sum) {
+                Sum<?, ?> sum = (Sum<?, ?>) fn;
+                Numeric val = sum.stream().map(Const::getConstEquivalent).map(Const::inspect)
+                        .map(Numeric.class::cast)
+                        .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add);
+                return new Const<>((RealType) val.coerceTo(RealType.class));
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException(e);
+        }
+        throw new UnsupportedOperationException("No strategy found to convert " + fn + " into a Const");
     }
 
     @Override

@@ -7,13 +7,13 @@ import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -125,6 +125,43 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             return result;
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to coerce result to " + resultClass.getTypeName(), e);
+        }
+    }
+
+    public UnaryFunction<T, R> simplify() {
+        if (Negate.isNegateEquivalent(this)) {
+            Product<T, R> p = new Product<>(getArgumentName());
+            terms.stream().filter(f -> !Const.isConstEquivalent(f)).forEach(p::appendTerm);
+            return p.andThen(Negate.getInstance(resultClass));
+        }
+        if (terms.stream().anyMatch(Const::isConstEquivalent)) {
+            Optional<RealType> cval = terms.stream().filter(Const::isConstEquivalent).map(Const::getConstEquivalent)
+                    .map(Const::inspect).reduce(Product::safeReduce);
+            R value = safeCoerce(cval.orElseThrow());
+            if (Zero.isZero(value)) return Const.getInstance(value);
+            List<UnaryFunction<T, R>> cleaned = terms.stream().filter(f -> !Const.isConstEquivalent(f)).collect(Collectors.toList());
+            if (cleaned.size() == 0) return Const.getInstance(value);
+            Product<T, R> p = new Product<>(getArgumentName());
+            p.terms.addAll(cleaned);
+            if (!One.isUnity(value)) {
+                p.appendTerm(Const.getInstance(value));
+            }
+            return p;
+        }
+
+        // if all else fails, return the original
+        return this;
+    }
+
+    private static RealType safeReduce(RealType A, RealType B) {
+        return (RealType) A.multiply(B);
+    }
+
+    private R safeCoerce(Numeric val) {
+        try {
+            return (R) val.coerceTo(resultClass);
+        } catch (CoercionException e) {
+            throw new IllegalArgumentException("Value " + val + " cannot be coerced to " + resultClass.getTypeName(), e);
         }
     }
 
