@@ -5,6 +5,7 @@ import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.util.MathUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
@@ -213,7 +214,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         if (args.size() == 0) {
             return MathContext.UNLIMITED;
         }
-        return args.values().iterator().next().getMathContext();
+        return MathUtils.inferMathContext(args.values());
     }
 
     @Override
