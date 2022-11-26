@@ -28,6 +28,10 @@ import tungsten.types.Set;
 import tungsten.types.Vector;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.functions.UnaryFunction;
+import tungsten.types.functions.impl.Exp;
+import tungsten.types.functions.impl.NaturalLog;
+import tungsten.types.functions.impl.Negate;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
@@ -770,7 +774,7 @@ public class MathUtils {
     }
 
     public static Numeric arctan(Numeric z) {
-        final ComplexType i = (ComplexType) ImaginaryUnit.getInstance(z.getMathContext());
+        final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
         final ComplexType coeff = (ComplexType) i.negate().divide(new RealImpl(decTWO, z.getMathContext()));
         ComplexType frac = (ComplexType) i.subtract(z).divide(i.add(z));
         return coeff.multiply(ln(frac));
@@ -814,7 +818,7 @@ public class MathUtils {
             }
             return result;
         } catch (CoercionException e) {
-            throw new ArithmeticException("Type coercion error while computing ln(" + z + ").");
+            throw new ArithmeticException("Type coercion error while computing ln(" + z + "): " + e.getMessage());
         }
     }
     
@@ -863,5 +867,18 @@ public class MathUtils {
                 return false;
             }
         };
+    }
+
+    private static final Map<Class<? extends UnaryFunction>, Class<? extends UnaryFunction>> inverses =
+            new HashMap<>();
+
+    static {
+        inverses.put(Negate.class, Negate.class);
+        inverses.put(Exp.class, NaturalLog.class);
+        inverses.put(NaturalLog.class, Exp.class);
+    }
+
+    public static Class<? extends UnaryFunction> inverseFunctionFor(Class<? extends UnaryFunction> fClazz) {
+        return inverses.get(fClazz);
     }
 }

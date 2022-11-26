@@ -4,6 +4,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.MathUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
@@ -75,6 +76,14 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             }
 
             @Override
+            public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
+                if (MathUtils.inverseFunctionFor(composedFunction.getClass()) == before.getClass()) {
+                    return originalFunction;
+                }
+                return super.composeWith(before);
+            }
+
+            @Override
             public Range<RealType> inputRange(String argName) {
                 return before.inputRange(before.argumentName);
             }
@@ -95,6 +104,10 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     }
 
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
+        final Class<R2> rtnClass = (Class<R2>)
+                ((Class) ((ParameterizedType) after.getClass()
+                        .getGenericSuperclass()).getActualTypeArguments()[1]);
+
         return new UnaryFunction<>(UnaryFunction.this.argumentName) {
             {
                 originalFunction = UnaryFunction.this;
@@ -104,6 +117,17 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             @Override
             public R2 apply(ArgVector<T> arguments) {
                 return after.apply(originalFunction.apply(arguments));
+            }
+
+            @Override
+            public <R3 extends R2> UnaryFunction<T, R3> andThen(UnaryFunction<R2, R3> after) {
+                final Class<R3> r3Class = (Class<R3>)
+                        ((Class) ((ParameterizedType) after.getClass()
+                                .getGenericSuperclass()).getActualTypeArguments()[1]);
+                if (MathUtils.inverseFunctionFor(composingFunction.getClass()) == after.getClass()) {
+                    return originalFunction.forReturnType(r3Class);
+                }
+                return super.andThen(after.forReturnType(rtnClass)).forReturnType(r3Class);
             }
 
             @Override

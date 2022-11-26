@@ -79,6 +79,14 @@ public enum NumericHierarchy {
                 NumericHierarchy htype2 = forNumericType(o2);
                 return htype1.compareTo(htype2);
             }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof Comparator) {
+                    return obj.getClass() == this.getClass();
+                }
+                return false;
+            }
         };
     }
 }
