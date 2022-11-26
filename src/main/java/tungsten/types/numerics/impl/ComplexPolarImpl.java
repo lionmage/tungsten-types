@@ -137,8 +137,9 @@ public class ComplexPolarImpl implements ComplexType {
             case REAL:
                 final Pi pi = Pi.getInstance(mctx);
                 final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
-                return MathUtils.areEqualToWithin(normalizeArgument(), zero, epsilon) ||
-                        MathUtils.areEqualToWithin(normalizeArgument(), pi, epsilon);
+                final RealType normalizedArg = normalizeArgument();
+                return MathUtils.areEqualToWithin(normalizedArg, zero, epsilon) ||
+                        MathUtils.areEqualToWithin(normalizedArg, pi, epsilon);
             default:
                 return false;
         }
@@ -149,23 +150,23 @@ public class ComplexPolarImpl implements ComplexType {
             // special case where argument is exactly pi
             return argument;
         }
-        RealImpl twopi = (RealImpl) Pi.getInstance(mctx).multiply(TWO);
-        RealImpl reimpl = (RealImpl) argument;
+        final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(TWO);
+        RealType realVal = argument;
         Range<RealType> atan2range = RangeUtils.getAngularInstance(mctx);
         
-        if (atan2range.contains(reimpl)) {
+        if (atan2range.contains(realVal)) {
             // already in the range (-pi, pi]
             return argument;
         } else {
             // reduce values > pi
-            while (atan2range.isAbove(reimpl)) {
-                reimpl = (RealImpl) reimpl.subtract(twopi);
+            while (atan2range.isAbove(realVal)) {
+                realVal = (RealType) realVal.subtract(twopi);
             }
             // increase values < -pi
-            while (atan2range.isBelow(reimpl)) {
-                reimpl = (RealImpl) reimpl.add(twopi);
+            while (atan2range.isBelow(realVal)) {
+                realVal = (RealType) realVal.add(twopi);
             }
-            return reimpl;
+            return realVal;
         }
     }
 
@@ -179,9 +180,10 @@ public class ComplexPolarImpl implements ComplexType {
             case REAL:
                 final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
                 final RealType pi = Pi.getInstance(mctx);
-                if (MathUtils.areEqualToWithin(normalizeArgument(), zero, epsilon)) {
+                final RealType normalizedArg = normalizeArgument();
+                if (MathUtils.areEqualToWithin(normalizedArg, zero, epsilon)) {
                     return modulus;
-                } else if (MathUtils.areEqualToWithin(normalizeArgument(), pi, epsilon)) {
+                } else if (MathUtils.areEqualToWithin(normalizedArg, pi, epsilon)) {
                     return modulus.negate();
                 } else {
                     throw new CoercionException("Argument must be 0 or \uD835\uDF0B", this.getClass(), numtype);
@@ -207,7 +209,7 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce addend to RealType", ex);
             }
         }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -226,7 +228,7 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce subtrahend to RealType", ex);
             }
         }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

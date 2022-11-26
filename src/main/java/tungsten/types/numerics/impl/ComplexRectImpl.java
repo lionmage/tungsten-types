@@ -272,6 +272,7 @@ public class ComplexRectImpl implements ComplexType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0.");
         if (divisor instanceof ComplexType) {
             ComplexType cdiv = (ComplexType) divisor;
             ComplexType conj = cdiv.conjugate();
@@ -290,12 +291,13 @@ public class ComplexRectImpl implements ComplexType {
                 Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce divisor to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported divisor type."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Unsupported divisor type.");
     }
 
     @Override
     public Numeric inverse() {
         RealType invscale = (RealType) real.multiply(real).add(imag.multiply(imag));
+        if (Zero.isZero(invscale)) throw new ArithmeticException("No inverse for " + this);
         return new ComplexRectImpl((RealType) real.divide(invscale), (RealType) imag.negate().divide(invscale), exact);
     }
 
@@ -311,7 +313,7 @@ public class ComplexRectImpl implements ComplexType {
             return root;
         } catch (CoercionException ex) {
             Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() result to RealType.", ex);
-            throw new IllegalStateException("Unexpected failure to coerce integer sqrt() result.", ex);
+            throw new IllegalStateException("Unexpected failure to coerce sqrt() result.", ex);
         }
     }
     
