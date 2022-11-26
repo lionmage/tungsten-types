@@ -48,6 +48,10 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
             Sum<?, ?> sum = (Sum<?, ?>) fn;
             return sum.stream().allMatch(Const::isConstEquivalent);
         }
+        if (fn instanceof Quotient) {
+            Quotient<?, ?> q = (Quotient<?, ?>) fn;
+            return isConstEquivalent(q.getNumerator()) && isConstEquivalent(q.getDenominator());
+        }
 
         return false;
     }
@@ -72,6 +76,12 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
                         .map(Numeric.class::cast)
                         .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add);
                 return new Const<>((RealType) val.coerceTo(RealType.class));
+            }
+            if (fn instanceof Quotient) {
+                Quotient<?, ?> quotient = (Quotient<?, ?>) fn;
+                Const<? super RealType, RealType> num = getConstEquivalent(quotient.getNumerator());
+                Const<? super RealType, RealType> denom = getConstEquivalent(quotient.getDenominator());
+                return new Const<>((RealType) num.inspect().divide(denom.inspect()));
             }
         } catch (CoercionException e) {
             throw new IllegalStateException(e);

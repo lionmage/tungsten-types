@@ -13,6 +13,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.RealInfinity;
 import tungsten.types.util.MathUtils;
 
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -33,6 +34,26 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
                     + getArgumentName() + " is not present in input or is out of range.");
         }
         return MathUtils.ln(arguments.elementAt(0L));
+    }
+
+    @Override
+    public UnaryFunction<? super RealType, RealType> composeWith(UnaryFunction<? super RealType, RealType> before) {
+        if (before instanceof Exp) {
+            final String beforeArgName = before.expectedArguments()[0];
+            return new Reflexive<>(beforeArgName, before.inputRange(beforeArgName), RealType.class);
+        }
+        return super.composeWith(before);
+    }
+
+    @Override
+    public <R2 extends RealType> UnaryFunction<RealType, R2> andThen(UnaryFunction<RealType, R2> after) {
+        if (after instanceof Exp) {
+            Class<R2> rtnClass = (Class<R2>) ((Class) ((ParameterizedType) after.getClass()
+                    .getGenericSuperclass()).getActualTypeArguments()[1]);
+            if (rtnClass == null) rtnClass = (Class<R2>) RealType.class;
+            return new Reflexive<>(getArgumentName(), lnRange, RealType.class).forReturnType(rtnClass);
+        }
+        return super.andThen(after);
     }
 
     private static final Range<RealType> lnRange = new Range<>(new RealImpl(BigDecimal.ZERO),

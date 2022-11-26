@@ -5,8 +5,12 @@ import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.OptionalOperations;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.logging.Logger;
@@ -47,6 +51,57 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
         } catch (CoercionException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public UnaryFunction<T, R> simplify() {
+        if (Negate.isNegateEquivalent(numerator)) {
+            if (numerator instanceof Product) {
+                return new Quotient<>(getArgumentName(), ((Product<T, R>) numerator).simplify(), denominator);
+            }
+        } else if (Negate.isNegateEquivalent(denominator)) {
+            if (denominator instanceof Product) {
+                return new Quotient<>(getArgumentName(), numerator, ((Product<T, R>) denominator).simplify());
+            }
+        }
+        final boolean numIsConst = Const.isConstEquivalent(numerator);
+        final boolean denomIsConst = Const.isConstEquivalent(denominator);
+        try {
+            if (numIsConst && denomIsConst) {
+                // special case where the entire quotient can be reduced to a single constant
+                Const<? super RealType, RealType> numEq = Const.getConstEquivalent(numerator);
+                Const<? super RealType, RealType> denEq = Const.getConstEquivalent(denominator);
+                if (Zero.isZero(denEq.inspect())) throw new ArithmeticException("Division by zero while reducing quotient.");
+                R qVal = (R) numEq.inspect().divide(denEq.inspect()).coerceTo(outputClazz);
+                return Const.getInstance(qVal);
+            }
+            if (numIsConst) {
+                Const<? super RealType, RealType> equiv = Const.getConstEquivalent(numerator);
+                R eqInR = (R) equiv.inspect().coerceTo(outputClazz);
+                return new Quotient<>(getArgumentName(), Const.getInstance(eqInR), denominator);
+            }
+            if (denomIsConst) {
+                Const<? super RealType, RealType> equiv = Const.getConstEquivalent(denominator);
+                if (One.isUnity(equiv.inspect())) return numerator;
+                if (Zero.isZero(equiv.inspect())) throw new ArithmeticException("Denominator of quotient reduces to zero.");
+                R eqInR = (R) equiv.inspect().coerceTo(outputClazz);
+                return new Quotient<>(getArgumentName(), numerator, Const.getInstance(eqInR));
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException(e);
+        }
+        if (numerator instanceof Pow && denominator instanceof Pow) {
+            Numeric numExponent = ((Pow<T, R>) numerator).getExponent();
+            Numeric denomExponent = ((Pow<T, R>) denominator).getExponent();
+            Numeric diffExponent = numExponent.subtract(denomExponent);
+            if (Zero.isZero(diffExponent)) return Const.getInstance(OptionalOperations.dynamicInstantiate(outputClazz, "1"));
+            if (diffExponent instanceof IntegerType) {
+                return new Pow<>(((IntegerType) diffExponent).asBigInteger().longValueExact());
+            }
+            return new Pow<>((RationalType) diffExponent);
+        }
+
+        // If all else fails, return this
+        return this;
     }
 
     public UnaryFunction<T, R> getNumerator() {

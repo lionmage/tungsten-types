@@ -48,7 +48,7 @@ public enum NumericHierarchy {
         }
     }
     
-    private NumericHierarchy(Class<? extends Numeric> clazz) {
+    NumericHierarchy(Class<? extends Numeric> clazz) {
         this.clazz = clazz;
     }
     
@@ -72,7 +72,7 @@ public enum NumericHierarchy {
     }
     
     public static Comparator<Class<? extends Numeric>> obtainTypeComparator() {
-        return new Comparator<Class<? extends Numeric>>() {
+        return new Comparator<>() {
             @Override
             public int compare(Class<? extends Numeric> o1, Class<? extends Numeric> o2) {
                 NumericHierarchy htype1 = forNumericType(o1);

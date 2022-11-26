@@ -8,6 +8,8 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.util.RangeUtils;
 
+import java.lang.reflect.ParameterizedType;
+
 public class Exp extends UnaryFunction<RealType, RealType> {
     public Exp() {
         super("x");
@@ -25,6 +27,26 @@ public class Exp extends UnaryFunction<RealType, RealType> {
         final RealType arg = arguments.elementAt(0L);
         final Euler e = Euler.getInstance(arg.getMathContext());
         return e.exp(arg);
+    }
+
+    @Override
+    public UnaryFunction<? super RealType, RealType> composeWith(UnaryFunction<? super RealType, RealType> before) {
+        if (before instanceof NaturalLog) {
+            final String beforeArgName = before.expectedArguments()[0];
+            return new Reflexive<>(beforeArgName, before.inputRange(beforeArgName), RealType.class);
+        }
+        return super.composeWith(before);
+    }
+
+    @Override
+    public <R2 extends RealType> UnaryFunction<RealType, R2> andThen(UnaryFunction<RealType, R2> after) {
+        if (after instanceof NaturalLog) {
+            Class<R2> rtnClass = (Class<R2>) ((Class) ((ParameterizedType) after.getClass()
+                    .getGenericSuperclass()).getActualTypeArguments()[1]);
+            if (rtnClass == null) rtnClass = (Class<R2>) RealType.class;
+            return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, RealType.class).forReturnType(rtnClass);
+        }
+        return super.andThen(after);
     }
 
     @Override

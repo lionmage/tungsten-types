@@ -70,6 +70,16 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
                 throw new IllegalStateException(e);
             }
         }
+        if (fn instanceof Quotient) {
+            Quotient<?, ?> quotient = (Quotient<?, ?>) fn;
+            UnaryFunction<?, ?> num = quotient.getNumerator();
+            UnaryFunction<?, ?> denom = quotient.getDenominator();
+            if (isNegateEquivalent(num) && isNegateEquivalent(denom)) {
+                // if both the numerator and the denominator have a coefficient of -1, the quotient is positive
+                return false;
+            }
+            return isNegateEquivalent(num) || isNegateEquivalent(denom);
+        }
 
         return false;
     }
@@ -78,11 +88,8 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     @Override
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
         if (before instanceof Negate) {
-            if (this.getComposedFunction().isPresent()) {
-                return this.getComposedFunction().get().forReturnType(rtnClazz);
-            } else if (this.getOriginalFunction().isPresent()) {
-                return this.getOriginalFunction().get();
-            }
+            final String beforeArgName = before.expectedArguments()[0];
+            return new Reflexive<>(beforeArgName, before.inputRange(beforeArgName), Numeric.class).forReturnType(rtnClazz);
         }
         return super.composeWith(before);
     }
@@ -91,26 +98,11 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     @Override
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
         if (after instanceof Negate) {
-            List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, after.getClass());
-            Class<R2> clazz = argClasses.get(1) == null ? (Class<R2>) rtnClazz : (Class<R2>) argClasses.get(1);
-            if (this.getOriginalFunction().isPresent()) {
-                return this.getOriginalFunction().get().forReturnType(clazz);
-            } else {
-                final Logger logger = Logger.getLogger(Negate.class.getName());
-                logger.log(Level.WARNING,
-                        "andThen() called on Negate with a function {} (classname {}), but this Negate has no original function",
-                        new Object[] { after, after.getClass().getTypeName() });
-                logger.log(Level.INFO, "This instance has a composed function: {}", this.getComposedFunction().isPresent());
-                this.getComposedFunction().ifPresent(f -> {
-                    logger.log(Level.INFO, "The composed function is {} (classname {})",
-                            new Object[] { f, f.getClass().getTypeName() });
-                });
-                logger.log(Level.INFO, "This instance has a composing function: {}", this.getComposingFunction().isPresent());
-                this.getComposingFunction().ifPresent(f -> {
-                    logger.log(Level.INFO, "The composing function is {} (classname {})",
-                            new Object[] { f, f.getClass().getTypeName() });
-                });
-            }
+            List<Class<?>> afterArgClasses = ClassTools.getTypeArguments(NumericFunction.class, after.getClass());
+            List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
+            Class<T> inputClass = argClasses.get(0) == null ? (Class<T>) Numeric.class : (Class<T>) argClasses.get(0);
+            Class<R2> clazz = afterArgClasses.get(1) == null ? (Class<R2>) rtnClazz : (Class<R2>) afterArgClasses.get(1);
+            return new Reflexive<>(getArgumentName(), inputRange(getArgumentName()), inputClass).forReturnType(clazz);
         }
         return super.andThen(after);
     }

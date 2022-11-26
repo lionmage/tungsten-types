@@ -5,9 +5,13 @@ import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
@@ -145,6 +149,26 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             p.terms.addAll(cleaned);
             if (!One.isUnity(value)) {
                 p.appendTerm(Const.getInstance(value));
+            }
+            if (p.termCount() == 1L) {
+                assert cleaned.size() == 1;
+                // if, after all the above, we have a single term left in the resulting product,
+                // unwrap that function and return it instead
+                return cleaned.get(0);
+            }
+            return p;
+        }
+        // if there are 2 or more Pow instances, add the exponents
+        if (terms.stream().filter(Pow.class::isInstance).count() >= 2L) {
+            Numeric aggExponent = terms.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
+                    .map(Pow::getExponent).reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add);
+            Product<T, R> p = new Product<>(getArgumentName());
+            terms.stream().filter(f -> !(f instanceof Pow)).forEach(p::appendTerm);
+            if (Zero.isZero(aggExponent)) return p.termCount() > 0L ? p : Const.getInstance(OptionalOperations.dynamicInstantiate(resultClass, "1"));
+            if (aggExponent instanceof IntegerType) {
+                p.appendTerm(new Pow<>(((IntegerType) aggExponent).asBigInteger().longValueExact()));
+            } else {
+                p.appendTerm(new Pow<>((RationalType) aggExponent));
             }
             return p;
         }
