@@ -5,7 +5,6 @@ import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
-import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.IntegerImpl;
@@ -18,8 +17,6 @@ import tungsten.types.util.UnicodeTextEffects;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A function that raises a value to a given power.  More formally, given x,
@@ -78,44 +75,9 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     public UnaryFunction<T, R> diff() {
         final Numeric diffExponent = exponent.subtract(ONE);
         try {
-            R coeff = (R) exponent.coerceTo(outputClazz);
+            final R coeff = (R) exponent.coerceTo(outputClazz);
             if (Zero.isZero(diffExponent)) return Const.getInstance(coeff);
-            // In the near term, I'm not expecting to see this function composed with other functions.  The following
-            // will provide diagnostics for when implementation becomes unavoidable.
-            if (getComposedFunction().isPresent()) {
-                // handle the corner case where we can actually reduce this
-                if (Pow.class.isAssignableFrom(getComposedFunction().map(Object::getClass).orElseThrow(IllegalStateException::new))) {
-                    Pow<? super T, T> composedPow = (Pow<? super T, T>) getComposedFunction().get();
-                    final Numeric aggregateExponent = exponent.multiply(composedPow.getExponent());
-                    coeff = (R) aggregateExponent.coerceTo(outputClazz);
-                    if (aggregateExponent.isCoercibleTo(IntegerType.class)) {
-                        long aggDiffExp = ((IntegerType) aggregateExponent.coerceTo(IntegerType.class)).asBigInteger().longValueExact() - 1L;
-                        return new Product<>(Const.getInstance(coeff), new Pow<>(aggDiffExp));
-                    } else {
-                        RationalType aggDiffExp = (RationalType) aggregateExponent.subtract(ONE).coerceTo(RationalType.class);
-                        return new Product<>(Const.getInstance(coeff), new Pow<>(aggDiffExp));
-                    }
-                }
 
-                final Logger logger = Logger.getLogger(Pow.class.getName());
-                logger.log(Level.SEVERE,
-                        "While computing the derivative of {}, encountered a composed function {} and was forced to abort.",
-                        new Object[] {this, getComposedFunction().get()});
-                logger.log(Level.FINE, "Original function is: {}", getOriginalFunction().map(NumericFunction::toString).orElse("Not Present"));
-                logger.log(Level.FINE, "Composing function is: {}", getComposingFunction().map(NumericFunction::toString).orElse("Not Present"));
-                throw new UnsupportedOperationException("Chain rule for functions composed (nested) inside Pow is not currently implemented.");
-            }
-            // A similar situation with composing functions, although they might be needed sooner than later.
-            if (getComposingFunction().isPresent()) {
-                final Logger logger = Logger.getLogger(Pow.class.getName());
-                logger.log(Level.SEVERE,
-                        "While computing the derivative of {}, encountered a composing function {} and was forced to abort.",
-                        new Object[] {this, getComposingFunction().get()});
-                logger.log(Level.FINE, "Original function is: {}", getOriginalFunction().map(NumericFunction::toString).orElse("Not Present"));
-                logger.log(Level.FINE, "Composed function is: {}", getComposedFunction().map(NumericFunction::toString).orElse("Not Present"));
-                throw new UnsupportedOperationException("Chain rule for functions composing with Pow is not currently implemented.");
-            }
-            // otherwise, business as usual
             if (diffExponent instanceof RationalType) {
                 return new Product<>(Const.getInstance(coeff),
                         new Pow<>((RationalType) diffExponent));
@@ -124,12 +86,35 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 return new Product<>(Const.getInstance(coeff), new Pow<>(n));
             }
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Computing derivative failed", e);
         }
     }
 
     @Override
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
+        if (before instanceof Pow) {
+            Numeric expProd = ((Pow<? super T, T>) before).getExponent().multiply(exponent);
+            if (Zero.isZero(expProd)) {
+                try {
+                    return Const.getInstance((R) One.getInstance(MathContext.UNLIMITED).coerceTo(outputClazz));
+                } catch (CoercionException e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (One.isUnity(expProd)) {
+                final Class<T> myArgClazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
+                        .getGenericSuperclass()).getActualTypeArguments()[0]);
+
+                return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, myArgClazz).forReturnType(outputClazz);
+            }
+            // create a new instance of Pow with a merged exponent
+            Pow<? super T, R> pow;
+            if (expProd instanceof RationalType) {
+                pow = new Pow<>((RationalType) expProd);
+            } else {
+                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
+            }
+            return pow;
+        }
         return super.composeWith(before);
     }
 
@@ -140,12 +125,10 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (after instanceof Pow) {
             final Pow<R, R2> afterPow = (Pow<R, R2>) after;
             Numeric expProd = this.exponent.multiply(afterPow.getExponent());
-            UnaryFunction<T, R> orig = this.getOriginalFunction()
-                    .orElse((UnaryFunction<T, R>) this.getComposedFunction()
-                            .orElse(null));
             if (One.isUnity(expProd)) {
-                if (orig != null)
-                    return orig.forReturnType(myOutputClazz);
+                final Class<T> myArgClazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
+                        .getGenericSuperclass()).getActualTypeArguments()[0]);
+                return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, myArgClazz).forReturnType(myOutputClazz);
             } else if (Zero.isZero(expProd)) {
                 try {
                     return Const.getInstance((R2) One.getInstance(MathContext.UNLIMITED).coerceTo(myOutputClazz));
@@ -154,15 +137,13 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 }
             }
             // create a new instance of Pow with a merged exponent
-            Pow<R, R2> pow;
+            Pow<T, R2> pow;
             if (expProd instanceof RationalType) {
                 pow = new Pow<>((RationalType) expProd);
             } else {
                 pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
             }
-            afterPow.getComposingFunction().ifPresent(pow::setComposingFunction);
-            if (orig == null) return (UnaryFunction<T, R2>) pow;
-            return orig.andThen(pow);
+            return pow;
         }
         return super.andThen(after);
     }

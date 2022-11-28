@@ -82,6 +82,8 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             } catch (CoercionException e) {
                 throw new IllegalArgumentException("Constant product cannot be coerced to function return type", e);
             }
+        } else if (term instanceof Product) {
+            ((Product<T, R>) term).stream().forEach(this::appendTerm);
         } else {
             terms.add(term);
         }
@@ -106,7 +108,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             R prodOfConstants = (R) p3.parallelStream().filter(Const.class::isInstance)
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply)
-                    .coerceTo(p1.resultClass);
+                    .coerceTo(p1.resultClass != null ? p1.resultClass : p2.resultClass);
             p3.terms.removeIf(Const.class::isInstance);
             if (!One.isUnity(prodOfConstants)) p3.terms.add(Const.getInstance(prodOfConstants));
         } catch (CoercionException e) {

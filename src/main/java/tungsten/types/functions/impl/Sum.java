@@ -68,6 +68,8 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             } catch (CoercionException e) {
                 throw new IllegalArgumentException("Constant sum cannot be coerced to function return type", e);
             }
+        } else if (term instanceof Sum) {
+            ((Sum<T, R>) term).stream().forEach(this::appendTerm);
         } else {
             terms.add(term);
         }
