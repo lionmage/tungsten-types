@@ -3,6 +3,7 @@ package tungsten.types.functions.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.IntegerType;
@@ -38,9 +39,18 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
 
     @Override
     public UnaryFunction<? super RealType, RealType> composeWith(UnaryFunction<? super RealType, RealType> before) {
+        final String beforeArgName = before.expectedArguments()[0];
         if (before instanceof Exp) {
-            final String beforeArgName = before.expectedArguments()[0];
             return new Reflexive<>(beforeArgName, before.inputRange(beforeArgName), RealType.class);
+        } else if (before instanceof Pow) {
+            Numeric exponent = ((Pow<? super RealType, RealType>) before).getExponent();
+            // log(x^y) = y*log(x)
+            try {
+                Const<RealType, RealType> myConst = Const.getInstance((RealType) exponent.coerceTo(RealType.class));
+                return new Product<>(beforeArgName, myConst, this);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("Exponent " + exponent + "is not coercible", e);
+            }
         }
         return super.composeWith(before);
     }
