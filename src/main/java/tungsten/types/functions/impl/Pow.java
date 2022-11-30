@@ -144,6 +144,15 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
             }
             return pow;
+        } else if ((UnaryFunction) after instanceof NaturalLog) {
+            // log(x^y) = y*log(x)
+            try {
+                return new Product<>(getArgumentName(),
+                        Const.getInstance((R2) this.exponent.coerceTo(myOutputClazz)),
+                        (UnaryFunction<T, R2>) after);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While coercing exponent to constant coefficient", e);
+            }
         }
         return super.andThen(after);
     }
