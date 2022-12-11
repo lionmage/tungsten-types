@@ -1,6 +1,7 @@
-package tungsten.types;/*
+package tungsten.types;
+/*
  * The MIT License
- *
+  *
  * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,6 +25,7 @@ package tungsten.types;/*
 
 /**
  * Represents a set of objects, e.g. numeric or symbolic.
+ * Note: putting some kind of bounds on {@link T} should be considered.
  *
  * @author Robert Poole <Tarquin.AZ@gmail.com>
  * @param <T> the type of elements in this set
@@ -34,12 +36,12 @@ public interface Set<T> extends Iterable<T> {
      * infinite set, returns -1.
      * @return the cardinality of a finite set, or -1 for an infinite set
      */
-    public long cardinality();
-    public boolean countable();
-    public boolean contains(T element);
-    public void append(T element);
-    public void remove(T element);
-    public Set<T> union(Set<T> other);
-    public Set<T> intersection(Set<T> other);
-    public Set<T> difference(Set<T> other);
+    long cardinality();
+    boolean countable();
+    boolean contains(T element);
+    void append(T element);
+    void remove(T element);
+    Set<T> union(Set<T> other);
+    Set<T> intersection(Set<T> other);
+    Set<T> difference(Set<T> other);
 }

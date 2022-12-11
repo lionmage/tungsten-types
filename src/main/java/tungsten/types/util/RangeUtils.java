@@ -37,6 +37,7 @@ import tungsten.types.set.impl.NumericSet;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.stream.StreamSupport;
 
 import static tungsten.types.Range.BoundType;
@@ -99,7 +100,7 @@ public class RangeUtils {
             final IntegerType start = new IntegerImpl(range.isLowerClosed() ? range.getLowerBound().asBigInteger() : ((IntegerType) range.getLowerBound().add(ONE)).asBigInteger());
 
             class RangeIterator implements Iterator<IntegerType> {
-                IntegerType current = start;
+                private IntegerType current = start;
 
                 @Override
                 public boolean hasNext() {
@@ -108,6 +109,7 @@ public class RangeUtils {
 
                 @Override
                 public IntegerType next() {
+                    if (current.compareTo(limit) > 0) throw new NoSuchElementException("No more elements in set.");
                     IntegerType retval = current;
                     current = (IntegerType) current.add(ONE);
                     return retval;
