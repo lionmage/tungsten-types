@@ -25,16 +25,19 @@ package tungsten.types.util;
 
 import tungsten.types.Range;
 import tungsten.types.Set;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealInfinity;
+import tungsten.types.set.impl.NumericSet;
 
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Iterator;
+import java.util.stream.StreamSupport;
 
 import static tungsten.types.Range.BoundType;
 
@@ -59,7 +62,7 @@ public class RangeUtils {
      */
     public static Range<RealType> getAngularInstance(MathContext mctx) {
         final Pi pi = Pi.getInstance(mctx);
-        return new Range<RealType>(pi.negate(), BoundType.EXCLUSIVE, pi, BoundType.INCLUSIVE) {
+        return new Range<>(pi.negate(), BoundType.EXCLUSIVE, pi, BoundType.INCLUSIVE) {
             @Override
             public String toString() {
                 return "(\u2212\uD835\uDF0B, \uD835\uDF0B]";
@@ -78,23 +81,25 @@ public class RangeUtils {
     public static Range<RealType> symmetricAroundOrigin(RealType distance, BoundType type) {
         distance = distance.magnitude();  // absolute value
         
-        return new Range<RealType>(distance.negate(), distance, type);
+        return new Range<>(distance.negate(), distance, type);
     }
 
     public static Range<IntegerType> symmetricAroundOrigin(IntegerType distance, BoundType type) {
         distance = distance.magnitude();  // absolute value
         
-        return new Range<IntegerType>(distance.negate(), distance, type);
+        return new Range<>(distance.negate(), distance, type);
     }
     
 
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
 
     public static Set<IntegerType> asSet(Range<IntegerType> range) {
-        return new Set<IntegerType>() {
+        return new Set<>() {
+            final IntegerType limit = range.isUpperClosed() ? range.getUpperBound() : (IntegerType) range.getUpperBound().subtract(ONE);
+            final IntegerType start = new IntegerImpl(range.isLowerClosed() ? range.getLowerBound().asBigInteger() : ((IntegerType) range.getLowerBound().add(ONE)).asBigInteger());
+
             class RangeIterator implements Iterator<IntegerType> {
-                IntegerImpl current = new IntegerImpl(range.isLowerClosed() ? range.getLowerBound().asBigInteger() : ((IntegerType) range.getLowerBound().add(ONE)).asBigInteger());
-                final IntegerType limit = range.isUpperClosed() ? range.getUpperBound() : (IntegerType) range.getUpperBound().subtract(ONE);
+                IntegerType current = start;
 
                 @Override
                 public boolean hasNext() {
@@ -103,21 +108,24 @@ public class RangeUtils {
 
                 @Override
                 public IntegerType next() {
-                    IntegerImpl retval = current;
-                    current = (IntegerImpl) current.add(ONE);
+                    IntegerType retval = current;
+                    current = (IntegerType) current.add(ONE);
                     return retval;
                 }
             }
-            
+
             @Override
             public long cardinality() {
-                RangeIterator iter = new RangeIterator();
-                long count = 0L;
-                while (iter.hasNext()) {
-                    count++;
-                    iter.next();
-                }
-                return count;
+                assert limit.compareTo(start) > 0;
+                IntegerType cardinality = (IntegerType) limit.subtract(start).add(ONE);
+                return cardinality.asBigInteger().longValueExact();
+//                RangeIterator iter = new RangeIterator();
+//                long count = 0L;
+//                while (iter.hasNext()) {
+//                    count++;
+//                    iter.next();
+//                }
+//                return count;
             }
 
             @Override
@@ -152,7 +160,14 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> difference(Set<IntegerType> other) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                NumericSet diffSet = new NumericSet();
+                StreamSupport.stream(spliterator(), true).dropWhile(other::contains)
+                        .forEach(diffSet::append);
+                try {
+                    return diffSet.coerceTo(IntegerType.class);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While coercing a NumericSet to a Set<IntegerType>", e);
+                }
             }
 
             @Override

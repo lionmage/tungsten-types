@@ -26,6 +26,7 @@ package tungsten.types.set.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.ComplexType;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -53,7 +54,7 @@ public class NumericSet implements Set<Numeric> {
     public NumericSet(Collection<? extends Numeric> c) {
         if (c instanceof java.util.Set) {
             // no need for extra object copying in this case
-            internal = (java.util.Set) c;
+            internal = (java.util.Set<Numeric>) c;
         } else {
             internal = new HashSet<>();
             internal.addAll(c);
@@ -62,7 +63,7 @@ public class NumericSet implements Set<Numeric> {
 
     @Override
     public long cardinality() {
-        return (long) internal.size();
+        return internal.size();
     }
 
     @Override
@@ -158,7 +159,7 @@ public class NumericSet implements Set<Numeric> {
             
             @Override
             public long cardinality() {
-                return (long) elements.size();
+                return elements.size();
             }
 
             @Override
