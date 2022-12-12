@@ -32,6 +32,7 @@ import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealInfinity;
+import tungsten.types.set.impl.EmptySet;
 import tungsten.types.set.impl.NumericSet;
 
 import java.math.BigInteger;
@@ -90,7 +91,20 @@ public class RangeUtils {
         
         return new Range<>(distance.negate(), distance, type);
     }
-    
+
+    public static Range<IntegerType> fromSet(Set<IntegerType> source) {
+        IntegerType min = StreamSupport.stream(source.spliterator(), true).min(IntegerType::compareTo).orElseThrow();
+        IntegerType max = StreamSupport.stream(source.spliterator(), true).max(IntegerType::compareTo).orElseThrow();
+        // check that there are no gaps in the source, otherwise the range cannot represent it
+        IntegerType current = (IntegerType) min.add(ONE);  // we don't need to check the min or max values themselves
+        while (current.compareTo(max) < 0) {
+            if (!source.contains(current)) {
+                throw new IllegalArgumentException("Cannot extract a range; source is discontiguous starting at " + current);
+            }
+            current = (IntegerType) current.add(ONE);
+        }
+        return new Range<>(min, max, BoundType.INCLUSIVE);
+    }
 
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
 
@@ -121,13 +135,6 @@ public class RangeUtils {
                 assert limit.compareTo(start) > 0;
                 IntegerType cardinality = (IntegerType) limit.subtract(start).add(ONE);
                 return cardinality.asBigInteger().longValueExact();
-//                RangeIterator iter = new RangeIterator();
-//                long count = 0L;
-//                while (iter.hasNext()) {
-//                    count++;
-//                    iter.next();
-//                }
-//                return count;
             }
 
             @Override
@@ -152,6 +159,10 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> union(Set<IntegerType> other) {
+                if (StreamSupport.stream(this.spliterator(), true).allMatch(other::contains) &&
+                        this.cardinality() >= other.cardinality()) {
+                    return this;
+                }
                 return other.union(this);
             }
 
@@ -162,19 +173,103 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> difference(Set<IntegerType> other) {
-                NumericSet diffSet = new NumericSet();
-                StreamSupport.stream(spliterator(), true).dropWhile(other::contains)
-                        .forEach(diffSet::append);
-                try {
-                    return diffSet.coerceTo(IntegerType.class);
-                } catch (CoercionException e) {
-                    throw new IllegalStateException("While coercing a NumericSet to a Set<IntegerType>", e);
-                }
+                final Set<IntegerType> container = this;
+
+                return new Set<>() {
+                    @Override
+                    public long cardinality() {
+                        return StreamSupport.stream(container.spliterator(), true).dropWhile(other::contains).count();
+                    }
+
+                    @Override
+                    public boolean countable() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean contains(IntegerType element) {
+                        return container.contains(element) && !other.contains(element);
+                    }
+
+                    @Override
+                    public void append(IntegerType element) {
+                        throw new UnsupportedOperationException("Cannot append to this set.");
+                    }
+
+                    @Override
+                    public void remove(IntegerType element) {
+                        throw new UnsupportedOperationException("Cannot remove elements from this set.");
+                    }
+
+                    @Override
+                    public Set<IntegerType> union(Set<IntegerType> intSet) {
+                        if (this.cardinality() == 0L) return intSet;
+                        if (StreamSupport.stream(this.spliterator(), true).allMatch(intSet::contains) &&
+                                this.cardinality() >= intSet.cardinality()) {
+                            return this;
+                        }
+                        NumericSet aggregate = new NumericSet();
+                        this.forEach(aggregate::append);
+                        intSet.forEach(aggregate::append);
+                        try {
+                            return aggregate.coerceTo(IntegerType.class);
+                        } catch (CoercionException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+
+                    @Override
+                    public Set<IntegerType> intersection(Set<IntegerType> intSet) {
+                        NumericSet intersection = new NumericSet();
+                        StreamSupport.stream(this.spliterator(), true).filter(intSet::contains).forEach(intersection::append);
+                        if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                        try {
+                            return intersection.coerceTo(IntegerType.class);
+                        } catch (CoercionException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+
+                    @Override
+                    public Set<IntegerType> difference(Set<IntegerType> intSet) {
+                        NumericSet difference = new NumericSet();
+                        StreamSupport.stream(this.spliterator(), true).dropWhile(intSet::contains).forEach(difference::append);
+                        if (difference.cardinality() == 0L) return EmptySet.getInstance();
+                        try {
+                            return difference.coerceTo(IntegerType.class);
+                        } catch (CoercionException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+
+                    @Override
+                    public Iterator<IntegerType> iterator() {
+                        return StreamSupport.stream(container.spliterator(), false).dropWhile(other::contains).iterator();
+                    }
+
+                    @Override
+                    public String toString() {
+                        StringBuilder buf = new StringBuilder();
+                        buf.append('{');
+                        Iterator<IntegerType> iterator = this.iterator();
+                        while (iterator.hasNext()) {
+                            buf.append(iterator.next());
+                            if (iterator.hasNext()) buf.append(", ");
+                        }
+                        buf.append('}');
+                        return buf.toString();
+                    }
+                };
             }
 
             @Override
             public Iterator<IntegerType> iterator() {
                 return new RangeIterator();
+            }
+
+            @Override
+            public String toString() {
+                return "{x in \uD835\uDD74 \u2208\u2009" + range + "\u2009}";
             }
         };
     }
