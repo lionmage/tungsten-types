@@ -111,7 +111,7 @@ public class RangeUtils {
     public static Set<IntegerType> asSet(Range<IntegerType> range) {
         return new Set<>() {
             final IntegerType limit = range.isUpperClosed() ? range.getUpperBound() : (IntegerType) range.getUpperBound().subtract(ONE);
-            final IntegerType start = new IntegerImpl(range.isLowerClosed() ? range.getLowerBound().asBigInteger() : ((IntegerType) range.getLowerBound().add(ONE)).asBigInteger());
+            final IntegerType start = range.isLowerClosed() ? range.getLowerBound() : (IntegerType) range.getLowerBound().add(ONE);
 
             class RangeIterator implements Iterator<IntegerType> {
                 private IntegerType current = start;
