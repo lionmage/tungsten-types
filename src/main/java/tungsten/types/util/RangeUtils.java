@@ -132,7 +132,7 @@ public class RangeUtils {
 
             @Override
             public long cardinality() {
-                assert limit.compareTo(start) > 0;
+                assert limit.compareTo(start) >= 0;
                 IntegerType cardinality = (IntegerType) limit.subtract(start).add(ONE);
                 return cardinality.asBigInteger().longValueExact();
             }
@@ -159,8 +159,9 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> union(Set<IntegerType> other) {
-                if (StreamSupport.stream(this.spliterator(), true).allMatch(other::contains) &&
-                        this.cardinality() >= other.cardinality()) {
+                if (this.cardinality() == 0L) return other;
+                if (this.cardinality() >= other.cardinality() &&
+                        StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) {
                     return this;
                 }
                 return other.union(this);
@@ -168,6 +169,9 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> intersection(Set<IntegerType> other) {
+                if (this.cardinality() == 0L || StreamSupport.stream(this.spliterator(), true).noneMatch(other::contains)) {
+                    return EmptySet.getInstance();
+                }
                 return other.intersection(this);
             }
 
@@ -204,8 +208,8 @@ public class RangeUtils {
                     @Override
                     public Set<IntegerType> union(Set<IntegerType> intSet) {
                         if (this.cardinality() == 0L) return intSet;
-                        if (StreamSupport.stream(this.spliterator(), true).allMatch(intSet::contains) &&
-                                this.cardinality() >= intSet.cardinality()) {
+                        if (this.cardinality() >= intSet.cardinality() &&
+                                StreamSupport.stream(intSet.spliterator(), true).allMatch(this::contains)) {
                             return this;
                         }
                         NumericSet aggregate = new NumericSet();
