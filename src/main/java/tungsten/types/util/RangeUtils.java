@@ -23,6 +23,7 @@
  */
 package tungsten.types.util;
 
+import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
@@ -39,6 +40,8 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
 import static tungsten.types.Range.BoundType;
@@ -90,6 +93,43 @@ public class RangeUtils {
         distance = distance.magnitude();  // absolute value
         
         return new Range<>(distance.negate(), distance, type);
+    }
+
+    public static <T extends Numeric & Comparable<? super T>> Range<T> rangeBetween(Range<T> A, Range<T> B) {
+        if (A.overlaps(B)) throw new IllegalArgumentException("Ranges overlap, therefore there is no range between them.");
+        Range<T> lowest = A.isBelow(B.getLowerBound()) ? A : B;
+        Range<T> highest = B.isAbove(A.getUpperBound()) ? B : A;
+        // ensure the bound types are complementary, e.g., if lowest.upperBound is inclusive (closed),
+        // then the between-range's lower bound should be exclusive (open)
+        return new Range<>(lowest.getUpperBound(), lowest.isUpperClosed() ? BoundType.EXCLUSIVE : BoundType.INCLUSIVE,
+                highest.getLowerBound(), highest.isLowerClosed() ? BoundType.EXCLUSIVE : BoundType.INCLUSIVE);
+    }
+
+    public static <T extends Numeric & Comparable<? super T>> Range<T> merge(Range<T> A, Range<T> B) {
+        if (A.contains(B)) return A;
+        if (B.contains(A)) return B;
+        if (!A.overlaps(B)) {
+            Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
+                    "Ranges {} and {} do not overlap; a merged range contains elements in {} that are not in either original range.",
+                    new Object[] { A, B, rangeBetween(A, B) } );
+        }
+        T lowerBound, upperBound;
+        BoundType lowerBoundType, upperBoundType;
+        if (A.getLowerBound().compareTo(B.getLowerBound()) < 0) {
+            lowerBound = A.getLowerBound();
+            lowerBoundType = A.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+        } else {
+            lowerBound = B.getLowerBound();
+            lowerBoundType = B.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+        }
+        if (A.getUpperBound().compareTo(B.getUpperBound()) > 0) {
+            upperBound = A.getUpperBound();
+            upperBoundType = A.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+        } else {
+            upperBound = B.getUpperBound();
+            upperBoundType = B.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+        }
+        return new Range<>(lowerBound, lowerBoundType, upperBound, upperBoundType);
     }
 
     public static Range<IntegerType> fromSet(Set<IntegerType> source) {
