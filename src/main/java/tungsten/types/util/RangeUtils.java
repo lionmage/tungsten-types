@@ -317,4 +317,155 @@ public class RangeUtils {
             }
         };
     }
+
+    public static Set<RealType> asRealSet(Range<RealType> range) {
+        return new Set<>() {
+            @Override
+            public long cardinality() {
+                return -1L;
+            }
+
+            @Override
+            public boolean countable() {
+                return false;
+            }
+
+            @Override
+            public boolean contains(RealType element) {
+                return range.contains(element);
+            }
+
+            @Override
+            public void append(RealType element) {
+                throw new UnsupportedOperationException("Cannot append to this set.");
+            }
+
+            @Override
+            public void remove(RealType element) {
+                throw new UnsupportedOperationException("Cannot remove elements from this set.");
+            }
+
+            @Override
+            public Set<RealType> union(Set<RealType> other) {
+                if (other.countable() && other.cardinality() > 0L) {
+                    if (StreamSupport.stream(other.spliterator(), true).allMatch(range::contains)) {
+                        // the elements of other are already contained within this set
+                        return this;
+                    }
+                    // TODO what we need is a hybrid type of Set that can incorporate ranges as well as individual elements
+                    NumericSet outOfRange = new NumericSet();
+                    StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
+                            .forEach(outOfRange::append);
+                    Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
+                            "Some elements of {} are outside range {}: {}",
+                            new Object[] { other, range, outOfRange } );
+                }
+                // last resort
+                return other.union(this);
+            }
+
+            @Override
+            public Set<RealType> intersection(Set<RealType> other) {
+                if (other.countable() && other.cardinality() > 0L) {
+                    NumericSet intersection = new NumericSet();
+                    StreamSupport.stream(other.spliterator(), true).filter(range::contains).forEach(intersection::append);
+                    if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                    try {
+                        return intersection.coerceTo(RealType.class);
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+                // TODO it would be nice to be able to ascertain if other contains ranges, so we could compute
+                // the intersection of this range with those
+                // last ditch effort
+                return other.intersection(this);
+            }
+
+            @Override
+            public Set<RealType> difference(Set<RealType> other) {
+                final Set<RealType> container = this;
+
+                return new Set<RealType>() {
+                    @Override
+                    public long cardinality() {
+                        return -1;
+                    }
+
+                    @Override
+                    public boolean countable() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean contains(RealType element) {
+                        return container.contains(element) && !other.contains(element);
+                    }
+
+                    @Override
+                    public void append(RealType element) {
+                        throw new UnsupportedOperationException("Cannot append to this set.");
+                    }
+
+                    @Override
+                    public void remove(RealType element) {
+                        throw new UnsupportedOperationException("Cannot remove elements from this set.");
+                    }
+
+                    @Override
+                    public Set<RealType> union(Set<RealType> other) {
+                        if (other.countable() && other.cardinality() > 0L) {
+                            if (StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) {
+                                // the elements of other are already contained within this set
+                                return this;
+                            }
+                        }
+                        return other.union(this);
+                    }
+
+                    @Override
+                    public Set<RealType> intersection(Set<RealType> other) {
+                        if (other.countable() && other.cardinality() > 0L) {
+                            NumericSet intersection = new NumericSet();
+                            StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(intersection::append);
+                            if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                            try {
+                                return intersection.coerceTo(RealType.class);
+                            } catch (CoercionException e) {
+                                throw new IllegalStateException(e);
+                            }
+                        }
+                        return other.intersection(this);
+                    }
+
+                    @Override
+                    public Set<RealType> difference(Set<RealType> other) {
+                        if (other.countable() && other.cardinality() > 0L) {
+                            // if none of the elements of other are in this set, we can just return this set
+                            if (StreamSupport.stream(other.spliterator(), true).noneMatch(this::contains)) {
+                                return this;
+                            }
+                        }
+                        // this operation is non-commutative, so we can't try this in reverse
+                        throw new UnsupportedOperationException("Cannot currently compute difference with a non-discrete set.");
+                    }
+
+                    @Override
+                    public Iterator<RealType> iterator() {
+                        throw new UnsupportedOperationException("This set is not iterable.");
+                    }
+                };
+            }
+
+            @Override
+            public Iterator<RealType> iterator() {
+                throw new UnsupportedOperationException("This set is not iterable.");
+            }
+
+            @Override
+            public String toString() {
+                return "{x in \uD835\uDD7D \u2208\u2009" + range + "\u2009}";
+            }
+        };
+    }
 }
