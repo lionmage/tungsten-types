@@ -25,7 +25,10 @@ import java.util.stream.StreamSupport;
  * <br/> The first {@link #MAX_N_TO_CACHE} generated values are cached for performance.
  */
 public class FibonacciNumbers implements Set<IntegerType> {
-    private static final long MAX_N_TO_CACHE = 20L;
+    /**
+     * The maximum number of Fibonacci values to cache.
+     */
+    public static final long MAX_N_TO_CACHE = 20L;
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
     private final TreeSet<IntegerType> cache = new TreeSet<>();
 
@@ -68,6 +71,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     @Override
     public Set<IntegerType> union(Set<IntegerType> other) {
+        if (other.cardinality() == 0L || other instanceof FibonacciNumbers) return this;
+        // TODO implement this with a combining iterator
         return null;
     }
 
@@ -123,8 +128,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
             }
 
             @Override
-            public Set<IntegerType> intersection(Set<IntegerType> other) {
-                return null;
+            public Set<IntegerType> intersection(Set<IntegerType> other2) {
+                return FibonacciNumbers.this.intersection(other.intersection(other2));
             }
 
             @Override
@@ -142,7 +147,69 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     @Override
     public Set<IntegerType> difference(Set<IntegerType> other) {
-        return null;
+        if (other instanceof FibonacciNumbers) return EmptySet.getInstance();
+        if (other.cardinality() == 0L) return this;
+        // if we're not in some kind of corner case, build a Set representation
+        final Set<IntegerType> container = this;
+        return new Set<>() {
+            @Override
+            public long cardinality() {
+                return -1;
+            }
+
+            @Override
+            public boolean countable() {
+                return true;
+            }
+
+            @Override
+            public boolean contains(IntegerType element) {
+                return container.contains(element) && !other.contains(element);
+            }
+
+            @Override
+            public void append(IntegerType element) {
+                throw new UnsupportedOperationException("This set is immutable");
+            }
+
+            @Override
+            public void remove(IntegerType element) {
+                throw new UnsupportedOperationException("This set is immutable");
+            }
+
+            @Override
+            public Set<IntegerType> union(Set<IntegerType> other) {
+                return null;
+            }
+
+            @Override
+            public Set<IntegerType> intersection(Set<IntegerType> other) {
+                if (other.countable() && other.cardinality() >= 0L) {
+                    if (other.cardinality() == 0L) return EmptySet.getInstance();
+                    NumericSet intersection = new NumericSet();
+                    StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(intersection::append);
+                    if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                    try {
+                        return intersection.coerceTo(IntegerType.class);
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+                // right now, let's keep this simple, but in the future, we should find a way to handle
+                // the generified case
+                throw new UnsupportedOperationException("Cannot currently compute intersection with a non-discrete set");
+            }
+
+            @Override
+            public Set<IntegerType> difference(Set<IntegerType> other2) {
+                return container.difference(other.union(other2));
+            }
+
+            @Override
+            public Iterator<IntegerType> iterator() {
+                return StreamSupport.stream(container.spliterator(), false).dropWhile(other::contains).iterator();
+            }
+        };
     }
 
     @Override

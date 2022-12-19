@@ -367,7 +367,7 @@ public class RationalImpl implements RationalType {
                 RealType realDenom = (RealType) reduced.denominator().coerceTo(RealType.class);
                 return realNum.sqrt().divide(realDenom.sqrt());
             } catch (CoercionException e) {
-                throw new ArithmeticException("Exception thrown while taking sqrt of " + this.toString());
+                throw new ArithmeticException("Exception thrown while taking sqrt of " + this);
             }
         }
     }
