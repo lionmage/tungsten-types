@@ -24,9 +24,15 @@
 package tungsten.types.util;
 
 import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.impl.RationalImpl;
+import tungsten.types.numerics.impl.Zero;
 
+import java.math.BigInteger;
 import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,7 +150,7 @@ public class UnicodeTextEffects {
         return buf.toString();
     }
     
-    private static final String COMBINING_OVERLINE = "\u0305";
+    private static final char COMBINING_OVERLINE = '\u0305';
     private static final char NEGATIVE_SIGN = '\u2212';
 
     public static String overline(String source) {
@@ -202,5 +208,27 @@ public class UnicodeTextEffects {
         String expanded = Normalizer.isNormalized(source, Normalizer.Form.NFKD) ? source :
                 Normalizer.normalize(source, Normalizer.Form.NFKD);
         return expanded.replaceAll("\\p{M}", "");
+    }
+
+    private static final RationalType ONE = new RationalImpl(BigInteger.ONE, BigInteger.ONE);
+
+    public static String properFractionForDisplay(RationalType frac) {
+        if (frac.magnitude().compareTo(ONE) < 0) return frac.toString();
+
+        StringBuilder buf = new StringBuilder();
+        if (frac.sign() == Sign.NEGATIVE) buf.append(NEGATIVE_SIGN);
+        RationalType val = frac.magnitude().reduce();
+        IntegerType whole = val.floor();
+        buf.append(whole);
+        try {
+            RationalType fracPart = (RationalType) val.subtract(whole).coerceTo(RationalType.class);
+            if (!Zero.isZero(fracPart)) {
+                // U+2064 INVISIBLE PLUS is ideal for separating the whole from the fraction part
+                buf.append('\u2064').append(fracPart);
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While converting the fraction " + frac + " for display.", e);
+        }
+        return buf.toString();
     }
 }

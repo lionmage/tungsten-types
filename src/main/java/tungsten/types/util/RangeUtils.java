@@ -38,6 +38,7 @@ import tungsten.types.set.impl.NumericSet;
 
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
@@ -386,7 +387,7 @@ public class RangeUtils {
             public Set<RealType> difference(Set<RealType> other) {
                 final Set<RealType> container = this;
 
-                return new Set<RealType>() {
+                return new Set<>() {
                     @Override
                     public long cardinality() {
                         return -1;
@@ -452,14 +453,18 @@ public class RangeUtils {
 
                     @Override
                     public Iterator<RealType> iterator() {
-                        throw new UnsupportedOperationException("This set is not iterable.");
+                        return Collections.emptyIterator();
+                        // probably preferable to throwing an exception
+//                        throw new UnsupportedOperationException("This set is not iterable.");
                     }
                 };
             }
 
             @Override
             public Iterator<RealType> iterator() {
-                throw new UnsupportedOperationException("This set is not iterable.");
+                return Collections.emptyIterator();
+                // probably preferable to throwing an exception
+//                throw new UnsupportedOperationException("This set is not iterable.");
             }
 
             @Override
