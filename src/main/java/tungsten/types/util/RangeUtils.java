@@ -378,7 +378,8 @@ public class RangeUtils {
                     }
                 }
                 // TODO it would be nice to be able to ascertain if other contains ranges, so we could compute
-                // the intersection of this range with those
+                //  the intersection of this range with those
+
                 // last ditch effort
                 return other.intersection(this);
             }
@@ -446,6 +447,8 @@ public class RangeUtils {
                             if (StreamSupport.stream(other.spliterator(), true).noneMatch(this::contains)) {
                                 return this;
                             }
+                            // TODO it would be nice to have a hybrid set that can handle ranges as well as elements of
+                            //  both inclusion AND exclusion.
                         }
                         // this operation is non-commutative, so we can't try this in reverse
                         throw new UnsupportedOperationException("Cannot currently compute difference with a non-discrete set.");
@@ -454,8 +457,6 @@ public class RangeUtils {
                     @Override
                     public Iterator<RealType> iterator() {
                         return Collections.emptyIterator();
-                        // probably preferable to throwing an exception
-//                        throw new UnsupportedOperationException("This set is not iterable.");
                     }
                 };
             }
@@ -463,8 +464,6 @@ public class RangeUtils {
             @Override
             public Iterator<RealType> iterator() {
                 return Collections.emptyIterator();
-                // probably preferable to throwing an exception
-//                throw new UnsupportedOperationException("This set is not iterable.");
             }
 
             @Override
