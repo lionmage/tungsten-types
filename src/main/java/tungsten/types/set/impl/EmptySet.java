@@ -27,6 +27,7 @@ import tungsten.types.Set;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * The empty set.
@@ -62,7 +63,7 @@ public class EmptySet implements Set {
 
     @Override
     public void remove(Object element) {
-        throw new UnsupportedOperationException("No elements to remove.");
+        throw new NoSuchElementException("EmptySet has no elements to remove.");
     }
 
     @Override
