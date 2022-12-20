@@ -4,7 +4,15 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
-public class CombiningIterator <T extends Comparable<T>> implements Iterator<T> {
+/**
+ * An implementation of {@link Iterator} that combines the output of two other
+ * {@link Iterator}s.  The elements returned from the wrapped iterators must
+ * be comparable, and it is assumed that these iterators return their elements
+ * in sorted order (least to highest).
+ *
+ * @param <T> the type of the elements returned by this iterator
+ */
+public class CombiningIterator <T extends Comparable<? super T>> implements Iterator<T> {
     private final Iterator<T> iter1;
     private final Iterator<T> iter2;
     private final TreeSet<T> cache = new TreeSet<>();

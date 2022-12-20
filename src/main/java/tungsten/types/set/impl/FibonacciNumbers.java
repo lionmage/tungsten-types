@@ -9,6 +9,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.CombiningIterator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -72,8 +73,64 @@ public class FibonacciNumbers implements Set<IntegerType> {
     @Override
     public Set<IntegerType> union(Set<IntegerType> other) {
         if (other.cardinality() == 0L || other instanceof FibonacciNumbers) return this;
-        // TODO implement this with a combining iterator
-        return null;
+        // general case uses a combining iterator
+        return new Set<>() {
+            @Override
+            public long cardinality() {
+                return -1;
+            }
+
+            @Override
+            public boolean countable() {
+                return true;
+            }
+
+            @Override
+            public boolean contains(IntegerType element) {
+                return FibonacciNumbers.this.contains(element) || other.contains(element);
+            }
+
+            @Override
+            public void append(IntegerType element) {
+                throw new UnsupportedOperationException("Append is not supported");
+            }
+
+            @Override
+            public void remove(IntegerType element) {
+                throw new UnsupportedOperationException("Remove is not supported");
+            }
+
+            @Override
+            public Set<IntegerType> union(Set<IntegerType> other2) {
+                return FibonacciNumbers.this.union(other.union(other2));
+            }
+
+            @Override
+            public Set<IntegerType> intersection(Set<IntegerType> other) {
+                if (other.cardinality() == 0L) return EmptySet.getInstance();
+                if (other.cardinality() > 0L) {
+                    NumericSet intersection = new NumericSet();
+                    StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(intersection::append);
+                    if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                    try {
+                        return intersection.coerceTo(IntegerType.class);
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+                return other.intersection(this);
+            }
+
+            @Override
+            public Set<IntegerType> difference(Set<IntegerType> other) {
+                return null;
+            }
+
+            @Override
+            public Iterator<IntegerType> iterator() {
+                return new CombiningIterator<>(FibonacciNumbers.this.iterator(), other.iterator());
+            }
+        };
     }
 
     @Override
