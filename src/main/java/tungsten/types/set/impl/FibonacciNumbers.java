@@ -122,8 +122,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
             }
 
             @Override
-            public Set<IntegerType> difference(Set<IntegerType> other) {
-                return null;
+            public Set<IntegerType> difference(Set<IntegerType> other2) {
+                return FibonacciNumbers.this.difference(other2).union(other.difference(other2));
             }
 
             @Override
@@ -190,8 +190,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
             }
 
             @Override
-            public Set<IntegerType> difference(Set<IntegerType> other) {
-                return null;
+            public Set<IntegerType> difference(Set<IntegerType> other2) {
+                return FibonacciNumbers.this.difference(other2).intersection(other.difference(other2));
             }
 
             @Override
