@@ -34,12 +34,13 @@ import java.util.NoSuchElementException;
  *
  * @author Robert Poole <Tarquin.AZ@gmail.com>
  */
-public class EmptySet implements Set {
+public class EmptySet implements Set<Object> {
     private EmptySet() {}
     
     private static final EmptySet instance = new EmptySet();
-    
-    public static Set getInstance() { return instance; }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Set<T> getInstance() { return (Set<T>) instance; }
 
     @Override
     public long cardinality() {
@@ -67,22 +68,22 @@ public class EmptySet implements Set {
     }
 
     @Override
-    public Set union(Set other) {
+    public Set<Object> union(Set<Object> other) {
         return other;
     }
 
     @Override
-    public Set intersection(Set other) {
+    public Set<Object> intersection(Set<Object> other) {
         return this;
     }
 
     @Override
-    public Set difference(Set other) {
+    public Set<Object> difference(Set<Object> other) {
         return this;
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<Object> iterator() {
         return Collections.emptyIterator();
     }
 }
