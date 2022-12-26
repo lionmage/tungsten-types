@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
  * in a union.  Note that elements of this set must implement {@link Comparable}.
  *
  * @param <T> the type of the elements of this set, as well as the type of
- *           contributing sets
+ *           contributing sets' elements
  */
 public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
     private final Set<T> set1, set2;
@@ -63,6 +63,18 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
         return new UnionSet<>(this, other);
     }
 
+    /**
+     * Compute the intersection of this set with the given set.
+     * <ul>
+     * <li>If {@code other} is a finite, non-empty set, then the result is
+     * a finite {@link Set} that is mutable.</li>
+     * <li>If {@code other} is empty, the result is the {@link EmptySet}.</li>
+     * <li>Otherwise, the result is an infinite set that is immutable.</li>
+     * </ul>
+     *
+     * @param other the {@link Set} with which to compute the intersection
+     * @return a {@link Set} representing the intersection of this set with {@code other}
+     */
     @Override
     public Set<T> intersection(Set<T> other) {
         if (other.cardinality() == 0L) return EmptySet.getInstance();
