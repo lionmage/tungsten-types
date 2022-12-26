@@ -9,6 +9,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
+/**
+ * An implementation of {@link Set} that combines two other sets
+ * in a union.  Note that elements of this set must implement {@link Comparable}.
+ *
+ * @param <T> the type of the elements of this set, as well as the type of
+ *           contributing sets
+ */
 public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
     private final Set<T> set1, set2;
 
@@ -89,7 +96,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
                     if (!success) {
                         Logger.getLogger(UnionSet.class.getName()).log(Level.WARNING,
                                 "Attempt to remove element {} from set {}",
-                                new Object[]{element, result});
+                                new Object[] {element, result});
                     }
                 }
 
