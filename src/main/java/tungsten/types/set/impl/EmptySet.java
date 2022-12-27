@@ -86,4 +86,18 @@ public class EmptySet implements Set<Object> {
     public Iterator<Object> iterator() {
         return Collections.emptyIterator();
     }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Set) {
+            Set<?> that = (Set<?>) obj;
+            return that.cardinality() == 0L;
+        }
+        return false;
+    }
 }

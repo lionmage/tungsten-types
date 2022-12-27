@@ -158,9 +158,9 @@ public class NumericSet implements Set<Numeric> {
             innerSet.add((T) element.coerceTo(clazz));
         }
         
-        return new Set<T>() {
+        return new Set<>() {
             private final java.util.Set<T> elements = Collections.unmodifiableSet(innerSet);
-            
+
             @Override
             public long cardinality() {
                 return elements.size();
@@ -230,6 +230,22 @@ public class NumericSet implements Set<Numeric> {
             public Spliterator<T> spliterator() {
                 return elements.spliterator();
             }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(elements, clazz);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof Set) {
+                    Set<T> that = (Set<T>) obj;
+                    if (that.countable() && that.cardinality() == this.cardinality()) {
+                        return elements.parallelStream().allMatch(that::contains);
+                    }
+                }
+                return false;
+            }
         };
     } 
     
@@ -250,5 +266,21 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public Spliterator<Numeric> spliterator() {
         return internal.spliterator();
+    }
+
+    @Override
+    public int hashCode() {
+        return 7 * internal.hashCode() - 3;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Set) {
+            Set<Numeric> that = (Set<Numeric>) obj;
+            if (that.countable() && that.cardinality() == this.cardinality()) {
+                return internal.parallelStream().allMatch(that::contains);
+            }
+        }
+        return false;
     }
 }
