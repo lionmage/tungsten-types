@@ -106,11 +106,11 @@ public class FibonacciNumbers implements Set<IntegerType> {
             }
 
             @Override
-            public Set<IntegerType> intersection(Set<IntegerType> other) {
-                if (other.cardinality() == 0L) return EmptySet.getInstance();
-                if (other.cardinality() > 0L) {
+            public Set<IntegerType> intersection(Set<IntegerType> other2) {
+                if (other2.cardinality() == 0L) return EmptySet.getInstance();
+                if (other2.cardinality() > 0L) {
                     NumericSet intersection = new NumericSet();
-                    StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(intersection::append);
+                    StreamSupport.stream(other2.spliterator(), true).filter(this::contains).forEach(intersection::append);
                     if (intersection.cardinality() == 0L) return EmptySet.getInstance();
                     try {
                         return intersection.coerceTo(IntegerType.class);
@@ -118,7 +118,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
                         throw new IllegalStateException(e);
                     }
                 }
-                return other.intersection(this);
+                // (A union B) intersection C = (A intersection C) union (B intersection C)
+                return FibonacciNumbers.this.intersection(other2).union(other.intersection(other2));
             }
 
             @Override
@@ -180,8 +181,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
             }
 
             @Override
-            public Set<IntegerType> union(Set<IntegerType> other) {
-                return null;
+            public Set<IntegerType> union(Set<IntegerType> other2) {
+                return new UnionSet<>(this, other2);
             }
 
             @Override
@@ -235,16 +236,16 @@ public class FibonacciNumbers implements Set<IntegerType> {
             }
 
             @Override
-            public Set<IntegerType> union(Set<IntegerType> other) {
-                return null;
+            public Set<IntegerType> union(Set<IntegerType> other2) {
+                return new UnionSet<>(this, other2);
             }
 
             @Override
-            public Set<IntegerType> intersection(Set<IntegerType> other) {
-                if (other.countable() && other.cardinality() >= 0L) {
-                    if (other.cardinality() == 0L) return EmptySet.getInstance();
+            public Set<IntegerType> intersection(Set<IntegerType> other2) {
+                if (other2.countable() && other2.cardinality() >= 0L) {
+                    if (other2.cardinality() == 0L) return EmptySet.getInstance();
                     NumericSet intersection = new NumericSet();
-                    StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(intersection::append);
+                    StreamSupport.stream(other2.spliterator(), true).filter(this::contains).forEach(intersection::append);
                     if (intersection.cardinality() == 0L) return EmptySet.getInstance();
                     try {
                         return intersection.coerceTo(IntegerType.class);
@@ -252,9 +253,9 @@ public class FibonacciNumbers implements Set<IntegerType> {
                         throw new IllegalStateException(e);
                     }
                 }
-                // right now, let's keep this simple, but in the future, we should find a way to handle
-                // the generified case
-                throw new UnsupportedOperationException("Cannot currently compute intersection with a non-discrete set");
+                // use an identity for the general case
+                // (A - B) intersection C = A intersection (B - C)
+                return container.intersection(other.difference(other2));
             }
 
             @Override
