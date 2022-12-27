@@ -4,9 +4,11 @@ import tungsten.types.Set;
 import tungsten.types.util.CombiningIterator;
 
 import java.util.Iterator;
+import java.util.Spliterator;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -134,8 +136,19 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
                 public Iterator<T> iterator() {
                     return result.iterator();
                 }
+
+                @Override
+                public Spliterator<T> spliterator() {
+                    return result.spliterator();
+                }
+
+                @Override
+                public String toString() {
+                    return result.stream().map(Object::toString).collect(Collectors.joining(", ", "{", "}"));
+                }
             };
         }
+        // default strategy is to construct a new UnionSet that represents the intersection
         return new UnionSet<>(set1.intersection(other), set2.intersection(other));
     }
 
@@ -148,5 +161,26 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
     @Override
     public Iterator<T> iterator() {
         return new CombiningIterator<>(set1.iterator(), set2.iterator());
+    }
+
+    private static final int TOSTRING_LIMIT = 15;
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("UnionSet: {");
+        Iterator<T> iter = this.iterator();
+        int idx = 0;
+        while (iter.hasNext()) {
+            buf.append(iter.next()).append(", ");
+            if (++idx > TOSTRING_LIMIT) break;  // only include the first TOSTRING_LIMIT elements if the set is bigger
+        }
+        if (idx < TOSTRING_LIMIT) {
+            buf.setLength(buf.length() - 2); // erase the final comma and space
+        } else {
+            buf.append('\u2026'); // append an ellipsis to indicate that there are more elements
+        }
+        buf.append('}');
+        return buf.toString();
     }
 }

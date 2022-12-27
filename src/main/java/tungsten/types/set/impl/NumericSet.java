@@ -28,6 +28,8 @@ import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,19 +81,26 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public void append(Numeric element) {
         if (!internal.add(element)) {
-            Logger.getLogger(NumericSet.class.getName()).log(Level.FINER, "Attempted to append {0}, but set already contains this value.", element);
+            Logger.getLogger(NumericSet.class.getName()).log(Level.FINER,
+                    "Attempted to append {0}, but set already contains this value.", element);
         }
     }
 
     @Override
     public void remove(Numeric element) {
         if (!internal.remove(element)) {
-            Logger.getLogger(NumericSet.class.getName()).log(Level.FINER, "Attempted to renove {0}, but set does not contain this value.", element);
+            Logger.getLogger(NumericSet.class.getName()).log(Level.FINER,
+                    "Attempted to remove {0}, but set does not contain this value.", element);
         }
     }
 
     @Override
     public Set<Numeric> union(Set<Numeric> other) {
+        if (other.cardinality() == -1L) {
+            return other.union(this);
+        } else if (other.cardinality() == 0L) {
+            return this;
+        }
         HashSet<Numeric> union = new HashSet<>(internal);
         
         Iterator<Numeric> iter = other.iterator();
@@ -104,6 +113,7 @@ public class NumericSet implements Set<Numeric> {
 
     @Override
     public Set<Numeric> intersection(Set<Numeric> other) {
+        if (other.cardinality() == 0L) return EmptySet.getInstance();
         HashSet<Numeric> intersec = new HashSet<>();
         
         for (Numeric element : internal) {
@@ -112,6 +122,7 @@ public class NumericSet implements Set<Numeric> {
                 intersec.add(element);
             }
         }
+        if (intersec.isEmpty()) return EmptySet.getInstance();
         
         return new NumericSet(intersec);
     }
@@ -119,15 +130,8 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public Set<Numeric> difference(Set<Numeric> other) {
         HashSet<Numeric> diff = new HashSet<>(internal); // create a copy
-        
-        Iterator<Numeric> iter = other.iterator();
-        while (iter.hasNext()) {
-            Numeric element = iter.next();
-            // note we're checking the internal store, then removing from the copy
-            if (internal.contains(element)) {
-                diff.remove(element);
-            }
-        }
+        diff.removeIf(other::contains);
+        if (diff.isEmpty()) return EmptySet.getInstance();
         
         return new NumericSet(diff);
     }
@@ -184,38 +188,49 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public Set<T> union(Set<T> other) {
-                if (other.countable()) {
+                if (other.countable() && other.cardinality() > 0L) {
                     LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
                     other.forEach(temp::add);
                     return (Set<T>) new NumericSet(temp);
                 }
-                throw new UnsupportedOperationException("Not supported yet.");
+                if (Comparable.class.isAssignableFrom(clazz)) {
+                    try {
+                        Constructor<UnionSet> constructor = UnionSet.class.getConstructor(Set.class, Set.class);
+                        return constructor.newInstance(this, other);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        Logger.getLogger(NumericSet.class.getName()).log(Level.SEVERE,
+                                "While dynamically instantiating UnionSet", e);
+                        throw new RuntimeException(e);
+                    } catch (InstantiationException e) {
+                        throw new IllegalStateException("Unable to dynamically instantiate UnionSet", e);
+                    }
+                }
+                return other.union(this);
             }
 
             @Override
             public Set<T> intersection(Set<T> other) {
-                if (other.countable()) {
-                    java.util.Set<T> temp = elements.stream().filter(other::contains).collect(Collectors.toSet());
-                    return (Set<T>) new NumericSet(temp);
-                }
-                throw new UnsupportedOperationException("Not supported yet.");
+                java.util.Set<T> temp = elements.stream().filter(other::contains).collect(Collectors.toSet());
+                return (Set<T>) new NumericSet(temp);
             }
 
             @Override
             public Set<T> difference(Set<T> other) {
-                if (other.countable()) {
-                    LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
-                    temp.removeIf(other::contains);
-                    return (Set<T>) new NumericSet(temp);
-                }
-                throw new UnsupportedOperationException("Not supported yet.");
+                LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
+                temp.removeIf(other::contains);
+                return (Set<T>) new NumericSet(temp);
             }
 
             @Override
             public Iterator<T> iterator() {
                 return elements.iterator();
             }
-            
+
+            @Override
+            public Spliterator<T> spliterator() {
+                return elements.spliterator();
+            }
+
             public Stream<T> stream() {
                 return elements.stream();
             }
@@ -238,5 +253,10 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public Iterator<Numeric> iterator() {
         return internal.iterator();
+    }
+
+    @Override
+    public Spliterator<Numeric> spliterator() {
+        return internal.spliterator();
     }
 }
