@@ -230,14 +230,6 @@ public class NumericSet implements Set<Numeric> {
             public Spliterator<T> spliterator() {
                 return elements.spliterator();
             }
-
-            public Stream<T> stream() {
-                return elements.stream();
-            }
-            
-            public Stream<T> parallelStream() {
-                return elements.parallelStream();
-            }
         };
     } 
     

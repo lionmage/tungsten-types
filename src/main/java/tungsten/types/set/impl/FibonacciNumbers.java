@@ -118,7 +118,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
                         throw new IllegalStateException(e);
                     }
                 }
-                // (A union B) intersection C = (A intersection C) union (B intersection C)
+                // (A ∪ B) ∩ C = (A ∩ C) ∪ (B ∩ C)
                 return FibonacciNumbers.this.intersection(other2).union(other.intersection(other2));
             }
 
@@ -254,7 +254,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
                     }
                 }
                 // use an identity for the general case
-                // (A - B) intersection C = A intersection (B - C)
+                // (A - B) ∩ C = A ∩ (B - C)
                 return container.intersection(other.difference(other2));
             }
 

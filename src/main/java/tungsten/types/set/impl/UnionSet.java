@@ -154,7 +154,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
 
     @Override
     public Set<T> difference(Set<T> other) {
-        // (A union B) - C = (A - C) union (B - C)
+        // (A ∪ B) - C = (A - C) ∪ (B - C)
         return new UnionSet<>(set1.difference(other), set2.difference(other));
     }
 
