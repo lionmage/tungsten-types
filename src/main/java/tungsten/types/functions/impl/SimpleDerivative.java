@@ -71,11 +71,11 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         } else {
             original = (UnaryFunction<T, T>) inputFunction;
         }
-        // if the function provided has its own derivative method, skip the chain rule logic for now
-        if (!hasDerivativeMethod(original.getClass())) {
+        // handling of composed functions
+        if (original.getOriginalFunction().isPresent()) {
             if (original.getComposedFunction().isPresent()) {
                 UnaryFunction<T, T> innerfunc = (UnaryFunction<T, T>) original.getComposedFunction().get();
-                UnaryFunction<T, T> outerfunc = original.getOriginalFunction().orElseThrow();
+                UnaryFunction<T, T> outerfunc = original.getOriginalFunction().get();
                 if (original.getComposingFunction().isPresent()) {
                     // One more level of composition to deal with...
                     UnaryFunction<T, T> afterfunc = (UnaryFunction<T, T>) original.getComposingFunction().get();
@@ -86,7 +86,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                 return chainRuleStrategy(outerfunc, innerfunc);
             }
             if (original.getComposingFunction().isPresent()) {
-                UnaryFunction<T, T> innerfunc = original.getOriginalFunction().orElseThrow();
+                UnaryFunction<T, T> innerfunc = original.getOriginalFunction().get();
                 UnaryFunction<T, T> outerfunc = (UnaryFunction<T, T>) original.getComposingFunction().get();
                 return chainRuleStrategy(outerfunc, innerfunc);
             }
@@ -123,7 +123,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         final UnaryFunction<T, T> outerDerivative = SimpleDerivative.this.apply(outer);
         final UnaryFunction<T, T> innerDerivative = SimpleDerivative.this.apply(inner);
 
-        return new UnaryFunction<>(outer.expectedArguments()[0]) {
+        return new UnaryFunction<>(inner.expectedArguments()[0]) {
             @Override
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.elementAt(0L);
@@ -133,9 +133,9 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
 
             @Override
             public Range<RealType> inputRange(String argName) {
-                final String varName = outer.expectedArguments()[0];
+                final String varName = inner.expectedArguments()[0];
                 if (varName.equals(argName)) {
-                    return outer.inputRange(argName);
+                    return inner.inputRange(argName);
                 }
                 return null;
             }
