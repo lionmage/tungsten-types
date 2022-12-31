@@ -10,6 +10,11 @@ import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
 
+/**
+ * A basic implementation of the exponential function &#x212F;<sup>x</sup> for
+ * real-valued arguments.  This implementation supports composing with another
+ * function at construction-time, saving some effort.
+ */
 public class Exp extends UnaryFunction<RealType, RealType> {
     public Exp() {
         super("x");
@@ -19,14 +24,26 @@ public class Exp extends UnaryFunction<RealType, RealType> {
         super(varName);
     }
 
+    /**
+     * A convenience constructor to build a composed function
+     * exp(&fnof;(x)).
+     *
+     * @param inner the inner function &fnof;(x) for composition
+     */
+    public Exp(UnaryFunction<? super RealType, RealType> inner) {
+        super(inner.expectedArguments()[0]);
+        composedFunction = inner;
+    }
+
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
         if (!checkArguments(arguments)) {
-            throw new IllegalArgumentException("Expected argument " + getArgumentName() + " is not present in input vector.");
+            throw new IllegalArgumentException("Expected argument " + getArgumentName() + " is not present in the input vector.");
         }
         final RealType arg = arguments.elementAt(0L);
+        RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
         final Euler e = Euler.getInstance(arg.getMathContext());
-        return e.exp(arg);
+        return e.exp(intermediate);
     }
 
     @Override
@@ -58,7 +75,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     public UnaryFunction<RealType, RealType> diff(SimpleDerivative<RealType> diffEngine) {
         if (getComposingFunction().isPresent()) {
             UnaryFunction<RealType, RealType> outer = (UnaryFunction<RealType, RealType>) getComposingFunction().get();
-            return diffEngine.chainRuleStrategy(outer, this.getOriginalFunction().orElseThrow(IllegalStateException::new));
+            return diffEngine.chainRuleStrategy(outer, new Exp(getArgumentName()));
         }
         if (getComposedFunction().isEmpty()) return this;
         final UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();

@@ -16,8 +16,8 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     // if this function is f(x) and we have a composition of h(f(g(x)))
     // then g(x) is the composedFunction (inner function)
     // and h(x) is the composingFunction (outer function)
-    private UnaryFunction<? super T, T> composedFunction;
-    private UnaryFunction<R, ? extends R> composingFunction;
+    protected UnaryFunction<? super T, T> composedFunction;
+    protected UnaryFunction<R, ? extends R> composingFunction;
     private UnaryFunction<T, R> originalFunction;
 
     protected UnaryFunction(String varName) {
@@ -111,7 +111,8 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
         return new UnaryFunction<>(UnaryFunction.this.argumentName) {
             {
                 originalFunction = UnaryFunction.this;
-                composingFunction = after;
+                // TODO see if we can do this a better way
+                composingFunction = (UnaryFunction<R2, ? extends R2>) after;
             }
 
             @Override
