@@ -68,6 +68,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
 
     @Override
     public Range<RealType> inputRange(String argName) {
+        if (getComposedFunction().isPresent()) return  getComposedFunction().get().inputRange(argName);
         return RangeUtils.ALL_REALS;
     }
 
