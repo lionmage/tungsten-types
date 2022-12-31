@@ -12,7 +12,6 @@ import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.RangeUtils;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 
 /**
@@ -103,12 +102,11 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         if (Zero.isZero(value)) {
             return this;
         } else {
-            final Class<R> resultClass = (Class<R>)((Class) ((ParameterizedType) this.getClass()
-                            .getGenericSuperclass()).getActualTypeArguments()[1]);
+            final Class<R> resultClass = (Class<R>) value.getClass();
             try {
                 return new Const<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(resultClass));
             } catch (CoercionException e) {
-                throw new IllegalStateException("Unable to instantiate the Zero function.", e);
+                throw new IllegalStateException("Unable to coerce zero to result type.", e);
             }
         }
     }
