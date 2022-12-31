@@ -7,6 +7,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
@@ -67,7 +68,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
                 Const<RealType, RealType> myConst = Const.getInstance((RealType) exponent.coerceTo(RealType.class));
                 return new Product<>(beforeArgName, myConst, this);
             } catch (CoercionException e) {
-                throw new IllegalStateException("Exponent " + exponent + "is not coercible", e);
+                throw new IllegalStateException("Exponent " + exponent + " is not coercible", e);
             }
         }
         return super.composeWith(before);
@@ -106,7 +107,16 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
                     getComposedFunction().get().getComposedFunction().isEmpty()) {
                 Numeric exponent = ((Pow<?, ?>) getComposedFunction().get()).getExponent();
                 if (exponent instanceof IntegerType) numerator = ((IntegerType) exponent).asBigInteger();
-                // TODO what to do about rational exponents?
+                else {
+                    final RationalType scalar = (RationalType) exponent;
+                    try {
+                        return new Quotient<>(Const.getInstance((RealType) scalar.numerator().coerceTo(RealType.class)),
+                                new Product<>(Const.getInstance((RealType) scalar.denominator().coerceTo(RealType.class)),
+                                        new Reflexive<>(expectedArguments()[0], lnRange, RealType.class)));
+                    } catch (CoercionException fatal) {
+                        throw new IllegalStateException(fatal);
+                    }
+                }
             } else {
                 // for any other composed function, use the chain rule
                 UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
@@ -135,7 +145,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
             @Override
             public String toString() {
                 StringBuilder buf = new StringBuilder();
-                buf.append(scale).append('/').append(NaturalLog.this.innerToString(false));
+                buf.append(scale).append('/').append(NaturalLog.this.getArgumentName()); // was: innerToString(false)
                 return buf.toString();
             }
         };
