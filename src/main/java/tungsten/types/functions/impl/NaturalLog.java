@@ -19,6 +19,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
+/**
+ * A basic implementation of the natural logarithm function ln(x) for positive
+ * real-valued arguments.  This implementation supports composing with another
+ * function at construction-time, saving some effort.
+ */
 public class NaturalLog extends UnaryFunction<RealType, RealType> {
     public NaturalLog() {
         super("x");
@@ -28,13 +33,26 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
         super(argName);
     }
 
+    /**
+     * A convenience constructor to build a composed function
+     * ln(&fnof;(x)).
+     *
+     * @param inner the inner function &fnof;(x) for composition
+     */
+    public NaturalLog(UnaryFunction<? super RealType, RealType> inner) {
+        super(inner.expectedArguments()[0]);
+        composedFunction = inner;
+    }
+
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
         if (!checkArguments(arguments)) {
             throw new IllegalArgumentException("Expected argument "
                     + getArgumentName() + " is not present in input or is out of range.");
         }
-        return MathUtils.ln(arguments.elementAt(0L));
+        final RealType arg = arguments.elementAt(0L);
+        RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
+        return MathUtils.ln(intermediate);
     }
 
     @Override
@@ -83,17 +101,19 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     @Differentiable
     public UnaryFunction<RealType, RealType> diff(SimpleDerivative<RealType> diffEngine) {
         BigInteger numerator = BigInteger.ONE;
-        if (getComposedFunction().isPresent() && getComposedFunction().get() instanceof Pow &&
-                getComposedFunction().get().getComposedFunction().isEmpty()) {
-            Numeric exponent = ((Pow<?, ?>) getComposedFunction().get()).getExponent();
-            if (exponent instanceof IntegerType) numerator = ((IntegerType) exponent).asBigInteger();
-            // TODO what to do about rational exponents?
-        } else if (getComposedFunction().isPresent()) {
-            // for any other composed function, use the chain rule
-            UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
-            UnaryFunction<RealType, RealType> outerDiff = lnDiff(new IntegerImpl(BigInteger.ONE));
-            UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
-            return new Product<>((UnaryFunction<RealType, RealType>) outerDiff.composeWith(inner), innerdiff);
+        if (getComposedFunction().isPresent()) {
+            if (getComposedFunction().get() instanceof Pow &&
+                    getComposedFunction().get().getComposedFunction().isEmpty()) {
+                Numeric exponent = ((Pow<?, ?>) getComposedFunction().get()).getExponent();
+                if (exponent instanceof IntegerType) numerator = ((IntegerType) exponent).asBigInteger();
+                // TODO what to do about rational exponents?
+            } else {
+                // for any other composed function, use the chain rule
+                UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
+                UnaryFunction<RealType, RealType> outerDiff = lnDiff(new IntegerImpl(BigInteger.ONE));
+                UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
+                return new Product<>((UnaryFunction<RealType, RealType>) outerDiff.composeWith(inner), innerdiff);
+            }
         }
         // The derivative of ln(x) is 1/x over the positive reals, ln(x^2) is 2/x, etc.
         final IntegerType scale = new IntegerImpl(numerator);
