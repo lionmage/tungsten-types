@@ -144,7 +144,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
             }
             return pow;
-        } else if ((UnaryFunction) after instanceof NaturalLog) {
+        } else if (NaturalLog.class.isAssignableFrom(after.getClass())) {
             // log(x^y) = y*log(x)
             try {
                 return new Product<>(getArgumentName(),

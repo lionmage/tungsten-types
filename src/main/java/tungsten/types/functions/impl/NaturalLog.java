@@ -49,7 +49,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     public RealType apply(ArgVector<RealType> arguments) {
         if (!checkArguments(arguments)) {
             throw new IllegalArgumentException("Expected argument "
-                    + getArgumentName() + " is not present in input or is out of range.");
+                    + getArgumentName() + " is not present in input " + arguments + " or is out of range.");
         }
         final RealType arg = arguments.elementAt(0L);
         RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);

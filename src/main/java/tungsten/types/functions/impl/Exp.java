@@ -38,7 +38,8 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
         if (!checkArguments(arguments)) {
-            throw new IllegalArgumentException("Expected argument " + getArgumentName() + " is not present in the input vector.");
+            throw new IllegalArgumentException("Expected argument " + getArgumentName() +
+                    " is not present in the input vector " + arguments);
         }
         final RealType arg = arguments.elementAt(0L);
         RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
