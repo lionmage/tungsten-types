@@ -42,7 +42,8 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     @SafeVarargs
     public Product(UnaryFunction<T, R>... productOf) {
         super("x");
-        Arrays.stream(productOf).filter(f -> !(f instanceof Const)).forEach(terms::add);
+        Arrays.stream(productOf).filter(Product.class::isInstance).forEach(this::appendTerm);
+        Arrays.stream(productOf).filter(f -> !(f instanceof Product)).filter(f -> !(f instanceof Const)).forEach(terms::add);
         // combine all const terms into one
         try {
             R prodOfConstants = (R) Arrays.stream(productOf).filter(Const.class::isInstance)
@@ -66,8 +67,8 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
      */
     public Product(String argName, UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
         super(argName);
-        terms.add(first);
-        terms.add(second);
+        appendTerm(first);
+        appendTerm(second);
     }
 
     public void appendTerm(UnaryFunction<T, R> term) {
