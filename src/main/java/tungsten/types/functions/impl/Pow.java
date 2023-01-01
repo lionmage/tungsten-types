@@ -47,9 +47,11 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         }
     }
 
+    // TODO determine if it would be a good idea to add a convenience constructor with built-in composition
+
     @Override
     public R apply(ArgVector<T> arguments) {
-        T arg = arguments.elementAt(0L);
+        final T arg = arguments.elementAt(0L);
         MathContext ctx = arguments.getMathContext() != null ? arguments.getMathContext() : arg.getMathContext();
         NumericHierarchy h = NumericHierarchy.forNumericType(arg.getClass());
         try {
@@ -170,6 +172,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (exponent instanceof IntegerType) {
             buf.append(UnicodeTextEffects.numericSuperscript(((IntegerType) exponent).asBigInteger().intValueExact()));
         } else {
+            // since the exponent cannot be superscripted, add a thin space after
             buf.append('^').append(exponent).append('\u2009');
         }
         return buf.toString();
