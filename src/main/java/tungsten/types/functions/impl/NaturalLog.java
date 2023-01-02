@@ -122,7 +122,20 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
                 UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
                 UnaryFunction<RealType, RealType> outerDiff = lnDiff(new IntegerImpl(BigInteger.ONE));
                 UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
-                return new Product<>((UnaryFunction<RealType, RealType>) outerDiff.composeWith(inner), innerdiff);
+                return new Product<>((UnaryFunction<RealType, RealType>) outerDiff.composeWith(inner), innerdiff) {
+                    @Override
+                    public String toString() {
+                        if (this.termCount() == 2L) {
+                            // this Product has not been modified post-construction, so emit a representation of this derivative
+                            StringBuilder buf = new StringBuilder();
+                            buf.append('(').append("1/").append(innerToString(false)).append(')');
+                            buf.append('\u22C5'); // dot operator
+                            buf.append('(').append(innerdiff).append(')');
+                            return buf.toString();
+                        }
+                        return super.toString();
+                    }
+                };
             }
         }
         // The derivative of ln(x) is 1/x over the positive reals, ln(x^2) is 2/x, etc.
