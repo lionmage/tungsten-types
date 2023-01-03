@@ -172,8 +172,8 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
             UnaryFunction<T, T>[] functions = product.stream().toArray(UnaryFunction[]::new);
             assert functions.length == 2;
             UnaryFunction<T, T>[] derivatives = product.stream().map(this::apply).toArray(UnaryFunction[]::new);
-            return new Sum<>(new Product<>(functions[0], derivatives[1]),
-                    new Product<>(functions[1], derivatives[0]));
+            return new Sum<>(new Product<>(argName, functions[0], derivatives[1]),
+                    new Product<>(argName, functions[1], derivatives[0]));
         } else {
             // generalized product rule
             Sum<T, T> sumTerm = new Sum<>(argName);
