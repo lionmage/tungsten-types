@@ -159,7 +159,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         UnaryFunction<T, T> combinedNumerator =
                 new Sum<>(new Product<>(numDiff, quotient.getDenominator()),
                         new Product<>(quotient.getNumerator(), denomDiff).andThen(Negate.getInstance(clazz)));
-        return new Quotient<>(combinedNumerator, combinedDenom);
+        return new Quotient<>(combinedNumerator, combinedDenom).simplify();
     }
 
     protected UnaryFunction<T, T> productStrategy(Product<T, T> product) {
@@ -171,7 +171,9 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
             // generalized product rule
             Sum<T, T> sumTerm = new Sum<>(argName);
             // f'/f
-            product.parallelStream().map(f -> new Quotient<>(argName, this.apply(f), f)).forEach(sumTerm::appendTerm);
+            product.parallelStream().map(f -> new Quotient<>(argName, this.apply(f), f))
+                    .map(Quotient::simplify)
+                    .forEach(sumTerm::appendTerm);
             return new Product<>(argName, product, sumTerm);
         }
     }
