@@ -13,6 +13,7 @@ import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.RangeUtils;
 
 import java.math.MathContext;
+import java.util.Objects;
 
 /**
  * A function that represents a constant.
@@ -114,5 +115,18 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
     @Override
     public String toString() {
         return value.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return 9 * Objects.hashCode(value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Const) {
+            return value.equals(((Const<?, ?>) obj).inspect());
+        }
+        return false;
     }
 }

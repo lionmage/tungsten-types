@@ -17,6 +17,7 @@ import tungsten.types.util.UnicodeTextEffects;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Objects;
 
 /**
  * A function that raises a value to a given power.  More formally, given x,
@@ -176,5 +177,23 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             buf.append('^').append(exponent).append('\u2009');
         }
         return buf.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(exponent, outputClazz);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Pow) {
+            Class<? extends Numeric> otherReturnType = ((Pow<?, ?>) obj).outputClazz;
+            if (otherReturnType != null && this.outputClazz != null) {
+                if (!outputClazz.isAssignableFrom(otherReturnType)) return false;
+            }
+            Numeric otherExponent = ((Pow<?, ?>) obj).getExponent();
+            return this.exponent.equals(otherExponent);
+        }
+        return false;
     }
 }
