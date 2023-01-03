@@ -76,7 +76,9 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
             }
             if (numIsConst) {
                 Const<? super RealType, RealType> equiv = Const.getConstEquivalent(numerator);
+                if (One.isUnity(equiv.inspect())) return denominator.andThen(new Pow<>(-1L));
                 R eqInR = (R) equiv.inspect().coerceTo(outputClazz);
+                if (Zero.isZero(eqInR)) return Const.getInstance(eqInR);
                 return new Quotient<>(getArgumentName(), Const.getInstance(eqInR), denominator);
             }
             if (denomIsConst) {
