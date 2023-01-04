@@ -16,6 +16,7 @@ import tungsten.types.util.RangeUtils;
 
 import java.math.MathContext;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,7 +59,8 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
             // and the product of the constant terms must be -1
             Product<?, ?> prod = (Product<?, ?>) fn;
             if (prod.termCount() < 2L || prod.stream().allMatch(Const.class::isInstance)) return false;
-            Numeric coeffProd =  prod.stream().filter(Const.class::isInstance).map(c -> ((Const<Numeric, Numeric>) c).inspect())
+            Numeric coeffProd =  prod.stream().filter(Const.class::isInstance).map(Const.class::cast)
+                    .map(Const::inspect)
                     .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply);
             try {
                 RealType realProd = (RealType) coeffProd.coerceTo(RealType.class);
@@ -117,5 +119,19 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     @Override
     public Range<RealType> inputRange(String argName) {
         return RangeUtils.ALL_REALS;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(rtnClazz) * 31;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Negate) {
+            Negate that = (Negate) obj;
+            return this.rtnClazz.isAssignableFrom(that.rtnClazz);
+        }
+        return false;
     }
 }

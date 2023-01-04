@@ -10,12 +10,13 @@ import tungsten.types.util.RangeUtils;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.MathContext;
+import java.util.Objects;
 
 /**
  * Implementation of the sigmoid function &#x1D70E;(x).
  *
  * @see <a href="http://matlab.cheme.cmu.edu/2011/10/30/smooth-transitions-between-discontinuous-functions/">&ldquo;Smooth transitions
- * between discontinuous functions&rdquo; by John Kitchin</a>
+ *   between discontinuous functions&rdquo; by John Kitchin</a>
  */
 public class Sigmoid extends UnaryFunction<RealType, RealType> {
     private final RealType x0;
@@ -43,7 +44,7 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
         RealType arg = arguments.elementAt(0L);
-        final MathContext ctx = arg.getMathContext();
+        final MathContext ctx = arguments.getMathContext() != null ? arguments.getMathContext() : arg.getMathContext();
         final Euler e = Euler.getInstance(ctx);
         RealType exponent = (RealType) arg.subtract(x0).divide(alpha).negate();
         return (RealType) One.getInstance(ctx).add(e.exp(exponent)).inverse();
@@ -61,11 +62,25 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder().append("\uD835\uDF0E");  // surrogate pair for U+1D70E, 𝜎
-        buf.append('(');
-        getComposedFunction().ifPresentOrElse(buf::append, () -> buf.append(getArgumentName()));
-        buf.append(')');
+        buf.append('(').append(getArgumentName()).append(')');
         buf.append(", x").append(UnicodeTextEffects.numericSubscript(0)).append('=').append(x0);
         buf.append(", \uD835\uDEFC=").append(alpha);  // surrogate pair for U+1D6FC, 𝛼
         return buf.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getArgumentName(), x0, alpha);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Sigmoid) {
+            Sigmoid other = (Sigmoid) obj;
+            return Objects.equals(getArgumentName(), other.getArgumentName()) &&
+                    x0.equals(other.getCentroid()) &&
+                    alpha.equals(other.alpha);
+        }
+        return false;
     }
 }

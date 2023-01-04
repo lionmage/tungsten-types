@@ -71,6 +71,13 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         appendTerm(second);
     }
 
+    public static <T extends Numeric, R extends Numeric> Product<T, R> of(UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
+        final String argName1 = first.expectedArguments()[0];
+        final String argName2 = second.expectedArguments()[0];
+        String argName = argName1.equals(argName2) ? argName1 : "x";
+        return new Product<>(argName, first, second);
+    }
+
     public void appendTerm(UnaryFunction<T, R> term) {
         if (term instanceof Const && termCount() > 0L) {
             try {
@@ -209,5 +216,22 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     @Override
     public String toString() {
         return "\u220F\u2009\u0192\u2099(" + getArgumentName() + "), N = " + termCount();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getArgumentName(), terms, resultClass);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Product) {
+            Product<?, ?> other = (Product<?, ?>) obj;
+            if (!getArgumentName().equals(other.getArgumentName())) return false;
+            if (termCount() != other.termCount()) return false;
+            if (!resultClass.isAssignableFrom(other.resultClass)) return false;
+            return parallelStream().allMatch(other.terms::contains);
+        }
+        return false;
     }
 }

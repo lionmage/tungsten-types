@@ -15,6 +15,7 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -54,6 +55,16 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     protected Sum(List<? extends UnaryFunction<T, R>> init) {
         super("x");
         terms.addAll(init);
+    }
+
+    public static <T extends Numeric, R extends Numeric> Sum<T, R> of(UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
+        final String argName1 = first.expectedArguments()[0];
+        final String argName2 = second.expectedArguments()[0];
+        String argName = argName1.equals(argName2) ? argName1 : "x";
+        Sum<T, R> sum = new Sum<>(argName);
+        sum.appendTerm(first);
+        sum.appendTerm(second);
+        return sum;
     }
 
     public void appendTerm(UnaryFunction<T, R> term) {
@@ -137,5 +148,22 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     @Override
     public String toString() {
         return "\u2211\u2009\u0192\u2099(" + getArgumentName() + "), N = " + termCount();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getArgumentName(), terms, resultClass);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Sum) {
+            Sum<?, ?> other = (Sum<?, ?>) obj;
+            if (!getArgumentName().equals(other.getArgumentName())) return false;
+            if (termCount() != other.termCount()) return false;
+            if (!resultClass.isAssignableFrom(other.resultClass)) return false;
+            return parallelStream().allMatch(other.terms::contains);
+        }
+        return false;
     }
 }
