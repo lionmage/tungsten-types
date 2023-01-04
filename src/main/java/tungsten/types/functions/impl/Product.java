@@ -107,7 +107,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
      * @param p1 the first product function to be combined
      * @param p2 the second product function to be combined
      * @return the product of {@code p1} and {@code p2}, a combined function
-     * @param <T> the input parameter type for {@code p1}, {@code p2}, and {@code p3}
+     * @param <T> the input parameter type for {@code p1}, {@code p2}, and the combined product
      * @param <R> the return type of {@code p1}, {@code p2}, and the combined result
      */
     public static <T extends Numeric, R extends Numeric> Product<T, R> combineTerms(Product<T, R> p1, Product<T, R> p2) {
