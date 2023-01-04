@@ -68,11 +68,13 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     }
 
     public void appendTerm(UnaryFunction<T, R> term) {
-        if (term instanceof Const) {
+        if (term instanceof Const && termCount() > 0L) {
+            final Const<T, R> cterm = (Const<T, R>) term;
+            if (Zero.isZero(cterm.inspect())) return;
             try {
                 R sumOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
-                        .reduce(((Const) term).inspect(), Numeric::add)
+                        .reduce(cterm.inspect(), Numeric::add)
                         .coerceTo(resultClass);
                 terms.removeIf(Const.class::isInstance);
                 if (!Zero.isZero(sumOfConstants)) terms.add(Const.getInstance(sumOfConstants));

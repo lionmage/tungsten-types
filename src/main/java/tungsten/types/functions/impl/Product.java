@@ -80,12 +80,15 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     public void appendTerm(UnaryFunction<T, R> term) {
         if (term instanceof Const && termCount() > 0L) {
+            final Const<T, R> cterm = (Const<T, R>) term;
+            if (One.isUnity(cterm.inspect())) return;
             try {
                 R prodOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
-                        .reduce(((Const) term).inspect(), Numeric::multiply)
+                        .reduce(cterm.inspect(), Numeric::multiply)
                         .coerceTo(resultClass);
                 terms.removeIf(Const.class::isInstance);
+                if (Zero.isZero(prodOfConstants)) terms.clear();  // zero renders all other terms irrelevant
                 if (!One.isUnity(prodOfConstants)) terms.add(Const.getInstance(prodOfConstants));
             } catch (CoercionException e) {
                 throw new IllegalArgumentException("Constant product cannot be coerced to function return type", e);
