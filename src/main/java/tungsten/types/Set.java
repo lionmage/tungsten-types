@@ -27,9 +27,7 @@ import tungsten.types.set.impl.EmptySet;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
@@ -56,6 +54,14 @@ public interface Set<T> extends Iterable<T> {
     Set<T> intersection(Set<T> other);
     Set<T> difference(Set<T> other);
 
+    /**
+     * Variable-arity method to generate a {@link Set} from the argument list
+     * (or supplied array).  The supplied elements <strong>must not</strong> contain any duplicates.
+     *
+     * @param elements an array of elements for inclusion in this set
+     * @return a representation of the supplied elements as a finite-size {@link Set}
+     * @param <T> the type of the elements
+     */
     @SafeVarargs
     static <T> Set<T> of(T... elements) {
         if (elements.length == 0) return EmptySet.getInstance();
@@ -120,6 +126,11 @@ public interface Set<T> extends Iterable<T> {
                 return Arrays.stream(elements).iterator();
             }
 
+            @Override
+            public Spliterator<T> spliterator() {
+                return Arrays.spliterator(elements);
+            }
+
             private T[] createNewArray(int size) {
                 final Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
                 try {
@@ -135,12 +146,28 @@ public interface Set<T> extends Iterable<T> {
                     throw new IllegalStateException(e);
                 }
             }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(elementType, Arrays.hashCode(elements));
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof Set) {
+                    Set<?> that = (Set<?>) obj;
+                    if (that.countable() && this.cardinality() == that.cardinality()) {
+                        return StreamSupport.stream(that.spliterator(), true).map(elementType::cast).allMatch(this::contains);
+                    }
+                }
+                return false;
+            }
         };
     }
 
     @SafeVarargs
     private static <T> boolean hasDuplicates(T... elements) {
         HashSet<T> cache = new HashSet<>();
-        return Arrays.stream(elements).anyMatch(cache::add);
+        return Arrays.stream(elements).allMatch(cache::add);
     }
 }
