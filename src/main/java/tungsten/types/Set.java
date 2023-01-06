@@ -23,6 +23,18 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.set.impl.EmptySet;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.StreamSupport;
+
 /**
  * Represents a set of objects, e.g. numeric or symbolic.
  * Note: putting some kind of bounds on {@link T} should be considered.
@@ -44,4 +56,82 @@ public interface Set<T> extends Iterable<T> {
     Set<T> union(Set<T> other);
     Set<T> intersection(Set<T> other);
     Set<T> difference(Set<T> other);
+
+    @SafeVarargs
+    static <T> Set<T> of(T... elements) {
+        if (elements.length == 0) return EmptySet.getInstance();
+        final Class<T> elementType = (Class<T>) elements[0].getClass();
+        return new Set<>() {
+            @Override
+            public long cardinality() {
+                return elements.length;
+            }
+
+            @Override
+            public boolean countable() {
+                return true;
+            }
+
+            @Override
+            public boolean contains(T element) {
+                return Arrays.stream(elements).anyMatch(element::equals);
+            }
+
+            @Override
+            public void append(T element) {
+                throw new UnsupportedOperationException("Set is immutable");
+            }
+
+            @Override
+            public void remove(T element) {
+                throw new UnsupportedOperationException("Set is immutable");
+            }
+
+            @Override
+            public Set<T> union(Set<T> other) {
+                if (other.cardinality() == 0L) return this;
+                if (other.countable() && other.cardinality() > 0L) {
+                    HashSet<T> union = new HashSet<>();
+                    Arrays.stream(elements).forEach(union::add);
+                    StreamSupport.stream(other.spliterator(), false).forEach(union::add);
+                    return Set.of(union.toArray(this::createNewArray));
+                }
+                // right now, I don't see a better way to do this without creating yet another anonymous class
+                return other.union(this);
+            }
+
+            @Override
+            public Set<T> intersection(Set<T> other) {
+                T[] intersection = Arrays.stream(elements).filter(other::contains).toArray(this::createNewArray);
+                return Set.of(intersection);
+            }
+
+            @Override
+            public Set<T> difference(Set<T> other) {
+                T[] difference = Arrays.stream(elements).dropWhile(other::contains).toArray(this::createNewArray);
+                return Set.of(difference);
+            }
+
+            @Override
+            public Iterator<T> iterator() {
+                return Arrays.stream(elements).iterator();
+            }
+
+            private T[] createNewArray(int size) {
+                try {
+                    Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
+                    Constructor<T[]> constructor = elementArrayType.getConstructor(IntegerType.class);
+                    return constructor.newInstance(size);
+                } catch (NoSuchMethodException e) {
+                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
+                            "Cannot dynamically obtain array constructor for type {}", elementType);
+                    throw new IllegalStateException(e);
+                } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
+                            "While dynamically instantiating an array of " + elementType.getTypeName(), e);
+                    throw new IllegalStateException(e);
+                }
+            }
+        };
+    }
 }
