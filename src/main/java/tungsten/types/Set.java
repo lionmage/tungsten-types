@@ -46,12 +46,84 @@ public interface Set<T> extends Iterable<T> {
      * @return the cardinality of a finite set, or -1 for an infinite set
      */
     long cardinality();
+
+    /**
+     * Returns true if this set is countable &mdash; i.e., whether
+     * it consists of discrete elements. Note that a set can be
+     * countable yet still be infinite.
+     *
+     * @return true if this set is countable
+     */
     boolean countable();
+
+    /**
+     * Determines whether this set contains the given element.
+     *
+     * @param element the element to test for
+     * @return true if this set contains the given element
+     */
     boolean contains(T element);
+
+    /**
+     * Optional operation.  Append the given element to this set.
+     * If the element is already a member of this set, no update occurs.
+     *
+     * @param element the element to append to this set
+     * @throws UnsupportedOperationException if this set does not support insertion
+     */
     void append(T element);
+
+    /**
+     * Optional operation. Remove the given element from this set.
+     * If the element was not a member of this set, no update occurs.
+     *
+     * @param element the element to remove
+     * @throws UnsupportedOperationException if this set does not support removal
+     * @throws NoSuchElementException if this set does not contain {@code element}
+     */
     void remove(T element);
+
+    /**
+     * Compute {@code this} &cup; {@code other}. This operation
+     * <strong>must not</strong> modify this set, nor the operand.
+     * The result may be a newly created {@link Set} instance, a reference
+     * to {@code this} or {@code other}, or an immutable singleton
+     * object such as {@link EmptySet}.  As such, clients of this method
+     * should never make assumptions about the mutability or general
+     * implementation of the result, and should treat the result as
+     * read-only.
+     *
+     * @param other the other set with which to compute the union
+     * @return the union of this set and {@code other}
+     */
     Set<T> union(Set<T> other);
+
+    /**
+     * Compute {@code this} &cap; {@code other}. This operation
+     * <strong>must not</strong> modify this set, nor the operand.
+     * The result may be a newly created {@link Set} instance, a reference
+     * to {@code this} or {@code other}, or an immutable singleton
+     * object such as {@link EmptySet}.  As such, clients of this method
+     * should never make assumptions about the mutability or general
+     * implementation of the result, and should treat the result as
+     * read-only.
+     *
+     * @param other the other set with which to compute the intersection
+     * @return the intersection of this set and {@code other}
+     */
     Set<T> intersection(Set<T> other);
+
+    /**
+     * Compute {@code this} &minus; {@code other}, also sometimes denoted
+     * {@code this}&nbsp;\&nbsp;{@code other}. The result is the set of all
+     * elements from this set that do not exist in {@code other}.  This
+     * operation <strong>must not</strong> modify this set, nor the operand.
+     * No guarantees are made as to the actual implementation of the result,
+     * and in general it should be considered read-only.
+     *
+     * @param other the other set with which to compute the difference
+     * @return the difference between this set and {@code other}
+     */
     Set<T> difference(Set<T> other);
 
     /**
@@ -60,6 +132,7 @@ public interface Set<T> extends Iterable<T> {
      *
      * @param elements an array of elements for inclusion in this set
      * @return a representation of the supplied elements as a finite-size {@link Set}
+     * @throws IllegalArgumentException if {@code elements} contains any duplicate items
      * @param <T> the type of the elements
      */
     @SafeVarargs
