@@ -168,6 +168,6 @@ public interface Set<T> extends Iterable<T> {
     @SafeVarargs
     private static <T> boolean hasDuplicates(T... elements) {
         HashSet<T> cache = new HashSet<>();
-        return Arrays.stream(elements).allMatch(cache::add);
+        return !Arrays.stream(elements).allMatch(cache::add);
     }
 }
