@@ -23,7 +23,6 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
-import tungsten.types.numerics.IntegerType;
 import tungsten.types.set.impl.EmptySet;
 
 import java.lang.reflect.Constructor;
@@ -60,7 +59,9 @@ public interface Set<T> extends Iterable<T> {
     @SafeVarargs
     static <T> Set<T> of(T... elements) {
         if (elements.length == 0) return EmptySet.getInstance();
+        if (hasDuplicates(elements)) throw new IllegalArgumentException("Cannot construct a Set with duplicate elements.");
         final Class<T> elementType = (Class<T>) elements[0].getClass();
+
         return new Set<>() {
             @Override
             public long cardinality() {
@@ -102,12 +103,14 @@ public interface Set<T> extends Iterable<T> {
 
             @Override
             public Set<T> intersection(Set<T> other) {
+                if (other.cardinality() == 0L) return EmptySet.getInstance();
                 T[] intersection = Arrays.stream(elements).filter(other::contains).toArray(this::createNewArray);
                 return Set.of(intersection);
             }
 
             @Override
             public Set<T> difference(Set<T> other) {
+                if (other.cardinality() == 0L) return this;
                 T[] difference = Arrays.stream(elements).dropWhile(other::contains).toArray(this::createNewArray);
                 return Set.of(difference);
             }
@@ -118,9 +121,9 @@ public interface Set<T> extends Iterable<T> {
             }
 
             private T[] createNewArray(int size) {
+                final Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
                 try {
-                    Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
-                    Constructor<T[]> constructor = elementArrayType.getConstructor(IntegerType.class);
+                    Constructor<T[]> constructor = elementArrayType.getConstructor(int.class);
                     return constructor.newInstance(size);
                 } catch (NoSuchMethodException e) {
                     Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
@@ -133,5 +136,11 @@ public interface Set<T> extends Iterable<T> {
                 }
             }
         };
+    }
+
+    @SafeVarargs
+    private static <T> boolean hasDuplicates(T... elements) {
+        HashSet<T> cache = new HashSet<>();
+        return Arrays.stream(elements).anyMatch(cache::add);
     }
 }
