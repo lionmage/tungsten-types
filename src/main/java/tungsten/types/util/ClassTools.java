@@ -5,10 +5,7 @@ import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.impl.ComplexRectImpl;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.RationalImpl;
-import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.numerics.impl.*;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -110,6 +107,7 @@ public class ClassTools {
         reificationMap.put(RationalType.class, RationalImpl.class);
         reificationMap.put(RealType.class, RealImpl.class);
         reificationMap.put(ComplexType.class, ComplexRectImpl.class);
+        reificationMap.put(Zero.class, ExactZero.class);
     }
 
     public static <T extends Numeric> Class<? extends T> reify(Class<T> potential) {

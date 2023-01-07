@@ -6,6 +6,7 @@ import tungsten.types.numerics.impl.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.MathContext;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,10 +19,23 @@ public class OptionalOperations {
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, String strValue) {
         final Class<? extends T> toInstantiate = ClassTools.reify(clazz);
         try {
-            return (T) toInstantiate.getConstructor(String.class).newInstance(strValue);
+            return toInstantiate.getConstructor(String.class).newInstance(strValue);
         }  catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
             throw new IllegalStateException("Fatal error while obtaining or using constructor for a Numeric subclass", fatal);
         } catch (NoSuchMethodException e) {
+            // attempt to recover if at all possible
+            Optional<Method> generator = Arrays.stream(toInstantiate.getMethods()).filter(m -> "getInstance".equals(m.getName()))
+                    .filter(m -> m.getParameterCount() == 1)
+                    .filter(m -> MathContext.class.isAssignableFrom(m.getParameterTypes()[0]))
+                    .findFirst();
+            if (generator.isPresent()) {
+                MathContext ctx = new MathContext(strValue);  // in this case, we interpret the String as a constructor arg for MathContext
+                try {
+                    generator.get().invoke(null, ctx);  // method should be static, so first argument of invoke is null
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    throw new IllegalStateException("While attempting to recover from failed constructor lookup", ex);
+                }
+            }
             throw new IllegalArgumentException("No String-based constructor for class " + toInstantiate.getTypeName(), e);
         }
     }
