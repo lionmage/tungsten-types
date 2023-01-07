@@ -6,6 +6,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.RealImpl;
@@ -49,6 +50,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     @Override
     public boolean contains(IntegerType element) {
+        if (element.sign() == Sign.NEGATIVE) return false;
         if (cache.contains(element)) return true;
 
         Iterator<IntegerType> iter = this.iterator();
