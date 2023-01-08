@@ -41,7 +41,7 @@ public class OptionalOperations {
     }
 
     public static Class<? extends Numeric> findCommonType(Class<? extends Numeric> type1, Class<? extends Numeric> type2) {
-        List<Class<? extends Numeric>> if1 = new ArrayList<>();
+        SortedSet<Class<? extends Numeric>> if1 = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
         for (Class<?> clazz : type1.getInterfaces()) {
             if (Numeric.class.isAssignableFrom(clazz)) {
                 if1.add((Class<? extends Numeric>) clazz);
@@ -49,7 +49,7 @@ public class OptionalOperations {
         }
         if (type1.isInterface()) if1.add(type1);
 
-        List<Class<? extends Numeric>> if2 = new ArrayList<>();
+        SortedSet<Class<? extends Numeric>> if2 = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
         for (Class<?> clazz : type2.getInterfaces()) {
             if (Numeric.class.isAssignableFrom(clazz)) {
                 if2.add((Class<? extends Numeric>) clazz);
@@ -57,18 +57,26 @@ public class OptionalOperations {
         }
         if (type2.isInterface()) if2.add(type2);
 
-        if (if1.retainAll(if2) || if1.containsAll(if2)) {
-            switch (if1.size()) {
-                case 0:
-                    Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO, "No common type found between {} and {}",
-                            new Object[] { type1.getTypeName(), type2.getTypeName() });
-                    break;
-                case 1:
-                    return if1.get(0);
-                default:
-                    if1.sort(NumericHierarchy.obtainTypeComparator());
-                    return if1.get(if1.size() - 1);
-            }
+        if (if1.retainAll(if2)) {
+            // if if1 changed, log if1 ∩ if2
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.FINE,
+                    "Intersection between type hierarchies of {} and {} is {}",
+                    new Object[] { type1.getTypeName(), type2.getTypeName(), if1 });
+        }
+        if (if1.containsAll(if2)) {
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.FINE,
+                    "Types {0} and {1} have identical type hierarchies of size {2}, or {0}'s hierarchy is a superset of {1}'s",
+                    new Object[] { type1.getTypeName(), type2.getTypeName(), if1.size() });
+        }
+        switch (if1.size()) {
+            case 0:
+                Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO, "No common type found between {} and {}",
+                        new Object[] { type1.getTypeName(), type2.getTypeName() });
+                break;
+            case 1:
+                return if1.first();
+            default:
+                return if1.last();
         }
         // fall-through default
         return Numeric.class;
