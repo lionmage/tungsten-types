@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  * and {@link NegInfinity}.  This implementation is more &ldquo;concrete&rdquo;
  * than those other classes, and is suitable for use in real-valued applications.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RealInfinity implements RealType {
     private static final String ERROR_INVALID_SIGN = "Infinity can only be positive or negative.";

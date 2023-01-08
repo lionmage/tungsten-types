@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 /**
  * Basic concrete implementation of {@link Matrix}.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the numeric type of this matrix
  */
 public class BasicMatrix<T extends Numeric> implements Matrix<T> {

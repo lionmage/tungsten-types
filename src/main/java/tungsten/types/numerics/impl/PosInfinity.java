@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * A representation of positive infinity.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Constant(name = "+infinity", representation = "\u221E")
 public class PosInfinity implements Numeric, Comparable<Numeric> {

@@ -44,7 +44,7 @@ import java.util.stream.Stream;
  * values themselves have no natural ordering.)  If the copy constructor is
  * used, there are no ordering guarantees.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class NumericSet implements Set<Numeric> {
     private final java.util.Set<Numeric> internal;

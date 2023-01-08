@@ -27,7 +27,7 @@ package tungsten.types;/*
  * Note that the {@link #cardinality() } for a multiset includes
  * all of the duplicates of given elements in the count.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the type of elements belonging to this multiset
  */
 public interface Multiset<T> extends Set<T> {

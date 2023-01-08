@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RealVector implements Vector<RealType> {
     private final List<RealType> elements;

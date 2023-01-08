@@ -42,7 +42,7 @@ import java.util.TreeMap;
  * Utility methods for creating Unicode strings that render with
  * superscript, subscript, overline, etc.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class UnicodeTextEffects {
     // Unicode superscript numerals 0 - 9

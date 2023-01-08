@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ import java.util.Objects;
  * This is intended for doing lookups of vector indices for things like cross
  * products.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 class TableElement {
     private int index;

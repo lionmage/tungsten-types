@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 /**
  * A tool for composing smaller matrices into larger matrices.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} subtype of this matrix
  */
 public class AggregateMatrix<T extends Numeric> implements Matrix<T> {

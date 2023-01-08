@@ -30,7 +30,7 @@ import java.util.function.Predicate;
  * A class to represent a numeric range.  Any numeric type that can be
  * meaningfully compared can be used in a range.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> a class or interface that extends {@link Numeric} and {@link Comparable}
  */
 public class Range<T extends Numeric & Comparable<? super T>> {

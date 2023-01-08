@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright © 2019 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2019 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  * extra methods to disclose the unique properties of
  * this value.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RepeatingDecimal extends RationalImpl {
     private static final BigInteger TWO  = BigInteger.valueOf(2L);

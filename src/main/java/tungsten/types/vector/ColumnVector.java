@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 /**
  * A column vector, which is also a N&#215;1 (single-column) matrix.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} type for this column vector
  */
 @Columnar

@@ -16,7 +16,7 @@ import java.util.Set;
  * Annotation processor to ensure that {@code @Polar} annotations are
  * only applied to classes implementing {@link ComplexType}.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class PolarProcessor extends AbstractProcessor {
     public PolarProcessor() { super(); }

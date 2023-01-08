@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 /**
  * Implementation of {@link Multiset} for {@link Numeric} types.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class NumericMultiset implements Multiset<Numeric> {
     private class ElementTuple {

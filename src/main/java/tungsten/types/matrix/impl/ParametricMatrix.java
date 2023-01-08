@@ -40,7 +40,7 @@ import java.util.function.BiFunction;
  * A matrix implementation where the values of the matrix are given
  * by a generator function.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} type of the elements contained by this matrix
  */
 public class ParametricMatrix<T extends Numeric> implements Matrix<T> {

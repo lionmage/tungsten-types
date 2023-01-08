@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 /**
  * A 1&#215;1 matrix consisting of a single element.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the type of the single element of this matrix
  */
 public class SingletonMatrix<T extends Numeric> implements Matrix<T> {

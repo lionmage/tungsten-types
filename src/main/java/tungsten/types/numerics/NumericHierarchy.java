@@ -30,8 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The enum that defines the hierarchy of defined numeric types.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public enum NumericHierarchy {
     INTEGER(IntegerType.class),

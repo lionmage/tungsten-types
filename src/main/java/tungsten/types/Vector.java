@@ -30,7 +30,7 @@ import java.math.MathContext;
 
 /**
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the numeric type of this vector
  */
 public interface Vector<T extends Numeric> {

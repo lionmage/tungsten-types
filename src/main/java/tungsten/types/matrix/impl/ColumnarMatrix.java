@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  * A {@link Matrix} implementation that stores its internal values in
  * a columnar format.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} type for the elements of this matrix
  */
 @Columnar

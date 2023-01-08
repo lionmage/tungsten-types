@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 /**
  * The empty set.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class EmptySet implements Set<Object> {
     private EmptySet() {}

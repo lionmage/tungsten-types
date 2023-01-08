@@ -39,7 +39,7 @@ import java.util.Objects;
  * array sizes do not apply; you can have an Identity matrix
  * with up to {@link Long#MAX_VALUE} columns and rows.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class IdentityMatrix implements Matrix<Numeric> {
     private final MathContext mctx;

@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 /**
  * The root type for matrices.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} type of the elements of this matrix 
  */
 public interface Matrix<T extends Numeric> {

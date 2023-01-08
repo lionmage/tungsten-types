@@ -39,7 +39,7 @@ import java.util.Set;
  * Annotation processor to ensure that {@code @Columnar} annotations are
  * only applied to classes implementing {@link Matrix}.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ColumnarProcessor extends AbstractProcessor {
     

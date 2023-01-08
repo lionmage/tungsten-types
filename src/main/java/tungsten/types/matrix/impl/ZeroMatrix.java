@@ -39,7 +39,7 @@ import java.math.MathContext;
  * A representation of the zero matrix, of which all elements
  * are zero (0).
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ZeroMatrix extends ParametricMatrix<Numeric> {
     private final MathContext mctx;

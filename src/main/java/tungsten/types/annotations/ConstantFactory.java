@@ -34,7 +34,7 @@ import java.math.MathContext;
 /**
  * Annotation for factory methods of classes annotated with {@link Constant}.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

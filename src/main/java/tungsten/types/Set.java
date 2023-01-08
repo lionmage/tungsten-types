@@ -36,7 +36,7 @@ import java.util.stream.StreamSupport;
  * Represents a set of objects, e.g. numeric or symbolic.
  * Note: putting some kind of bounds on {@link T} should be considered.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the type of elements in this set
  */
 public interface Set<T> extends Iterable<T> {

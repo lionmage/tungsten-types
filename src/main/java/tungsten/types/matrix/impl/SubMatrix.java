@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  * It is a lightweight façade and is especially suitable for use with large
  * matrices that may not be backed by rapid storage (i.e., may not reside in memory).
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} subtype for the elements of this matrix
  */
 public class SubMatrix<T extends Numeric> implements Matrix<T> {

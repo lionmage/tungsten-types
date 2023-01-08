@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * A representation of zero for situations where zero is being asymptotically
  * approached from a positive value.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Constant(name = "+zero", representation = "+0")
 public class PosZero extends Zero {

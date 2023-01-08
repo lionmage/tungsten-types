@@ -29,7 +29,7 @@ import java.util.EnumSet;
 /**
  * A simple enumeration representing Euclidean geometric axes.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public enum Axis {
     X_AXIS, Y_AXIS, Z_AXIS;

@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * A compact representation of a diagonal matrix.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the numeric type of the elements of this matrix
  */
 public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {

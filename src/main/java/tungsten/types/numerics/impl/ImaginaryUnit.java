@@ -43,7 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * A representation of the imaginary unit, or the unit imaginary number.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Constant(name = "imaginary unit", representation = "\u2148")
 public class ImaginaryUnit implements ComplexType {

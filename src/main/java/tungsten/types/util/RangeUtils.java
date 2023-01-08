@@ -50,7 +50,7 @@ import static tungsten.types.Range.BoundType;
 /**
  * Utility class with factory methods for commonly used types of ranges.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RangeUtils {
     /**

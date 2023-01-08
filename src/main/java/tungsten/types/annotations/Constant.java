@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * Annotation to denote certain {@link Numeric} implementations as
  * constants.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
