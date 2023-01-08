@@ -42,20 +42,10 @@ public class OptionalOperations {
 
     public static Class<? extends Numeric> findCommonType(Class<? extends Numeric> type1, Class<? extends Numeric> type2) {
         SortedSet<Class<? extends Numeric>> if1 = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
-        for (Class<?> clazz : type1.getInterfaces()) {
-            if (Numeric.class.isAssignableFrom(clazz)) {
-                if1.add((Class<? extends Numeric>) clazz);
-            }
-        }
-        if (type1.isInterface()) if1.add(type1);
+        expandHierarchy(if1, type1);
 
         SortedSet<Class<? extends Numeric>> if2 = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
-        for (Class<?> clazz : type2.getInterfaces()) {
-            if (Numeric.class.isAssignableFrom(clazz)) {
-                if2.add((Class<? extends Numeric>) clazz);
-            }
-        }
-        if (type2.isInterface()) if2.add(type2);
+        expandHierarchy(if2, type2);
 
         if (if1.retainAll(if2)) {
             // if if1 changed, log if1 ∩ if2
@@ -80,6 +70,16 @@ public class OptionalOperations {
         }
         // fall-through default
         return Numeric.class;
+    }
+
+    private static void expandHierarchy(SortedSet<Class<? extends Numeric>> accumulator, Class<? extends Numeric> type) {
+        for (Class<?> clazz : type.getInterfaces()) {
+            if (Numeric.class.isAssignableFrom(clazz)) {
+                expandHierarchy(accumulator, (Class<? extends Numeric>) clazz);
+                accumulator.add((Class<? extends Numeric>) clazz);
+            }
+        }
+        if (type.isInterface()) accumulator.add(type);
     }
 
     public static Sign sign(Numeric value) {
