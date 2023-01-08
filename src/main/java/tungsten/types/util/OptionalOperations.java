@@ -57,7 +57,7 @@ public class OptionalOperations {
         }
         if (type2.isInterface()) if2.add(type2);
 
-        if (if1.retainAll(if2)) {
+        if (if1.retainAll(if2) || if1.containsAll(if2)) {
             switch (if1.size()) {
                 case 0:
                     Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO, "No common type found between {} and {}",
@@ -96,7 +96,7 @@ public class OptionalOperations {
             }
         } catch (SecurityException | IllegalAccessException | InvocationTargetException ex) {
             Logger.getLogger(OptionalOperations.class.getName())
-                    .log(Level.SEVERE, "Unable to compute signum for " + value, ex);
+                    .log(Level.SEVERE, "Unable to compute sign for " + value, ex);
             throw new IllegalStateException("Failed to obtain sign for " + value, ex);
         }
     }
