@@ -34,7 +34,8 @@ import java.util.function.Predicate;
  * @param <T> a class or interface that extends {@link Numeric} and {@link Comparable}
  */
 public class Range<T extends Numeric & Comparable<? super T>> {
-    public enum BoundType { INCLUSIVE, EXCLUSIVE };
+    public enum BoundType { INCLUSIVE, EXCLUSIVE }
+    
     public class Bound implements Comparable<T> {
         private final BoundType type;
         private final T value;
@@ -80,9 +81,10 @@ public class Range<T extends Numeric & Comparable<? super T>> {
     /**
      * A convenience constructor which generates an instance where both
      * upper and lower bounds are of the same type.
+     *
      * @param lowerVal the lower bound
      * @param upperVal the upper bound
-     * @param type the desired type
+     * @param type the desired bound type
      */
     public Range(T lowerVal, T upperVal, BoundType type) {
         this.lowerBound = new Bound(lowerVal, type);
@@ -129,8 +131,8 @@ public class Range<T extends Numeric & Comparable<? super T>> {
     
     /**
      * Test whether the given value is below the lower bound of this range.
-     * @param val
-     * @return 
+     * @param val the value to test
+     * @return true if {@code val} is less than the lower bound
      */
     public boolean isBelow(T val) {
         switch (lowerBound.type) {
@@ -145,8 +147,8 @@ public class Range<T extends Numeric & Comparable<? super T>> {
     
     /**
      * Test whether the given value is above the upper bound of this range.
-     * @param val
-     * @return 
+     * @param val the value to test
+     * @return true if {@code val} is greater than the upper bound
      */
     public boolean isAbove(T val) {
         switch (upperBound.type) {
