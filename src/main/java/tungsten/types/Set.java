@@ -115,7 +115,7 @@ public interface Set<T> extends Iterable<T> {
 
     /**
      * Compute {@code this} &minus; {@code other}, also sometimes denoted
-     * {@code this}&nbsp;\&nbsp;{@code other}. The result is the set of all
+     * {@code this}&nbsp;&#x2216;&nbsp;{@code other}. The result is the set of all
      * elements from this set that do not exist in {@code other}.  This
      * operation <strong>must not</strong> modify this set, nor the operand.
      * No guarantees are made as to the actual implementation of the result,
