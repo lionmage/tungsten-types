@@ -1,4 +1,5 @@
-package tungsten.types;/*
+package tungsten.types;
+/*
  * The MIT License
  *
  * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
@@ -25,6 +26,8 @@ package tungsten.types;/*
 import tungsten.types.numerics.RealType;
 
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A class to represent a numeric range.  Any numeric type that can be
@@ -35,7 +38,7 @@ import java.util.function.Predicate;
  */
 public class Range<T extends Numeric & Comparable<? super T>> {
     public enum BoundType { INCLUSIVE, EXCLUSIVE }
-    
+
     public class Bound implements Comparable<T> {
         private final BoundType type;
         private final T value;
@@ -114,6 +117,13 @@ public class Range<T extends Numeric & Comparable<? super T>> {
         // if one does not contain the other, construct a range that is the intersection
         // providing that the two ranges are not completely disconnected
         if (A.overlaps(B)) {   // equivalent to B.overlaps(A)
+            if (A.getClass().getSuperclass() == Range.class || B.getClass().getSuperclass() == Range.class) {
+                Logger.getLogger(Range.class.getName()).log(Level.WARNING,
+                        "chooseNarrowest() is being called with subclasses of Range " +
+                                "that may lose information when computing the intersection " +
+                                "of {} ({}) and {} ({})",
+                        new Object[] { A, A.getClass().getTypeName(), B, B.getClass().getTypeName() });
+            }
             RealType lowestBound = A.getLowerBound().compareTo(B.getLowerBound()) > 0 ?
                     A.getLowerBound() : B.getLowerBound();
             BoundType lowestBoundType = A.getLowerBound().equals(lowestBound) ?
