@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * The empty set.
+ * The empty set, &empty;.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
@@ -99,5 +99,10 @@ public class EmptySet implements Set<Object> {
             return that.cardinality() == 0L;
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "\u2205";
     }
 }
