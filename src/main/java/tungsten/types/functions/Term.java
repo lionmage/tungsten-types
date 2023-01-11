@@ -2,6 +2,7 @@ package tungsten.types.functions;
 
 import tungsten.types.Numeric;
 import tungsten.types.Range;
+import tungsten.types.functions.impl.Pow;
 import tungsten.types.numerics.RealType;
 
 import java.util.*;
@@ -59,6 +60,10 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
     }
 
     public abstract Term<T, R> multiply(Term<T, R> multiplier);
+
+    public abstract Term<T, R> multiply(Pow<T, R> multiplier);
+
+    public abstract Term<T, R> scale(R multiplier);
 
     public boolean isConstant() {
         return arity() == 0L;

@@ -18,6 +18,7 @@ import tungsten.types.util.OptionalOperations;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,8 +46,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     public RationalExponentPolyTerm(PolyTerm<T, R> toCopy) {
         super(toCopy.getReturnClass(), toCopy.expectedArguments());
         this.coeff = toCopy.coefficient();
-        for (int idx = 0; idx < varNames.size(); idx++) {
-            String varName = varNames.get(idx);
+        for (String varName : varNames) {
             powers.put(varName, new RationalImpl(BigInteger.valueOf(toCopy.order(varName)), BigInteger.ONE));
         }
     }
@@ -127,6 +127,38 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
                     .map(RationalType.class::cast).collect(Collectors.toList());
             return new RationalExponentPolyTerm<>(mergedCoeff, new ArrayList<>(mergedVars), mergedExponents);
         }
+    }
+
+    @Override
+    public Term<T, R> multiply(Pow<T, R> func) {
+        if (func.getComposedFunction().isPresent()) throw new IllegalArgumentException("Cannot multiply Term by composed function");
+        LinkedHashSet<String> combinedArgs = new LinkedHashSet<>(varNames);
+        final String funArg = func.expectedArguments()[0];
+        final Numeric funExponent = func.getExponent();
+        boolean hasNewArgs = combinedArgs.add(funArg);
+        if (hasNewArgs) {
+            Logger.getLogger(RationalExponentPolyTerm.class.getName()).info("Combined polynomial term has " + combinedArgs.size() + " arguments.");
+        }
+        HashMap<String, RationalType> combinedExponents = new HashMap<>(powers);
+        try {
+            combinedExponents.put(funArg, (RationalType) this.exponentFor(funArg).add(funExponent).coerceTo(RationalType.class));
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Unexpected result adding exponent from supplied function: " + funExponent, e);
+        }
+        List<RationalType> listOfExponents = combinedArgs.stream().map(combinedExponents::get)
+                .collect(Collectors.toList());
+        assert listOfExponents.size() == combinedArgs.size();
+        return new RationalExponentPolyTerm<>(this.coefficient(),
+                new LinkedList<>(combinedArgs), listOfExponents);
+    }
+
+    @Override
+    public Term<T, R> scale(R multiplier) {
+        if (One.isUnity(multiplier)) return this;
+        if (Zero.isZero(multiplier)) return new ConstantTerm<>(multiplier);
+        List<RationalType> listOfExponents = varNames.stream().map(powers::get)
+                .collect(Collectors.toList());
+        return new RationalExponentPolyTerm<>((R) coefficient().multiply(multiplier), varNames, listOfExponents);
     }
 
     public boolean hasMatchingSignature(RationalExponentPolyTerm<T, R> other) {

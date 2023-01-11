@@ -1,7 +1,7 @@
 /* 
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
+ * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,13 @@ package tungsten.types.exceptions;
 import tungsten.types.Numeric;
 
 /**
+ * This exception is intended to be thrown when a call to
+ * {@link Numeric#coerceTo(Class)} or a similar method fails.
+ * It is constructed with information about the
+ * class of the object being coerced as well as the class
+ * to which the coercion was attempted.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class CoercionException extends Exception {
     private final Class<? extends Numeric> sourceType;

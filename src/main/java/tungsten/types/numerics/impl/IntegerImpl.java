@@ -216,8 +216,7 @@ public class IntegerImpl implements IntegerType {
             count++;
         } while (temp.compareTo(BigInteger.ZERO) != 0);
         // if we fell through here, it means position is not valid
-        throw new IndexOutOfBoundsException("Index " + position
-                + " exceeds max value " + (count - 1L));
+        throw new IndexOutOfBoundsException("Index " + position + " exceeds max value " + (count - 1L));
     }
     
     @Override
@@ -243,11 +242,23 @@ public class IntegerImpl implements IntegerType {
         return new IntegerImpl(val.pow(exponent.asBigInteger().intValueExact()), this.isExact());
     }
 
+    /**
+     * Compute {@code this}<sup>n</sup>mod&nbsp;m.
+     * @param n an integer exponent represented as a {@code long} for convenience
+     * @param m an integer value for taking the modulus
+     * @return the result of exponentiation followed by taking the modulus
+     */
     @Override
     public IntegerType powMod(long n, IntegerType m) {
         return new IntegerImpl(val.modPow(BigInteger.valueOf(n), m.asBigInteger()), exact && m.isExact());
     }
 
+    /**
+     * Compute {@code this}<sup>n</sup>mod&nbsp;m.
+     * @param n an integer exponent
+     * @param m an integer value for taking the modulus
+     * @return the result of exponentiation followed by taking the modulus
+     */
     @Override
     public IntegerType powMod(IntegerType n, IntegerType m) {
         return new IntegerImpl(val.modPow(n.asBigInteger(), m.asBigInteger()), exact && m.isExact());

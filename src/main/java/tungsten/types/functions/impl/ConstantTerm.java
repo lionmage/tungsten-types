@@ -5,11 +5,15 @@ import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.Term;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.OptionalOperations;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -48,6 +52,26 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
 
         // default behavior is to make use of commutativity
         return multiplier.multiply(this);
+    }
+
+    @Override
+    public Term<T, R> multiply(Pow<T, R> multiplier) {
+        if (Zero.isZero(value)) return this;
+        final String varName = multiplier.expectedArguments()[0];
+        final Numeric exponent = multiplier.getExponent();
+        if (exponent instanceof IntegerType) {
+            long iExponent = ((IntegerType) exponent).asBigInteger().longValueExact();
+            return new PolyTerm<>(value, List.of(varName), List.of(iExponent));
+        } else {
+            // Pow only supports integer and rational exponents, so it must be a rational
+            return new RationalExponentPolyTerm<>(value, List.of(varName), List.of((RationalType) exponent));
+        }
+    }
+
+    @Override
+    public Term<T, R> scale(R multiplier) {
+        if (One.isUnity(multiplier)) return this;
+        return new ConstantTerm<>((R) value.multiply(multiplier));
     }
 
     @Differentiable

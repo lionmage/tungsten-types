@@ -6,9 +6,11 @@ import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.Term;
+import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.UnicodeTextEffects;
@@ -72,7 +74,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
             for (long index = 0; index < arguments.length(); index++) {
                 final String argName = arguments.labelForIndex(index);
                 Long exponent = powers.getOrDefault(argName, 1L);
-                if (exponent == null) exponent = 1L;
+                if (exponent == null) exponent = 1L;  // just in case powers stores null mappings
 
                 if (exponent == 0L) continue;
                 Numeric intermediate = MathUtils.computeIntegerExponent(arguments.elementAt(index),
@@ -105,6 +107,33 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         assert listOfExponents.size() == combinedArgs.size();
         return new PolyTerm<>(coefficient,
                 new LinkedList<>(combinedArgs), listOfExponents);
+    }
+
+    @Override
+    public Term<T, R> multiply(Pow<T, R> func) {
+        if (func.getComposedFunction().isPresent()) throw new IllegalArgumentException("Cannot multiply Term by composed function");
+        LinkedHashSet<String> combinedArgs = new LinkedHashSet<>(varNames);
+        final String funArg = func.expectedArguments()[0];
+        final IntegerType funExponent = (IntegerType) func.getExponent();  // will throw a ClassCastException if exponent is rational
+        boolean hasNewArgs = combinedArgs.add(funArg);
+        if (hasNewArgs) {
+            Logger.getLogger(PolyTerm.class.getName()).info("Combined polynomial term has " + combinedArgs.size() + " arguments.");
+        }
+        HashMap<String, Long> combinedExponents = new HashMap<>(powers);
+        combinedExponents.put(funArg, this.order(funArg) + funExponent.asBigInteger().longValueExact());
+        List<Long> listOfExponents = combinedArgs.stream().map(combinedExponents::get)
+                .collect(Collectors.toList());
+        assert listOfExponents.size() == combinedArgs.size();
+        return new PolyTerm<>(this.coefficient(),
+                new LinkedList<>(combinedArgs), listOfExponents);
+    }
+
+    @Override
+    public Term<T, R> scale(R multiplier) {
+        if (One.isUnity(multiplier)) return this;
+        if (Zero.isZero(multiplier)) return new ConstantTerm<>(multiplier);
+        List<Long> exponents = varNames.stream().map(powers::get).collect(Collectors.toList());
+        return new PolyTerm<>((R) coefficient().multiply(multiplier), varNames, exponents);
     }
 
     public boolean hasMatchingSignature(PolyTerm<T, R> other) {

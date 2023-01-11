@@ -7,14 +7,18 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.Term;
+import tungsten.types.functions.UnaryFunction;
+import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -132,6 +136,96 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             // if we're not sure what to do with it, throw an exception
             throw new IllegalArgumentException("This polynomial does not know how to handle a term of type " + term.getClass().getTypeName());
         }
+    }
+
+    public void add(UnaryFunction<T, R> alienFunc) {
+        if (alienFunc instanceof Product) {
+            Product<T, R> prod = (Product<T, R>) alienFunc;
+            this.add(termFromProd(prod));
+        } else if (alienFunc instanceof Sum) {
+            Sum<T, R> sum = (Sum<T, R>) alienFunc;
+            sum.stream().forEach(this::add);
+        }
+        // TODO add additional cases as-needed
+
+        // if we can't handle the supplied function, throw an exception
+        throw new IllegalArgumentException("This polynomial does not know how to handle function " + alienFunc +
+                " of type " + alienFunc.getClass().getTypeName());
+    }
+
+    public Polynomial<T, R> multiply(Term<T, R> term) {
+        List<Term<T, R>> multTerms = terms.stream().map(orig -> orig.multiply(term)).collect(Collectors.toList());
+        return new Polynomial<>(multTerms);
+    }
+
+    public Polynomial<T, R> multiply(UnaryFunction<T, R> alienFunc) {
+        if (alienFunc instanceof Const) {
+            Const<T, R> foreignConst = (Const<T, R>) alienFunc;
+            List<Term<T, R>> scaleTerms = termStream().map(orig -> orig.scale(foreignConst.inspect()))
+                    .collect(Collectors.toList());
+            return new Polynomial<>(scaleTerms);
+        } else if (alienFunc instanceof Pow) {
+            Pow<T, R> powerFunc = (Pow<T, R>) alienFunc;
+            List<Term<T, R>> multTerms = termStream().map(orig -> orig.multiply(powerFunc)).collect(Collectors.toList());
+            return new Polynomial<>(multTerms);
+        } else if (alienFunc instanceof Sum) {
+            Sum<T, R> sum = (Sum<T, R>) alienFunc;
+            Polynomial<T, R> result = new Polynomial<>();
+            sum.stream().map(this::multiply).forEach(result::add);
+            return result;
+        } else if (alienFunc instanceof Product) {
+            Product<T, R> prod = (Product<T, R>) alienFunc;
+            if (prod.termCount() == 1L) return multiply(prod.stream().findFirst().orElseThrow());
+            Term<T, R> pterm = termFromProd(prod);
+            return this.multiply(pterm);
+        }
+        // TODO implement a few more sane cases
+        throw new UnsupportedOperationException("Currently unable to handle a foreign function of type " +
+                alienFunc.getClass().getTypeName());
+    }
+
+    private static final List<Class<? extends UnaryFunction>> supported = List.of(Const.class, Pow.class);
+
+    private Term<T, R> termFromProd(Product<T, R> product) {
+        if (product.stream().map(Object::getClass).anyMatch(p -> !supported.contains(p))) {
+            throw new IllegalArgumentException("Product contains a foreign function that cannot be handled");
+        }
+        R coeff = (R) product.stream().filter(Const.class::isInstance).map(Const.class::cast)
+                .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply);
+        List<Pow<T, R>> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
+                .collect(Collectors.toList());
+        List<String> varNames = subterms.stream().map(f -> f.expectedArguments()[0]).collect(Collectors.toList());
+        List<Numeric> exponents = subterms.stream().map(Pow::getExponent).collect(Collectors.toList());
+        if (exponents.stream().anyMatch(RationalType.class::isInstance)) {
+            List<RationalType> rationalExponents = exponents.stream().map(this::safeCoerce).collect(Collectors.toList());
+            return new RationalExponentPolyTerm<T, R>(coeff, varNames, rationalExponents);
+        }
+        List<Long> integerExponents = exponents.stream().map(IntegerType.class::cast).map(IntegerType::asBigInteger)
+                .map(BigInteger::longValueExact).collect(Collectors.toList());
+        return new PolyTerm<>(coeff, varNames, integerExponents);
+    }
+
+    private RationalType safeCoerce(Numeric orig) {
+        try {
+            return (RationalType) orig.coerceTo(RationalType.class);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Unable to coerce " + orig + " to a rational", e);
+        }
+    }
+
+    public Polynomial<T, R> add(Polynomial<T, R> other) {
+        Polynomial<T, R> aggregate = new Polynomial<>(terms);
+        other.termStream().forEach(aggregate::add);
+        return aggregate;
+    }
+
+    public Polynomial<T, R> multiply(Polynomial<T, R> other) {
+        Polynomial<T, R> product = new Polynomial<>();
+        for (Term<T, R> myterm : terms) {
+            Polynomial<T, R> partialProduct = other.multiply(myterm);
+            partialProduct.termStream().forEach(product::add);
+        }
+        return product;
     }
 
     /**
