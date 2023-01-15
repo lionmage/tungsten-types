@@ -528,11 +528,11 @@ public class MathUtils {
         decTwo.setMathContext(mctx);
         final RealImpl decOne = new RealImpl(BigDecimal.ONE);
         decOne.setMathContext(mctx);
-        RealType twopi = (RealType) Pi.getInstance(mctx).multiply(decTwo);
+        final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(decTwo);
         NumericSet set = new NumericSet();
-        for (long idx = 1L; idx <= n; idx++) {
-            RealType realN = new RealImpl(BigDecimal.valueOf(idx), mctx);
-            ComplexPolarImpl val = new ComplexPolarImpl(decOne, (RealType) twopi.divide(realN));
+        for (long k = 0L; k < n; k++) {
+            RationalType expFactor = new RationalImpl(k, n, mctx);
+            ComplexPolarImpl val = new ComplexPolarImpl(decOne, (RealType) twopi.multiply(expFactor));
             val.setMathContext(mctx);
             set.append(val);
         }
