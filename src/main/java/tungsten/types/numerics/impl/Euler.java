@@ -220,8 +220,8 @@ public class Euler implements RealType {
     private static final BigInteger iTWO = BigInteger.valueOf(2L);
     
     private BigDecimal computeKthTerm(int k, MathContext ctx) {
-        BigDecimal numerator = TWO.multiply(BigDecimal.valueOf((long) k), ctx).add(TWO, ctx);
-        BigInteger innerDenom = iTWO.multiply(BigInteger.valueOf((long) k)).add(BigInteger.ONE);
+        BigDecimal numerator = TWO.multiply(BigDecimal.valueOf(k), ctx).add(TWO, ctx);
+        BigInteger innerDenom = iTWO.multiply(BigInteger.valueOf(k)).add(BigInteger.ONE);
         IntegerType denominator = MathUtils.factorial(new IntegerImpl(innerDenom));
         
         return numerator.divide(new BigDecimal(denominator.asBigInteger(), ctx), ctx);
@@ -267,13 +267,13 @@ public class Euler implements RealType {
     
     private BigDecimal computeNthTerm(int n, RealType x, MathContext ctx) {
         RealType numerator = MathUtils.computeIntegerExponent(x, n, ctx);
-        IntegerType denominator = MathUtils.factorial(new IntegerImpl(BigInteger.valueOf((long) n)));
+        IntegerType denominator = MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(n)));
         try {
             // a little clunky, but this is not publicly visible...
             return ((RealType) numerator.divide(denominator).coerceTo(RealType.class)).asBigDecimal();
         } catch (CoercionException ex) {
             Logger.getLogger(Euler.class.getName()).log(Level.SEVERE, "Failed to compute term " + n + " of exp series.", ex);
-            throw new ArithmeticException("Fatal error while computing exp().");
+            throw new ArithmeticException("Fatal error while computing exp()");
         }
     }
 
