@@ -29,7 +29,6 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
-import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -51,11 +50,11 @@ import java.util.logging.Logger;
  * and keeps a cache of instances that have been generated so that the value
  * of &#x212f; only needs to be calculated once for a given precision and
  * {@link RoundingMode}.
- * 
+ * <br/>
  * Internally, this class uses Brothers' formula for deriving &#x212f; to an
  * arbitrary precision.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @see <a href="https://www.intmath.com/exponential-logarithmic-functions/calculating-e.php">an article at Interactive Mathematics about ways to calculate &#x212f;</a>
  * @see <a href="https://en.wikipedia.org/wiki/E_(mathematical_constant)">the wikipedia article about this constant</a>
  */
@@ -106,7 +105,9 @@ public class Euler implements RealType {
 
     @Override
     public RealType negate() {
-        return magnitude().negate();
+        RealImpl negative = new RealImpl(value.negate(), mctx, false);
+        negative.setIrrational(true);
+        return negative;
     }
 
     @Override
@@ -191,7 +192,9 @@ public class Euler implements RealType {
 
     @Override
     public Numeric sqrt() {
-        return magnitude().sqrt();
+        RealImpl root = new RealImpl(value.sqrt(mctx), mctx, false);
+        root.setIrrational(true);
+        return root;
     }
     
     @Override
@@ -200,7 +203,7 @@ public class Euler implements RealType {
     }
     
     public long numberOfDigits() {
-        return (long) mctx.getPrecision();
+        return mctx.getPrecision();
     }
     
     private void calculate() {

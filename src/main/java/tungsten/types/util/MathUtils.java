@@ -50,7 +50,7 @@ import static tungsten.types.Range.BoundType;
 /**
  * A utility class to hold commonly used functions and algorithms.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class MathUtils {
     public static final String THETA = "\u03B8";
@@ -460,7 +460,7 @@ public class MathUtils {
 
 
     /**
-     * Compute the nth root of a real value a.  The result is the principal
+     * Compute the n<sup>th</sup> root of a real value a.  The result is the principal
      * root of the equation x<sup>n</sup> = a.  Note that the {@link MathContext}
      * is inferred from the argument {@code a}.
      * @param a the value for which we want to find a root
@@ -472,7 +472,7 @@ public class MathUtils {
     }
     
     /**
-     * Compute the nth root of a real value a.  The result is the principal
+     * Compute the n<sup>th</sup> root of a real value a.  The result is the principal
      * root of the equation x<sup>n</sup> = a.  The {@link MathContext}
      * is explicitly supplied.
      * @param a the value for which we want to find a root
@@ -481,7 +481,7 @@ public class MathUtils {
      * @return the {@code n}th root of {@code a}
      */
     public static RealType nthRoot(RealType a, IntegerType n, MathContext mctx) {
-        BigDecimal A = a.asBigDecimal();
+        final BigDecimal A = a.asBigDecimal();
         if (A.compareTo(BigDecimal.ZERO) == 0) {
             try {
                 return (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
@@ -491,17 +491,16 @@ public class MathUtils {
             }
         }
         
-        int nint = n.asBigInteger().intValueExact();
-        BigDecimal ncalc = new BigDecimal(n.asBigInteger());
-        BigDecimal nminus1 = ncalc.subtract(BigDecimal.ONE);
+        final int nint = n.asBigInteger().intValueExact();
+        final BigDecimal ncalc = new BigDecimal(n.asBigInteger());
+        final BigDecimal nminus1 = ncalc.subtract(BigDecimal.ONE);
         BigDecimal x0;
         BigDecimal x1 = A.divide(new BigDecimal(n.asBigInteger()), mctx); // initial estimate
-        
-        while (true) {
+
+        do {
             x0 = x1;
             x1 = nminus1.multiply(x0, mctx).add(A.divide(x0.pow(nint - 1, mctx), mctx), mctx).divide(ncalc, mctx);
-            if (x0.compareTo(x1) == 0) break;
-        }
+        } while (x0.compareTo(x1) != 0);
         x1 = x1.stripTrailingZeros();
         boolean irrational = classifyIfIrrational(x1, mctx);
         final RealImpl result = new RealImpl(x1, a.isExact() && !irrational);
@@ -518,19 +517,20 @@ public class MathUtils {
     }
     
     /**
-     * Compute the n<sup>th</sup> roots of unity.
+     * Compute the n<sup>th</sup> roots of unity, &#x212f;<sup>2&pi;&#x2148;k/n</sup> for {k=0, 1, 2, &hellip;, n&minus;1}.
      * @param n the degree of the roots
      * @param mctx the {@link MathContext} for computing these values
      * @return a {@link Set} of {@code n} complex roots
      */
     public static Set<ComplexType> rootsOfUnity(long n, MathContext mctx) {
-        RealImpl decTwo = new RealImpl(new BigDecimal(TWO));
+        if (n < 1L) throw new IllegalArgumentException("Degree of roots must be \u2265 1");
+        final RealImpl decTwo = new RealImpl(new BigDecimal(TWO));
         decTwo.setMathContext(mctx);
-        RealImpl decOne = new RealImpl(BigDecimal.ONE);
+        final RealImpl decOne = new RealImpl(BigDecimal.ONE);
         decOne.setMathContext(mctx);
         RealType twopi = (RealType) Pi.getInstance(mctx).multiply(decTwo);
         NumericSet set = new NumericSet();
-        for (long idx = 1; idx <= n; idx++) {
+        for (long idx = 1L; idx <= n; idx++) {
             RealType realN = new RealImpl(BigDecimal.valueOf(idx), mctx);
             ComplexPolarImpl val = new ComplexPolarImpl(decOne, (RealType) twopi.divide(realN));
             val.setMathContext(mctx);

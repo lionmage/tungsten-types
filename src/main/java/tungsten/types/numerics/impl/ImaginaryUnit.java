@@ -41,7 +41,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A representation of the imaginary unit, or the unit imaginary number.
+ * A representation of the imaginary unit &#x2148;, or the unit imaginary number.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
