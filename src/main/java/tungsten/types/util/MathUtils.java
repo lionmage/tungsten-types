@@ -29,9 +29,8 @@ import tungsten.types.Vector;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.UnaryFunction;
-import tungsten.types.functions.impl.Exp;
-import tungsten.types.functions.impl.NaturalLog;
-import tungsten.types.functions.impl.Negate;
+import tungsten.types.functions.impl.*;
+import tungsten.types.matrix.impl.BasicMatrix;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
@@ -604,6 +603,8 @@ public class MathUtils {
         
         return buf.toString();
     }
+
+    private static final RealType TEN = new RealImpl(BigDecimal.TEN, MathContext.UNLIMITED);
     
     /**
      * Generate a matrix of rotation in 2 dimensions.
@@ -612,19 +613,21 @@ public class MathUtils {
      * @return a 2&#215;2 matrix of rotation
      */
     public static Matrix<RealType> get2DMatrixOfRotation(RealType theta) {
+        final MathContext ctx = theta.getMathContext();
+        final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
+        final Cos cosfunc = new Cos(epsilon);
+        final Sin sinfunc = new Sin(epsilon);
         RealType[][] temp = new RealType[2][2];
 
-        throw new UnsupportedOperationException("To be implemented");
+        RealType cos = cosfunc.apply(theta);
+        RealType sin = sinfunc.apply(theta);
+
+        temp[0][0] = cos;
+        temp[0][1] = sin.negate();
+        temp[1][0] = sin;
+        temp[1][1] = cos;
         
-//        RealType cos = new RealImpl(BigDecimalMath.cos(theta.asBigDecimal(), theta.getMathContext()));
-//        RealType sin = new RealImpl(BigDecimalMath.sin(theta.asBigDecimal(), theta.getMathContext()));
-//
-//        temp[0][0] = cos;
-//        temp[0][1] = sin.negate();
-//        temp[1][0] = sin;
-//        temp[1][1] = cos;
-        
-//        return new BasicMatrix<>(temp);
+        return new BasicMatrix<>(temp);
     }
     
     /**
@@ -636,42 +639,35 @@ public class MathUtils {
      * @see <a href="https://en.wikipedia.org/wiki/Rotation_matrix">the Wikipedia article on matrices of rotation</a>
      */
     public static Matrix<RealType> get3DMatrixOfRotation(RealType theta, Axis axis) {
+        final MathContext ctx = theta.getMathContext();
+        final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
+        final Cos cosfunc = new Cos(epsilon);
+        final Sin sinfunc = new Sin(epsilon);
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        final RealType zero = new RealImpl(BigDecimal.ZERO, ctx);
         RealType[][] temp = new RealType[3][];
 
-        throw new UnsupportedOperationException("To be implemented");
-        
-//        RealType one;
-//        RealType zero;
-//        try {
-//            zero = (RealType) ExactZero.getInstance(theta.getMathContext()).coerceTo(RealType.class);
-//            one = (RealType) One.getInstance(theta.getMathContext()).coerceTo(RealType.class);
-//        } catch (CoercionException coercionException) {
-//            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Error obtaining real value for base constant.", coercionException);
-//            zero = new RealImpl(BigDecimal.ZERO, theta.getMathContext());  // basic default behavior, because we shouldn't fail horribly like this
-//            one = new RealImpl(BigDecimal.ONE, theta.getMathContext());
-//        }
-//
-//        RealType cos = new RealImpl(BigDecimalMath.cos(theta.asBigDecimal(), theta.getMathContext()));
-//        RealType sin = new RealImpl(BigDecimalMath.sin(theta.asBigDecimal(), theta.getMathContext()));
-//
-//        switch (axis) {
-//            case X_AXIS:
-//                temp[0] = new RealType[] { one, zero, zero };
-//                temp[1] = new RealType[] { zero, cos, sin.negate() };
-//                temp[2] = new RealType[] { zero, sin, cos };
-//                break;
-//            case Y_AXIS:
-//                temp[0] = new RealType[] { cos, zero, sin };
-//                temp[1] = new RealType[] { zero, one, zero };
-//                temp[2] = new RealType[] { sin.negate(), zero, cos };
-//                break;
-//            case Z_AXIS:
-//                temp[0] = new RealType[] { cos, sin.negate(), zero };
-//                temp[1] = new RealType[] { sin, cos, zero };
-//                temp[2] = new RealType[] { zero, zero, one };
-//                break;
-//        }
-//        return new BasicMatrix<>(temp);
+        RealType cos = cosfunc.apply(theta);
+        RealType sin = sinfunc.apply(theta);
+
+        switch (axis) {
+            case X_AXIS:
+                temp[0] = new RealType[] { one, zero, zero };
+                temp[1] = new RealType[] { zero, cos, sin.negate() };
+                temp[2] = new RealType[] { zero, sin, cos };
+                break;
+            case Y_AXIS:
+                temp[0] = new RealType[] { cos, zero, sin };
+                temp[1] = new RealType[] { zero, one, zero };
+                temp[2] = new RealType[] { sin.negate(), zero, cos };
+                break;
+            case Z_AXIS:
+                temp[0] = new RealType[] { cos, sin.negate(), zero };
+                temp[1] = new RealType[] { sin, cos, zero };
+                temp[2] = new RealType[] { zero, zero, one };
+                break;
+        }
+        return new BasicMatrix<>(temp);
     }
     
     private static final Range<RealType> epsilonRange = new Range<>(new RealImpl("0"), new RealImpl("1"), BoundType.EXCLUSIVE);
