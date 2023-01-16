@@ -697,14 +697,14 @@ public class MathUtils {
      * Tests if two real vectors are equal according to
      * {@link #areEqualToWithin(RealType, RealType, RealType) }. The two
      * vectors are compared element-wise, and if any pair of elements has
-     * a difference &ge; &sigma;, the comparison fails fast and returns false.
+     * a difference &ge; &epsilon;, the comparison fails fast and returns false.
      * 
      * @param A the first real-valued vector to test for equality
      * @param B the second real-valued vector to test for equality
      * @param epsilon a value between 0 and 1, exclusive, denoting the maximum
      *  difference allowed between any pair of elements for A and B to be
      *  considered equal.
-     * @return true if the supplied vectors are of equal length and all of the
+     * @return true if the supplied vectors are of equal length and all the
      *  elements of A are within &epsilon; of their counterparts in B 
      */
     public static boolean areEqualToWithin(Vector<RealType> A, Vector<RealType> B, RealType epsilon) {
