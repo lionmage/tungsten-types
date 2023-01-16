@@ -147,7 +147,7 @@ public class ComplexPolarImpl implements ComplexType {
     
     protected RealType normalizeArgument() {
         if (argument instanceof Pi) {
-            // special case where argument is exactly pi
+            // special case where argument is exactly 𝞹
             return argument;
         }
         final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(TWO);
@@ -155,14 +155,14 @@ public class ComplexPolarImpl implements ComplexType {
         Range<RealType> atan2range = RangeUtils.getAngularInstance(mctx);
         
         if (atan2range.contains(realVal)) {
-            // already in the range (-pi, pi]
+            // already in the range (-𝞹, 𝞹]
             return argument;
         } else {
-            // reduce values > pi
+            // reduce values > 𝞹
             while (atan2range.isAbove(realVal)) {
                 realVal = (RealType) realVal.subtract(twopi);
             }
-            // increase values < -pi
+            // increase values < -𝞹
             while (atan2range.isBelow(realVal)) {
                 realVal = (RealType) realVal.add(twopi);
             }
@@ -230,7 +230,7 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce subtrahend to RealType", ex);
             }
         }
-        throw new UnsupportedOperationException("Subrahend of type " + subtrahend.getClass().getTypeName() + " is not supported");
+        throw new UnsupportedOperationException("Subtrahend of type " + subtrahend.getClass().getTypeName() + " is not supported");
     }
 
     @Override
@@ -349,7 +349,7 @@ public class ComplexPolarImpl implements ComplexType {
 
     /**
      * A strict test for equality.  The algorithm makes no attempt to normalize the argument (phase angle)
-     * of this value nor that of any {@link ComplexType} supplied as a parameter. If you need a more forgiving
+     * of any {@link ComplexType} supplied as a parameter. If you need a more forgiving
      * comparison, use {@link #equalToWithin(ComplexPolarImpl, ComplexPolarImpl, RealType)} instead.
      *
      * @param o the object with which to compare this
@@ -373,13 +373,13 @@ public class ComplexPolarImpl implements ComplexType {
     }
 
     /**
-     * Compare two {@link ComplexPolarImpl} values to within a given precision denoted by {@code epsilon}.
+     * Compare two {@link ComplexPolarImpl} values to within a given precision denoted by {@code epsilon} (symbol: &epsilon;).
      * The normalized arguments of the two complex values are compared, which may not be the case with {@link #equals(Object)},
      * making this method more flexible when dealing with polar complex values, albeit potentially slower.
      *
      * @param A       the first complex polar value to compare
      * @param B       the second complex polar value to compare
-     * @param epsilon the accuracy to within which A and B are compared
+     * @param epsilon the precision &epsilon; to within which A and B are compared
      * @return true if and only if the modulus and normalized phase angles of A and B match, false otherwise
      */
     public static boolean equalToWithin(ComplexPolarImpl A, ComplexPolarImpl B, RealType epsilon) {
