@@ -368,14 +368,16 @@ public class MathUtils {
      * @return the value of base<sup>exponent</sup>
      */
     public static RealType generalizedExponent(RealType base, Numeric exponent, MathContext mctx) {
-        if (exponent instanceof Zero) {
+        if (Zero.isZero(exponent)) {
             try {
                 return (RealType) One.getInstance(mctx).coerceTo(RealType.class);
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "Could not obtain a real instance of One.", ex);
+                        "Could not obtain a real instance of One", ex);
                 throw new IllegalStateException(ex);
             }
+        } else if (One.isUnity(exponent)) {
+            return base;
         }
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
         switch (htype) {
@@ -389,7 +391,7 @@ public class MathUtils {
                         return generalizedExponent(base, integer, mctx);
                     } catch (CoercionException ex) {
                         Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to integer.", ex);
-                        throw new IllegalStateException("Should have been able to coerce RealType to IntegerType", ex);
+                        throw new IllegalStateException("Failed type coercion after test for coercibility", ex);
                     }
                 }
                 // approximate with a rational
@@ -398,7 +400,7 @@ public class MathUtils {
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to rational.", ex);
-                    throw new IllegalStateException("Should have been able to coerce RealType to RationalType", ex);
+                    throw new IllegalStateException("Unable to generate rational approximation of " + exponent, ex);
                 }
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
@@ -412,14 +414,16 @@ public class MathUtils {
     }
 
     public static ComplexType generalizedExponent(ComplexType base, Numeric exponent, MathContext mctx) {
-        if (exponent instanceof Zero) {
+        if (Zero.isZero(exponent)) {
             try {
                 return (ComplexType) One.getInstance(mctx).coerceTo(ComplexType.class);
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "Could not obtain a Complex instance of one.", ex);
+                        "Could not obtain a complex instance of One", ex);
                 throw new IllegalStateException(ex);
             }
+        } else if (One.isUnity(exponent)) {
+            return base;
         }
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
         switch (htype) {
@@ -433,7 +437,7 @@ public class MathUtils {
                         return generalizedExponent(base, integer, mctx);
                     } catch (CoercionException ex) {
                         Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to integer.", ex);
-                        throw new IllegalStateException("Should have been able to coerce RealType to IntegerType", ex);
+                        throw new IllegalStateException("Failed type coercion after test for coercibility", ex);
                     }
                 }
                 // approximate with a rational
@@ -442,7 +446,7 @@ public class MathUtils {
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to rational.", ex);
-                    throw new IllegalStateException("Should have been able to coerce RealType to RationalType", ex);
+                    throw new IllegalStateException("Unable to generate rational approximation of " + exponent, ex);
                 }
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
@@ -452,6 +456,11 @@ public class MathUtils {
                 RealType modulus = nthRoot(intermediate.magnitude(), ratexponent.denominator());
                 RealType argument = (RealType) intermediate.argument().divide(ratexponent.denominator());
                 return new ComplexPolarImpl(modulus, argument, false);
+            case COMPLEX:
+                final Euler e = Euler.getInstance(mctx);
+                // use the identity z^w = e^(w⋅ln(z))
+                ComplexType argForE = (ComplexType) ln(base).multiply(exponent);
+                return e.exp(argForE);
             default:
                 throw new ArithmeticException("Currently generalizedExponent() has no support for exponents of type " + exponent.getClass().getTypeName());
         }
