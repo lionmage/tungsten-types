@@ -184,7 +184,7 @@ public class MathUtils {
             return (RealType) intermediate.coerceTo(RealType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
-            throw new ArithmeticException("Failure to coerce to RealType.");
+            throw new ArithmeticException("Failure to coerce to RealType");
         }
     }
 
@@ -212,7 +212,7 @@ public class MathUtils {
             return (ComplexType) intermediate.coerceTo(ComplexType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
-            throw new ArithmeticException("Failure to coerce to ComplexType.");
+            throw new ArithmeticException("Failure to coerce to ComplexType");
         }
     }
     
@@ -259,7 +259,7 @@ public class MathUtils {
                 return (RealType) ln(mantissa, mctx).add(ln10.multiply(exponent).coerceTo(RealType.class));
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce ln(10)*n to RealType.", ex);
-                throw new IllegalStateException("Multiplication of real and integer should give us a real back.");
+                throw new IllegalStateException("Multiplication of real and integer should return a real value");
             }
         }
         
@@ -338,7 +338,7 @@ public class MathUtils {
     
     /**
      * Computes the mantissa of a real value as expressed in scientific
-     * notation, mantissa * 10<sup>exponent</sup>.
+     * notation, mantissa&nbsp;&times;&nbsp;10<sup>exponent</sup>.
      * @param x the real value
      * @return the mantissa of {@code x}
      */
@@ -351,7 +351,7 @@ public class MathUtils {
     
     /**
      * Computes the exponent of a real value as expressed in scientific
-     * notation, mantissa * 10<sup>exponent</sup>.
+     * notation, mantissa&nbsp;&times;&nbsp;10<sup>exponent</sup>.
      * @param x the real value
      * @return the exponent of {@code x}
      */
@@ -373,7 +373,7 @@ public class MathUtils {
                 return (RealType) One.getInstance(mctx).coerceTo(RealType.class);
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "Could not obtain a Real instance of one.", ex);
+                        "Could not obtain a real instance of One.", ex);
                 throw new IllegalStateException(ex);
             }
         }
@@ -389,7 +389,7 @@ public class MathUtils {
                         return generalizedExponent(base, integer, mctx);
                     } catch (CoercionException ex) {
                         Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to integer.", ex);
-                        throw new IllegalStateException("Should have been able to coerce RealType to IntegerType.", ex);
+                        throw new IllegalStateException("Should have been able to coerce RealType to IntegerType", ex);
                     }
                 }
                 // approximate with a rational
@@ -398,7 +398,7 @@ public class MathUtils {
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to rational.", ex);
-                    throw new IllegalStateException("Should have been able to coerce RealType to RationalType.", ex);
+                    throw new IllegalStateException("Should have been able to coerce RealType to RationalType", ex);
                 }
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
@@ -433,7 +433,7 @@ public class MathUtils {
                         return generalizedExponent(base, integer, mctx);
                     } catch (CoercionException ex) {
                         Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to integer.", ex);
-                        throw new IllegalStateException("Should have been able to coerce RealType to IntegerType.", ex);
+                        throw new IllegalStateException("Should have been able to coerce RealType to IntegerType", ex);
                     }
                 }
                 // approximate with a rational
@@ -442,7 +442,7 @@ public class MathUtils {
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to rational.", ex);
-                    throw new IllegalStateException("Should have been able to coerce RealType to RationalType.", ex);
+                    throw new IllegalStateException("Should have been able to coerce RealType to RationalType", ex);
                 }
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
@@ -846,12 +846,12 @@ public class MathUtils {
                             return Aconv.compareTo(B);
                         }
                     } catch (CoercionException ce) {
-                        Logger.getAnonymousLogger().log(Level.SEVERE, "No common type found for {} and {}.",
-                                new Object[]{h1, h2});
-                        throw new IllegalArgumentException("Failure to coerce arguments to a common type.", ce);
+                        Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "No common type found for {} and {}.",
+                                new Object[] { h1, h2 });
+                        throw new IllegalArgumentException("Failure to coerce arguments to a common type", ce);
                     }
                 } else {
-                    throw new IllegalArgumentException("Numeric subtype must be comparable.");
+                    throw new IllegalArgumentException("Numeric subtype must be comparable");
                 }
             }
 
