@@ -362,19 +362,19 @@ public class ComplexPolarImpl implements ComplexType {
         } else if (o instanceof One) {
             return this.isExact() &&
                     testEquals(this.modulus.asBigDecimal(), BigDecimal.ONE) &&
-                    testEquals(this.argument.asBigDecimal(), BigDecimal.ZERO);
+                    testEquals(this.normalizeArgument().asBigDecimal(), BigDecimal.ZERO);
         }
         if (o instanceof ComplexType) {
             ComplexType that = (ComplexType) o;
             if (this.isExact() != that.isExact()) return false;
-            return this.modulus.equals(that.magnitude()) && this.argument.equals(that.argument());
+            return this.modulus.equals(that.magnitude()) && this.normalizeArgument().equals(that.argument());
         }
         return isCoercibleTo(RealType.class) && real().equals(o);
     }
 
     /**
      * Compare two {@link ComplexPolarImpl} values to within a given precision denoted by {@code epsilon}.
-     * The normalized arguments of the two complex values are compared, unlike with {@link #equals(Object)},
+     * The normalized arguments of the two complex values are compared, which may not be the case with {@link #equals(Object)},
      * making this method more flexible when dealing with polar complex values, albeit potentially slower.
      *
      * @param A       the first complex polar value to compare
