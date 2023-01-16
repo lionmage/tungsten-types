@@ -164,7 +164,7 @@ public class RangeUtils {
 
                 @Override
                 public IntegerType next() {
-                    if (current.compareTo(limit) > 0) throw new NoSuchElementException("No more elements in set.");
+                    if (current.compareTo(limit) > 0) throw new NoSuchElementException("No more elements in set");
                     IntegerType retval = current;
                     current = (IntegerType) current.add(ONE);
                     return retval;
@@ -200,7 +200,7 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> union(Set<IntegerType> other) {
-                if (this.cardinality() == 0L) return other;
+                if (other.cardinality() == 0L) return this;  // this.cardinality() will always be >= 1
                 if (this.cardinality() >= other.cardinality() &&
                         StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) {
                     return this;
@@ -210,7 +210,8 @@ public class RangeUtils {
 
             @Override
             public Set<IntegerType> intersection(Set<IntegerType> other) {
-                if (this.cardinality() == 0L || StreamSupport.stream(this.spliterator(), true).noneMatch(other::contains)) {
+                // this.cardinality() will always be >= 1
+                if (StreamSupport.stream(this.spliterator(), true).noneMatch(other::contains)) {
                     return EmptySet.getInstance();
                 }
                 return other.intersection(this);
