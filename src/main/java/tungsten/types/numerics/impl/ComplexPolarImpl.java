@@ -195,6 +195,7 @@ public class ComplexPolarImpl implements ComplexType {
 
     @Override
     public Numeric add(Numeric addend) {
+        if (Zero.isZero(addend)) return this;
         if (addend instanceof ComplexType) {
             ComplexType cadd = (ComplexType) addend;
             return new ComplexRectImpl((RealType) this.real().add(cadd.real()),
@@ -209,11 +210,12 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce addend to RealType", ex);
             }
         }
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Addend of type " + addend.getClass().getTypeName() + " is not supported");
     }
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (Zero.isZero(subtrahend)) return this;
         if (subtrahend instanceof ComplexType) {
             ComplexType csub = (ComplexType) subtrahend;
             return new ComplexRectImpl((RealType) this.real().subtract(csub.real()),
@@ -228,11 +230,13 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce subtrahend to RealType", ex);
             }
         }
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Subrahend of type " + subtrahend.getClass().getTypeName() + " is not supported");
     }
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
+        if (One.isUnity(multiplier)) return this;
         if (multiplier instanceof ComplexType) {
             ComplexType cmult = (ComplexType) multiplier;
             RealType modnew = (RealType) modulus.multiply(cmult.magnitude());
@@ -256,11 +260,13 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce multiplier to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported type of multiplier.");
+        throw new UnsupportedOperationException("Unsupported type of multiplier");
     }
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
+        if (One.isUnity(divisor)) return this;
         if (divisor instanceof ComplexType) {
             ComplexType cdiv = (ComplexType) divisor;
             RealType modnew = (RealType) modulus.divide(cdiv.magnitude());
@@ -273,7 +279,7 @@ public class ComplexPolarImpl implements ComplexType {
                 RealType scalar = (RealType) divisor.coerceTo(RealType.class);
                 switch (scalar.sign()) {
                     case ZERO:
-                        throw new IllegalArgumentException("Division by zero not allowed.");
+                        throw new IllegalArgumentException("Division by zero not allowed");
                     case NEGATIVE:
                         Pi pi = Pi.getInstance(mctx);
                         RealType absval = scalar.magnitude();
@@ -286,7 +292,7 @@ public class ComplexPolarImpl implements ComplexType {
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce divisor to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported type of divisor.");
+        throw new UnsupportedOperationException("Unsupported type of divisor");
     }
 
     @Override
@@ -312,6 +318,7 @@ public class ComplexPolarImpl implements ComplexType {
     public Set<ComplexType> nthRoots(IntegerType n) {
         ComplexType principalRoot;
         final long nLong = n.asBigInteger().longValueExact();
+        if (nLong < 1L) throw new IllegalArgumentException("Degree of roots must be \u2265 1");
         if (nLong == 2L) {
             principalRoot = (ComplexType) sqrt();
         } else {

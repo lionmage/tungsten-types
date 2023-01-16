@@ -172,7 +172,7 @@ public class ComplexRectImpl implements ComplexType {
             // The return value should be a real, but coerce just in case
             return (RealType) MathUtils.atan2(imag, real).coerceTo(RealType.class);
         } catch (CoercionException e) {
-            throw new ArithmeticException("Cannot coerce atan2 result to a real.");
+            throw new ArithmeticException("Cannot coerce atan2 result to a real value");
         }
     }
 
@@ -206,7 +206,7 @@ public class ComplexRectImpl implements ComplexType {
                 if (imag.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) {
                     return real;
                 } else {
-                    throw new CoercionException("Imaginary part must be 0.",
+                    throw new CoercionException("Imaginary part must be 0",
                             this.getClass(), numtype);
                 }
             default:
@@ -216,6 +216,7 @@ public class ComplexRectImpl implements ComplexType {
 
     @Override
     public Numeric add(Numeric addend) {
+        if (Zero.isZero(addend)) return this;
         if (addend instanceof ComplexType) {
             ComplexType that = (ComplexType) addend;
             return new ComplexRectImpl((RealType) this.real.add(that.real()),
@@ -230,11 +231,12 @@ public class ComplexRectImpl implements ComplexType {
                 Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce addend to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported addend type.");
+        throw new UnsupportedOperationException("Unsupported addend type");
     }
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (Zero.isZero(subtrahend)) return this;
         if (subtrahend instanceof ComplexType) {
             ComplexType that = (ComplexType) subtrahend;
             return new ComplexRectImpl((RealType) this.real.subtract(that.real()),
@@ -254,6 +256,8 @@ public class ComplexRectImpl implements ComplexType {
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (One.isUnity(multiplier)) return this;
+        if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
         if (multiplier instanceof ComplexType) {
             ComplexType cmult = (ComplexType) multiplier;
             RealType realresult = (RealType) real.multiply(cmult.real()).subtract(imag.multiply(cmult.imaginary()));
@@ -272,7 +276,8 @@ public class ComplexRectImpl implements ComplexType {
 
     @Override
     public Numeric divide(Numeric divisor) {
-        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0.");
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
+        if (One.isUnity(divisor)) return this;
         if (divisor instanceof ComplexType) {
             ComplexType cdiv = (ComplexType) divisor;
             ComplexType conj = cdiv.conjugate();
@@ -312,13 +317,17 @@ public class ComplexRectImpl implements ComplexType {
             root.setMathContext(mctx);
             return root;
         } catch (CoercionException ex) {
-            Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() result to RealType.", ex);
-            throw new IllegalStateException("Unexpected failure to coerce sqrt() result.", ex);
+            Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() intermediate result to RealType.", ex);
+            throw new IllegalStateException("Unexpected failure to coerce sqrt() intermediate result", ex);
         }
     }
     
     @Override
     public Set<ComplexType> nthRoots(IntegerType n) {
+        if (n.asBigInteger().longValueExact() == 2L) {
+            ComplexType principalRoot = (ComplexType) sqrt();
+            return Set.of(principalRoot, principalRoot.negate());
+        }
         ComplexPolarImpl polar = new ComplexPolarImpl(magnitude(), argument(), exact);
         return polar.nthRoots(n);
     }
