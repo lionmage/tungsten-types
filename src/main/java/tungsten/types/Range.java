@@ -24,6 +24,7 @@ package tungsten.types;
  */
 
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.RangeUtils;
 
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -134,9 +135,18 @@ public class Range<T extends Numeric & Comparable<? super T>> {
                     A.upperBound.type : B.upperBound.type;
             assert highestBound.compareTo(lowestBound) > 0;
             return new Range<>(lowestBound, lowestBoundType, highestBound, highestBoundType);
+        } else {
+            // no overlap, so construct the smallest NotchedRange possible that contains ranges A and B
+            Range<RealType> first = A.getLowerBound().compareTo(B.getLowerBound()) < 0 ? A : B;
+            Range<RealType> last = A.getUpperBound().compareTo(B.getUpperBound()) > 0 ? A : B;
+            Range<RealType> between = RangeUtils.rangeBetween(first, last);
+            if (between.getLowerBound().equals(between.getUpperBound())) {
+                return new NotchedRange<>(first.getLowerBound(), first.lowerBound.type,
+                        last.getUpperBound(), last.upperBound.type, between.getLowerBound());
+            }
+            Range<RealType> merged = RangeUtils.merge(first, last);
+            return new NotchedRange<>(merged, RangeUtils.asRealSet(between));
         }
-        // there are no good solutions left, so throw an exception
-        throw new IllegalArgumentException("Ranges " + A + " and " + B + " cannot be narrowed or reduced.");
     }
     
     /**
