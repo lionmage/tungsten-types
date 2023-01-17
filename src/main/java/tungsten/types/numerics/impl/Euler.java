@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  * This class provides a representation of the mathematical constant &#x212f; &mdash;
  * also known as Euler's number.
  * The class is not publicly instantiable; it provides a factory method
- * that will give you back an instance of itself for a given {@link MathContext},
+ * that will return an instance of itself for a given {@link MathContext},
  * and keeps a cache of instances that have been generated so that the value
  * of &#x212f; only needs to be calculated once for a given precision and
  * {@link RoundingMode}.

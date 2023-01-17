@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * An implementation of {@link ComplexType} that uses a rectangular
  * representation internally.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ComplexRectImpl implements ComplexType {
     private final RealType real;

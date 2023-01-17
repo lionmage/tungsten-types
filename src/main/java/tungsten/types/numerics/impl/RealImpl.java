@@ -36,8 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * An implementation of {@link RealType}.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RealImpl implements RealType {
     private boolean irrational = false;
@@ -177,9 +178,7 @@ public class RealImpl implements RealType {
                 return this;
             case COMPLEX:
                 final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
-                ComplexRectImpl cplx = new ComplexRectImpl(this, zero, exact);
-                cplx.setMathContext(mctx);
-                return cplx;
+                return new ComplexRectImpl(this, zero, exact);
             case RATIONAL:
                 if (!irrational) {
                     return rationalize();
@@ -191,7 +190,7 @@ public class RealImpl implements RealType {
                 }
                 break;
         }
-        throw new CoercionException("Failed to coerce real value.", this.getClass(), numtype);
+        throw new CoercionException("Failed to coerce real value", this.getClass(), numtype);
     }
     
     protected RationalType rationalize() {
@@ -232,7 +231,7 @@ public class RealImpl implements RealType {
                 Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real add.", ex);
             }
         }
-        throw new UnsupportedOperationException("Addition operation unsupported.");
+        throw new UnsupportedOperationException("Addition operation unsupported");
     }
 
     @Override
@@ -282,7 +281,7 @@ public class RealImpl implements RealType {
                 Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real multiply.", ex);
             }
         }
-        throw new UnsupportedOperationException("Multiplication operation unsupported.");
+        throw new UnsupportedOperationException("Multiplication operation unsupported");
     }
 
     @Override
@@ -321,7 +320,7 @@ public class RealImpl implements RealType {
                 Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real divide.", ex);
             }
         }
-        throw new UnsupportedOperationException("Division operation unsupported."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Division operation unsupported");
     }
 
     @Override
@@ -357,7 +356,6 @@ public class RealImpl implements RealType {
             try {
                 final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
                 ComplexRectImpl cplx = new ComplexRectImpl(this, zero, exact);
-                cplx.setMathContext(mctx);
                 return cplx.sqrt();
             } catch (CoercionException e) {
                 // we should NEVER get here
@@ -409,6 +407,11 @@ public class RealImpl implements RealType {
             RealType that = (RealType) o;
             if (this.isExact() != that.isExact()) return false;
             return val.compareTo(that.asBigDecimal()) == 0;
+        } else if (this.isIntegralValue() && o instanceof IntegerType) {
+            IntegerType that = (IntegerType) o;
+            return val.toBigIntegerExact().equals(that.asBigInteger());
+        } else if (!irrational && o instanceof RationalType) {
+            return rationalize().equals(o);
         }
         return false;
     }

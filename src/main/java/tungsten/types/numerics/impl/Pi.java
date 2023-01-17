@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  * is only done once the correct number of terms have been summed. This saves a
  * tremendous amount of recalculation.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see <a href="https://en.wikipedia.org/wiki/Bailey%E2%80%93Borwein%E2%80%93Plouffe_formula">the Wikipedia article on BBP</a>
  */
 @Constant(name = "pi", representation = "\uD835\uDF0B")

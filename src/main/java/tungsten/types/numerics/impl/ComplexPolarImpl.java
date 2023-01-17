@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  * internally.  This representation is typically superior for computing
  * multiplication, division, roots, and powers.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Polar
 public class ComplexPolarImpl implements ComplexType {
@@ -76,6 +76,37 @@ public class ComplexPolarImpl implements ComplexType {
     public ComplexPolarImpl(RealType modulus, RealType argument, boolean exact) {
         this(modulus, argument);
         this.exact = exact;
+    }
+
+    public static final char SEPARATOR = '@';
+
+    /**
+     * A constructor that takes a {@link String} as input and parses it
+     * into a polar complex value. The modulus and the argument are
+     * separated by the @ symbol.  If the argument is followed by the
+     * degree symbol (e.g., 90&deg;, unicode U+00B0), the argument is interpreted as an
+     * angle in degrees rather than radians.
+     * @param strval the string representation of a complex polar value
+     */
+    public ComplexPolarImpl(String strval) {
+        String strMod = strval.substring(0, strval.indexOf(SEPARATOR)).trim();
+        String strAng = strval.substring(strval.indexOf(SEPARATOR) + 1).trim();
+        boolean usesDegrees = false;
+        if (strAng.endsWith("\u00B0")) {
+            usesDegrees = true;
+            strAng = strAng.substring(0, strAng.length() - 1).trim();
+        }
+        RealType angle = new RealImpl(strAng);
+        if (usesDegrees) {
+            MathContext ctx = angle.getMathContext();
+            angle = (RealType) Pi.getInstance(ctx).multiply(angle).divide(new RealImpl(BigDecimal.valueOf(180L)));
+        }
+        this.modulus = new RealImpl(strMod);
+        this.argument = angle;
+        this.mctx = MathUtils.inferMathContext(Arrays.asList(this.modulus, this.argument));
+        epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
+        this.cos = new Cos(epsilon);
+        this.sin = new Sin(epsilon);
     }
 
     public void setMathContext(MathContext mctx) {
