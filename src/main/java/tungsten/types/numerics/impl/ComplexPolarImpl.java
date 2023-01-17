@@ -63,7 +63,7 @@ public class ComplexPolarImpl implements ComplexType {
     
     public ComplexPolarImpl(RealType modulus, RealType argument) {
         if (modulus.sign() == Sign.NEGATIVE) {
-            throw new IllegalArgumentException("Complex modulus should be positive");
+            throw new IllegalArgumentException("Complex modulus must be positive");
         }
         this.modulus = modulus;
         this.argument = argument;
@@ -102,6 +102,7 @@ public class ComplexPolarImpl implements ComplexType {
             angle = (RealType) Pi.getInstance(ctx).multiply(angle).divide(new RealImpl(BigDecimal.valueOf(180L)));
         }
         this.modulus = new RealImpl(strMod);
+        if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive");
         this.argument = angle;
         this.mctx = MathUtils.inferMathContext(Arrays.asList(this.modulus, this.argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
