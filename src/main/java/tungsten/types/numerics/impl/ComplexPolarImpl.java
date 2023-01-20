@@ -78,6 +78,11 @@ public class ComplexPolarImpl implements ComplexType {
         this.exact = exact;
     }
 
+    /**
+     * The separator character used to mark the separation between
+     * the modulus and argument of a complex string value, used
+     * by any constructor that takes a {@link String} argument.
+     */
     public static final char SEPARATOR = '@';
 
     /**
@@ -98,8 +103,8 @@ public class ComplexPolarImpl implements ComplexType {
         }
         RealType angle = new RealImpl(strAng);
         if (usesDegrees) {
-            MathContext ctx = angle.getMathContext();
-            angle = (RealType) Pi.getInstance(ctx).multiply(angle).divide(new RealImpl(BigDecimal.valueOf(180L)));
+            MathContext ctx = new MathContext(angle.getMathContext().getPrecision() + 3, angle.getMathContext().getRoundingMode());
+            angle = (RealType) Pi.getInstance(ctx).multiply(angle).divide(new RealImpl(BigDecimal.valueOf(180L), ctx));
         }
         this.modulus = new RealImpl(strMod);
         if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive");
@@ -239,7 +244,8 @@ public class ComplexPolarImpl implements ComplexType {
                 return new ComplexRectImpl((RealType) this.real().add(realval), this.imaginary(), exact && realval.isExact());
             } catch (CoercionException ex) {
                 // we should never get here
-                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce addend to RealType", ex);
+                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
+                        "Failed coercion after check for coercibility.", ex);
             }
         }
         throw new UnsupportedOperationException("Addend of type " + addend.getClass().getTypeName() + " is not supported");
@@ -259,7 +265,8 @@ public class ComplexPolarImpl implements ComplexType {
                 return new ComplexRectImpl((RealType) this.real().subtract(realval), this.imaginary(), exact && realval.isExact());
             } catch (CoercionException ex) {
                 // we should never get here
-                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce subtrahend to RealType", ex);
+                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
+                        "Failed coercion after check for coercibility.", ex);
             }
         }
         throw new UnsupportedOperationException("Subtrahend of type " + subtrahend.getClass().getTypeName() + " is not supported");
@@ -289,7 +296,8 @@ public class ComplexPolarImpl implements ComplexType {
                 }
             } catch (CoercionException ex) {
                 // we should never get here
-                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce multiplier to RealType.", ex);
+                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
+                        "Failed coercion after check for coercibility.", ex);
             }
         }
         throw new UnsupportedOperationException("Unsupported type of multiplier");
@@ -321,7 +329,8 @@ public class ComplexPolarImpl implements ComplexType {
                 }
             } catch (CoercionException ex) {
                 // we should never get here
-                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Failed to coerce divisor to RealType.", ex);
+                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
+                        "Failed coercion after check for coercibility.", ex);
             }
         }
         throw new UnsupportedOperationException("Unsupported type of divisor");
@@ -358,7 +367,8 @@ public class ComplexPolarImpl implements ComplexType {
                 principalRoot = new ComplexPolarImpl(MathUtils.nthRoot(modulus, n, mctx),
                         (RealType) argument.divide(n).coerceTo(RealType.class), exact);
             } catch (CoercionException ex) {
-                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Division by IntegerType n yielded non-coercible result.", ex);
+                Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
+                        "Division by IntegerType n yielded non-coercible result.", ex);
                 throw new ArithmeticException("Error computing principal root");
             }
         }

@@ -146,6 +146,16 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     private UnaryFunction<RealType, RealType> lnDiff(IntegerType scale) {
         return new Pow<>(-1L) {
             @Override
+            protected String getArgumentName() {
+                return NaturalLog.this.getArgumentName();
+            }
+
+            @Override
+            public String[] expectedArguments() {
+                return new String[] { getArgumentName() };
+            }
+
+            @Override
             public RealType apply(ArgVector<RealType> arguments) {
                 return (RealType) super.apply(arguments).multiply(scale);
             }
@@ -158,7 +168,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
             @Override
             public String toString() {
                 StringBuilder buf = new StringBuilder();
-                buf.append(scale).append('/').append(NaturalLog.this.getArgumentName()); // was: innerToString(false)
+                buf.append(scale).append('/').append(getArgumentName());
                 return buf.toString();
             }
         };

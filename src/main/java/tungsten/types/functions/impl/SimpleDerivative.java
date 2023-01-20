@@ -11,7 +11,6 @@ import tungsten.types.util.ClassTools;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +25,8 @@ import java.util.logging.Logger;
  * If a derivative cannot be computed directly from a function, the
  * algorithm will use a numeric method to compute an approximation.
  * The {@code epsilon} parameter controls the size of the &ldquo;straddle&rdquo;
- * surrounding the point where the derivative is being approximated.
+ * surrounding the point where the derivative is being approximated; this parameter
+ * must satisfy 0&nbsp;&lt;&nbsp;&epsilon;&nbsp;&#x226A;&nbsp;1.
  *
  * @param <T> any subclass of RealType will work in this implementation
  */
@@ -40,7 +40,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         this.epsilon = (T) epsilon.magnitude();
         if (!epsilonRange.contains(epsilon)) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING,
-                    "Epsilon value {} is out of recommended range {}", new Object[]{epsilon, epsilonRange});
+                    "Epsilon value {} is out of recommended range {}", new Object[] {epsilon, epsilonRange});
         }
     }
 
@@ -50,11 +50,6 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         if (!epsilonRange.contains(epsilon)) {
             Logger.getLogger(getClass().getName()).warning("Epsilon value is out of recommended range: " + epsilon);
         }
-    }
-
-    protected boolean hasDerivativeMethod(Class<? extends UnaryFunction> clazz) {
-        return Arrays.stream(clazz.getMethods()).filter(m -> m.getParameterCount() < 2)
-                .anyMatch(m -> m.isAnnotationPresent(Differentiable.class));
     }
 
     @Override

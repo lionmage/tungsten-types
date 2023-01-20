@@ -6,6 +6,7 @@ import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.functions.support.Rewritable;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
@@ -21,7 +22,7 @@ import java.util.Objects;
  * @param <T> the input parameter type, mostly ignored
  * @param <R> the output type
  */
-public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     final R value;
 
     private Const(R init) {
@@ -113,6 +114,12 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
     }
 
     @Override
+    public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
+        // a constant function will always return the same value, and composition will not change this behavior
+        return this;
+    }
+
+    @Override
     public String toString() {
         return value.toString();
     }
@@ -128,5 +135,21 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
             return value.equals(((Const<?, ?>) obj).inspect());
         }
         return false;
+    }
+
+    @Override
+    public Const<T, R> forArgName(String argName) {
+        if (getArgumentName().equals(argName)) return this;
+        return new Const<>(value) {
+            @Override
+            protected String getArgumentName() {
+                return argName;
+            }
+
+            @Override
+            public String[] expectedArguments() {
+                return new String[] {argName};
+            }
+        };
     }
 }

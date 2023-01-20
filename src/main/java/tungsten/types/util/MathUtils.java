@@ -695,7 +695,7 @@ public class MathUtils {
      */
     public static boolean areEqualToWithin(RealType A, RealType B, RealType epsilon) {
         if (epsilon.sign() != Sign.POSITIVE || !epsilonRange.contains(epsilon)) {
-            throw new IllegalArgumentException("Argument epsilon must be a small positive value.");
+            throw new IllegalArgumentException("Argument epsilon must satisfy 0 < \uD835\uDF00 \u226A 1"); // U+1D700 MATHEMATICAL ITALIC SMALL EPSILON
         }
         
         final RealType difference = (RealType) A.subtract(B).magnitude();

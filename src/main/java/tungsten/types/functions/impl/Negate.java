@@ -7,6 +7,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.functions.support.Rewritable;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RealImpl;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  * @param <T> the type of the function's sole input parameter
  * @param <R> the type of the function's output
  */
-public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private Class<R> rtnClazz;
 
     private Negate() {
@@ -114,6 +115,27 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
         final R response = OptionalOperations.dynamicInstantiate(rtnClazz, "-1");
 
         return Const.getInstance(response);
+    }
+
+    @Override
+    public Negate<T, R> forArgName(String argName) {
+        if (getArgumentName().equals(argName)) return this;
+        final Class<R> returnType = this.rtnClazz;
+        return new Negate<>() {
+            {
+                rtnClazz = returnType;
+            }
+
+            @Override
+            protected String getArgumentName() {
+                return argName;
+            }
+
+            @Override
+            public String[] expectedArguments() {
+                return new String[] {argName};
+            }
+        };
     }
 
     @Override
