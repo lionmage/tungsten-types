@@ -1,4 +1,27 @@
 package tungsten.types.functions;
+/*
+ * The MIT License
+ *
+ * Copyright © 2022 Robert Poole <Tarquin.AZ@gmail.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
@@ -50,11 +73,11 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     }
 
     public String labelForIndex(long index) {
-        return args.keySet().stream().sequential().skip(index).findFirst().orElseThrow();
+        return args.keySet().stream().skip(index).findFirst().orElseThrow();
     }
 
     public List<String> getElementLabels() {
-        return args.keySet().stream().sequential().collect(Collectors.toList());
+        return new ArrayList<>(args.keySet());
     }
 
     public boolean hasVariableName(String varLabel) {
@@ -73,7 +96,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     @Override
     public T elementAt(long position) {
         if (position < 0L) throw new IndexOutOfBoundsException("Negative indices are unsupported");
-        return args.values().stream().sequential().skip(position).findFirst().orElseThrow(IndexOutOfBoundsException::new);
+        return args.values().stream().skip(position).findFirst().orElseThrow(IndexOutOfBoundsException::new);
     }
 
     public T forVariableName(String label) {
@@ -106,7 +129,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
             throw new ArithmeticException("Cannot add two vectors of different length");
         }
         long idx = 0L;
-        final String[] varNames = args.keySet().stream().sequential().toArray(String[]::new);
+        final String[] varNames = args.keySet().toArray(String[]::new);
         ArgMap<T> nuMap = new ArgMap<>();
         for (String label : varNames) {
             nuMap.put(label, (T) args.get(label).add(addend.elementAt(idx++)));
@@ -121,7 +144,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public ArgVector<T> negate() {
-        final String[] varNames = args.keySet().stream().sequential().toArray(String[]::new);
+        final String[] varNames = args.keySet().toArray(String[]::new);
         ArgMap<T> nuMap = new ArgMap<>();
         for (String label : varNames) {
             nuMap.put(label, (T) args.get(label).negate());
@@ -131,7 +154,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public ArgVector<T> scale(T factor) {
-        final String[] varNames = args.keySet().stream().sequential().toArray(String[]::new);
+        final String[] varNames = args.keySet().toArray(String[]::new);
         ArgMap<T> nuMap = new ArgMap<>();
         for (String label : varNames) {
             nuMap.put(label, (T) args.get(label).multiply(factor));
@@ -219,7 +242,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public String toString() {
-        return args.entrySet().stream().sequential().map(e -> e.getKey() + "=" + e.getValue())
+        return args.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining(", ", "<", ">"));
     }
 }
