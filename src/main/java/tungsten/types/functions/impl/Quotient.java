@@ -28,6 +28,7 @@ import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
@@ -38,7 +39,7 @@ import tungsten.types.util.OptionalOperations;
 import java.lang.reflect.ParameterizedType;
 import java.util.logging.Logger;
 
-public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
     private final Class<R> outputClazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1]);
     private final UnaryFunction<T, R> numerator;
@@ -76,6 +77,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
         }
     }
 
+    @Override
     public UnaryFunction<T, R> simplify() {
         if (Negate.isNegateEquivalent(numerator)) {
             if (numerator instanceof Product) {
@@ -93,7 +95,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
                 // special case where the entire quotient can be reduced to a single constant
                 Const<? super RealType, RealType> numEq = Const.getConstEquivalent(numerator);
                 Const<? super RealType, RealType> denEq = Const.getConstEquivalent(denominator);
-                if (Zero.isZero(denEq.inspect())) throw new ArithmeticException("Division by zero while reducing quotient.");
+                if (Zero.isZero(denEq.inspect())) throw new ArithmeticException("Division by zero while reducing quotient");
                 R qVal = (R) numEq.inspect().divide(denEq.inspect()).coerceTo(outputClazz);
                 return Const.getInstance(qVal);
             }
@@ -107,7 +109,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
             if (denomIsConst) {
                 Const<? super RealType, RealType> equiv = Const.getConstEquivalent(denominator);
                 if (One.isUnity(equiv.inspect())) return numerator;
-                if (Zero.isZero(equiv.inspect())) throw new ArithmeticException("Denominator of quotient reduces to zero.");
+                if (Zero.isZero(equiv.inspect())) throw new ArithmeticException("Denominator of quotient reduces to zero");
                 R eqInR = (R) equiv.inspect().coerceTo(outputClazz);
                 return new Quotient<>(getArgumentName(), numerator, Const.getInstance(eqInR));
             }
@@ -140,7 +142,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
     @Override
     public Range<RealType> inputRange(String argName) {
         if (!getArgumentName().equals(argName)) {
-            throw new IllegalArgumentException("Argument " + argName + " does not exist for this function.");
+            throw new IllegalArgumentException("Argument " + argName + " does not exist for this function");
         }
         return Range.chooseNarrowest(numerator.inputRange(argName), denominator.inputRange(argName));
     }

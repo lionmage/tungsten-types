@@ -28,6 +28,7 @@ import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
@@ -52,7 +53,7 @@ import java.util.stream.Stream;
  * @param <T> the input parameter type
  * @param <R> the output parameter type
  */
-public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
     private final Class<R> resultClass = (Class<R>) ((Class) ((ParameterizedType) this.getClass()
             .getGenericSuperclass()).getActualTypeArguments()[1]);
     private final List<UnaryFunction<T, R>> terms = new ArrayList<>();
@@ -168,6 +169,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         }
     }
 
+    @Override
     public UnaryFunction<T, R> simplify() {
         if (Negate.isNegateEquivalent(this)) {
             Product<T, R> p = new Product<>(getArgumentName());
