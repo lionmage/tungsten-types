@@ -29,6 +29,8 @@ import tungsten.types.numerics.impl.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
 import java.util.logging.Level;
@@ -68,6 +70,20 @@ public class OptionalOperations {
             }
             throw new IllegalArgumentException("No String-based constructor for class " + toInstantiate.getTypeName(), e);
         }
+    }
+
+    public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, Number quasiPrimitive) {
+        NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
+        switch (h) {
+            case INTEGER:
+                return (T) new IntegerImpl(BigInteger.valueOf(quasiPrimitive.longValue()));
+            case REAL:
+                return (T) new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
+            case COMPLEX:
+                RealType realVal = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
+                return (T) new ComplexRectImpl(realVal);
+        }
+        throw new UnsupportedOperationException("No way to construct an instance of " + h + " at this time");
     }
 
     public static Class<? extends Numeric> findCommonType(Class<? extends Numeric> type1, Class<? extends Numeric> type2) {

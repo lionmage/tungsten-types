@@ -28,29 +28,33 @@ import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
+import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
  * A function that represents a sum of two or more functions.
- * Formally, &sum;&fnof;<sub>n</sub>(x) = &fnof;<sub>1</sub>(x) + &fnof;<sub>2</sub>(x) + &ctdot; + &fnof;<sub>N</sub>(x)<br/>
+ * Formally, &sum;&thinsp;&fnof;<sub>n</sub>(x) = &fnof;<sub>1</sub>(x) + &fnof;<sub>2</sub>(x) + &#x22EF; + &fnof;<sub>N</sub>(x)<br/>
  * This function is entirely intended for composition, and is fully
  * differentiable.
  *
  * @param <T> the input parameter type
  * @param <R> the output parameter type
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
-public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> {
+public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
     private final Class<R> resultClass = (Class<R>) ((Class) ((ParameterizedType) this.getClass()
                     .getGenericSuperclass()).getActualTypeArguments()[1]);
     private final List<UnaryFunction<T, R>> terms = new ArrayList<>();
@@ -76,7 +80,11 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     }
 
     protected Sum(List<? extends UnaryFunction<T, R>> init) {
-        super("x");
+        this("x", init);
+    }
+
+    protected Sum(String argName, List<? extends UnaryFunction<T, R>> init) {
+        super(argName);
         terms.addAll(init);
     }
 
@@ -140,19 +148,73 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         return s3;
     }
 
+    @Override
+    public Sum<T, R> simplify() {
+        Map<Integer, List<Integer>> combinerMap = new TreeMap<>();
+        for (int j = 0; j < terms.size() - 1; j++) {
+            UnaryFunction<T, R> testFor = terms.get(j);
+            for (int k = j + 1; k < terms.size(); k++) {
+                if (testFor.equals(terms.get(k))) {
+                    if (combinerMap.containsKey(j)) {
+                        combinerMap.get(j).add(k);
+                    } else {
+                        final int curr = k;
+                        if (combinerMap.values().stream().flatMap(List::stream).anyMatch(val -> val == curr)) continue;
+                        List<Integer> combineWith = new ArrayList<>();
+                        combineWith.add(k);
+                        combinerMap.put(j, combineWith);
+                    }
+                }
+            }
+        }
+        if (combinerMap.size() > 0) {
+            Logger.getLogger(Sum.class.getName()).log(Level.INFO,
+                    "Found {} terms out of {} that can be combined.",
+                    new Object[] {combinerMap.size(), terms.size()});
+            List<UnaryFunction<T, R>> combinedTerms = new ArrayList<>();
+            combinerMap.keySet().forEach(idx -> {
+                R coeff = OptionalOperations.dynamicInstantiate(resultClass, combinerMap.get(idx).size() + 1);
+                // coeff could theoretically be 1 if the combiner map entry has an empty list,
+                // but that means something broke -- so fail fast
+                if (One.isUnity(coeff)) throw new IllegalStateException("Fatal error combining terms");
+                combinedTerms.add(new Product<>(Const.getInstance(coeff), terms.get(idx)));
+            });
+            // now copy the remaining terms
+            SortedSet<Integer> oldTerms = new TreeSet<>(combinerMap.keySet());
+            combinerMap.values().forEach(oldTerms::addAll);
+            for (int j = 0; j < terms.size(); j++) {
+                if (!oldTerms.contains(j)) combinedTerms.add(terms.get(j));
+            }
+            return new Sum<>(getArgumentName(), combinedTerms);
+        }
+        // next check if there are any unexpanded nested Sums
+        if (parallelStream().anyMatch(Sum.class::isInstance)) {
+            Logger.getLogger(Sum.class.getName()).log(Level.INFO,
+                    "Found {} unexpanded Sum terms out of {} \u2014 flattening.",
+                    new Object[] { stream().filter(Sum.class::isInstance).count(), terms.size() });
+            Sum<T, R> flattened = new Sum<>(getArgumentName());
+            stream().forEach(flattened::appendTerm);  // letting appendTerm() do all the hard work here
+            return flattened;
+        }
+
+        // if nothing else works
+        return this;
+    }
+
     public long termCount() {
         return stream().count();
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
+        final MathContext ctx = arguments.getMathContext();
         try {
-            R result = (R) terms.parallelStream().map(f -> f.apply(arguments))
+            return (R) terms.parallelStream().map(f -> f.apply(arguments))
                     .map(Numeric.class::cast)
-                    .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add).coerceTo(resultClass);
-            return result;
+                    .reduce(ExactZero.getInstance(ctx), Numeric::add).coerceTo(resultClass);
         } catch (CoercionException e) {
-            throw new IllegalStateException("Unable to coerce result to " + resultClass.getTypeName(), e);
+            throw new IllegalStateException("Unable to coerce result to " + resultClass.getTypeName() +
+                    " for the given arguments " + arguments, e);
         }
     }
 

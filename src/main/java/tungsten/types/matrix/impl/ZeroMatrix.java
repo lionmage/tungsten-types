@@ -26,7 +26,6 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.impl.ExactZero;
-import tungsten.types.numerics.impl.Zero;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -77,7 +76,7 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
     @Override
     public Matrix<Numeric> multiply(Matrix<Numeric> multiplier) {
         if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
         return new ZeroMatrix(this.rows(), multiplier.columns(), mctx);
     }

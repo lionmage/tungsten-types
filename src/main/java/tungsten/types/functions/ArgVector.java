@@ -190,13 +190,17 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         try {
             return (T) accum.coerceTo(clazz);
         } catch (CoercionException e) {
-            throw new IllegalStateException("Unable to compute dot product.", e);
+            throw new IllegalStateException("Unable to compute dot product", e);
         }
     }
 
     @Override
     public Vector<T> crossProduct(Vector<T> other) {
-        throw new UnsupportedOperationException("We may never need this.");
+        if (!(other instanceof ArgVector)) {
+            // cross product is anti-commutative
+            return other.crossProduct(this).negate();
+        }
+        throw new UnsupportedOperationException("ArgVector does not currently support this method");
     }
 
     @Override
@@ -207,14 +211,17 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
             return this.scale((T) this.magnitude().inverse().coerceTo(clazz));
         } catch (CoercionException ex) {
             Logger.getLogger(ArgVector.class.getName()).log(Level.SEVERE,
-                    "Unable to normalize vector for type " + clazz.getTypeName(), ex);
-            throw new ArithmeticException("Error computing vector normal.");
+                    "Unable to normalize vector of type " + clazz.getTypeName(), ex);
+            throw new ArithmeticException("Error computing vector normal");
         }
     }
 
     @Override
     public RealType computeAngle(Vector<T> other) {
-        throw new UnsupportedOperationException("We may never need this.");
+        if (!(other instanceof ArgVector)) {
+            return other.computeAngle(this);
+        }
+        throw new UnsupportedOperationException("ArgVector does not currently support this method");
     }
 
     public <T2 extends Numeric> ArgVector<T2> coerceToArgVectorOf(Class<T2> clazz) {
