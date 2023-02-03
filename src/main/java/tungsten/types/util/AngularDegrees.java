@@ -38,6 +38,13 @@ import java.math.MathContext;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A representation of angles measured in degrees. This class internally
+ * supports both decimal and sexagesimal representations of angles, and
+ * can freely convert between them.  This class also supports conversion
+ * to radians, obviating the need to perform this conversion elsewhere.
+ * @author Robert Poole
+ */
 public class AngularDegrees {
     public static final char DEGREE_SIGN = '\u00B0';
     public static final char MINUTES_SIGN = '\u2032';  // prime, not apostrophe
@@ -98,12 +105,32 @@ public class AngularDegrees {
         updateDMSvalues();
     }
 
+    /**
+     * A {@link String}-based constructor that can handle both decimal
+     * (37.5&deg;) and sexagesimal (35&deg;&thinsp;42&prime;&thinsp;13&Prime;)
+     * representations.<br/>
+     * Permissible symbol substitutions:
+     * <table>
+     *     <tr><th>Preferred</th><th>Alternate</th><th>Meaning</th></tr>
+     *     <tr><td>&prime;</td><td>'</td><td>minutes</td></tr>
+     *     <tr><td>&Prime;</td><td>&quot;</td><td>seconds</td></tr>
+     * </table>
+     * Values parsed from the input {@code expression} are subject to further validation,
+     * e.g., minutes and seconds must fall in the interval [0,&nbsp;60).
+     * @param expression a string representing an angular value in degrees
+     */
     public AngularDegrees(String expression) {
         Matcher m = DMSpattern.matcher(expression);
         if (m.find()) {
             degrees = new IntegerImpl(m.group(1));
             minutes = new IntegerImpl(m.group(2));
+            if (minutes.compareTo(SIXTY) >= 0) {
+                throw new IllegalArgumentException("minutes of arc must be between 0 and 59 inclusive");
+            }
             seconds = new RealImpl(m.group(3));
+            if (seconds.asBigDecimal().compareTo(BigDecimal.valueOf(60L)) >= 0) {
+                throw new IllegalArgumentException("seconds of arc must be \u2265 0 and < 60");
+            }
             updateDecDegrees();
         } else {
             m = decimalDegreesPattern.matcher(expression);
