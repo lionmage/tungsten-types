@@ -32,6 +32,7 @@ import tungsten.types.functions.impl.Cos;
 import tungsten.types.functions.impl.Sin;
 import tungsten.types.numerics.*;
 import tungsten.types.set.impl.NumericSet;
+import tungsten.types.util.AngularDegrees;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.RangeUtils;
 
@@ -96,15 +97,15 @@ public class ComplexPolarImpl implements ComplexType {
     public ComplexPolarImpl(String strval) {
         String strMod = strval.substring(0, strval.indexOf(SEPARATOR)).trim();
         String strAng = strval.substring(strval.indexOf(SEPARATOR) + 1).trim();
-        boolean usesDegrees = false;
-        if (strAng.endsWith("\u00B0")) {
-            usesDegrees = true;
-            strAng = strAng.substring(0, strAng.length() - 1).trim();
-        }
-        RealType angle = new RealImpl(strAng);
-        if (usesDegrees) {
-            MathContext ctx = new MathContext(angle.getMathContext().getPrecision() + 3, angle.getMathContext().getRoundingMode());
-            angle = (RealType) Pi.getInstance(ctx).multiply(angle).divide(new RealImpl(BigDecimal.valueOf(180L), ctx));
+        RealType angle;
+        if (AngularDegrees.isDecimnalDegrees(strAng) || AngularDegrees.isDMS(strAng)) {
+            AngularDegrees degrees = new AngularDegrees(strAng);
+            Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.INFO,
+                    "Parsed degree argument {} from {}",
+                    new Object[] {degrees, strval});
+            angle = degrees.asRadians();
+        } else {
+            angle = new RealImpl(strAng);
         }
         this.modulus = new RealImpl(strMod);
         if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive");
