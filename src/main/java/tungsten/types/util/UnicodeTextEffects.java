@@ -235,7 +235,7 @@ public class UnicodeTextEffects {
     public static String functionNameForDisplay(String fname, int derivativeOrder, boolean preferPrimes, String... argumentNames) {
         if (derivativeOrder < 0) throw new IllegalArgumentException("Order of derivative must be a non-negative integer");
         StringBuilder buf = new StringBuilder();
-        buf.append(fname);
+        buf.append(fname != null && fname.length() > 0 ? fname : "\u0192");
         switch (derivativeOrder) {
             case 0:
                 // the function itself
