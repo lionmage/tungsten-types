@@ -267,7 +267,7 @@ public class UnicodeTextEffects {
             for (String argName : argumentNames) {
                 buf.append(argName).append(",\u2009");
             }
-            buf.setLength(buf.length() - 2);  // erase the last 2 appended characters
+            if (argumentNames.length > 0) buf.setLength(buf.length() - 2);  // erase the last 2 appended characters
         }
         buf.append(')');
 
