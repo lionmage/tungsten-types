@@ -234,6 +234,13 @@ public class AngularDegrees {
         return m.find();
     }
 
+    public static AngularDegrees forRadiansValue(RealType radians) {
+        final Pi pi = Pi.getInstance(radians.getMathContext());
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), radians.getMathContext());
+        final RealType halfCircleDegrees = (RealType) DEGREES_IN_CIRCLE.divide(two);
+        return new AngularDegrees((RealType) radians.multiply(halfCircleDegrees).divide(pi));
+    }
+
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();

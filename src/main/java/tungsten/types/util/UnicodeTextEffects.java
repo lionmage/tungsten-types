@@ -231,4 +231,46 @@ public class UnicodeTextEffects {
         }
         return buf.toString();
     }
+
+    public static String functionNameForDisplay(String fname, int derivativeOrder, boolean preferPrimes, String... argumentNames) {
+        if (derivativeOrder < 0) throw new IllegalArgumentException("Order of derivative must be a non-negative integer");
+        StringBuilder buf = new StringBuilder();
+        buf.append(fname);
+        switch (derivativeOrder) {
+            case 0:
+                // the function itself
+                if (!preferPrimes) buf.append(subscriptDigits[0]);
+                break;
+            case 1:
+                if (preferPrimes) buf.append('\u2032'); // prime
+                else buf.append(subscriptDigits[1]);
+                break;
+            case 2:
+                if (preferPrimes) buf.append('\u2033'); // double-prime
+                else buf.append(subscriptDigits[2]);
+                break;
+            case 3:
+                if (preferPrimes) buf.append('\u2034'); // triple-prime
+                else buf.append(subscriptDigits[3]);
+                break;
+            case 4:
+                if (preferPrimes) buf.append('\u2057'); // quadruple-prime
+                else buf.append(subscriptDigits[4]);
+                break;
+            default:
+                // beyond a quadruple-prime, it would get messy to render with just primes
+                buf.append(numericSubscript(derivativeOrder));
+                break;
+        }
+        buf.append('(');
+        if (argumentNames != null) {
+            for (String argName : argumentNames) {
+                buf.append(argName).append(",\u2009");
+            }
+            buf.setLength(buf.length() - 2);  // erase the last 2 appended characters
+        }
+        buf.append(')');
+
+        return buf.toString();
+    }
 }
