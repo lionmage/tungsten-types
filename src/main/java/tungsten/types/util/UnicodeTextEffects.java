@@ -264,10 +264,8 @@ public class UnicodeTextEffects {
         }
         buf.append('(');
         if (argumentNames != null) {
-            for (String argName : argumentNames) {
-                buf.append(argName).append(",\u2009");
-            }
-            if (argumentNames.length > 0) buf.setLength(buf.length() - 2);  // erase the last 2 appended characters
+            // using thinspace as the whitespace separator
+            buf.append(String.join(",\u2009", argumentNames));
         }
         buf.append(')');
 
