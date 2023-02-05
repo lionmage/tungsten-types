@@ -678,6 +678,42 @@ public class MathUtils {
         }
         return new BasicMatrix<>(temp);
     }
+
+    public static Matrix<RealType> efficientMatrixMultiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
+        if (lhs.rows() == rhs.rows() && lhs.columns() == rhs.columns() && lhs.rows() == lhs.columns()) {
+            // we have two square matrices of equal dimension
+            if (BigInteger.valueOf(lhs.rows()).bitCount() == 1) {
+                // rows and columns are powers of 2
+                if (lhs.rows() == 2L) {
+                    // we have 2×2 matrices
+                    final RealType a = lhs.valueAt(0L, 0L);
+                    final RealType b = lhs.valueAt(0L, 1L);
+                    final RealType c = lhs.valueAt(1L, 0L);
+                    final RealType d = lhs.valueAt(1L, 1L);
+                    final RealType A = rhs.valueAt(0L, 0L);
+                    final RealType C = rhs.valueAt(0L, 1L);
+                    final RealType B = rhs.valueAt(1L, 0L);
+                    final RealType D = rhs.valueAt(1L, 1L);
+
+                    // using the Winograd form (note the slightly unusual representation of the rhs matrix above)
+                    final RealType u = (RealType) c.subtract(a).multiply(C.subtract(D));
+                    final RealType v = (RealType) c.add(d).multiply(C.subtract(A));
+                    final RealType w = (RealType) a.multiply(A).add(c.add(d).subtract(a).multiply(A.add(D).subtract(C)));
+
+                    RealType[][] result = new RealType[2][2];
+                    result[0][0] = (RealType) a.multiply(A).add(b.multiply(B));
+                    result[0][1] = (RealType) w.add(v).add(a.add(b).subtract(c).subtract(d).multiply(D));
+                    result[1][0] = (RealType) w.add(u).add(B.add(C).subtract(A).subtract(D).multiply(d));
+                    result[1][1] = (RealType) w.add(u).add(v);
+                    return new BasicMatrix<>(result);
+                } else {
+                    // TODO implement the recursive version of the Strassen/Winograd algorithm
+                }
+            }
+        }
+        // if the above conditions are not met, do it the old-fashioned way
+        return lhs.multiply(rhs);
+    }
     
     private static final Range<RealType> epsilonRange = new Range<>(new RealImpl("0"), new RealImpl("1"), BoundType.EXCLUSIVE);
     
