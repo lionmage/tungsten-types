@@ -139,6 +139,7 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
 
     private final Map<CompositeKey, TaylorPolynomial<RealType, RealType>> polynomialMap =
             new TreeMap<>();
+    private final Lock polyLock = new ReentrantLock();
 
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
@@ -150,12 +151,18 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
             long order = arg.getMathContext().getPrecision();
             RealType a0 = proxy.closestKeyToInput(arg);
             CompositeKey key = new CompositeKey(order, a0);
-            // find the appropriate Taylor polynomial, or generate it if it doesn't exist
-            TaylorPolynomial<RealType, RealType> p = polynomialMap.get(key);
-            if (p != null) return p.apply(arg);
-            // if we got here, we have no choice but to compute a new polynomial
-            p = generateTaylorPolynomial(a0);
-            polynomialMap.put(key, p);
+            polyLock.lock();
+            TaylorPolynomial<RealType, RealType> p;
+            try {
+                // find the appropriate Taylor polynomial, or generate it if it doesn't exist
+                p = polynomialMap.get(key);
+                if (p != null) return p.apply(arg);
+                // if we got here, we have no choice but to compute a new polynomial
+                p = generateTaylorPolynomial(a0);
+                polynomialMap.put(key, p);
+            } finally {
+                polyLock.unlock();
+            }
             result = p.apply(arg);
         }
         return result;
