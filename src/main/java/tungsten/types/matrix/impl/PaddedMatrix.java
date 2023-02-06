@@ -99,6 +99,7 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
     @Override
     public RowVector<T> getRow(long row) {
         if (row >= source.rows() && row < this.rows()) {
+            // TODO accommodate List-based row vectors here
             T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.columns());
             Arrays.fill(elements, padValue);
             return new ArrayRowVector<>(elements);
@@ -109,6 +110,7 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
     @Override
     public ColumnVector<T> getColumn(long column) {
         if (column >= source.columns() && column < this.columns()) {
+            // TODO accommodate List-based column vectors here
             T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.rows());
             Arrays.fill(elements, padValue);
             return new ArrayColumnVector<>(elements);

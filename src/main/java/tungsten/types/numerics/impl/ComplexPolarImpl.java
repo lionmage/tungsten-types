@@ -41,6 +41,8 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +63,8 @@ public class ComplexPolarImpl implements ComplexType {
 
     private static final RealType TWO = new RealImpl(BigDecimal.valueOf(2L), MathContext.UNLIMITED);
     private static final RealType TEN = new RealImpl(BigDecimal.TEN, MathContext.UNLIMITED);
+    private static final ConcurrentMap<RealType, Cos> cosines = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<RealType, Sin> sines = new ConcurrentHashMap<>();
     
     public ComplexPolarImpl(RealType modulus, RealType argument) {
         if (modulus.sign() == Sign.NEGATIVE) {
@@ -70,8 +74,8 @@ public class ComplexPolarImpl implements ComplexType {
         this.argument = argument;
         this.mctx = MathUtils.inferMathContext(Arrays.asList(modulus, argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
-        this.cos = new Cos(epsilon);
-        this.sin = new Sin(epsilon);
+        this.cos = cosines.computeIfAbsent(epsilon, Cos::new);
+        this.sin = sines.computeIfAbsent(epsilon, Sin::new);
     }
     
     public ComplexPolarImpl(RealType modulus, RealType argument, boolean exact) {
