@@ -93,8 +93,9 @@ public class ComplexPolarImpl implements ComplexType {
     /**
      * A constructor that takes a {@link String} as input and parses it
      * into a polar complex value. The modulus and the argument are
-     * separated by the @ symbol.  If the argument is followed by the
-     * degree symbol (e.g., 90&deg;, unicode U+00B0), the argument is interpreted as an
+     * separated by the @ symbol.  If the argument contains the
+     * degree symbol (e.g., 90&deg;, unicode U+00B0) and matches one of the
+     * patterns recognized by {@link AngularDegrees}, then it is interpreted as an
      * angle in degrees rather than radians.
      * @param strval the string representation of a complex polar value
      */
@@ -123,6 +124,8 @@ public class ComplexPolarImpl implements ComplexType {
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
         this.epsilon = MathUtils.computeIntegerExponent(TEN, 1 - mctx.getPrecision(), mctx);
+        // Note: cos and sin instances are currently retained, so if we're increasing resolution here,
+        // the resolution provided by existing sin and cos may prove inadequate.
     }
     
     @Override
