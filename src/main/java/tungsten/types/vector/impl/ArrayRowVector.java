@@ -18,28 +18,35 @@ import java.util.stream.Stream;
 
 public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     private T[] elementArray;
+    private Class<T> elementType = (Class<T>) ((Class) ((ParameterizedType) getClass()
+            .getGenericSuperclass()).getActualTypeArguments()[0]);
 
     @SafeVarargs
     public ArrayRowVector(T... elements) {
         this.elementArray = elements;
-        setMathContext(elements[0].getMathContext());
+        if (elements != null && elements.length > 0) {
+            if (elementType == null) elementType = (Class<T>) elements[0].getClass();
+            setMathContext(elements[0].getMathContext());
+        }
     }
 
     public ArrayRowVector(List<T> elementList) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        this.elementArray = (T[]) Array.newInstance(clazz, elementList.size());
+        if (elementList.size() > 0 && elementType == null) {
+            elementType = (Class<T>) elementList.get(0).getClass();
+        }
+        this.elementArray = (T[]) Array.newInstance(elementType, elementList.size());
         elementList.toArray(elementArray);
         setMathContext(elementArray[0].getMathContext());
     }
 
     public ArrayRowVector(Vector<T> source) {
         if (source.length() > (long) Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Vector is too large to fit into an array.");
+            throw new IllegalArgumentException("Vector is too large to fit into an array");
         }
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) source.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        this.elementArray = (T[]) Array.newInstance(clazz, (int) source.length());
+        if (source.length() > 0L && elementType == null) {
+            elementType = (Class<T>) source.elementAt(0L).getClass();
+        }
+        this.elementArray = (T[]) Array.newInstance(elementType, (int) source.length());
         for (long index = 0L; index < source.length(); index++) {
             setElementAt(source.elementAt(index), index);
         }
@@ -49,18 +56,16 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     @Override
     public ColumnVector<T> getColumn(long column) {
         if (column < 0L || column > length() - 1L) {
-            throw new IndexOutOfBoundsException("Element " + column + " does not exist.");
+            throw new IndexOutOfBoundsException("Element " + column + " does not exist");
         }
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T[] result = (T[]) Array.newInstance(clazz, 1);
+        T[] result = (T[]) Array.newInstance(elementType, 1);
         result[0] = elementArray[(int) column];
-        return new ArrayColumnVector<T>(result);
+        return new ArrayColumnVector<>(result);
     }
 
     @Override
     public long length() {
-        return (long) this.elementArray.length;
+        return this.elementArray.length;
     }
 
     @Override
@@ -78,9 +83,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
 
     @Override
     public void append(T element) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T[] updated = (T[]) Array.newInstance(clazz, elementArray == null ? 1 : elementArray.length + 1);
+        T[] updated = (T[]) Array.newInstance(elementType, elementArray == null ? 1 : elementArray.length + 1);
         if (elementArray != null && elementArray.length > 0) {
             System.arraycopy(elementArray, 0, updated, 0, elementArray.length);
             updated[elementArray.length] = element;
@@ -92,15 +95,13 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
 
     @Override
     public RowVector<T> add(Vector<T> addend) {
-        if (addend.length() != this.length()) throw new ArithmeticException("Cannot add vectors of different lengths.");
-        if (addend instanceof ColumnVector) throw new ArithmeticException("Cannot add a row vector to a column vector.");
+        if (addend.length() != this.length()) throw new ArithmeticException("Cannot add vectors of different lengths");
+        if (addend instanceof ColumnVector) throw new ArithmeticException("Cannot add a row vector to a column vector");
 
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);;
-        T[] sumArray = (T[]) Array.newInstance(clazz, elementArray.length);
+        T[] sumArray = (T[]) Array.newInstance(elementType, elementArray.length);
         try {
             for (int i = 0; i < elementArray.length; i++) {
-                sumArray[i] = (T) elementArray[i].add(addend.elementAt((long) i)).coerceTo(clazz);
+                sumArray[i] = (T) elementArray[i].add(addend.elementAt(i)).coerceTo(elementType);
             }
             return new ArrayRowVector<>(sumArray);
         } catch (CoercionException ce) {
@@ -111,21 +112,17 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
 
     @Override
     public RowVector<T> negate() {
-        final Class<T> clazz = (Class<T>) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0];
-        T[] negArray = (T[]) Array.newInstance(clazz, elementArray.length);
-        Arrays.stream(elementArray).map(Numeric::negate).toArray(size -> negArray);
+        T[] negArray = Arrays.stream(elementArray).map(Numeric::negate)
+                .map(elementType::cast).toArray(size -> (T[]) Array.newInstance(elementType, size));
         return new ArrayRowVector<>(negArray);
     }
 
     @Override
     public RowVector<T> scale(T factor) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T[] scaledArray = (T[]) Array.newInstance(clazz, elementArray.length);
+        T[] scaledArray = (T[]) Array.newInstance(elementType, elementArray.length);
         try {
             for (int i = 0; i < elementArray.length; i++) {
-                scaledArray[i] = (T) elementArray[i].multiply(factor).coerceTo(clazz);
+                scaledArray[i] = (T) elementArray[i].multiply(factor).coerceTo(elementType);
             }
             return new ArrayRowVector<>(scaledArray);
         } catch (CoercionException ce) {
@@ -136,7 +133,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
 
     @Override
     public ColumnVector<T> transpose() {
-        return new ArrayColumnVector<T>(elementArray);
+        return new ArrayColumnVector<>(elementArray);
     }
 
     @Override
@@ -147,18 +144,16 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     @Override
     public Matrix<T> add(Matrix<T> addend) {
         if (addend.rows() != rows() || addend.columns() != columns()) {
-            throw new ArithmeticException("Dimension mismatch for single-row matrix.");
+            throw new ArithmeticException("Dimension mismatch for single-row matrix");
         }
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T[] result = (T[]) Array.newInstance(clazz, elementArray.length);
+        T[] result = (T[]) Array.newInstance(elementType, elementArray.length);
         try {
             for (long index = 0L; index < elementArray.length; index++) {
-                    result[(int) index] = (T) elementArray[(int) index].add(addend.valueAt(0L, index)).coerceTo(clazz);
+                    result[(int) index] = (T) elementArray[(int) index].add(addend.valueAt(0L, index)).coerceTo(elementType);
             }
         } catch (CoercionException ex) {
             throw new ArithmeticException("Unable to coerce matrix element to type " +
-                    clazz.getTypeName() + " during matrix addition.");
+                    elementType.getTypeName() + " during matrix addition");
         }
         return new ArrayRowVector<>(result);
     }

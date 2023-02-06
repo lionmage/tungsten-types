@@ -30,7 +30,10 @@ import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.impl.*;
+import tungsten.types.matrix.impl.AggregateMatrix;
 import tungsten.types.matrix.impl.BasicMatrix;
+import tungsten.types.matrix.impl.PaddedMatrix;
+import tungsten.types.matrix.impl.SubMatrix;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
@@ -679,6 +682,16 @@ public class MathUtils {
         return new BasicMatrix<>(temp);
     }
 
+    /**
+     * Multiply two matrices using the Strassen/Winograd algorithm.
+     * This algorithm uses 7 multiplications instead of the usual 8
+     * at each stage of recursion.
+     *
+     * @param lhs the left-hand matrix in the multiplication
+     * @param rhs the right-hand matrix in the multiplication
+     * @return the product of {@code lhs} and {@code rhs}
+     * @see <a href="https://en.wikipedia.org/wiki/Strassen_algorithm">the Wikipedia article on Strassen's algorithm</a>
+     */
     public static Matrix<RealType> efficientMatrixMultiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
         if (lhs.rows() == rhs.rows() && lhs.columns() == rhs.columns() && lhs.rows() == lhs.columns()) {
             // we have two square matrices of equal dimension
@@ -695,24 +708,68 @@ public class MathUtils {
                     final RealType B = rhs.valueAt(1L, 0L);
                     final RealType D = rhs.valueAt(1L, 1L);
 
-                    // using the Winograd form (note the slightly unusual representation of the rhs matrix above)
+                    // using the Winograd form
                     final RealType u = (RealType) c.subtract(a).multiply(C.subtract(D));
                     final RealType v = (RealType) c.add(d).multiply(C.subtract(A));
-                    final RealType w = (RealType) a.multiply(A).add(c.add(d).subtract(a).multiply(A.add(D).subtract(C)));
+                    final RealType aA_product = (RealType) a.multiply(A);
+                    final RealType w = (RealType) aA_product.add(c.add(d).subtract(a).multiply(A.add(D).subtract(C)));
 
                     RealType[][] result = new RealType[2][2];
-                    result[0][0] = (RealType) a.multiply(A).add(b.multiply(B));
+                    result[0][0] = (RealType) aA_product.add(b.multiply(B));
                     result[0][1] = (RealType) w.add(v).add(a.add(b).subtract(c).subtract(d).multiply(D));
                     result[1][0] = (RealType) w.add(u).add(B.add(C).subtract(A).subtract(D).multiply(d));
                     result[1][1] = (RealType) w.add(u).add(v);
                     return new BasicMatrix<>(result);
                 } else {
-                    // TODO implement the recursive version of the Strassen/Winograd algorithm
+                    // recursively drill down using the same relations as shown above for the scalar case
+                    final Matrix<RealType> a = new SubMatrix<>(lhs, 0L, 0L, lhs.rows()/2L - 1L, lhs.columns()/2L - 1L); // 0, 0
+                    final Matrix<RealType> b = new SubMatrix<>(lhs, 0L, lhs.columns()/2L, lhs.rows()/2L - 1L, lhs.columns() - 1L); // 0, 1
+                    final Matrix<RealType> c = new SubMatrix<>(lhs, lhs.rows()/2L, 0L, lhs.rows() - 1L, lhs.columns()/2L - 1L); // 1, 0
+                    final Matrix<RealType> d = new SubMatrix<>(lhs, lhs.rows()/2L, lhs.columns()/2L, lhs.rows() - 1L, lhs.columns() - 1L); // 1, 1
+                    final Matrix<RealType> A = new SubMatrix<>(rhs, 0L, 0L, rhs.rows()/2L - 1L, rhs.columns()/2L - 1L); // 0, 0
+                    final Matrix<RealType> C = new SubMatrix<>(rhs, 0L, rhs.columns()/2L, rhs.rows()/2L - 1L, rhs.columns() - 1L); // 0, 1
+                    final Matrix<RealType> B = new SubMatrix<>(rhs, rhs.rows()/2L, 0L, rhs.rows() - 1L, rhs.columns()/2L - 1L); // 1, 0
+                    final Matrix<RealType> D = new SubMatrix<>(rhs, rhs.rows()/2L, rhs.columns()/2L, rhs.rows() - 1L, rhs.columns() - 1L); // 1, 1
+
+                    // using the Winograd form
+                    final Matrix<RealType> u = efficientMatrixMultiply(c.subtract(a), C.subtract(D));
+                    final Matrix<RealType> v = efficientMatrixMultiply(c.add(d), C.subtract(A));
+                    final Matrix<RealType> aAprod = efficientMatrixMultiply(a, A);
+                    final Matrix<RealType> w = aAprod.add(efficientMatrixMultiply(c.add(d).subtract(a), A.add(D).subtract(C)));
+
+                    Matrix<RealType>[][] result = (Matrix<RealType>[][]) new Matrix[2][2];
+                    result[0][0] = aAprod.add(efficientMatrixMultiply(b, B));
+                    result[0][1] = w.add(v).add(efficientMatrixMultiply(a.add(b).subtract(c).subtract(d), D));
+                    result[1][0] = w.add(u).add(efficientMatrixMultiply(B.add(C).subtract(A).subtract(D), d));
+                    result[1][1] = w.add(u).add(v);
+                    return new AggregateMatrix<>(result);
                 }
+            } else {
+                // matrices are square, but rows and columns are not a power of 2
+                long resize = smallestPowerOf2GTE(lhs.rows());
+                final RealType zero = new RealImpl(BigDecimal.ZERO, lhs.valueAt(0L, 0L).getMathContext());
+                Matrix<RealType> left = new PaddedMatrix<>(lhs, resize, resize, zero);
+                Matrix<RealType> right = new PaddedMatrix<>(rhs, resize, resize, zero);
+                Matrix<RealType> result = efficientMatrixMultiply(left, right);
+                // pick off the extraneous zero columns/rows
+                return new SubMatrix<>(result, 0L, 0L, lhs.rows(), rhs.columns());
             }
         }
         // if the above conditions are not met, do it the old-fashioned way
         return lhs.multiply(rhs);
+    }
+
+    /**
+     * Compute the smallest power of 2 that is greater than or
+     * equal to a given value.
+     *
+     * @param input the given value
+     * @return the smallest power of 2 ≥ {@code input}
+     */
+    public static long smallestPowerOf2GTE(long input) {
+        if (input < 0L) throw new IllegalArgumentException("Negative values not supported");
+        double intermediate = Math.ceil(Math.log(input) / Math.log(2d));
+        return (long) Math.pow(2d, intermediate);
     }
     
     private static final Range<RealType> epsilonRange = new Range<>(new RealImpl("0"), new RealImpl("1"), BoundType.EXCLUSIVE);
