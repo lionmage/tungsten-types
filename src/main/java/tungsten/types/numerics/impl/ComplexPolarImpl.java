@@ -39,7 +39,7 @@ import tungsten.types.util.RangeUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -68,11 +68,11 @@ public class ComplexPolarImpl implements ComplexType {
     
     public ComplexPolarImpl(RealType modulus, RealType argument) {
         if (modulus.sign() == Sign.NEGATIVE) {
-            throw new IllegalArgumentException("Complex modulus must be positive");
+            throw new IllegalArgumentException("Complex modulus must be positive or zero");
         }
         this.modulus = modulus;
         this.argument = argument;
-        this.mctx = MathUtils.inferMathContext(Arrays.asList(modulus, argument));
+        this.mctx = MathUtils.inferMathContext(List.of(modulus, argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
         this.cos = cosines.computeIfAbsent(epsilon, Cos::new);
         this.sin = sines.computeIfAbsent(epsilon, Sin::new);
@@ -84,8 +84,8 @@ public class ComplexPolarImpl implements ComplexType {
     }
 
     /**
-     * The separator character used to mark the separation between
-     * the modulus and argument of a complex string value, used
+     * The separator character used to mark the division between
+     * the modulus and argument of a complex angular string value, used
      * by any constructor that takes a {@link String} argument.
      */
     public static final char SEPARATOR = '@';
@@ -112,12 +112,12 @@ public class ComplexPolarImpl implements ComplexType {
             angle = new RealImpl(strAng);
         }
         this.modulus = new RealImpl(strMod);
-        if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive");
+        if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive or zero");
         this.argument = angle;
-        this.mctx = MathUtils.inferMathContext(Arrays.asList(this.modulus, this.argument));
+        this.mctx = MathUtils.inferMathContext(List.of(this.modulus, this.argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
-        this.cos = new Cos(epsilon);
-        this.sin = new Sin(epsilon);
+        this.cos = cosines.computeIfAbsent(epsilon, Cos::new);
+        this.sin = sines.computeIfAbsent(epsilon, Sin::new);
     }
 
     public void setMathContext(MathContext mctx) {
@@ -324,7 +324,7 @@ public class ComplexPolarImpl implements ComplexType {
                 RealType scalar = (RealType) divisor.coerceTo(RealType.class);
                 switch (scalar.sign()) {
                     case ZERO:
-                        throw new IllegalArgumentException("Division by zero not allowed");
+                        throw new IllegalArgumentException("Division by zero is not allowed");
                     case NEGATIVE:
                         Pi pi = Pi.getInstance(mctx);
                         RealType absval = scalar.magnitude();
@@ -354,7 +354,7 @@ public class ComplexPolarImpl implements ComplexType {
         try {
             RealType modnew = (RealType) modulus.sqrt().coerceTo(RealType.class);
             RealType argnew = (RealType) argument.divide(TWO);
-            return new ComplexPolarImpl(modnew, argnew, exact);
+            return new ComplexPolarImpl(modnew, argnew, exact && modnew.isExact());
         } catch (CoercionException e) {
             throw new IllegalStateException(e);
         }
