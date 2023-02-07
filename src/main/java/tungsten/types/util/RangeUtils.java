@@ -32,10 +32,12 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Pi;
+import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.RealInfinity;
 import tungsten.types.set.impl.EmptySet;
 import tungsten.types.set.impl.NumericSet;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Collections;
@@ -61,10 +63,11 @@ public class RangeUtils {
                     RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED), BoundType.EXCLUSIVE);
 
     /**
-     * Generate a range of (-pi, pi] for the given {@link MathContext}.
-     * Note that this is the typical range of return values for atan2.
+     * Generate a range of (&minus;&pi;, &pi;] for the given {@link MathContext}.
+     * Note that this is the typical range of return values for atan2 and
+     * is the principal input range for cos and sin.
      * @param mctx the math context
-     * @return a range representing the interval (-pi, pi]
+     * @return a range representing the interval (&minus;&pi;, &pi;]
      */
     public static Range<RealType> getAngularInstance(MathContext mctx) {
         final Pi pi = Pi.getInstance(mctx);
@@ -72,6 +75,22 @@ public class RangeUtils {
             @Override
             public String toString() {
                 return "(\u2212\uD835\uDF0B, \uD835\uDF0B]";
+            }
+        };
+    }
+
+    /**
+     * Generate a range of (&minus;&pi;/2, &pi;/2) for the given {@link MathContext}.
+     * Note that this is the principal input range for the tan function.
+     * @param mctx the math context
+     * @return a range representing the interval (&minus;&pi;/2, &pi;/2)
+     */
+    public static Range<RealType> getTangentInstance(MathContext mctx) {
+        final RealType halfPi = (RealType) Pi.getInstance(mctx).divide(new RealImpl(BigDecimal.valueOf(2L), mctx));
+        return new Range<>(halfPi.negate(), halfPi, Range.BoundType.EXCLUSIVE) {
+            @Override
+            public String toString() {
+                return "(\u2212\uD835\uDF0B/2, \uD835\uDF0B/2)";
             }
         };
     }
