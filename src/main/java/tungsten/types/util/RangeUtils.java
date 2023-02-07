@@ -116,7 +116,7 @@ public class RangeUtils {
     }
 
     public static <T extends Numeric & Comparable<? super T>> Range<T> rangeBetween(Range<T> A, Range<T> B) {
-        if (A.overlaps(B)) throw new IllegalArgumentException("Ranges overlap, therefore there is no range between them.");
+        if (A.overlaps(B)) throw new IllegalArgumentException("Ranges overlap, therefore there is no range between them");
         Range<T> lowest = A.isBelow(B.getLowerBound()) ? A : B;
         Range<T> highest = B.isAbove(A.getUpperBound()) ? B : A;
         // ensure the bound types are complementary, e.g., if lowest.upperBound is inclusive (closed),
@@ -209,12 +209,12 @@ public class RangeUtils {
 
             @Override
             public void append(IntegerType element) {
-                throw new UnsupportedOperationException("Cannot append to this set.");
+                throw new UnsupportedOperationException("Cannot append to this set");
             }
 
             @Override
             public void remove(IntegerType element) {
-                throw new UnsupportedOperationException("Cannot remove elements from this set.");
+                throw new UnsupportedOperationException("Cannot remove elements from this set");
             }
 
             @Override
@@ -258,12 +258,12 @@ public class RangeUtils {
 
                     @Override
                     public void append(IntegerType element) {
-                        throw new UnsupportedOperationException("Cannot append to this set.");
+                        throw new UnsupportedOperationException("Cannot append to this set");
                     }
 
                     @Override
                     public void remove(IntegerType element) {
-                        throw new UnsupportedOperationException("Cannot remove elements from this set.");
+                        throw new UnsupportedOperationException("Cannot remove elements from this set");
                     }
 
                     @Override
