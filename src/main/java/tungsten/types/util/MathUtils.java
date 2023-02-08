@@ -628,12 +628,10 @@ public class MathUtils {
     public static Matrix<RealType> get2DMatrixOfRotation(RealType theta) {
         final MathContext ctx = theta.getMathContext();
         final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
-        final Cos cosfunc = new Cos(epsilon);
-        final Sin sinfunc = new Sin(epsilon);
         RealType[][] temp = new RealType[2][2];
 
-        RealType cos = cosfunc.apply(theta);
-        RealType sin = sinfunc.apply(theta);
+        RealType cos = cos(theta);
+        RealType sin = sin(theta);
 
         temp[0][0] = cos;
         temp[0][1] = sin.negate();
@@ -654,14 +652,12 @@ public class MathUtils {
     public static Matrix<RealType> get3DMatrixOfRotation(RealType theta, Axis axis) {
         final MathContext ctx = theta.getMathContext();
         final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
-        final Cos cosfunc = new Cos(epsilon);
-        final Sin sinfunc = new Sin(epsilon);
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         final RealType zero = new RealImpl(BigDecimal.ZERO, ctx);
         RealType[][] temp = new RealType[3][];
 
-        RealType cos = cosfunc.apply(theta);
-        RealType sin = sinfunc.apply(theta);
+        RealType cos = cos(theta);
+        RealType sin = sin(theta);
 
         switch (axis) {
             case X_AXIS:
