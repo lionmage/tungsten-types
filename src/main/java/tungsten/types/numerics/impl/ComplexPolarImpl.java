@@ -28,8 +28,6 @@ import tungsten.types.Range;
 import tungsten.types.Set;
 import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.functions.impl.Cos;
-import tungsten.types.functions.impl.Sin;
 import tungsten.types.numerics.*;
 import tungsten.types.set.impl.NumericSet;
 import tungsten.types.util.AngularDegrees;
@@ -41,10 +39,11 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static tungsten.types.util.MathUtils.cos;
+import static tungsten.types.util.MathUtils.sin;
 
 /**
  * An implementation of {@link ComplexType} that uses a polar representation
@@ -63,9 +62,7 @@ public class ComplexPolarImpl implements ComplexType {
 
     private static final RealType TWO = new RealImpl(BigDecimal.valueOf(2L), MathContext.UNLIMITED);
     private static final RealType TEN = new RealImpl(BigDecimal.TEN, MathContext.UNLIMITED);
-    private static final ConcurrentMap<RealType, Cos> cosines = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<RealType, Sin> sines = new ConcurrentHashMap<>();
-    
+
     public ComplexPolarImpl(RealType modulus, RealType argument) {
         if (modulus.sign() == Sign.NEGATIVE) {
             throw new IllegalArgumentException("Complex modulus must be positive or zero");
@@ -74,8 +71,6 @@ public class ComplexPolarImpl implements ComplexType {
         this.argument = argument;
         this.mctx = MathUtils.inferMathContext(List.of(modulus, argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
-        this.cos = cosines.computeIfAbsent(epsilon, Cos::new);
-        this.sin = sines.computeIfAbsent(epsilon, Sin::new);
     }
     
     public ComplexPolarImpl(RealType modulus, RealType argument, boolean exact) {
@@ -117,8 +112,6 @@ public class ComplexPolarImpl implements ComplexType {
         this.argument = angle;
         this.mctx = MathUtils.inferMathContext(List.of(this.modulus, this.argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
-        this.cos = cosines.computeIfAbsent(epsilon, Cos::new);
-        this.sin = sines.computeIfAbsent(epsilon, Sin::new);
     }
 
     public void setMathContext(MathContext mctx) {
@@ -148,18 +141,14 @@ public class ComplexPolarImpl implements ComplexType {
         return conj;
     }
 
-    private final Cos cos;
-
     @Override
     public RealType real() {
-        return (RealType) cos.apply(argument).multiply(modulus);
+        return (RealType) cos(argument).multiply(modulus);
     }
-
-    private final Sin sin;
 
     @Override
     public RealType imaginary() {
-        return (RealType) sin.apply(argument).multiply(modulus);
+        return (RealType) sin(argument).multiply(modulus);
     }
 
     @Override

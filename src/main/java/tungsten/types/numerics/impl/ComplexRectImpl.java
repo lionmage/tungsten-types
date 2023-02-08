@@ -39,6 +39,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static tungsten.types.util.MathUtils.atan2;
+
 /**
  * An implementation of {@link ComplexType} that uses a rectangular
  * representation internally.
@@ -164,13 +166,13 @@ public class ComplexRectImpl implements ComplexType {
                     // this is an indeterminate case, so we pick 0
                     return ComplexRectImpl.ZERO;
                 default:
-                    throw new IllegalStateException("Invalid sign value for imaginary component.");
+                    throw new IllegalStateException("Invalid sign value for imaginary component");
             }
         }
         // for the general case, we need to compute the arctangent
         try {
             // The return value should be a real, but coerce just in case
-            return (RealType) MathUtils.atan2(imag, real).coerceTo(RealType.class);
+            return (RealType) atan2(imag, real).coerceTo(RealType.class);
         } catch (CoercionException e) {
             throw new ArithmeticException("Cannot coerce atan2 result to a real value");
         }
@@ -251,7 +253,7 @@ public class ComplexRectImpl implements ComplexType {
                 Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce subtrahend to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported subtrahend type.");
+        throw new UnsupportedOperationException("Unsupported subtrahend type");
     }
 
     @Override
@@ -271,7 +273,7 @@ public class ComplexRectImpl implements ComplexType {
                 Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce multiplier to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported multiplier type.");
+        throw new UnsupportedOperationException("Unsupported multiplier type");
     }
 
     @Override
@@ -296,7 +298,7 @@ public class ComplexRectImpl implements ComplexType {
                 Logger.getLogger(ComplexRectImpl.class.getName()).log(Level.SEVERE, "Failed to coerce divisor to RealType.", ex);
             }
         }
-        throw new UnsupportedOperationException("Unsupported divisor type.");
+        throw new UnsupportedOperationException("Unsupported divisor type");
     }
 
     @Override
@@ -375,7 +377,7 @@ public class ComplexRectImpl implements ComplexType {
                 buf.append(" + ").append(imag);
                 break;
             case NEGATIVE:
-                buf.append(" - ").append(imag.negate());
+                buf.append(" \u2212 ").append(imag.negate());
                 break;
         }
         buf.append('\u2148');
