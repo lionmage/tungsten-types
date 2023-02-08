@@ -966,6 +966,29 @@ public class MathUtils {
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n + 1L)));
     }
 
+    public static RealType tan(RealType x) {
+        final MathContext ctx = x.getMathContext();
+        final Pi pi = Pi.getInstance(ctx);
+        final RealType epsilon = computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
+        // check for zero crossings before incurring the cost of computing
+        // an in-range argument or calculating the sin() and cos() power series
+        RealType argOverPi = (RealType) x.divide(pi).magnitude();
+        if (((RealType) argOverPi.subtract(argOverPi.floor())).compareTo(epsilon) <= 0) {
+            // tan(x) has zero crossings periodically at x=k𝜋 ∀ k ∈ 𝕴
+            return new RealImpl(BigDecimal.ZERO, ctx);
+        }
+        Range<RealType> range = RangeUtils.getTangentInstance(ctx);
+        RealType inBounds = mapToInnerRange(x, range);
+        // check if we're within epsilon of the limits of our input range
+        // if so, tan(x) blows up to infinity
+        if (areEqualToWithin(inBounds, range.getLowerBound(), epsilon)) {
+            return RealInfinity.getInstance(Sign.NEGATIVE, ctx);
+        } else if (areEqualToWithin(inBounds, range.getUpperBound(), epsilon)) {
+            return RealInfinity.getInstance(Sign.POSITIVE, ctx);
+        }
+        return (RealType) sin(inBounds).divide(cos(inBounds));
+    }
+
     public static Comparator<Numeric> obtainGenericComparator() {
         return new Comparator<>() {
             @Override
