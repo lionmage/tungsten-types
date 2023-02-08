@@ -925,10 +925,13 @@ public class MathUtils {
         Numeric accum = ExactZero.getInstance(x.getMathContext());
         // we must compute at least 7 terms to get an acceptable result within the input range
         int termLimit = Math.max(7, x.getMathContext().getPrecision());
-        final RealType negone = new RealImpl(BigDecimal.valueOf(-1), x.getMathContext());
         for (int i = 0; i < termLimit; i++) {
             IntegerType subVal = subTerm.apply((long) i);
-            accum = accum.add(computeIntegerExponent(negone, i).multiply(computeIntegerExponent(x, subVal)).divide(factorial(subVal)));
+            if (i % 2 == 0) {
+                accum = accum.add(computeIntegerExponent(x, subVal)).divide(factorial(subVal));
+            } else {
+                accum = accum.subtract(computeIntegerExponent(x, subVal)).divide(factorial(subVal));
+            }
         }
         try {
             return (RealType) accum.coerceTo(RealType.class);
@@ -952,11 +955,13 @@ public class MathUtils {
     }
 
     public static RealType cos(RealType x) {
+        if (x instanceof Pi) return new RealImpl(BigDecimal.valueOf(-1L), x.getMathContext());
         RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n)));
     }
 
     public static RealType sin(RealType x) {
+        if (x instanceof Pi) return new RealImpl(BigDecimal.ZERO, x.getMathContext());
         RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n + 1L)));
     }
