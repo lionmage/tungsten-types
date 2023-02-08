@@ -43,6 +43,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -919,7 +920,47 @@ public class MathUtils {
             throw new ArithmeticException("Type coercion error while computing ln(" + z + "): " + e.getMessage());
         }
     }
-    
+
+    private static RealType computeTrigSum(RealType x, Function<Long, IntegerType> subTerm) {
+        Numeric accum = ExactZero.getInstance(x.getMathContext());
+        // we must compute at least 7 terms to get an acceptable result within the input range
+        int termLimit = Math.max(7, x.getMathContext().getPrecision());
+        final RealType negone = new RealImpl(BigDecimal.valueOf(-1), x.getMathContext());
+        for (int i = 0; i < termLimit; i++) {
+            IntegerType subVal = subTerm.apply((long) i);
+            accum = accum.add(computeIntegerExponent(negone, i).multiply(computeIntegerExponent(x, subVal)).divide(factorial(subVal)));
+        }
+        try {
+            return (RealType) accum.coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("While coercing computed sum " + accum + ": " + e.getMessage());
+        }
+    }
+
+    private static RealType mapToInnerRange(RealType input, Range<RealType> internalRange) {
+        if (internalRange.contains(input)) return input;
+
+        final RealType period = (RealType) internalRange.getUpperBound().subtract(internalRange.getLowerBound());
+        RealType temp = input;
+        while (internalRange.isBelow(temp)) {
+            temp = (RealType) temp.add(period);
+        }
+        while (internalRange.isAbove(temp)) {
+            temp = (RealType) temp.subtract(period);
+        }
+        return temp;
+    }
+
+    public static RealType cos(RealType x) {
+        RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
+        return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n)));
+    }
+
+    public static RealType sin(RealType x) {
+        RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
+        return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n + 1L)));
+    }
+
     public static Comparator<Numeric> obtainGenericComparator() {
         return new Comparator<>() {
             @Override
