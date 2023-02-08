@@ -919,8 +919,8 @@ public class MathUtils {
 
     private static RealType computeTrigSum(RealType x, Function<Long, IntegerType> subTerm) {
         Numeric accum = ExactZero.getInstance(x.getMathContext());
-        // we must compute at least 7 terms to get an acceptable result within the input range
-        int termLimit = Math.max(7, x.getMathContext().getPrecision());
+        // we must compute at least 4 terms (polynomial order 7) to get an acceptable result within the input range
+        int termLimit = Math.max(4, x.getMathContext().getPrecision());  // TODO find a lower upper value for this
         for (int i = 0; i < termLimit; i++) {
             IntegerType subVal = subTerm.apply((long) i);
             if (i % 2 == 0) {
