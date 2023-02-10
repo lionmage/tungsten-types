@@ -85,6 +85,8 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
         } else {
             Class<T> clazz = (Class<T>) OptionalOperations.findCommonType(getLowerBound().getClass(), getUpperBound().getClass());
             if (RealType.class.isAssignableFrom(clazz)) {
+//                Set<RealType> realNotchSet = ...;
+                // TODO fix this
                 Set<RealType> aggregate =  RangeUtils.asRealSet((Range<RealType>) range).intersection((Set<RealType>) notches);
                 if (aggregate.cardinality() != 0L) return false;
             } else if (IntegerType.class.isAssignableFrom(clazz)) {

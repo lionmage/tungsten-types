@@ -193,7 +193,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         R coeff = (R) product.stream().filter(Const.class::isInstance).map(Const.class::cast)
                 .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply);
         List<Pow<T, R>> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());  // TODO fix this
         List<String> varNames = subterms.stream().map(f -> f.expectedArguments()[0]).collect(Collectors.toList());
         List<Numeric> exponents = subterms.stream().map(Pow::getExponent).collect(Collectors.toList());
         if (exponents.stream().anyMatch(RationalType.class::isInstance)) {
