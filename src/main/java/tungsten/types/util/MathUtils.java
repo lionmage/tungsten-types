@@ -43,6 +43,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -920,7 +921,7 @@ public class MathUtils {
     private static RealType computeTrigSum(RealType x, Function<Long, IntegerType> subTerm) {
         Numeric accum = ExactZero.getInstance(x.getMathContext());
         // we must compute at least 4 terms (polynomial order 7) to get an acceptable result within the input range
-        int termLimit = Math.max(4, x.getMathContext().getPrecision());  // TODO find a lower upper value for this
+        int termLimit = Math.max(4, calculateOptimumNumTerms(x.getMathContext()));
         for (int i = 0; i < termLimit; i++) {
             IntegerType subVal = subTerm.apply((long) i);
             if (i % 2 == 0) {
@@ -934,6 +935,28 @@ public class MathUtils {
         } catch (CoercionException e) {
             throw new ArithmeticException("While coercing computed sum " + accum + ": " + e.getMessage());
         }
+    }
+
+    private static final Map<MathContext, Integer> optimumTermCounts = new ConcurrentHashMap<>();
+
+    private static int calculateOptimumNumTerms(MathContext ctx) {
+        if (optimumTermCounts.containsKey(ctx)) return optimumTermCounts.get(ctx);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for {}; calculating optimum number of power series terms.", ctx);
+        final RealType realTwo = new RealImpl(BigDecimal.valueOf(2L), ctx);
+        final RealType maxError = (RealType) computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx).divide(realTwo);
+        final Pi pi = Pi.getInstance(ctx);
+        int k = 2;  // TODO tighten this up
+        do {
+            IntegerType kVal = new IntegerImpl(BigInteger.valueOf(k + 1));
+            RealType error = (RealType) computeIntegerExponent(pi, k + 1).divide(factorial(kVal));
+            if (error.compareTo(maxError) <= 0) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "Recommend computing {} power series terms for MathContext {}",
+                        new Object[] {k, ctx});
+                optimumTermCounts.put(ctx, k);
+                return k;
+            }
+        } while (++k < ctx.getPrecision());
+        throw new ArithmeticException("Cannot determine optimum number of Taylor polynomial terms for keeping error < " + maxError);
     }
 
     private static RealType mapToInnerRange(RealType input, Range<RealType> internalRange) {
@@ -969,7 +992,7 @@ public class MathUtils {
         // check for zero crossings before incurring the cost of computing
         // an in-range argument or calculating the sin() and cos() power series
         RealType argOverPi = (RealType) x.divide(pi).magnitude();
-        if (((RealType) argOverPi.subtract(argOverPi.floor())).compareTo(epsilon) <= 0) {
+        if (((RealType) argOverPi.subtract(argOverPi.floor())).compareTo(epsilon) < 0) {
             // tan(x) has zero crossings periodically at x=k𝜋 ∀ k ∈ 𝕴
             return new RealImpl(BigDecimal.ZERO, ctx);
         }
