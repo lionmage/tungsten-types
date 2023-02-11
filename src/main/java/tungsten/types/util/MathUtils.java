@@ -921,7 +921,7 @@ public class MathUtils {
     private static RealType computeTrigSum(RealType x, Function<Long, IntegerType> subTerm) {
         Numeric accum = ExactZero.getInstance(x.getMathContext());
         // we must compute at least 4 terms (polynomial order 7) to get an acceptable result within the input range
-        int termLimit = Math.max(4, calculateOptimumNumTerms(x.getMathContext()));
+        int termLimit = Math.max(4, calculateOptimumNumTerms(x.getMathContext(), subTerm));
         for (int i = 0; i < termLimit; i++) {
             IntegerType subVal = subTerm.apply((long) i);
             if (i % 2 == 0) {
@@ -939,16 +939,16 @@ public class MathUtils {
 
     private static final Map<MathContext, Integer> optimumTermCounts = new ConcurrentHashMap<>();
 
-    private static int calculateOptimumNumTerms(MathContext ctx) {
+    private static int calculateOptimumNumTerms(MathContext ctx, Function<Long, IntegerType> idxMapper) {
         if (optimumTermCounts.containsKey(ctx)) return optimumTermCounts.get(ctx);
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for {}; calculating optimum number of power series terms.", ctx);
         final RealType realTwo = new RealImpl(BigDecimal.valueOf(2L), ctx);
         final RealType maxError = (RealType) computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx).divide(realTwo);
         final Pi pi = Pi.getInstance(ctx);
-        int k = 2;  // TODO tighten this up
+        int k = 2;
         do {
-            IntegerType kVal = new IntegerImpl(BigInteger.valueOf(k + 1));
-            RealType error = (RealType) computeIntegerExponent(pi, k + 1).divide(factorial(kVal));
+            IntegerType kVal = idxMapper.apply((long) k);
+            RealType error = (RealType) computeIntegerExponent(pi, kVal).divide(factorial(kVal));
             if (error.compareTo(maxError) <= 0) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "Recommend computing {} power series terms for MathContext {}",
                         new Object[] {k, ctx});
