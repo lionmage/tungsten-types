@@ -38,6 +38,7 @@ import java.util.stream.StreamSupport;
  * the elements to be of a different subtype.
  * @param <T> the type of the set being wrapped
  * @param <R> the type of this view of the wrapped set
+ * @author Robert Poole
  */
 public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements Set<R> {
     private final Class<R> clazz;
@@ -50,6 +51,15 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
         this.origClazz = originType;
     }
 
+    /**
+     * Constructor which infers the type of the elements of the original set from
+     * the set itself. This implies that there is at least one element in the original
+     * set, and that the original set returns {@link Set#countable()} {@code == true}.
+     * If neither condition is true, consider using {@link #CoercionWrapperSet(Set, Class, Class)}
+     * instead.
+     * @param wrapped    the {@link Set} to be wrapped
+     * @param targetType the {@link Numeric} subtype for the resulting {@link Set}
+     */
     public CoercionWrapperSet(Set<T> wrapped, Class<R> targetType) {
         this.clazz = targetType;
         this.original = wrapped;
