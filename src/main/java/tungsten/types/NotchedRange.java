@@ -26,6 +26,7 @@ package tungsten.types;
 
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.set.impl.CoercionWrapperSet;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
@@ -45,12 +46,14 @@ import java.util.stream.StreamSupport;
 public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Range<T> {
     private final Set<T> notches;
 
+    @SafeVarargs
     public NotchedRange(T lowerVal, T upperVal, BoundType type, T... except) {
         super(lowerVal, upperVal, type);
         if (Arrays.stream(except).anyMatch(val -> !super.contains(val))) throw new IllegalArgumentException("Notch must be within bounds of range.");
         notches = Set.of(except);
     }
 
+    @SafeVarargs
     public NotchedRange(T lowerVal, BoundType lowerType, T upperVal, BoundType upperType, T... except) {
         super(lowerVal, lowerType, upperVal, upperType);
         if (Arrays.stream(except).anyMatch(val -> !super.contains(val))) throw new IllegalArgumentException("Notch must be within bounds of range.");
@@ -85,12 +88,10 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
         } else {
             Class<T> clazz = (Class<T>) OptionalOperations.findCommonType(getLowerBound().getClass(), getUpperBound().getClass());
             if (RealType.class.isAssignableFrom(clazz)) {
-//                Set<RealType> realNotchSet = ...;
-                // TODO fix this
-                Set<RealType> aggregate =  RangeUtils.asRealSet((Range<RealType>) range).intersection((Set<RealType>) notches);
+                Set<RealType> aggregate =  RangeUtils.asRealSet(range.forNumericType(RealType.class)).intersection(new CoercionWrapperSet<>(notches, RealType.class));
                 if (aggregate.cardinality() != 0L) return false;
             } else if (IntegerType.class.isAssignableFrom(clazz)) {
-                Set<IntegerType> aggregate = RangeUtils.asSet((Range<IntegerType>) range).intersection((Set<IntegerType>) notches);
+                Set<IntegerType> aggregate = RangeUtils.asSet(range.forNumericType(IntegerType.class)).intersection(new CoercionWrapperSet<>(notches, IntegerType.class));
                 if (aggregate.cardinality() != 0L) return false;
             }
             // TODO need to handle the general case

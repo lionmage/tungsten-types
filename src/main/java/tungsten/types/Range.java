@@ -23,6 +23,7 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.RangeUtils;
 
@@ -195,6 +196,16 @@ public class Range<T extends Numeric & Comparable<? super T>> {
     
     public boolean isUpperClosed() {
         return upperBound.isInclusive();
+    }
+
+    public <R extends Numeric & Comparable<? super R>> Range<R> forNumericType(Class<R> target) {
+        try {
+            R lowerBound = (R) getLowerBound().coerceTo(target);
+            R upperBound = (R) getUpperBound().coerceTo(target);
+            return new Range<>(lowerBound, this.lowerBound.type, upperBound, this.upperBound.type);
+        } catch (CoercionException e) {
+            throw new IllegalArgumentException("Cannot convert Range to expected type", e);
+        }
     }
     
     public Predicate<T> getPredicate() {

@@ -190,19 +190,23 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         if (product.stream().map(Object::getClass).anyMatch(p -> !supported.contains(p))) {
             throw new IllegalArgumentException("Product contains a foreign function that cannot be handled");
         }
-        R coeff = (R) product.stream().filter(Const.class::isInstance).map(Const.class::cast)
-                .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply);
-        List<Pow<T, R>> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
-                .collect(Collectors.toList());  // TODO fix this
-        List<String> varNames = subterms.stream().map(f -> f.expectedArguments()[0]).collect(Collectors.toList());
-        List<Numeric> exponents = subterms.stream().map(Pow::getExponent).collect(Collectors.toList());
-        if (exponents.stream().anyMatch(RationalType.class::isInstance)) {
-            List<RationalType> rationalExponents = exponents.stream().map(this::safeCoerce).collect(Collectors.toList());
-            return new RationalExponentPolyTerm<T, R>(coeff, varNames, rationalExponents);
+        try {
+            R coeff = (R) product.stream().filter(Const.class::isInstance).map(Const.class::cast)
+                    .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(rtnClass);
+            List<Pow> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
+                    .collect(Collectors.toList());  // Trying to make this a List<Pow<T, R>> or a List<Pow<?, ?>> causes build issues
+            List<String> varNames = subterms.stream().map(f -> f.expectedArguments()[0]).collect(Collectors.toList());
+            List<Numeric> exponents = subterms.stream().map(Pow::getExponent).collect(Collectors.toList());
+            if (exponents.stream().anyMatch(RationalType.class::isInstance)) {
+                List<RationalType> rationalExponents = exponents.stream().map(this::safeCoerce).collect(Collectors.toList());
+                return new RationalExponentPolyTerm<T, R>(coeff, varNames, rationalExponents);
+            }
+            List<Long> integerExponents = exponents.stream().map(IntegerType.class::cast).map(IntegerType::asBigInteger)
+                    .map(BigInteger::longValueExact).collect(Collectors.toList());
+            return new PolyTerm<>(coeff, varNames, integerExponents);
+        } catch (CoercionException e) {
+            throw new IllegalArgumentException("While calculating aggregate coefficient", e);
         }
-        List<Long> integerExponents = exponents.stream().map(IntegerType.class::cast).map(IntegerType::asBigInteger)
-                .map(BigInteger::longValueExact).collect(Collectors.toList());
-        return new PolyTerm<>(coeff, varNames, integerExponents);
     }
 
     private RationalType safeCoerce(Numeric orig) {
