@@ -49,14 +49,14 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
     @SafeVarargs
     public NotchedRange(T lowerVal, T upperVal, BoundType type, T... except) {
         super(lowerVal, upperVal, type);
-        if (Arrays.stream(except).anyMatch(val -> !super.contains(val))) throw new IllegalArgumentException("Notch must be within bounds of range.");
+        if (Arrays.stream(except).anyMatch(val -> !super.contains(val))) throw new IllegalArgumentException("Notch must be within bounds of range");
         notches = Set.of(except);
     }
 
     @SafeVarargs
     public NotchedRange(T lowerVal, BoundType lowerType, T upperVal, BoundType upperType, T... except) {
         super(lowerVal, lowerType, upperVal, upperType);
-        if (Arrays.stream(except).anyMatch(val -> !super.contains(val))) throw new IllegalArgumentException("Notch must be within bounds of range.");
+        if (Arrays.stream(except).anyMatch(val -> !super.contains(val))) throw new IllegalArgumentException("Notch must be within bounds of range");
         notches = Set.of(except);
     }
 
@@ -67,9 +67,9 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
             // if excluded is finite, check its elements to ensure they're within bounds
             if (!StreamSupport.stream(excluded.spliterator(), true).allMatch(source::contains)) {
                 Logger.getLogger(NotchedRange.class.getName()).log(Level.SEVERE,
-                        "Elements of set {} do not fall within range {}",
+                        "Elements of set {} do not fall within range {}.",
                         new Object[] { excluded, source });
-                throw new IllegalArgumentException("Exclusion set elements must be within range bounds.");
+                throw new IllegalArgumentException("Exclusion set elements must be within range bounds");
             }
         }
         notches = excluded;
