@@ -83,7 +83,11 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
             T origElement = (T) element.coerceTo(origClazz);
             return original.contains(origElement);
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            Logger.getLogger(CoercionWrapperSet.class.getName()).log(Level.WARNING,
+                    "While testing for containment, provided key {} could not be coerced to element type {} of wrapped set.",
+                    new Object[] {element, origClazz.getTypeName()});
+            // if we can't coerce to the type of the wrapped set, then the key must not be contained by it
+            return false;
         }
     }
 

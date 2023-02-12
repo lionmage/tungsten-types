@@ -939,6 +939,20 @@ public class MathUtils {
 
     private static final Map<MathContext, Integer> optimumTermCounts = new ConcurrentHashMap<>();
 
+    /**
+     * Given a {@link MathContext} and a mapping function to map from integer indices to subterms
+     * within a power series expansion, determine the optimum number of terms to compute so that
+     * the error is kept below the resolution threshold determined by the {@link MathContext}.
+     * Note that this method computes a uniform estimate of the error, based on a Taylor expansion
+     * centered at zero within the interval (&minus;&pi;, &pi;].  In this case,
+     * the range r&nbsp;=&nbsp;&pi;, so the error term is &lt;&thinsp;r<sup>N</sup>/N!
+     * where N is determined by the mapping function.
+     * @param ctx       the math context for computing error terms
+     * @param idxMapper the mapping function for summation indices
+     * @return the estimated number of terms required to minimize error
+     * @see <a href="https://en.wikipedia.org/wiki/Taylor's_theorem#Estimates">Wikipedia article on Taylor's Theorem,
+     *  section on estimates for the remainder</a>
+     */
     private static int calculateOptimumNumTerms(MathContext ctx, Function<Long, IntegerType> idxMapper) {
         if (optimumTermCounts.containsKey(ctx)) return optimumTermCounts.get(ctx);
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for {}; calculating optimum number of power series terms.", ctx);
@@ -950,13 +964,13 @@ public class MathUtils {
             IntegerType kVal = idxMapper.apply((long) k);
             RealType error = (RealType) computeIntegerExponent(pi, kVal).divide(factorial(kVal));
             if (error.compareTo(maxError) <= 0) {
-                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "Recommend computing {} power series terms for MathContext {}",
+                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "Recommend computing {} power series terms for MathContext {}.",
                         new Object[] {k, ctx});
                 optimumTermCounts.put(ctx, k);
                 return k;
             }
         } while (++k < ctx.getPrecision());
-        throw new ArithmeticException("Cannot determine optimum number of Taylor polynomial terms for keeping error < " + maxError);
+        throw new ArithmeticException("Cannot determine optimum number of power series terms for keeping error < " + maxError);
     }
 
     private static RealType mapToInnerRange(RealType input, Range<RealType> internalRange) {
