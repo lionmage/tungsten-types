@@ -29,6 +29,7 @@ import tungsten.types.exceptions.CoercionException;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
@@ -117,8 +118,8 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
     @Override
     public Set<R> intersection(Set<R> other) {
         if (other.cardinality() == 0L || this.cardinality() == 0L) return EmptySet.getInstance();
-        if (StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) return this;
-        if (StreamSupport.stream(this.spliterator(), true).allMatch(other::contains)) return other;
+        if (other.cardinality() > 0L && StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) return other;
+        if (this.cardinality() > 0L && StreamSupport.stream(this.spliterator(), true).allMatch(other::contains)) return this;
         return other.intersection(this);
     }
 
@@ -126,11 +127,10 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
     public Set<R> difference(Set<R> other) {
         if (other.cardinality() == 0L) return this;
         if (this.cardinality() == 0L) return EmptySet.getInstance();
-        if (StreamSupport.stream(other.spliterator(), true).allMatch(this::contains) &&
-                StreamSupport.stream(this.spliterator(), true).allMatch(other::contains)) return EmptySet.getInstance();
         if (this.cardinality() > 0L) {
             NumericSet difference = new NumericSet();
             StreamSupport.stream(this.spliterator(), true).dropWhile(other::contains).forEach(difference::append);
+            if (difference.cardinality() == 0L) return EmptySet.getInstance();
             try {
                 return difference.coerceTo(clazz);
             } catch (CoercionException e) {
@@ -140,6 +140,7 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
                 throw new ArithmeticException("Problem computing set difference: " + e.getMessage());
             }
         }
+        if (other.equals(this)) return EmptySet.getInstance();
         throw new UnsupportedOperationException("Case not implemented yet");
     }
 
@@ -162,5 +163,19 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
                 }
             }
         };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o instanceof Set && original.equals(o)) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CoercionWrapperSet<?, ?> that = (CoercionWrapperSet<?, ?>) o;
+        return clazz.equals(that.clazz) && Objects.equals(origClazz, that.origClazz) && original.equals(that.original);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clazz, origClazz, original);
     }
 }
