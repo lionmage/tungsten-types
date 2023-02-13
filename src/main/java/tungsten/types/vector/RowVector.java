@@ -38,7 +38,6 @@ import tungsten.types.vector.impl.RealVector;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -153,8 +152,8 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
             ComplexVector cplxvec = new ComplexVector(elementArray, mctx);
             return (Vector<T>) cplxvec.crossProduct((Vector<ComplexType>) other);
         }
-        Logger.getLogger(RowVector.class.getName()).log(Level.WARNING, "No way to compute cross product for {}", clazz.getTypeName());
-        throw new UnsupportedOperationException("Not supported yet.");
+        Logger.getLogger(RowVector.class.getName()).log(Level.SEVERE, "No way to compute cross product for {0}.", clazz.getTypeName());
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override
@@ -166,13 +165,13 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
         } catch (CoercionException ex) {
             Logger.getLogger(RowVector.class.getName()).log(Level.SEVERE,
                     "Unable to normalize vector for type " + clazz.getTypeName(), ex);
-            throw new ArithmeticException("Error computing vector normal.");
+            throw new ArithmeticException("Error computing vector normal");
         }
     }
 
     @Override
     public RealType computeAngle(Vector<T> other) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override
@@ -214,13 +213,13 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     @Override
     public T determinant() {
         if (length() == 1L) return elementAt(0L);
-        throw new ArithmeticException("Cannot compute determinant of a matrix with unequal columns and rows.");
+        throw new ArithmeticException("Cannot compute determinant of a matrix with unequal columns and rows");
     }
     
     @Override
     public T trace() {
         if (length() == 1L) return elementAt(0L);
-        throw new ArithmeticException("Cannot compute trace of a matrix with unequal columns and rows.");
+        throw new ArithmeticException("Cannot compute trace of a matrix with unequal columns and rows");
     }
     
     @Override
@@ -268,7 +267,7 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (this.rows() != multiplier.columns()) {
-            throw new ArithmeticException("Multiplier must have a single column.");
+            throw new ArithmeticException("Multiplier must have a single column");
         }
 
         // Apparently, the convention here is to compute the dot product of two vectors
@@ -279,7 +278,7 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public RowVector<T> getRow(long row) {
-        if (row != 0L) throw new IndexOutOfBoundsException("Index does not match the single row of this matrix.");
+        if (row != 0L) throw new IndexOutOfBoundsException("Index does not match the single row of this matrix");
         return this;
     }
 
@@ -288,6 +287,6 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
         if (length() == 1L) {
             return new SingletonMatrix<>(elementAt(0L).inverse());
         }
-        throw new ArithmeticException("Inverse only applies to square matrices.");
+        throw new ArithmeticException("Inverse only applies to square matrices");
     }
 }

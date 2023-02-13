@@ -123,7 +123,7 @@ public class Range<T extends Numeric & Comparable<? super T>> {
                 Logger.getLogger(Range.class.getName()).log(Level.WARNING,
                         "chooseNarrowest() is being called with subclasses of Range " +
                                 "that may lose information when computing the intersection " +
-                                "of {} ({}) and {} ({})",
+                                "of {0} ({1}) and {2} ({3})",
                         new Object[] { A, A.getClass().getTypeName(), B, B.getClass().getTypeName() });
             }
             RealType lowestBound = A.getLowerBound().compareTo(B.getLowerBound()) > 0 ?

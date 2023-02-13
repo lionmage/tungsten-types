@@ -98,10 +98,10 @@ public class ComplexPolarImpl implements ComplexType {
         String strMod = strval.substring(0, strval.indexOf(SEPARATOR)).trim();
         String strAng = strval.substring(strval.indexOf(SEPARATOR) + 1).trim();
         RealType angle;
-        if (AngularDegrees.isDecimnalDegrees(strAng) || AngularDegrees.isDMS(strAng)) {
+        if (AngularDegrees.isDecimalDegrees(strAng) || AngularDegrees.isDMS(strAng)) {
             AngularDegrees degrees = new AngularDegrees(strAng);
             Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.INFO,
-                    "Parsed degree argument {} from {}",
+                    "Parsed degree argument {0} from {1}",
                     new Object[] {degrees, strval});
             angle = degrees.asRadians();
         } else {
@@ -377,7 +377,7 @@ public class ComplexPolarImpl implements ComplexType {
         try {
             return result.coerceTo(ComplexType.class);
         } catch (CoercionException ex) {
-            Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Error coercing all roots to ComplexType", ex);
+            Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE, "Error coercing all roots to ComplexType.", ex);
             throw new IllegalStateException("Coercing one of n roots failed", ex);
         }
     }

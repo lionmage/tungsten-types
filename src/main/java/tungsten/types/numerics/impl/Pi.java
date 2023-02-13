@@ -247,8 +247,7 @@ public class Pi implements RealType {
             boolean success = cacheTerm(computeKthTerm(k), k);
             if (!success) {
                 Logger.getLogger(Pi.class.getName()).log(Level.WARNING,
-                        "Unable to cache term for k = {}, continuing. Pi value may not match desired precision.",
-                        new Object[] {k});
+                        "Unable to cache term for k = {0}, continuing. Pi value may not match desired precision.", k);
             }
         }
         // now reduce this

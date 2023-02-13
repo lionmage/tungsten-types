@@ -85,8 +85,8 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
             return original.contains(origElement);
         } catch (CoercionException e) {
             Logger.getLogger(CoercionWrapperSet.class.getName()).log(Level.WARNING,
-                    "While testing for containment, provided key {} could not be coerced to element type {} of wrapped set.",
-                    new Object[] {element, origClazz.getTypeName()});
+                    "While testing for containment, provided key {0} could not be coerced to element type {1} of wrapped set.",
+                    new Object[] { element, origClazz.getTypeName() });
             // if we can't coerce to the type of the wrapped set, then the key must not be contained by it
             return false;
         }
@@ -135,7 +135,7 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
                 return difference.coerceTo(clazz);
             } catch (CoercionException e) {
                 Logger.getLogger(CoercionWrapperSet.class.getName()).log(Level.SEVERE,
-                        "Result from set difference {} could not be coerced to {}.",
+                        "Result from set difference {0} could not be coerced to {1}.",
                         new Object[] {difference, clazz.getTypeName()});
                 throw new ArithmeticException("Problem computing set difference: " + e.getMessage());
             }
@@ -147,7 +147,7 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
     @Override
     public Iterator<R> iterator() {
         Iterator<T> origIter = original.iterator();
-        return new Iterator<R>() {
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
                 return origIter.hasNext();

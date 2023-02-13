@@ -641,7 +641,6 @@ public class MathUtils {
      */
     public static Matrix<RealType> get2DMatrixOfRotation(RealType theta) {
         final MathContext ctx = theta.getMathContext();
-        final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
         RealType[][] temp = new RealType[2][2];
 
         RealType cos = cos(theta);
@@ -665,7 +664,6 @@ public class MathUtils {
      */
     public static Matrix<RealType> get3DMatrixOfRotation(RealType theta, Axis axis) {
         final MathContext ctx = theta.getMathContext();
-        final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         final RealType zero = new RealImpl(BigDecimal.ZERO, ctx);
         RealType[][] temp = new RealType[3][];
@@ -961,7 +959,7 @@ public class MathUtils {
      * the error is kept below the resolution threshold determined by the {@link MathContext}.
      * Note that this method computes a uniform estimate of the error, based on a Taylor expansion
      * centered at zero within the interval (&minus;&pi;, &pi;].  In this case,
-     * the range r&nbsp;=&nbsp;&pi;, so the error term is &lt;&thinsp;r<sup>N</sup>/N!
+     * the range r&nbsp;=&nbsp;&pi;, so the estimated error term is &lt;&thinsp;r<sup>N</sup>/N!
      * where N is determined by the mapping function.
      * @param ctx       the math context for computing error terms
      * @param idxMapper the mapping function for summation indices
@@ -1075,7 +1073,7 @@ public class MathUtils {
                             return Aconv.compareTo(B);
                         }
                     } catch (CoercionException ce) {
-                        Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "No common type found for {} and {}.",
+                        Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "No common type found for {0} and {1}.",
                                 new Object[] { h1, h2 });
                         throw new IllegalArgumentException("Failure to coerce arguments to a common type", ce);
                     }

@@ -211,7 +211,7 @@ public interface Set<T> extends Iterable<T> {
                     return constructor.newInstance(size);
                 } catch (NoSuchMethodException e) {
                     Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
-                            "Cannot dynamically obtain array constructor for type {}", elementType);
+                            "Cannot dynamically obtain array constructor for type {0}", elementType);
                     throw new IllegalStateException(e);
                 } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
                     Logger.getLogger(Set.class.getName()).log(Level.SEVERE,

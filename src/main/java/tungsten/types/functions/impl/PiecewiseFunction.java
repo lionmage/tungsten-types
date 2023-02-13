@@ -74,7 +74,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
                 // we should log a warning, however, if both bounds are open since this creates a discontinuity
                 if (!sortedRanges.get(index).isLowerClosed() && !sortedRanges.get(index - 1).isUpperClosed()) {
                     Logger.getLogger(PiecewiseFunction.class.getName())
-                            .log(Level.WARNING, "Bounds as specified will create a discontinuity at {} = {}.",
+                            .log(Level.WARNING, "Bounds as specified will create a discontinuity at {0} = {1}.",
                             new Object[] {getArgumentName(), sortedRanges.get(index).getLowerBound()});
                 }
             }

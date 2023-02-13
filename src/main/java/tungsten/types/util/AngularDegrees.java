@@ -224,7 +224,7 @@ public class AngularDegrees {
         this.seconds = (RealType) realMinutes.subtract(minutes).multiply(SIXTY);
     }
 
-    public static boolean isDecimnalDegrees(String input) {
+    public static boolean isDecimalDegrees(String input) {
         Matcher m = decimalDegreesPattern.matcher(input);
         return m.find();
     }

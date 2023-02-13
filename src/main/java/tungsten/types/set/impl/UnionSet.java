@@ -52,12 +52,12 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
 
     @Override
     public void append(T element) {
-        throw new UnsupportedOperationException("This aggregate set is immutable.");
+        throw new UnsupportedOperationException("This aggregate set is immutable");
     }
 
     @Override
     public void remove(T element) {
-        throw new UnsupportedOperationException("This aggregate set is immutable.");
+        throw new UnsupportedOperationException("This aggregate set is immutable");
     }
 
     @Override
@@ -109,7 +109,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
                     boolean success = result.remove(element);
                     if (!success) {
                         Logger.getLogger(UnionSet.class.getName()).log(Level.WARNING,
-                                "Attempt to remove element {} from set {}",
+                                "Attempt to remove element {0} from set {1}.",
                                 new Object[] {element, result});
                     }
                 }
@@ -128,7 +128,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
 
                 @Override
                 public Set<T> difference(Set<T> other2) {
-                    // (A intersection B) - C = (A - C) intersection (B - C)
+                    // (A ∩ B) - C = (A - C) ∩ (B - C)
                     return UnionSet.this.difference(other2).intersection(other.difference(other2));
                 }
 

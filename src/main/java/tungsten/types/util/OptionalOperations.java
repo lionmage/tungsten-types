@@ -96,7 +96,7 @@ public class OptionalOperations {
         if (if1.retainAll(if2)) {
             // if if1 changed, log if1 ∩ if2
             Logger.getLogger(OptionalOperations.class.getName()).log(Level.FINE,
-                    "Intersection between type hierarchies of {} and {} is {}",
+                    "Intersection between type hierarchies of {0} and {1} is {2}",
                     new Object[] { type1.getTypeName(), type2.getTypeName(), if1 });
         }
         if (if1.containsAll(if2)) {
@@ -106,7 +106,7 @@ public class OptionalOperations {
         }
         switch (if1.size()) {
             case 0:
-                Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO, "No common type found between {} and {}",
+                Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO, "No common type found between {0} and {1}",
                         new Object[] { type1.getTypeName(), type2.getTypeName() });
                 break;
             case 1:

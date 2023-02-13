@@ -62,23 +62,23 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         int arrayLength = source.length() > (long) Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) source.length();
         if (arrayLength < source.length()) {
             Logger.getLogger(DiagonalMatrix.class.getName()).log(Level.WARNING,
-                    "Source vector with {} elements will not fit into a Java array; truncating.",
+                    "Source vector with {0} elements will not fit into a Java array; truncating.",
                     source.length());
         }
         elements = (T[]) Array.newInstance(clazz, arrayLength);
         for (int i = 0; i < arrayLength; i++) {
-            elements[i] = source.elementAt((long) i);
+            elements[i] = source.elementAt(i);
         }
     }
 
     @Override
     public long columns() {
-        return (long) elements.length;
+        return elements.length;
     }
 
     @Override
     public long rows() {
-        return (long) elements.length;
+        return elements.length;
     }
 
     @Override
@@ -183,7 +183,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                     .toArray(Numeric[]::new);
         } else {
             if (!n.isCoercibleTo(IntegerType.class)) {
-                throw new IllegalArgumentException("Currently, non-integer exponents are not supported for non-real types.");
+                throw new IllegalArgumentException("Currently, non-integer exponents are not supported for non-real types");
             }
 
             try {
@@ -192,7 +192,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                         .map(element -> MathUtils.computeIntegerExponent(element, n_int))
                         .toArray(Numeric[]::new);
             } catch (CoercionException e) {
-                throw new IllegalStateException("Could not convert exponent " + n + " to integer.");
+                throw new IllegalStateException("Could not convert exponent " + n + " to integer");
             }
         }
         return new DiagonalMatrix<>(result);

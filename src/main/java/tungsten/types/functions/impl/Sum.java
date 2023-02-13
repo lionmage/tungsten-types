@@ -169,7 +169,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         }
         if (combinerMap.size() > 0) {
             Logger.getLogger(Sum.class.getName()).log(Level.INFO,
-                    "Found {} terms out of {} that can be combined.",
+                    "Found {0} terms out of {1} that can be combined.",
                     new Object[] {combinerMap.size(), terms.size()});
             List<UnaryFunction<T, R>> combinedTerms = new ArrayList<>();
             combinerMap.keySet().forEach(idx -> {
@@ -190,7 +190,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         // next check if there are any unexpanded nested Sums
         if (parallelStream().anyMatch(Sum.class::isInstance)) {
             Logger.getLogger(Sum.class.getName()).log(Level.INFO,
-                    "Found {} unexpanded Sum terms out of {} \u2014 flattening.",
+                    "Found {0} unexpanded Sum terms out of {1} \u2014 flattening.",
                     new Object[] { stream().filter(Sum.class::isInstance).count(), terms.size() });
             Sum<T, R> flattened = new Sum<>(getArgumentName());
             stream().forEach(flattened::appendTerm);  // letting appendTerm() do all the hard work here

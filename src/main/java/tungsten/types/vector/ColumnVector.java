@@ -40,7 +40,6 @@ import tungsten.types.vector.impl.RealVector;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -155,8 +154,8 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
             ComplexVector cplxvec = new ComplexVector(elementArray, mctx);
             return (Vector<T>) cplxvec.crossProduct((Vector<ComplexType>) other);
         }
-        Logger.getLogger(ColumnVector.class.getName()).log(Level.WARNING, "No way to compute cross product for {}", clazz.getTypeName());
-        throw new UnsupportedOperationException("Not supported yet.");
+        Logger.getLogger(ColumnVector.class.getName()).log(Level.SEVERE, "No way to compute cross product for {0}.", clazz.getTypeName());
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override
@@ -168,13 +167,13 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
         } catch (CoercionException ex) {
             Logger.getLogger(ColumnVector.class.getName()).log(Level.SEVERE,
                     "Unable to normalize vector for type " + clazz.getTypeName(), ex);
-            throw new ArithmeticException("Error computing vector normal.");
+            throw new ArithmeticException("Error computing vector normal");
         }
     }
 
     @Override
     public RealType computeAngle(Vector<T> other) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override
@@ -201,13 +200,13 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
     @Override
     public T determinant() {
         if (length() == 1L) return elementAt(0L);
-        throw new ArithmeticException("Cannot compute determinant of a matrix with unequal columns and rows.");
+        throw new ArithmeticException("Cannot compute determinant of a matrix with unequal columns and rows");
     }
     
     @Override
     public T trace() {
         if (length() == 1L) return elementAt(0L);
-        throw new ArithmeticException("Cannot compute trace of a matrix with unequal columns and rows.");
+        throw new ArithmeticException("Cannot compute trace of a matrix with unequal columns and rows");
     }
     
     @Override
@@ -254,7 +253,7 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have a single row.");
+            throw new ArithmeticException("Multiplier must have a single row");
         }
         
         Class<T> clazz = (Class<T>) (Class<T>) ((Class) ((ParameterizedType) getClass()
@@ -290,7 +289,7 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
 
     @Override
     public ColumnVector<T> getColumn(long column) {
-        if (column != 0L) throw new IndexOutOfBoundsException("Index does not match the single column of this matrix.");
+        if (column != 0L) throw new IndexOutOfBoundsException("Index does not match the single column of this matrix");
         return this;
     }
 
@@ -299,7 +298,7 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
         if (length() == 1L) {
             return new SingletonMatrix<>(this.elementAt(0L).inverse());
         }
-        throw new ArithmeticException("Inverse only applies to square matrices.");
+        throw new ArithmeticException("Inverse only applies to square matrices");
     }
     
     public abstract Stream<T> stream();

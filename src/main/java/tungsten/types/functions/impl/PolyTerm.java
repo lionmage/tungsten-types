@@ -170,7 +170,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                 if (argRange != null && !argRange.contains(toCheck)) return false;
             } catch (CoercionException e) {
                 Logger.getLogger(PolyTerm.class.getName()).log(Level.WARNING,
-                        "Variable {} has a real-valued range of {}, but the value {} cannot be coerced to RealTyoe.",
+                        "Variable {0} has a real-valued range of {1}, but the value {2} cannot be coerced to RealTyoe.",
                         new Object[]{argName, argRange, arguments.forVariableName(argName)});
                 return false;
             }

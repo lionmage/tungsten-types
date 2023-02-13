@@ -130,7 +130,7 @@ public class RangeUtils {
         if (B.contains(A)) return B;
         if (!A.overlaps(B)) {
             Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
-                    "Ranges {} and {} do not overlap; a merged range contains elements in {} that are not in either original range.",
+                    "Ranges {0} and {1} do not overlap; a merged range contains elements in {2} that are not in either original range.",
                     new Object[] { A, B, rangeBetween(A, B) } );
         }
         T lowerBound, upperBound;
@@ -378,7 +378,7 @@ public class RangeUtils {
                     StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
                             .forEach(outOfRange::append);
                     Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
-                            "Some elements of {} are outside range {}: {}",
+                            "Some elements of {0} are outside range {1}: {2}",
                             new Object[] { other, range, outOfRange } );
                 }
                 // last resort

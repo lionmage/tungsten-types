@@ -63,7 +63,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         this.epsilon = (T) epsilon.magnitude();
         if (!epsilonRange.contains(epsilon)) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING,
-                    "Epsilon value {} is out of recommended range {}", new Object[] {epsilon, epsilonRange});
+                    "Epsilon value {0} is out of recommended range {1}", new Object[] {epsilon, epsilonRange});
         }
     }
 

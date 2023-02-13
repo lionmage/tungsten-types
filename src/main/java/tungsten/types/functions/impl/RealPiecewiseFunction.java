@@ -91,11 +91,11 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
             }
         }
         Logger.getLogger(RealPiecewiseFunction.class.getName()).log(Level.INFO,
-                "Generated {} transition zones for {} distinct function domains, final alpha={}",
+                "Generated {0} transition zones for {1} distinct function domains, final alpha={2}",
                 new Object[] { zones.size(), ranges.size(), alpha0 });
         if (smoothing == SmoothingType.SIGMOID) {
             Logger.getLogger(RealPiecewiseFunction.class.getName()).log(Level.FINE,
-                    "Generated {} sigmoid functions for x0 values {}",
+                    "Generated {0} sigmoid functions for x0 values {1}",
                     new Object[] { sigFunctions.size(),
                             sigFunctions.stream().map(Sigmoid::getCentroid).collect(Collectors.toList()) });
         }

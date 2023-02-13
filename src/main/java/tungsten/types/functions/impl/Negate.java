@@ -91,7 +91,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
                 return realProd.compareTo(NEGONE_CMP) == 0;
             } catch (CoercionException e) {
                 Logger.getLogger(Negate.class.getName()).log(Level.SEVERE,
-                        "Product of all constant terms is {}, but could not be coerced to RealType for comparison.",
+                        "Product of all constant terms is {0}, but could not be coerced to RealType for comparison.",
                         coeffProd);
                 throw new IllegalStateException(e);
             }

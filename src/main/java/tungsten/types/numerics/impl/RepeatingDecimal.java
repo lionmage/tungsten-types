@@ -149,7 +149,7 @@ public class RepeatingDecimal extends RationalImpl {
             return (DecimalFormat) format;
         } else {
             Logger.getLogger(RepeatingDecimal.class.getName()).log(Level.WARNING,
-                    "Tried to obtain a {} instance, but received {} instead.",
+                    "Tried to obtain a {0} instance, but received {1} instead.",
                     new Object[] {DecimalFormat.class.getTypeName(), format.getClass().getTypeName()});
             return new DecimalFormat();
         }
@@ -167,7 +167,7 @@ public class RepeatingDecimal extends RationalImpl {
             final int clength = length.asBigInteger().intValueExact();
             int startPos = cycleStart().orElseThrow(IllegalStateException::new).asBigInteger().intValueExact() +
                     temp.indexOf(DECIMAL_POINT_REPRESENTATION) + 1;
-            buf.append(temp.substring(0, startPos));
+            buf.append(temp, 0, startPos);
             String cycleDigits = temp.substring(startPos, Math.min(startPos + clength, temp.length()));
             while (startPos + clength <= charCount) {
                 buf.append(UnicodeTextEffects.overline(cycleDigits));
@@ -184,7 +184,7 @@ public class RepeatingDecimal extends RationalImpl {
         // in this case, there is no cycle, so just truncate if necessary
         if (cycleStart().isEmpty()) {
             if (temp.length() > charCount) {
-                buf.append(temp.substring(0, charCount)).append(HORIZONTAL_ELLIPSIS);
+                buf.append(temp, 0, charCount).append(HORIZONTAL_ELLIPSIS);
             }
             else {
                 buf.append(temp);
@@ -208,21 +208,21 @@ public class RepeatingDecimal extends RationalImpl {
             tdenom = removeFactorsOf(tdenom[0], FIVE);
             BigInteger beta = tdenom[1];
             Logger.getLogger(RepeatingDecimal.class.getName()).log(Level.FINER,
-                    "Denominator {} with factors of 2 and 5 removed: {}",
-                    new Object[]{denom, tdenom[0]});
+                    "Denominator {0} with factors of 2 and 5 removed: {1}",
+                    new Object[] { denom, tdenom[0] });
             if (tdenom[0].equals(BigInteger.ONE)) {
                 decimalPeriod = BigInteger.ZERO;
                 position = BigInteger.valueOf(-1L);
                 // There are no factors other than 2 or 5, so the decimal expansion is finite.
                 Logger.getLogger(RepeatingDecimal.class.getName()).log(Level.FINER,
-                        "Rational value {} has no repeating digits.", super.toString());
+                        "Rational value {0} has no repeating digits.", super.toString());
             } else {
                 // there is repetition after an initial non-repeating string of digits
                 decimalPeriod = multiplicativeOrder(BigInteger.TEN, tdenom[0]);
                 position = alpha.max(beta);
                 Logger.getLogger(RepeatingDecimal.class.getName()).log(Level.FINE,
-                        "The cycle starts at position {} and has {} digits.",
-                        new Object[]{position, decimalPeriod});
+                        "The cycle starts at position {0} and has {1} digits.",
+                        new Object[] { position, decimalPeriod });
             }
         } else {
             // the denominator is relatively prime (coprime) to 10
@@ -251,16 +251,16 @@ public class RepeatingDecimal extends RationalImpl {
     private static BigInteger multiplicativeOrder(BigInteger b, BigInteger n) {
         if (!b.gcd(n).equals(BigInteger.ONE)) {
             Logger.getLogger(RepeatingDecimal.class.getName()).log(Level.INFO,
-                    "Cannot compute multiplicative order: the GCD of {} and {} is {}.",
+                    "Cannot compute multiplicative order: the GCD of {0} and {1} is {2}.",
                     new Object[] {b, n, b.gcd(n)});
             // throw an exception because multiplicative order only works if b and n are relatively prime
-            throw new ArithmeticException("Multiplicative order only exists for relatively prime arguments.");
+            throw new ArithmeticException("Multiplicative order only exists for relatively prime arguments");
         }
 
-        int e = 1;
-        while (!b.pow(e).mod(n).equals(BigInteger.ONE)) {
+        long e = 1L;
+        while (!b.modPow(BigInteger.valueOf(e), n).equals(BigInteger.ONE)) {  // was: b.pow(e).mod(n)
             e++;
         }
-        return BigInteger.valueOf((long) e);
+        return BigInteger.valueOf(e);
     }
 }
