@@ -27,6 +27,7 @@ import tungsten.types.*;
 import tungsten.types.Set;
 import tungsten.types.Vector;
 import tungsten.types.annotations.Columnar;
+import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.impl.*;
@@ -127,6 +128,18 @@ public class MathUtils {
     private static BigInteger getCacheFor(IntegerType n) {
         return getCacheFor(n.asBigInteger());
     }
+
+    public static RealType round(RealType x, MathContext ctx) {
+        BigDecimal value = x.asBigDecimal().round(ctx);
+        return new RealImpl(value, ctx, false);
+    }
+
+    public static ComplexType round(ComplexType z, MathContext ctx) {
+        if (z.getClass().isAnnotationPresent(Polar.class)) {
+            return new ComplexPolarImpl(round(z.magnitude(), ctx), round(z.argument(), ctx), false);
+        }
+        return new ComplexRectImpl(round(z.real(), ctx), round(z.imaginary(), ctx), false);
+    }
     
     public static RealType computeIntegerExponent(Numeric x, IntegerType n) {
         final RealType result;
@@ -139,7 +152,7 @@ public class MathUtils {
                 result = computeIntegerExponent((RealType) x.coerceTo(RealType.class), exponent.intValueExact());
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce argument to RealType.", ex);
-                throw new ArithmeticException("Coercion failed: " + ex.getMessage());
+                throw new ArithmeticException("While coercing argument to computeIntegerExponent: " + ex.getMessage());
             }
         }
         
@@ -158,7 +171,7 @@ public class MathUtils {
             }
         } catch (CoercionException ce) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce accumulator to a complex value.", ce);
-            throw new ArithmeticException("Coercion failed: " + ce.getMessage());
+            throw new ArithmeticException("While coercing result: " + ce.getMessage());
         }
         return accum;
     }
@@ -200,7 +213,7 @@ public class MathUtils {
             if (n == -1L) {
                 return (ComplexType) x.inverse().coerceTo(ComplexType.class);
             }
-            if (x instanceof ComplexPolarImpl) {
+            if (x.getClass().isAnnotationPresent(Polar.class)) {
                 // computing powers of Complex numbers in polar form is much faster and easier
                 IntegerImpl exponent = new IntegerImpl(BigInteger.valueOf(n));
                 RealType modulus = computeIntegerExponent(x.magnitude(), exponent);
@@ -919,19 +932,22 @@ public class MathUtils {
     }
 
     private static RealType computeTrigSum(RealType x, Function<Long, IntegerType> subTerm) {
-        Numeric accum = ExactZero.getInstance(x.getMathContext());
+        final MathContext calcCtx = new MathContext(x.getMathContext().getPrecision() * 2, x.getMathContext().getRoundingMode());
+        Numeric accum = ExactZero.getInstance(calcCtx);
         // we must compute at least 4 terms (polynomial order 7) to get an acceptable result within the input range
-        int termLimit = Math.max(4, calculateOptimumNumTerms(x.getMathContext(), subTerm));
+        final int termLimit = Math.max(4, calculateOptimumNumTerms(x.getMathContext(), subTerm));
+        final RealType x_upscaled = new RealImpl(x.asBigDecimal(), calcCtx, x.isExact());
         for (int i = 0; i < termLimit; i++) {
             IntegerType subVal = subTerm.apply((long) i);
             if (i % 2 == 0) {
-                accum = accum.add(computeIntegerExponent(x, subVal)).divide(factorial(subVal));
+                accum = accum.add(computeIntegerExponent(x_upscaled, subVal).divide(factorial(subVal)));
             } else {
-                accum = accum.subtract(computeIntegerExponent(x, subVal)).divide(factorial(subVal));
+                accum = accum.subtract(computeIntegerExponent(x_upscaled, subVal).divide(factorial(subVal)));
             }
         }
         try {
-            return (RealType) accum.coerceTo(RealType.class);
+            RealType raw = (RealType) accum.coerceTo(RealType.class);
+            return round(raw, x.getMathContext());
         } catch (CoercionException e) {
             throw new ArithmeticException("While coercing computed sum " + accum + ": " + e.getMessage());
         }
@@ -955,21 +971,30 @@ public class MathUtils {
      */
     private static int calculateOptimumNumTerms(MathContext ctx, Function<Long, IntegerType> idxMapper) {
         if (optimumTermCounts.containsKey(ctx)) return optimumTermCounts.get(ctx);
-        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for {}; calculating optimum number of power series terms.", ctx);
-        final RealType realTwo = new RealImpl(BigDecimal.valueOf(2L), ctx);
-        final RealType maxError = (RealType) computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx).divide(realTwo);
-        final Pi pi = Pi.getInstance(ctx);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for MathContext {0}; calculating optimum number of power series terms.", ctx);
+        final MathContext calcContext = new MathContext(ctx.getPrecision() * 2, ctx.getRoundingMode());
+        final RealType realTwo = new RealImpl(BigDecimal.valueOf(2L), calcContext);
+        final RealType maxError = (RealType) computeIntegerExponent(TEN, 1 - ctx.getPrecision(), calcContext).divide(realTwo);
+        final Pi pi = Pi.getInstance(calcContext);
         int k = 2;
         do {
             IntegerType kVal = idxMapper.apply((long) k);
-            RealType error = (RealType) computeIntegerExponent(pi, kVal).divide(factorial(kVal));
-            if (error.compareTo(maxError) <= 0) {
-                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "Recommend computing {} power series terms for MathContext {}.",
-                        new Object[] {k, ctx});
+            Numeric error = computeIntegerExponent(pi, kVal).divide(factorial(kVal));
+            if (error instanceof RationalType) {
+                // if we got back a rational, it's because the exponent we calculated has no fractional digits left after rounding
+                Logger.getLogger(MathUtils.class.getName()).log(Level.WARNING,
+                        "Compute MathContext {0} does not provide sufficient resolution to represent \uD835\uDF0B^{1}.",
+                        new Object[] {calcContext, kVal});
+                error = new RealImpl((RationalType) error); // to avoid coerceTo() penalties
+            }
+            Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "k = {0} error = {1}", new Object[] { k, error });
+            if (((RealType) error).compareTo(maxError) <= 0) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Recommend computing {0} power series terms for MathContext {1}.",
+                        new Object[] { k, ctx });
                 optimumTermCounts.put(ctx, k);
                 return k;
             }
-        } while (++k < ctx.getPrecision());
+        } while (++k < calcContext.getPrecision());
         throw new ArithmeticException("Cannot determine optimum number of power series terms for keeping error < " + maxError);
     }
 
