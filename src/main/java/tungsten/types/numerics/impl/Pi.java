@@ -180,9 +180,8 @@ public class Pi implements RealType {
             RealType remult = (RealType) multiplier;
             MathContext ctx = remult.getMathContext().getPrecision() == 0 ? mctx :
                     new MathContext(Math.min(remult.getMathContext().getPrecision(), mctx.getPrecision()));
-            RealImpl real = new RealImpl(value.multiply(remult.asBigDecimal(), ctx), false);
+            RealImpl real = new RealImpl(value.multiply(remult.asBigDecimal(), ctx), ctx, false);
             real.setIrrational(true);
-            real.setMathContext(ctx);
             return real;
         }
         final Numeric result = multiplier.multiply(this);
@@ -200,10 +199,12 @@ public class Pi implements RealType {
         try {
             RealType reDivisor = (RealType) divisor.coerceTo(RealType.class);
             final BigDecimal result = value.divide(reDivisor.asBigDecimal(), mctx);
-//        final Numeric result = divisor.inverse().multiply(this);
-            return new RealImpl(result, mctx);
+            RealImpl retval = new RealImpl(result, mctx, false);
+            retval.setIrrational(true);
+            return retval;
         } catch (CoercionException e) {
-            throw new ArithmeticException("Unable to obtain real value for divisor " + divisor);
+            // if we can't coerce to a real, compute the inverse and multiply
+            return divisor.inverse().multiply(this);
         }
     }
 
@@ -266,11 +267,6 @@ public class Pi implements RealType {
     protected boolean cacheTerm(RationalType term, long k) {
         if (getFromCache(k) != null || termsInCache() > k) return false;
         return termCache.add(term);
-    }
-
-    protected boolean cacheTerms(List<RationalType> terms, long k_start) {
-        if (termsInCache() > k_start) return false;
-        return termCache.addAll(terms);
     }
 
     protected long termsInCache() {
