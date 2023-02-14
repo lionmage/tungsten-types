@@ -56,7 +56,7 @@ import java.util.logging.Logger;
  *
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @see <a href="https://www.intmath.com/exponential-logarithmic-functions/calculating-e.php">an article at Interactive Mathematics about ways to calculate &#x212f;</a>
- * @see <a href="https://en.wikipedia.org/wiki/E_(mathematical_constant)">the wikipedia article about this constant</a>
+ * @see <a href="https://en.wikipedia.org/wiki/E_(mathematical_constant)">the Wikipedia article about this constant</a>
  */
 @Constant(name = "euler", representation="\u212F")
 public class Euler implements RealType {
@@ -97,8 +97,7 @@ public class Euler implements RealType {
 
     @Override
     public RealType magnitude() {
-        RealImpl magnitude = new RealImpl(value, false);
-        magnitude.setMathContext(mctx);
+        RealImpl magnitude = new RealImpl(value, mctx, false);
         magnitude.setIrrational(true);
         return magnitude;
     }
@@ -141,7 +140,7 @@ public class Euler implements RealType {
             case REAL:
                 return this;  // it's already a real
             case COMPLEX:
-                return new ComplexRectImpl(this, new RealImpl(BigDecimal.ZERO));
+                return new ComplexRectImpl(this, (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class));
             default:
                 throw new CoercionException("Euler can only be coerced to real or complex",
                         this.getClass(), numtype);
@@ -152,9 +151,8 @@ public class Euler implements RealType {
     public Numeric add(Numeric addend) {
         if (addend instanceof Euler) {
             // to avoid a stack overflow
-            RealImpl real = new RealImpl(value.add(((RealType) addend).asBigDecimal(), mctx), false);
+            RealImpl real = new RealImpl(value.multiply(TWO), mctx, false);
             real.setIrrational(true);
-            real.setMathContext(mctx);
             return real;
         }
         return addend.add(this);
@@ -162,6 +160,7 @@ public class Euler implements RealType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (subtrahend instanceof Euler) return ExactZero.getInstance(mctx);
         return subtrahend.negate().add(this);
     }
 
@@ -169,9 +168,8 @@ public class Euler implements RealType {
     public Numeric multiply(Numeric multiplier) {
         if (multiplier instanceof Euler) {
             // to avoid a stack overflow
-            RealImpl real = new RealImpl(value.multiply(((RealType) multiplier).asBigDecimal(), mctx), false);
+            RealImpl real = new RealImpl(value.pow(2, mctx), mctx, false);
             real.setIrrational(true);
-            real.setMathContext(mctx);
             return real;
         }
         return multiplier.multiply(this);
@@ -179,6 +177,7 @@ public class Euler implements RealType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (divisor instanceof Euler) return One.getInstance(mctx);
         return divisor.inverse().multiply(this);
     }
 
