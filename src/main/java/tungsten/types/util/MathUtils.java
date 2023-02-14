@@ -640,7 +640,6 @@ public class MathUtils {
      * @return a 2&#215;2 matrix of rotation
      */
     public static Matrix<RealType> get2DMatrixOfRotation(RealType theta) {
-        final MathContext ctx = theta.getMathContext();
         RealType[][] temp = new RealType[2][2];
 
         RealType cos = cos(theta);
@@ -951,7 +950,30 @@ public class MathUtils {
         }
     }
 
-    private static final Map<MathContext, Integer> optimumTermCounts = new ConcurrentHashMap<>();
+    private static class TrigTermCountKey {
+        private final MathContext mctx;
+        private final Function<Long, IntegerType> lambda;
+
+        public TrigTermCountKey(MathContext mctx, Function<Long, IntegerType> lambda) {
+            this.mctx = mctx;
+            this.lambda = lambda;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            TrigTermCountKey that = (TrigTermCountKey) o;
+            return mctx.equals(that.mctx) && lambda.equals(that.lambda);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mctx, lambda);
+        }
+    }
+
+    private static final Map<TrigTermCountKey, Integer> optimumTermCounts = new ConcurrentHashMap<>();
 
     /**
      * Given a {@link MathContext} and a mapping function to map from integer indices to subterms
@@ -968,7 +990,8 @@ public class MathUtils {
      *  section on estimates for the remainder</a>
      */
     private static int calculateOptimumNumTerms(MathContext ctx, Function<Long, IntegerType> idxMapper) {
-        if (optimumTermCounts.containsKey(ctx)) return optimumTermCounts.get(ctx);
+        final TrigTermCountKey key = new TrigTermCountKey(ctx, idxMapper);
+        if (optimumTermCounts.containsKey(key)) return optimumTermCounts.get(key);
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for MathContext {0}; calculating optimum number of power series terms.", ctx);
         final MathContext calcContext = new MathContext(ctx.getPrecision() * 2, ctx.getRoundingMode());
         final RealType realTwo = new RealImpl(BigDecimal.valueOf(2L), calcContext);
@@ -989,7 +1012,7 @@ public class MathUtils {
             if (((RealType) error).compareTo(maxError) <= 0) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Recommend computing {0} power series terms for MathContext {1}.",
                         new Object[] { k, ctx });
-                optimumTermCounts.put(ctx, k);
+                optimumTermCounts.put(key, k);
                 return k;
             }
         } while (++k < calcContext.getPrecision());
