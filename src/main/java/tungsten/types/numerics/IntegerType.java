@@ -34,37 +34,37 @@ import java.math.BigInteger;
  */
 public interface IntegerType extends Numeric, Comparable<IntegerType> {
     @Override
-    public IntegerType magnitude();
+    IntegerType magnitude();
     @Override
-    public IntegerType negate();
+    IntegerType negate();
     /**
      * Compute the remainder of this / divisor.
-     * @param divisor
+     * @param divisor the divisor
      * @return the modulus, or remainder
      */
-    public IntegerType modulus(IntegerType divisor);
-    public boolean isEven();
-    public boolean isOdd();
-    public boolean isPerfectSquare();
+    IntegerType modulus(IntegerType divisor);
+    boolean isEven();
+    boolean isOdd();
+    boolean isPerfectSquare();
     /**
      * The number of digits in this integer in base 10.
      * @return the number of digits 
      */
-    public long numberOfDigits();
+    long numberOfDigits();
     /**
      * Return the value of the digit at {@code position}. The index
      * is 0-based and starts with the least significant digit.
      * @param position the 0-based index of the desired digit
      * @return an integer value in the range 0 to 9
-     * @throws IndexOutOfBoundsException 
+     * @throws IndexOutOfBoundsException if position is out of range
      */
-    public int digitAt(long position) throws IndexOutOfBoundsException;
+    int digitAt(long position) throws IndexOutOfBoundsException;
     /**
      * Compute this^exponent, given an integer exponent.
      * @param exponent an integer exponent
      * @return this raised to the {@code exponent} power
      */
-    public Numeric pow(IntegerType exponent);
+    Numeric pow(IntegerType exponent);
 
     /**
      * Compute this<sup>n</sup> mod m.
@@ -72,16 +72,40 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
      * @param m the modulus
      * @return this<sup>n</sup> mod m
      */
-    public IntegerType powMod(long n, IntegerType m);
-    public IntegerType powMod(IntegerType n, IntegerType m);
+    IntegerType powMod(long n, IntegerType m);
+    IntegerType powMod(IntegerType n, IntegerType m);
     
     @Override
-    public IntegerType sqrt();
+    IntegerType sqrt();
     
-    public default boolean isPowerOf2() {
+    default boolean isPowerOf2() {
         return sign() != Sign.NEGATIVE && asBigInteger().bitCount() == 1;
     }
     
-    public BigInteger asBigInteger();
-    public Sign sign();
+    BigInteger asBigInteger();
+    Sign sign();
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default IntegerType mod(IntegerType operand) {
+        return this.modulus(operand);
+    }
+    default Numeric positive() {
+        return this.magnitude();
+    }
+    default Object asType(Class<?> clazz) {
+        if (BigInteger.class.isAssignableFrom(clazz)) {
+            return this.asBigInteger();
+        }
+        return Numeric.super.asType(clazz);
+    }
+    IntegerType or(IntegerType operand);
+    IntegerType and(IntegerType operand);
+    IntegerType xor(IntegerType operand);
+    IntegerType leftShift(IntegerType operand);
+    IntegerType rightShift(IntegerType operand);
+    IntegerType next();
+    IntegerType previous();
+    IntegerType bitwiseNegate();
 }

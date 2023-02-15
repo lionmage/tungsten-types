@@ -174,7 +174,12 @@ public class One implements Numeric, Comparable<Numeric> {
     public MathContext getMathContext() {
         return mctx;
     }
-    
+
+    @Override
+    public Numeric power(Numeric operand) {
+        return this;
+    }
+
     /**
      * Test for equality with a given value.  If the given value is:
      * <ul><li>an implementation of {@link Numeric}</li>
@@ -257,4 +262,9 @@ public class One implements Numeric, Comparable<Numeric> {
         }
         throw new IllegalArgumentException("Non-comparable value of type " + o.getClass().getTypeName());
     }
+
+    /*
+    Groovy methods below.
+     */
+
 }

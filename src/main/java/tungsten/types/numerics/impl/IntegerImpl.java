@@ -503,4 +503,57 @@ public class IntegerImpl implements IntegerType {
     public String toString() {
         return val.toString();
     }
+
+    /*
+    Groovy-specific methods below here.
+     */
+
+    @Override
+    public IntegerType power(Numeric operand) {
+        if (operand instanceof IntegerType) {
+            BigInteger exponent = ((IntegerType) operand).asBigInteger();
+            return new IntegerImpl(val.pow(exponent.intValueExact()));
+        }
+        throw new ArithmeticException("Unsupported exponent type");
+    }
+
+    @Override
+    public IntegerType or(IntegerType operand) {
+        return new IntegerImpl(val.or(operand.asBigInteger()));
+    }
+
+    @Override
+    public IntegerType and(IntegerType operand) {
+        return new IntegerImpl(val.and(operand.asBigInteger()));
+    }
+
+    @Override
+    public IntegerType xor(IntegerType operand) {
+        return new IntegerImpl(val.xor(operand.asBigInteger()));
+    }
+
+    @Override
+    public IntegerType leftShift(IntegerType operand) {
+        return new IntegerImpl(val.shiftLeft(operand.asBigInteger().intValueExact()));
+    }
+
+    @Override
+    public IntegerType rightShift(IntegerType operand) {
+        return new IntegerImpl(val.shiftRight(operand.asBigInteger().intValueExact()));
+    }
+
+    @Override
+    public IntegerType next() {
+        return new IntegerImpl(val.add(BigInteger.ONE));
+    }
+
+    @Override
+    public IntegerType previous() {
+        return new IntegerImpl(val.subtract(BigInteger.ONE));
+    }
+
+    @Override
+    public IntegerType bitwiseNegate() {
+        return new IntegerImpl(val.not());
+    }
 }

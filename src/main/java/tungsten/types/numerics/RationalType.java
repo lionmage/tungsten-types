@@ -26,6 +26,7 @@ package tungsten.types.numerics;
 import tungsten.types.Numeric;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * General interface for types representing rational values of the form
@@ -41,24 +42,41 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
      * @return the magnitude of this value
      */
     @Override
-    public RationalType magnitude();
+    RationalType magnitude();
     @Override
-    public RationalType negate();
-    public IntegerType numerator();
-    public IntegerType denominator();
-    public BigDecimal asBigDecimal();
+    RationalType negate();
+    IntegerType numerator();
+    IntegerType denominator();
+    BigDecimal asBigDecimal();
     /**
      * Reduce this fraction by the biggest common factor
      * of the numerator and denominator.
      * 
      * @return a new {@link RationalType} equivalent to this object
      */
-    public RationalType reduce();
+    RationalType reduce();
     @Override
-    public Numeric sqrt();
-    public Sign sign();
-    public IntegerType floor();
-    public IntegerType ceil();
-    public IntegerType[] divideWithRemainder();
-    public IntegerType modulus();
+    Numeric sqrt();
+    Sign sign();
+    IntegerType floor();
+    IntegerType ceil();
+    IntegerType[] divideWithRemainder();
+    IntegerType modulus();
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default RationalType positive() {
+        return this.magnitude();
+    }
+
+    default Object asType(Class<?> clazz) {
+        if (BigInteger.class.isAssignableFrom(clazz)) {
+            if (denominator().asBigInteger().equals(BigInteger.ONE)) return numerator();
+            throw new ArithmeticException("Value cannot be reduced to an integer");
+        } else if (BigDecimal.class.isAssignableFrom(clazz)) {
+            return this.asBigDecimal();
+        }
+        return Numeric.super.asType(clazz);
+    }
 }

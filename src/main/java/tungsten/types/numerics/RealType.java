@@ -25,8 +25,10 @@ package tungsten.types.numerics;
 
 import tungsten.types.Numeric;
 import tungsten.types.Set;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * General interface for types representing real values.
@@ -34,14 +36,33 @@ import java.math.BigDecimal;
  * @author tarquin
  */
 public interface RealType extends Numeric, Comparable<RealType> {
-    public boolean isIrrational();
+    boolean isIrrational();
     @Override
-    public RealType magnitude();
+    RealType magnitude();
     @Override
-    public RealType negate();
-    public BigDecimal asBigDecimal();
-    public Sign sign();
-    public IntegerType floor();
-    public IntegerType ceil();
-    public Set<ComplexType> nthRoots(IntegerType n);
+    RealType negate();
+    BigDecimal asBigDecimal();
+    Sign sign();
+    IntegerType floor();
+    IntegerType ceil();
+    Set<ComplexType> nthRoots(IntegerType n);
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default RealType power(Numeric operand) {
+        return MathUtils.generalizedExponent(this, operand, getMathContext());
+    }
+    default RealType positive() {
+        return magnitude();
+    }
+    default Object asType(Class<?> clazz) {
+        if (BigDecimal.class.isAssignableFrom(clazz)) {
+            return this.asBigDecimal();
+        }
+        if (BigInteger.class.isAssignableFrom(clazz)) {
+            return this.asBigDecimal().toBigInteger();
+        }
+        return Numeric.super.asType(clazz);
+    }
 }

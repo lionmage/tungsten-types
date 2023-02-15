@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.*;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.util.MathUtils;
 //import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -473,5 +474,27 @@ public class RationalImpl implements RationalType {
             default:
                 return new IntegerImpl(BigInteger.ZERO);
         }
+    }
+
+    /*
+    Groovy methods implemented below.
+     */
+
+    @Override
+    public Numeric power(Numeric operand) {
+        if (operand.isCoercibleTo(IntegerType.class)) {
+            try {
+                IntegerType exponent = (IntegerType) operand.coerceTo(IntegerType.class);
+                final int n = exponent.asBigInteger().intValueExact();
+                if (n < 0) {
+                    return new RationalImpl(denominator.pow(-n), numerator.pow(-n), exact);
+                }
+                return new RationalImpl(numerator.pow(n), denominator.pow(n), exact);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Unable to convert " + operand);
+            }
+        }
+        final RealType converted = new RealImpl(asBigDecimal(), getMathContext());
+        return MathUtils.generalizedExponent(converted, operand, getMathContext());
     }
 }

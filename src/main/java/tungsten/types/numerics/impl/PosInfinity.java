@@ -173,4 +173,16 @@ public class PosInfinity implements Numeric, Comparable<Numeric> {
     public String toString() {
         return "\u221E";
     }
+
+    /*
+    Groovy stubs below.
+     */
+    public Numeric power(Numeric operand) {
+        if (Zero.isZero(operand)) {
+            return One.getInstance(mctx);
+        } else if (OptionalOperations.sign(operand) == Sign.NEGATIVE) {
+            return PosZero.getInstance(mctx);
+        }
+        return this;
+    }
 }

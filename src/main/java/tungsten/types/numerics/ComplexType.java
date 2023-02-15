@@ -25,6 +25,7 @@ package tungsten.types.numerics;
 
 import tungsten.types.Numeric;
 import tungsten.types.Set;
+import tungsten.types.util.MathUtils;
 
 /**
  * Interface for all implementations of complex numbers.
@@ -33,12 +34,12 @@ import tungsten.types.Set;
  */
 public interface ComplexType extends Numeric {
     @Override
-    public RealType magnitude();
+    RealType magnitude();
     @Override
-    public ComplexType negate();
-    public ComplexType conjugate();
-    public RealType real();
-    public RealType imaginary();
+    ComplexType negate();
+    ComplexType conjugate();
+    RealType real();
+    RealType imaginary();
     /**
      * In polar form, the argument of a complex
      * number is the angle with respect to the positive
@@ -47,6 +48,13 @@ public interface ComplexType extends Numeric {
      * 
      * @return the argument of the polar form of this complex number
      */
-    public RealType argument();
-    public Set<ComplexType> nthRoots(IntegerType n);
+    RealType argument();
+    Set<ComplexType> nthRoots(IntegerType n);
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default ComplexType power(Numeric operand) {
+        return MathUtils.generalizedExponent(this, operand, getMathContext());
+    }
 }

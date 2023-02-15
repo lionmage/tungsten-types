@@ -27,14 +27,11 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,21 +52,6 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         this.mctx = mctx;
     }
     
-//    public static Numeric getInstance(MathContext mctx) { return null; }
-//    {
-//        instanceLock.lock();
-//        try {
-//            Zero instance = instanceMap.get(mctx);
-//            if (instance == null) {
-//                instance = new Zero(mctx);
-//                instanceMap.put(mctx, instance);
-//            }
-//            return instance;
-//        } finally {
-//            instanceLock.unlock();
-//        }
-//    }
-
     @Override
     public abstract boolean isExact();
 
@@ -143,7 +125,6 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     @Override
     public Numeric inverse() {
         throw new ArithmeticException("Cannot divide by zero");
-//        return PosInfinity.getInstance(mctx);
     }
 
     public abstract Sign sign();
@@ -240,5 +221,17 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
             }
         }
         throw new IllegalArgumentException("Non-comparable value of type " + o.getClass().getTypeName());
+    }
+
+    /*
+    Groovy methods follow.
+     */
+    public Numeric power(Numeric operand) {
+        if (isZero(operand)) {
+            return One.getInstance(mctx);
+        } else if (OptionalOperations.sign(operand) == Sign.NEGATIVE) {
+            throw new ArithmeticException("Division by zero");
+        }
+        return this;
     }
 }

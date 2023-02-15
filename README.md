@@ -37,3 +37,8 @@ Several reasons:
 To be clear: This project is intended to create the foundation of mathematical
 applications in Java with an emphasis on practical usability.  The end goal is
 to create a mathematical language and environment which leverages this work.
+
+In addition to Java support, I am including preliminary support for Groovy. Right now, this
+takes the form of adding methods to basic types so that Groovy can use them with its
+built-in operators. This also has the side benefit of making testing much faster using
+e.g. GroovyConsole (built into IntelliJ IDEA).

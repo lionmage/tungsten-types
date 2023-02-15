@@ -173,4 +173,14 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
     public String toString() {
         return "\u2212\u221E";
     }
+
+    /*
+    Groovy stubs below.
+     */
+    public Numeric power(Numeric operand) {
+        if (Zero.isZero(operand)) {
+            return One.getInstance(mctx);
+        }
+        throw new ArithmeticException("Raising negative infinity to " + operand + " is currently undefined");
+    }
 }

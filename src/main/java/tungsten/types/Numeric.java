@@ -32,23 +32,55 @@ import java.math.MathContext;
  * @author tarquin
  */
 public interface Numeric {
-    public boolean isExact();
-    public boolean isCoercibleTo(Class<? extends Numeric> numtype);
-    default public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
+    boolean isExact();
+    boolean isCoercibleTo(Class<? extends Numeric> numtype);
+    default Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (numtype == Numeric.class) return this;
         throw new CoercionException("coerceTo() not implemented for " +
                 numtype.getTypeName() + " in class " + this.getClass().getName(),
                 this.getClass(), numtype);
-    };
-    public Numeric magnitude();
-    public Numeric negate();
+    }
+
+    Numeric magnitude();
+    Numeric negate();
     
-    public Numeric add(Numeric addend);
-    public Numeric subtract(Numeric subtrahend);
-    public Numeric multiply(Numeric multiplier);
-    public Numeric divide(Numeric divisor);
-    public Numeric inverse();
-    public Numeric sqrt();
+    Numeric add(Numeric addend);
+    Numeric subtract(Numeric subtrahend);
+    Numeric multiply(Numeric multiplier);
+    Numeric divide(Numeric divisor);
+    Numeric inverse();
+    Numeric sqrt();
     
-    public MathContext getMathContext();
+    MathContext getMathContext();
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default Numeric plus(Numeric operand) {
+        return this.add(operand);
+    }
+    default Numeric minus(Numeric operand) {
+        return this.subtract(operand);
+    }
+    // multiply() is already provided above
+    default Numeric div(Numeric operand) {
+        return this.divide(operand);
+    }
+    Numeric power(Numeric operand);
+    default Numeric negative() {
+        return this.negate();
+    }
+    // positive() should only be implemented for subinterfaces other than ComplexType
+    default Object asType(Class<?> clazz) {
+        if (Numeric.class.isAssignableFrom(clazz)) {
+            try {
+                return this.coerceTo((Class<? extends Numeric>) clazz);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Error converting type: " + e.getMessage());
+            }
+        } else if (CharSequence.class.isAssignableFrom(clazz)) {
+            return this.toString();
+        }
+        throw new ClassCastException("Unable to coerce to " + clazz.getTypeName());
+    }
 }
