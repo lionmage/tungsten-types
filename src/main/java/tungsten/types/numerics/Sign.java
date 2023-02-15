@@ -1,7 +1,7 @@
 /* 
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
+ * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,16 @@ import java.math.BigInteger;
 import java.util.Locale;
 
 /**
+ * A representation of sign, for those numeric entities that have it.
  *
- * @author tarquin
+ * @author Robert Poole
  */
 public enum Sign {
     NEGATIVE("\u2212"), ZERO("0"), POSITIVE("+");
     
     private final String symbol;
     
-    private Sign(String symbol) {
+    Sign(String symbol) {
         this.symbol = symbol;
     }
     

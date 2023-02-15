@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
+ * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,8 @@ import java.util.Objects;
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 class TableElement {
-    private int index;
-    private RealType coeff;
+    private final int index;
+    private final RealType coeff;
     private static final RealType ZERO = new RealImpl(BigDecimal.ZERO);
 
     public TableElement(int index, int coefficient) {
@@ -62,7 +62,7 @@ class TableElement {
     
     public RealType getCoeff() { return coeff; }
     public ComplexType getCplxCoeff() { return new ComplexRectImpl(coeff, ZERO); }
-    public long getIndex() { return (long) index; }
+    public long getIndex() { return index; }
 
     @Override
     public boolean equals(Object o) {

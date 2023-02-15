@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
+ * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ public class ComplexVector implements Vector<ComplexType> {
 
     @Override
     public long length() {
-        return (long) elements.size();
+        return elements.size();
     }
 
     @Override
@@ -155,7 +155,7 @@ public class ComplexVector implements Vector<ComplexType> {
 
     @Override
     public Vector<ComplexType> negate() {
-        List<ComplexType> list = elements.stream().sequential().map(ComplexType::negate).collect(Collectors.toList());
+        List<ComplexType> list = elements.stream().map(ComplexType::negate).collect(Collectors.toList());
         final ComplexVector result = new ComplexVector(list);
         result.setMathContext(mctx);
         return result;
@@ -167,7 +167,7 @@ public class ComplexVector implements Vector<ComplexType> {
      * @return a new vector of complex conjugates of this vector's elements
      */
     public Vector<ComplexType> conjugate() {
-        List<ComplexType> list = elements.stream().sequential().map(ComplexType::conjugate).collect(Collectors.toList());
+        List<ComplexType> list = elements.stream().map(ComplexType::conjugate).collect(Collectors.toList());
         final ComplexVector result = new ComplexVector(list);
         result.setMathContext(mctx);
         return result;
@@ -175,7 +175,7 @@ public class ComplexVector implements Vector<ComplexType> {
 
     @Override
     public Vector<ComplexType> scale(ComplexType factor) {
-        List<ComplexType> list = elements.stream().sequential().map(x -> (ComplexType) x.multiply(factor)).collect(Collectors.toList());
+        List<ComplexType> list = elements.stream().map(x -> (ComplexType) x.multiply(factor)).collect(Collectors.toList());
         final ComplexVector result = new ComplexVector(list);
         result.setMathContext(mctx);
         return result;
@@ -258,7 +258,7 @@ public class ComplexVector implements Vector<ComplexType> {
                     if (index < 0L) continue;
                     ComplexType coeff = cpTable[y][x].getCplxCoeff();
                     ComplexType accum = result.elementAt(index) == null ? ZERO : result.elementAt(index);
-                    result.setElementAt((ComplexType) accum.add(this.elementAt((long) y).multiply(other.elementAt((long) x)).multiply(coeff)), index);
+                    result.setElementAt((ComplexType) accum.add(this.elementAt(y).multiply(other.elementAt(x)).multiply(coeff)), index);
                 }
             }
         } else {

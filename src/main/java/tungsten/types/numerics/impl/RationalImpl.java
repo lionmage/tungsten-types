@@ -1,7 +1,7 @@
 /* 
  * The MIT License
  *
- * Copyright © 2018 Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>.
+ * Copyright © 2018 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * An implementation of a rational number data type.
  *
- * @author tarquin
+ * @author Robert Poole
  */
 public class RationalImpl implements RationalType {
     private boolean exact = true;
