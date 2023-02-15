@@ -58,7 +58,7 @@ public class ComplexVector implements Vector<ComplexType> {
      */
     public ComplexVector(long initialCapacity) {
         if (initialCapacity > (long) Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("This implementation of Vector cannot store " + initialCapacity + " elements.");
+            throw new IllegalArgumentException("This implementation of Vector cannot store " + initialCapacity + " elements");
         }
         this.elements = new ArrayList<>((int) initialCapacity);
     }
@@ -87,6 +87,7 @@ public class ComplexVector implements Vector<ComplexType> {
                 throw new IllegalStateException("Cannot create complex vector from real vector; failed coercion at element " + idx);
             }
         }
+        setMathContext(source.getMathContext());
     }
     
     public void setMathContext(MathContext mctx) {
@@ -94,9 +95,6 @@ public class ComplexVector implements Vector<ComplexType> {
             throw new IllegalArgumentException("MathContext must not be null");
         }
         this.mctx = mctx;
-//        for (ComplexType element : elements) {
-//            OptionalOperations.setMathContext(element, mctx);
-//        }
     }
 
     @Override
@@ -142,7 +140,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public Vector<ComplexType> subtract(Vector<ComplexType> subtrahend) {
         if (this.length() != subtrahend.length()) {
-            throw new ArithmeticException("Cannot add vectors of different length");
+            throw new ArithmeticException("Cannot subtract vectors of different length");
         }
         ComplexVector result = new ComplexVector(new ArrayList<>(elements.size()));
         for (long idx = 0L; idx < length(); idx++) {
@@ -199,7 +197,7 @@ public class ComplexVector implements Vector<ComplexType> {
                 return (ComplexType) result.coerceTo(ComplexType.class);
             } catch (CoercionException ex) {
                 Logger.getLogger(ComplexVector.class.getName()).log(Level.SEVERE, "Could not coerce magnitude to complex type.", ex);
-                throw new IllegalStateException("Failed coercion while computing magnitude.", ex);
+                throw new IllegalStateException("Failed coercion while computing magnitude", ex);
             }
         }
     }
@@ -245,7 +243,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public Vector<ComplexType> crossProduct(Vector<ComplexType> other) {
         if (this.length() != other.length()) {
-            throw new ArithmeticException("Cannot compute cross product for vectors of different dimension.");
+            throw new ArithmeticException("Cannot compute cross product for vectors of different dimension");
         }
         ComplexVector result = null;
         if (this.length() == 3L || this.length() == 7L) {
@@ -262,7 +260,7 @@ public class ComplexVector implements Vector<ComplexType> {
                 }
             }
         } else {
-            throw new ArithmeticException("Cross product undefined for " + this.length() + " dimensions.");
+            throw new ArithmeticException("Cross product undefined for " + this.length() + " dimensions");
         }
         return result;
     }
@@ -282,7 +280,7 @@ public class ComplexVector implements Vector<ComplexType> {
             if (result.isCoercibleTo(RealType.class)) {
                 return (RealType) result.coerceTo(RealType.class);
             } else {
-                Logger.getLogger(ComplexVector.class.getName()).log(Level.WARNING, "arccos() returned a non-real value: " + result + "; returning real portion");
+                Logger.getLogger(ComplexVector.class.getName()).log(Level.WARNING, "arccos() returned a non-real value: " + result + "; returning real portion.");
                 return ((ComplexType) result).real();
             }
         } catch (CoercionException ex) {
@@ -297,9 +295,9 @@ public class ComplexVector implements Vector<ComplexType> {
             final ComplexType scalefactor = (ComplexType) this.magnitude().inverse().coerceTo(ComplexType.class);
             return this.scale(scalefactor);
         } catch (CoercionException ex) {
-            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Coercion failed for computed scale", ex);
+            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Coercion failed for computed scale.", ex);
         }
-        throw new ArithmeticException("Could not compute the normal of this vector.");
+        throw new ArithmeticException("Could not compute the normal of this vector");
     }
 
     @Override

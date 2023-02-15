@@ -90,9 +90,6 @@ public class RealVector implements Vector<RealType> {
             throw new IllegalArgumentException("MathContext must not be null.");
         }
         this.mctx = mctx;
-//        for (RealType element : elements) {
-//            OptionalOperations.setMathContext(element, mctx);
-//        }
     }
 
     @Override
@@ -119,7 +116,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public Vector<RealType> add(Vector<RealType> addend) {
         if (this.length() != addend.length()) {
-            throw new ArithmeticException("Cannot add vectors of different length.");
+            throw new ArithmeticException("Cannot add vectors of different length");
         }
         RealVector result = new RealVector(new ArrayList<>(elements.size()));
         for (long idx = 0L; idx < length(); idx++) {
@@ -133,7 +130,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public Vector<RealType> subtract(Vector<RealType> subtrahend) {
         if (this.length() != subtrahend.length()) {
-            throw new ArithmeticException("Cannot subtract vectors of different length.");
+            throw new ArithmeticException("Cannot subtract vectors of different length");
         }
         RealVector result = new RealVector(new ArrayList<>(elements.size()));
         for (long idx = 0L; idx < length(); idx++) {
@@ -164,15 +161,15 @@ public class RealVector implements Vector<RealType> {
         try {
             return (RealType) sumOfSquares.sqrt().coerceTo(RealType.class);
         } catch (CoercionException ex) {
-            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() result", ex);
-            throw new IllegalStateException("Failed coercion of Real sqrt().", ex);
+            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() result.", ex);
+            throw new IllegalStateException("Failed coercion of real sqrt()", ex);
         }
     }
 
     @Override
     public RealType dotProduct(Vector<RealType> other) {
         if (this.length() != other.length()) {
-            throw new ArithmeticException("Cannot compute dot product for vectors of different lengths.");
+            throw new ArithmeticException("Cannot compute dot product for vectors of different lengths");
         }
         BigDecimal accum = BigDecimal.ZERO;
         for (long idx = 0L; idx < this.length(); idx++) {
@@ -219,14 +216,14 @@ public class RealVector implements Vector<RealType> {
                     RealType coeff = cpTable[y][x].getCoeff();
                     try {
                         RealType accum = result.elementAt(index) == null ? (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class) : result.elementAt(index);
-                        result.setElementAt((RealType) accum.add(this.elementAt((long) y).multiply(other.elementAt((long) x)).multiply(coeff)), index);
+                        result.setElementAt((RealType) accum.add(this.elementAt(y).multiply(other.elementAt(x)).multiply(coeff)), index);
                     } catch (CoercionException ce) {
                         throw new IllegalStateException(ce); // we should not get here
                     }
                 }
             }
         } else {
-            throw new ArithmeticException("Cross product undefined for " + this.length() + " dimensions.");
+            throw new ArithmeticException("Cross product undefined for " + this.length() + " dimensions");
         }
         return result;
     }
@@ -272,8 +269,8 @@ public class RealVector implements Vector<RealType> {
             final RealType scalefactor = (RealType) this.magnitude().inverse().coerceTo(RealType.class);
             return this.scale(scalefactor);
         } catch (CoercionException ex) {
-            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Coercion failed", ex);
-            throw new IllegalStateException("Could not coerce scale argument to Real.", ex);
+            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Coercion of scale factor for normalization failed.", ex);
+            throw new IllegalStateException("Could not coerce scale argument to real", ex);
         }
     }
     
