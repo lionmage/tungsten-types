@@ -82,7 +82,7 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
         if (numtype.isAssignableFrom(RealInfinity.class)) {
             return RealInfinity.getInstance(Sign.NEGATIVE, mctx);
         }
-        throw new CoercionException("Can't coerce infinity to any other tungsten.types.Numeric type.", this.getClass(), numtype);
+        throw new CoercionException("Cannot coerce infinity to any other tungsten.types.Numeric type", this.getClass(), numtype);
     }
 
     @Override
@@ -175,11 +175,14 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
     }
 
     /*
-    Groovy stubs below.
+    Groovy methods below.
      */
     public Numeric power(Numeric operand) {
         if (Zero.isZero(operand)) {
             return One.getInstance(mctx);
+        } else if (One.isUnity(operand.negate())) {
+            // exponent = -1, so compute the inverse
+            return this.inverse();
         }
         throw new ArithmeticException("Raising negative infinity to " + operand + " is currently undefined");
     }

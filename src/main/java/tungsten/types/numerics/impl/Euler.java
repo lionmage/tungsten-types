@@ -318,4 +318,14 @@ public class Euler implements RealType {
     public IntegerType ceil() {
         return new IntegerImpl(value.toBigInteger().add(BigInteger.ONE));
     }
+
+    /*
+    Groovy methods below.
+     */
+    public Object asType(Class<?> clazz) {
+        if (CharSequence.class.isAssignableFrom(clazz)) {
+            return value.toPlainString();
+        }
+        return RealType.super.asType(clazz);
+    }
 }

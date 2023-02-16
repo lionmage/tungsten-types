@@ -338,4 +338,14 @@ public class Pi implements RealType {
     public IntegerType ceil() {
         return new IntegerImpl(BigInteger.valueOf(4L));
     }
+
+    /*
+    Groovy methods below.
+     */
+    public Object asType(Class<?> clazz) {
+        if (CharSequence.class.isAssignableFrom(clazz)) {
+            return value.toPlainString();
+        }
+        return RealType.super.asType(clazz);
+    }
 }

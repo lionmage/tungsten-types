@@ -495,7 +495,7 @@ public class RationalImpl implements RationalType {
                 throw new ArithmeticException("Unable to convert " + operand);
             }
         }
-        final RealType converted = new RealImpl(asBigDecimal(), getMathContext());
+        final RealType converted = new RealImpl(asBigDecimal(), getMathContext(), isExact());
         return MathUtils.generalizedExponent(converted, operand, getMathContext());
     }
 }
