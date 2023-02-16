@@ -212,13 +212,13 @@ public class RealImpl implements RealType {
         final boolean exactness = exact && addend.isExact();
         if (addend instanceof RealType) {
             RealType that = (RealType) addend;
-            final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), exactness);
-            result.setMathContext(mctx);
+            final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), mctx, exactness);
+            result.setIrrational(irrational || that.isIrrational());
             return result;
         } else if (addend instanceof RationalType) {
             RationalType that = (RationalType) addend;
-            final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), exactness);
-            result.setMathContext(mctx);
+            final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), mctx, exactness);
+            result.setIrrational(irrational);
             return result;
         } else if (addend instanceof IntegerType) {
             // convenience constructor preserves exactness
@@ -240,6 +240,7 @@ public class RealImpl implements RealType {
             // corner case where both operands are real, to avoid intermediate object creation
             RealType that = (RealType) subtrahend;
             RealImpl result = new RealImpl(val.subtract(that.asBigDecimal(), mctx), this.exact && that.isExact());
+            result.setIrrational(irrational || that.isIrrational());
             result.setMathContext(mctx);
             return result;
         }
@@ -251,17 +252,15 @@ public class RealImpl implements RealType {
         final boolean exactness = exact && multiplier.isExact();
         if (multiplier instanceof RealType) {
             RealType remult = (RealType) multiplier;
-            final RealImpl result = new RealImpl(val.multiply(remult.asBigDecimal(), mctx), exactness);
+            final RealImpl result = new RealImpl(val.multiply(remult.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(irrational || remult.isIrrational());
-            result.setMathContext(mctx);
             return result;
         } else if (multiplier instanceof RationalType) {
             RationalType ratmult = (RationalType) multiplier;
             BigDecimal num = new BigDecimal(ratmult.numerator().asBigInteger());
             BigDecimal denom = new BigDecimal(ratmult.denominator().asBigInteger());
-            final RealImpl result = new RealImpl(val.multiply(num).divide(denom, mctx), exactness);
+            final RealImpl result = new RealImpl(val.multiply(num).divide(denom, mctx), mctx, exactness);
             result.setIrrational(irrational);
-            result.setMathContext(mctx);
             return result;
         } else if (multiplier instanceof IntegerType) {
             IntegerType intmult = (IntegerType) multiplier;
@@ -269,9 +268,8 @@ public class RealImpl implements RealType {
                 return new IntegerImpl(val.toBigIntegerExact().multiply(intmult.asBigInteger()), exactness);
             } else {
                 BigDecimal decmult = new BigDecimal(intmult.asBigInteger());
-                final RealImpl result = new RealImpl(val.multiply(decmult, mctx), exactness);
+                final RealImpl result = new RealImpl(val.multiply(decmult, mctx), mctx, exactness);
                 result.setIrrational(irrational);
-                result.setMathContext(mctx);
                 return result;
             }
         } else {
@@ -289,15 +287,13 @@ public class RealImpl implements RealType {
         final boolean exactness = exact && divisor.isExact();
         if (divisor instanceof RealType) {
             RealType redivisor = (RealType) divisor;
-            final RealImpl result = new RealImpl(val.divide(redivisor.asBigDecimal(), mctx), exactness);
+            final RealImpl result = new RealImpl(val.divide(redivisor.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(this.irrational || redivisor.isIrrational());
-            result.setMathContext(mctx);
             return result;
         } else if (divisor instanceof RationalType) {
             RationalType ratdivisor = (RationalType) divisor;
-            final RealImpl result = new RealImpl(val.divide(ratdivisor.asBigDecimal(), mctx), exactness);
+            final RealImpl result = new RealImpl(val.divide(ratdivisor.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(irrational);
-            result.setMathContext(mctx);
             return result;
         } else if (divisor instanceof IntegerType) {
             IntegerType intdivisor = (IntegerType) divisor;
@@ -308,9 +304,8 @@ public class RealImpl implements RealType {
                 return rationalValue;
             } else {
                 BigDecimal decdivisor = new BigDecimal(intdivisor.asBigInteger());
-                final RealImpl result = new RealImpl(val.divide(decdivisor, mctx), exactness);
+                final RealImpl result = new RealImpl(val.divide(decdivisor, mctx), mctx, exactness);
                 result.setIrrational(irrational);
-                result.setMathContext(mctx);
                 return result;
             }
         } else {

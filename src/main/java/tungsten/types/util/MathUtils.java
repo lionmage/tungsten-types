@@ -184,14 +184,14 @@ public class MathUtils {
      * @return x raised to the n<sup>th</sup> power
      */
     public static RealType computeIntegerExponent(RealType x, int n, MathContext mctx) {
-        if (n == 0) return new RealImpl(BigDecimal.ONE, mctx);
+        if (n == 0) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
         if (n == 1) return x;
         try {
             if (n == -1) {
                 return (RealType) x.inverse().coerceTo(RealType.class);
             }
             
-            Numeric intermediate = new RealImpl(x.magnitude().asBigDecimal(), mctx);
+            Numeric intermediate = new RealImpl(x.magnitude().asBigDecimal(), mctx, x.isExact());
             Numeric factor = intermediate;
             for (int idx = 2; idx <= Math.abs(n); idx++) {
                 intermediate = intermediate.multiply(factor);
@@ -207,7 +207,7 @@ public class MathUtils {
     }
 
     public static ComplexType computeIntegerExponent(ComplexType x, long n, MathContext mctx) {
-        if (n == 0L) return new ComplexRectImpl(new RealImpl(BigDecimal.ONE, mctx));
+        if (n == 0L) return new ComplexRectImpl(new RealImpl(BigDecimal.ONE, mctx, x.isExact()));
         if (n == 1L) return x;
         try {
             if (n == -1L) {
@@ -1009,7 +1009,7 @@ public class MathUtils {
                 error = new RealImpl((RationalType) error); // to avoid coerceTo() penalties
             }
             Logger.getLogger(MathUtils.class.getName()).log(Level.FINE, "k = {0} error = {1}", new Object[] { k, error });
-            if (((RealType) error).compareTo(maxError) <= 0) {
+            if (((RealType) error).compareTo(maxError) < 0) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Recommend computing {0} power series terms for MathContext {1}.",
                         new Object[] { k, ctx });
                 optimumTermCounts.put(key, k);
