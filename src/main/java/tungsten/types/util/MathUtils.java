@@ -1068,6 +1068,20 @@ public class MathUtils {
         return (RealType) sin(inBounds).divide(cos(inBounds));
     }
 
+    public static ComplexType cos(ComplexType z) {
+        final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
+        final ComplexType iz = (ComplexType) i.multiply(z);
+        final Euler e = Euler.getInstance(z.getMathContext());
+        return (ComplexType) e.exp(iz).add(e.exp(iz.negate())).divide(new RealImpl(decTWO, z.getMathContext()));
+    }
+
+    public static ComplexType sin(ComplexType z) {
+        final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
+        final ComplexType iz = (ComplexType) i.multiply(z);
+        final Euler e = Euler.getInstance(z.getMathContext());
+        return (ComplexType) e.exp(iz).subtract(e.exp(iz.negate())).divide(new RealImpl(decTWO, z.getMathContext()).multiply(i));
+    }
+
     public static Comparator<Numeric> obtainGenericComparator() {
         return new Comparator<>() {
             @Override
