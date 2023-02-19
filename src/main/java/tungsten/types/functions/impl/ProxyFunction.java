@@ -77,7 +77,7 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
         try {
             return (RealType) value.coerceTo(RealType.class);
         } catch (CoercionException e) {
-            throw new IllegalArgumentException("Cannot coerce " + value + " to real.", e);
+            throw new IllegalArgumentException("Cannot coerce " + value + " to real", e);
         }
     }
 
@@ -96,7 +96,7 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
             RealType intermediate = (RealType) x.subtract(x1).coerceTo(RealType.class);
             return  (R) intermediate.multiply(rise).divide(run).add(y1).coerceTo(outputClazz);
         } catch (CoercionException e) {
-            throw new IllegalArgumentException("Unable to coerce intermediate values.", e);
+            throw new IllegalArgumentException("Unable to coerce intermediate values", e);
         }
     }
 

@@ -13,7 +13,7 @@ import java.math.MathContext;
 
 public class TrigDumper {
     private static final MathContext ctx = new MathContext(8);
-    private static final Sin sin = new Sin(new RealImpl(new BigDecimal("0.000001"), ctx));
+    private static final Sin sin = new Sin(ctx);
 
     public static void main(String[] args) {
         RealType increment = new RealImpl(args[0], ctx);

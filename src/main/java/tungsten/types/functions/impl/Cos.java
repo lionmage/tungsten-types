@@ -7,7 +7,6 @@ import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.Periodic;
 import tungsten.types.functions.Proxable;
 import tungsten.types.functions.UnaryFunction;
-import tungsten.types.functions.support.CompositeKey;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
@@ -25,13 +24,11 @@ import java.math.MathContext;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType>, Periodic {
-    private final RealType epsilon;
-    private final Pi pi;
+    private final MathContext mctx;
     private final Range<RealType> internalRange;
 
     private final Map<RealType, RealType> knownValues = new LinkedHashMap<>();
@@ -46,41 +43,38 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
      * using this function.
      *
      * @param argName the name of the sole argument to this function
-     * @param epsilon the epsilon value for determining closeness for value matching
+     * @param mctx the {@link MathContext} determining the precision and rounding for this function
      */
-    public Cos(String argName, RealType epsilon) {
+    public Cos(String argName, MathContext mctx) {
         super(argName);
-        this.epsilon = epsilon;
-        pi = Pi.getInstance(new MathContext(epsilon.getMathContext().getPrecision() + 1,
-                epsilon.getMathContext().getRoundingMode()));
-        internalRange = new Range<>(new RealImpl(BigDecimal.ZERO),
-                Range.BoundType.INCLUSIVE,
-                (RealType) pi.multiply(new RealImpl(BigDecimal.valueOf(2L), epsilon.getMathContext())),
-                Range.BoundType.EXCLUSIVE);
+        this.mctx = mctx;
+        RealType decTwo = new RealImpl(BigDecimal.valueOf(2L), mctx);
+        internalRange = new Range<>(new RealImpl(BigDecimal.ZERO, mctx), Range.BoundType.INCLUSIVE,
+                (RealType) Pi.getInstance(mctx).multiply(decTwo), Range.BoundType.EXCLUSIVE);
         initializeTable();
-        derivatives.put(0L, this);  // f0 is this function itself
     }
 
     /**
      * Constructor which takes an epsilon value and uses the default value for
      * this function's argument name, i.e. &theta;
      *
-     * @param epsilon the epsilon value for determining closeness for value matching
+     * @param mctx the {@link MathContext} determining the precision and rounding for this function
      */
-    public Cos(RealType epsilon) {
-        this(MathUtils.THETA, epsilon);
+    public Cos(MathContext mctx) {
+        this(MathUtils.THETA, mctx);
     }
 
     private void initializeTable() {
+        final Pi pi = Pi.getInstance(mctx);
         final RealType zero = new RealImpl(BigDecimal.ZERO);
-        final RealType one = new RealImpl(BigDecimal.ONE, epsilon.getMathContext());
-        final RealType two = new RealImpl(BigDecimal.valueOf(2L), epsilon.getMathContext());
+        final RealType one = new RealImpl(BigDecimal.ONE, mctx);
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), mctx);
         final IntegerType four = new IntegerImpl("4");
-        final RealType ten = new RealImpl(BigDecimal.TEN, epsilon.getMathContext());
-        final RationalType oneHalf = new RationalImpl("1/2", epsilon.getMathContext());
+        final RealType ten = new RealImpl(BigDecimal.TEN, mctx);
+        final RationalType oneHalf = new RationalImpl("1/2", mctx);
         final RealType sqrtTwo = (RealType) two.sqrt();
-        final RealType sqrtThree = (RealType) new RealImpl(BigDecimal.valueOf(3L), epsilon.getMathContext()).sqrt();
-        final RealType sqrtFive = (RealType) new RealImpl(BigDecimal.valueOf(5L), epsilon.getMathContext()).sqrt();
+        final RealType sqrtThree = (RealType) new RealImpl(BigDecimal.valueOf(3L), mctx).sqrt();
+        final RealType sqrtFive = (RealType) new RealImpl(BigDecimal.valueOf(5L), mctx).sqrt();
 
         knownValues.put(zero, one);
         knownValues.put(piDividedBy(24L), (RealType) sqrtThree.add(two).sqrt()
@@ -94,52 +88,50 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         knownValues.put(piDividedBy(4L), (RealType) sqrtTwo.divide(two));
         knownValues.put(piFraction(new RationalImpl("3/10")),
                 (RealType) two.multiply(sqrtFive).negate().add(ten).sqrt().divide(four));
-        knownValues.put(piDividedBy(3L), new RealImpl(oneHalf, epsilon.getMathContext()));
+        knownValues.put(piDividedBy(3L), new RealImpl(oneHalf, mctx));
         knownValues.put(piFraction(new RationalImpl("3/8")),
                 (RealType) sqrtTwo.negate().add(two).sqrt().divide(two));
         knownValues.put(piFraction(new RationalImpl("2/5")),
                 (RealType) sqrtFive.subtract(one).divide(four));
-        knownValues.put(piFraction(new RationalImpl("5/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("5/12", mctx)),
                 (RealType) sqrtThree.subtract(one).multiply(sqrtTwo).divide(four));
         knownValues.put(piDividedBy(2L), zero);
-        knownValues.put(piFraction(new RationalImpl("7/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("7/12", mctx)),
                 (RealType) sqrtThree.subtract(one).multiply(sqrtTwo).divide(four).negate());
-        knownValues.put(piFraction(new RationalImpl("2/3", pi.getMathContext())), new RealImpl(oneHalf.negate(), pi.getMathContext()));
+        knownValues.put(piFraction(new RationalImpl("2/3", mctx)), new RealImpl(oneHalf.negate(), mctx));
         knownValues.put(piFraction(new RationalImpl("3/4")), (RealType) sqrtTwo.divide(two).negate());
-        knownValues.put(piFraction(new RationalImpl("5/6", pi.getMathContext())), (RealType) sqrtThree.divide(two).negate());
-        knownValues.put(piFraction(new RationalImpl("11/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("5/6", mctx)), (RealType) sqrtThree.divide(two).negate());
+        knownValues.put(piFraction(new RationalImpl("11/12", mctx)),
                 (RealType) sqrtThree.add(one).multiply(sqrtTwo).divide(four).negate());
         knownValues.put(pi, one.negate());
-        knownValues.put(piFraction(new RationalImpl("13/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("13/12", mctx)),
                 (RealType) sqrtThree.add(one).divide(two.multiply(sqrtTwo)).negate());
-        knownValues.put(piFraction(new RationalImpl("7/6", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("7/6", mctx)),
                 ((RealType) sqrtThree.divide(two)).negate());
         knownValues.put(piFraction(new RationalImpl("5/4")), (RealType) sqrtTwo.divide(two).negate());
-        knownValues.put(piFraction(new RationalImpl("4/3", pi.getMathContext())), new RealImpl(oneHalf.negate(), pi.getMathContext()));
-        knownValues.put(piFraction(new RationalImpl("17/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("4/3", mctx)), new RealImpl(oneHalf.negate(), mctx));
+        knownValues.put(piFraction(new RationalImpl("17/12", mctx)),
                 ((RealType) sqrtThree.subtract(one).multiply(sqrtTwo).divide(four)).negate());
         knownValues.put(piFraction(new RationalImpl("3/2")), zero);
-        knownValues.put(piFraction(new RationalImpl("19/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("19/12", mctx)),
                 (RealType) sqrtThree.subtract(one).multiply(sqrtTwo).divide(four));
-        knownValues.put(piFraction(new RationalImpl("5/3", pi.getMathContext())), new RealImpl(oneHalf, pi.getMathContext()));
+        knownValues.put(piFraction(new RationalImpl("5/3", mctx)), new RealImpl(oneHalf, mctx));
         knownValues.put(piFraction(new RationalImpl("7/4")), (RealType) sqrtTwo.divide(two));
-        knownValues.put(piFraction(new RationalImpl("11/6", pi.getMathContext())), (RealType) sqrtThree.divide(two));
-        knownValues.put(piFraction(new RationalImpl("23/12", pi.getMathContext())),
+        knownValues.put(piFraction(new RationalImpl("11/6", mctx)), (RealType) sqrtThree.divide(two));
+        knownValues.put(piFraction(new RationalImpl("23/12", mctx)),
                 (RealType) sqrtThree.add(one).multiply(sqrtTwo).divide(four));
         knownValues.put((RealType) pi.multiply(two), one);
     }
 
     private RealType piDividedBy(long divisor) {
+        Pi pi = Pi.getInstance(mctx);
         return (RealType) pi.divide(new IntegerImpl(BigInteger.valueOf(divisor)));
     }
 
     private RealType piFraction(RationalType factor) {
+        Pi pi = Pi.getInstance(mctx);
         return (RealType) pi.multiply(factor);
     }
-
-    private final Map<CompositeKey, TaylorPolynomial<RealType, RealType>> polynomialMap =
-            new TreeMap<>();
-    private final Lock polyLock = new ReentrantLock();
 
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
@@ -148,47 +140,9 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         RealType inrangeArg = mapToInnerRange(arg);
         RealType result = proxy.applyWithoutInterpolation(inrangeArg);
         if (result == null) {
-            long order = arg.getMathContext().getPrecision();
-            RealType a0 = proxy.closestKeyToInput(arg);
-            CompositeKey key = new CompositeKey(order, a0);
-            polyLock.lock();
-            TaylorPolynomial<RealType, RealType> p;
-            try {
-                // find the appropriate Taylor polynomial, or generate it if it doesn't exist
-                p = polynomialMap.get(key);
-                if (p != null) return p.apply(arg);
-                // if we got here, we have no choice but to compute a new polynomial
-                p = generateTaylorPolynomial(a0);
-                polynomialMap.put(key, p);
-            } finally {
-                polyLock.unlock();
-            }
-            result = p.apply(arg);
+            result = MathUtils.cos(arg);
         }
         return result;
-    }
-
-    private final Map<Long, UnaryFunction<RealType, RealType>> derivatives = new TreeMap<>();
-
-    protected TaylorPolynomial<RealType, RealType> generateTaylorPolynomial(RealType a0) {
-        final SimpleDerivative<RealType> diffEngine = new SimpleDerivative<>(epsilon);
-
-        return new TaylorPolynomial<>(getArgumentName(), this, a0) {
-            @Override
-            protected UnaryFunction<RealType, RealType> f_n(long n) {
-                UnaryFunction<RealType, RealType> diff = derivatives.get(n);
-                if (diff == null) {
-                    long start = derivatives.keySet().stream().max(Long::compareTo).map(l -> l + 1L).orElse(1L);
-                    assert start <= n;
-                    // we already populated this function into the 0th entry, so the above should be sound
-                    for (long index = start; index <= n; index++) {
-                        derivatives.put(index, diffEngine.apply(derivatives.get(index - 1L)));
-                    }
-                    diff = derivatives.get(n);
-                }
-                return diff;
-            }
-        };
     }
 
     @Override
@@ -199,20 +153,22 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
     protected RealType mapToInnerRange(RealType input) {
         if (internalRange.contains(input)) return input;
 
-        final RealType twoPi = (RealType) pi.multiply(new RealImpl(BigDecimal.valueOf(2L),
-                epsilon.getMathContext()));
+        final RealType period = period();
         RealType temp = input;
         while (internalRange.isBelow(temp)) {
-            temp = (RealType) temp.add(twoPi);
+            temp = (RealType) temp.add(period);
         }
         while (internalRange.isAbove(temp)) {
-            temp = (RealType) temp.subtract(twoPi);
+            temp = (RealType) temp.subtract(period);
         }
         return temp;
     }
 
+    private static final RealType TEN = new RealImpl(BigDecimal.TEN, MathContext.UNLIMITED);
+
     @Override
     public ProxyFunction<RealType, RealType> obtainProxy() {
+        final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
         return new ProxyFunction<>(getArgumentName(), knownValues, epsilon) {
             @Override
             protected RealType coerceToInnerRange(RealType input) {
@@ -229,7 +185,7 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         diffCacheLock.lock();
         try {
             if (diffCache == null) {
-                diffCache = new Sin(getArgumentName(), epsilon).andThen(Negate.getInstance(RealType.class));
+                diffCache = new Sin(getArgumentName(), mctx).andThen(Negate.getInstance(RealType.class));
             }
             return diffCache;
         } finally {
@@ -265,12 +221,13 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
 
     @Override
     public Range<RealType> principalRange() {
-        return internalRange;
+        return RangeUtils.getAngularInstance(mctx);
     }
 
     @Override
     public RealType period() {
-        final RealType two = new RealImpl(BigDecimal.valueOf(2L));
+        final Pi pi = Pi.getInstance(mctx);
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), mctx);
         return (RealType) pi.multiply(two);
     }
 }
