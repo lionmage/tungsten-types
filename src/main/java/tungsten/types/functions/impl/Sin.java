@@ -41,7 +41,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
      * a {@link MathContext}.
      * 
      * @param argName the name of the sole argument to this function
-     * @param mctx the {@link MathContext} governing the accuracy of this function
+     * @param mctx the {@link MathContext} governing the precision and rounding of this function
      */
     public Sin(String argName, MathContext mctx) {
         super(argName);
@@ -55,7 +55,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
     }
 
     /**
-     * Constructor which takes an epsilon value and uses the default value for
+     * Constructor which takes a {@link MathContext} value and uses the default value for
      * this function's argument name, i.e. &theta;
      *
      * @param mctx the math context for this function instance

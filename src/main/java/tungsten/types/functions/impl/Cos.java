@@ -35,12 +35,7 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
 
     /**
      * Constructor for this function which takes an argument name and
-     * an epsilon value.  Note that {@code epsilon} not only provides
-     * the delta for determining if a pre-calculated value is &ldquo;close enough,&rdquo;
-     * but also provides the {@link java.math.MathContext} which is used for all
-     * internal calculations.  Be sure to construct an {@code epsilon} with both
-     * a sufficiently small value and a sufficiently large precision when
-     * using this function.
+     * a {@link MathContext} value.
      *
      * @param argName the name of the sole argument to this function
      * @param mctx the {@link MathContext} determining the precision and rounding for this function
@@ -55,7 +50,7 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
     }
 
     /**
-     * Constructor which takes an epsilon value and uses the default value for
+     * Constructor which takes a {@link MathContext} value and uses the default value for
      * this function's argument name, i.e. &theta;
      *
      * @param mctx the {@link MathContext} determining the precision and rounding for this function
