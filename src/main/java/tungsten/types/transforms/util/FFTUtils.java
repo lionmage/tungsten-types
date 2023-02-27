@@ -25,6 +25,7 @@ package tungsten.types.transforms.util;
 
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.ComplexPolarImpl;
 import tungsten.types.numerics.impl.ComplexRectImpl;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.transforms.FastFourierTransform;
@@ -109,5 +110,17 @@ public class FFTUtils {
         yExt.addAll(y);
         yExt.addAll(Collections.nCopies(y.size(), zero));
         return circularConvolution(xExt, yExt, ctx);
+    }
+
+    public static List<RealType> extractReals(List<ComplexType> complexValues) {
+        return complexValues.stream().map(ComplexType::real).collect(Collectors.toList());
+    }
+
+    public static List<ComplexType> realsToComplex(List<RealType> realValues) {
+        return realValues.stream().map(ComplexRectImpl::new).collect(Collectors.toList());
+    }
+
+    public static List<ComplexType> realsToComplexPolar(List<RealType> realValues) {
+        return realValues.stream().map(ComplexPolarImpl::new).collect(Collectors.toList());
     }
 }
