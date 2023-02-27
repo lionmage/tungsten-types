@@ -339,7 +339,7 @@ public class ComplexPolarImpl implements ComplexType {
     }
 
     @Override
-    public Numeric inverse() {
+    public ComplexType inverse() {
         // special case of division where the numerator has a modulus of 1
         // and an argument of 0
         return new ComplexPolarImpl((RealType) modulus.inverse(), argument.negate(), exact);

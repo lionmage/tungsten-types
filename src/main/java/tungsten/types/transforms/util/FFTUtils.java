@@ -86,6 +86,12 @@ public class FFTUtils {
         } catch (ExecutionException ex) {
             Logger.getLogger(FFTUtils.class.getName()).log(Level.SEVERE,
                     "One of the FFT operations failed during execution.", ex);
+            if (xresult.isCancelled()) {
+                Logger.getLogger(FFTUtils.class.getName()).log(Level.INFO, "FFT of arg x was canceled before completion.");
+            }
+            if (yresult.isCancelled()) {
+                Logger.getLogger(FFTUtils.class.getName()).log(Level.INFO, "FFT of arg y was canceled before completion.");
+            }
             throw new IllegalStateException(ex);
         } finally {
             executor.shutdownNow();

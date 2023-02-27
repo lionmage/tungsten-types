@@ -302,7 +302,7 @@ public class ComplexRectImpl implements ComplexType {
     }
 
     @Override
-    public Numeric inverse() {
+    public ComplexType inverse() {
         RealType invscale = (RealType) real.multiply(real).add(imag.multiply(imag));
         if (Zero.isZero(invscale)) throw new ArithmeticException("No inverse for " + this);
         return new ComplexRectImpl((RealType) real.divide(invscale), (RealType) imag.negate().divide(invscale), exact);

@@ -37,6 +37,8 @@ public interface ComplexType extends Numeric {
     RealType magnitude();
     @Override
     ComplexType negate();
+    @Override
+    ComplexType inverse();
     ComplexType conjugate();
     RealType real();
     RealType imaginary();
