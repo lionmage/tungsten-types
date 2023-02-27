@@ -78,6 +78,13 @@ public class ComplexPolarImpl implements ComplexType {
         this.exact = exact;
     }
 
+    public ComplexPolarImpl(RealType realVal) {
+        this.modulus = realVal.magnitude();
+        this.argument = realVal.sign() == Sign.NEGATIVE ? Pi.getInstance(realVal.getMathContext()) :
+                new RealImpl(BigDecimal.ZERO, realVal.getMathContext());
+        this.exact = realVal.isExact();
+    }
+
     /**
      * The separator character used to mark the division between
      * the modulus and argument of a complex angular string value, used
@@ -117,8 +124,6 @@ public class ComplexPolarImpl implements ComplexType {
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
         this.epsilon = MathUtils.computeIntegerExponent(TEN, 1 - mctx.getPrecision(), mctx);
-        // Note: cos and sin instances are currently retained, so if we're increasing resolution here,
-        // the resolution provided by existing sin and cos may prove inadequate.
     }
     
     @Override
