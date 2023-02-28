@@ -87,7 +87,7 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
         List<String> argList = Arrays.asList(argNames);
         if (inputFunction.arity() == curryMap.size() + 1L) {
             // only one argument left, so return a UnaryFunction
-            final String varName = curryMap.keySet().stream().filter(n -> !argList.contains(n))
+            final String varName = argList.stream().filter(argName -> !curryMap.containsKey(argName))
                     .findFirst().orElseThrow();
             return new UnaryFunction<>(varName) {
                 @Override
