@@ -68,13 +68,17 @@ public class Simplifier<T extends RealType> extends MetaFunction<T, T, T> {
                 simplified = (UnaryFunction<T, T>) ((Simplifiable) simplified).simplify();
             }
             if (inner.isPresent()) {
+                final UnaryFunction<T, T> enclosed = inner.get();
+                if (simplified instanceof Reflexive) return enclosed;
                 // inner composition will take care of some additional optimizations
-                return (UnaryFunction<T, T>) simplified.composeWith(inner.get());
+                return (UnaryFunction<T, T>) simplified.composeWith(enclosed);
             }
             Optional<UnaryFunction<T, T>> outer = core.flatMap(UnaryFunction::getComposingFunction).map(f -> apply((UnaryFunction<T, T>) f));
             if (outer.isPresent()) {
+                final UnaryFunction<T, T> enclosing = outer.get();
+                if (enclosing instanceof Reflexive) return simplified;
                 // outer composition will take care of some additional optimizations
-                return simplified.andThen(outer.get());
+                return simplified.andThen(enclosing);
             }
             return simplified;
         }
