@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
  */
 public class FFTUtils {
     public static List<ComplexType> inverseFFT(List<ComplexType> source, MathContext ctx) {
-        FastFourierTransform fft = new FastFourierTransform(ctx);
+        final FastFourierTransform fft = new FastFourierTransform(ctx);
 
         List<ComplexType> conj = source.stream().map(ComplexType::conjugate).collect(Collectors.toList());
         List<ComplexType> intermediate = fft.apply(conj);
@@ -93,7 +93,7 @@ public class FFTUtils {
             if (yresult.isCancelled()) {
                 Logger.getLogger(FFTUtils.class.getName()).log(Level.INFO, "FFT of arg y was canceled before completion.");
             }
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException("An FFT calculation was canceled or failed during execution", ex);
         } finally {
             executor.shutdownNow();
         }
