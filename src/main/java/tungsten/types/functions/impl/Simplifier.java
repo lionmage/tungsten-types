@@ -30,6 +30,8 @@ import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.RealType;
 
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A metafunction which recursively traverses the object graph of a function
@@ -80,6 +82,9 @@ public class Simplifier<T extends RealType> extends MetaFunction<T, T, T> {
                 // outer composition will take care of some additional optimizations
                 return simplified.andThen(enclosing);
             }
+            Logger.getLogger(Simplifier.class.getName()).log(Level.WARNING,
+                    "Function {0} is a composed function, but lacks both an inner and an outer function. Returning {1}.",
+                    new Object[] {original, simplified});
             return simplified;
         }
         // otherwise, attempt to simplify this function as-is

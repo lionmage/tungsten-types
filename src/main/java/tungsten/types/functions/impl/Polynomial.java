@@ -145,6 +145,8 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         } else if (alienFunc instanceof Sum) {
             Sum<T, R> sum = (Sum<T, R>) alienFunc;
             sum.stream().forEach(this::add);
+        } else if (alienFunc instanceof Reflexive) {
+            this.add(new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]), List.of(1L), rtnClass));
         }
         // TODO add additional cases as-needed
 
@@ -178,6 +180,10 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             if (prod.termCount() == 1L) return multiply(prod.stream().findFirst().orElseThrow());
             Term<T, R> pterm = termFromProd(prod);
             return this.multiply(pterm);
+        } else if (alienFunc instanceof Reflexive) {
+            PolyTerm<T, R> term = new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]),
+                    List.of(1L), rtnClass);
+            return this.multiply(term);
         }
         // TODO implement a few more sane cases
         throw new UnsupportedOperationException("Currently unable to handle a foreign function of type " +
@@ -199,7 +205,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             List<Numeric> exponents = subterms.stream().map(Pow::getExponent).collect(Collectors.toList());
             if (exponents.stream().anyMatch(RationalType.class::isInstance)) {
                 List<RationalType> rationalExponents = exponents.stream().map(this::safeCoerce).collect(Collectors.toList());
-                return new RationalExponentPolyTerm<T, R>(coeff, varNames, rationalExponents);
+                return new RationalExponentPolyTerm<>(coeff, varNames, rationalExponents);
             }
             List<Long> integerExponents = exponents.stream().map(IntegerType.class::cast).map(IntegerType::asBigInteger)
                     .map(BigInteger::longValueExact).collect(Collectors.toList());
