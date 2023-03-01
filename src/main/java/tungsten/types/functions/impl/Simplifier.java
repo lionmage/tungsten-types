@@ -41,6 +41,8 @@ import java.util.Optional;
  * optimizations. If no transformation is possible, the original function
  * will be returned unaltered.
  * @param <T> the argument and return type of the function being transformed
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni email</a>
+ *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Simplifier<T extends RealType> extends MetaFunction<T, T, T> {
     @Override
@@ -66,10 +68,12 @@ public class Simplifier<T extends RealType> extends MetaFunction<T, T, T> {
                 simplified = (UnaryFunction<T, T>) ((Simplifiable) simplified).simplify();
             }
             if (inner.isPresent()) {
+                // inner composition will take care of some additional optimizations
                 return (UnaryFunction<T, T>) simplified.composeWith(inner.get());
             }
             Optional<UnaryFunction<T, T>> outer = core.flatMap(UnaryFunction::getComposingFunction).map(f -> apply((UnaryFunction<T, T>) f));
             if (outer.isPresent()) {
+                // outer composition will take care of some additional optimizations
                 return simplified.andThen(outer.get());
             }
             return simplified;
