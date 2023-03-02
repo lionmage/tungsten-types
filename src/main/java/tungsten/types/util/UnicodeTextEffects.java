@@ -25,13 +25,13 @@ package tungsten.types.util;
 
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.RationalType;
-import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.*;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RationalImpl;
+import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Normalizer;
 import java.util.HashMap;
@@ -227,7 +227,7 @@ public class UnicodeTextEffects {
                 buf.append('\u2064').append(fracPart);
             }
         } catch (CoercionException e) {
-            throw new IllegalStateException("While converting the fraction " + frac + " for display.", e);
+            throw new IllegalStateException("While converting the fraction " + frac + " for display", e);
         }
         return buf.toString();
     }
@@ -270,5 +270,184 @@ public class UnicodeTextEffects {
         buf.append(')');
 
         return buf.toString();
+    }
+
+    public enum ShadedBlock {
+        EMPTY(' '), LIGHT('\u2591'), MEDIUM('\u2592'), DARK('\u2593'), SOLID('\u2588');
+
+        private final char rep;
+
+        ShadedBlock(char representation) {
+            this.rep = representation;
+        }
+
+        @Override
+        public String toString() {
+            return Character.toString(rep);
+        }
+    }
+
+    public enum FractionalHorizontalBlock {
+        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE)),
+        ONE_EIGHTH('\u258F', new RationalImpl("1/8")),
+        ONE_FOURTH('\u258E', new RationalImpl("1/4")),
+        THREE_EIGHTHS('\u258D', new RationalImpl("3/8")),
+        ONE_HALF('\u258C', new RationalImpl("1/2")),
+        FIVE_EIGHTHS('\u258B', new RationalImpl("5/8")),
+        THREE_FOURTHS('\u258A', new RationalImpl("3/4")),
+        SEVEN_EIGHTHS('\u2589', new RationalImpl("7/8")),
+        FULL('\u2588', new RationalImpl(BigInteger.ONE, BigInteger.ONE));
+
+        private final char rep;
+        private final RationalType value;
+
+        FractionalHorizontalBlock(char representation, RationalType value) {
+            this.rep = representation;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return Character.toString(rep);
+        }
+
+        public RealType fillPercentage() {
+            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
+            try {
+                return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public static FractionalHorizontalBlock forFraction(RationalType frac) {
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
+            RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
+            for (FractionalHorizontalBlock block : values()) {
+                if (onlyFrac.compareTo(block.value) <= 0) return block;
+            }
+            return FULL;
+        }
+
+        public static FractionalHorizontalBlock forFraction(RealType frac) {
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            if (Zero.isZero(frac)) return EMPTY;
+            if (One.isUnity(frac)) return FULL;
+            RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
+            for (FractionalHorizontalBlock block : values()) {
+                if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
+            }
+            return FULL;
+        }
+    }
+
+    public enum FractionalVerticalBlock {
+        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE)),
+        ONE_EIGHTH('\u2581', new RationalImpl("1/8")),
+        ONE_FOURTH('\u2582', new RationalImpl("1/4")),
+        THREE_EIGHTHS('\u2583', new RationalImpl("3/8")),
+        ONE_HALF('\u2584', new RationalImpl("1/2")),
+        FIVE_EIGHTHS('\u2585', new RationalImpl("5/8")),
+        THREE_FOURTHS('\u2586', new RationalImpl("3/4")),
+        SEVEN_EIGHTHS('\u2587', new RationalImpl("7/8")),
+        FULL('\u2588', new RationalImpl(BigInteger.ONE, BigInteger.ONE));
+
+        private final char rep;
+        private final RationalType value;
+
+        FractionalVerticalBlock(char representation, RationalType value) {
+            this.rep = representation;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return Character.toString(rep);
+        }
+
+        public RealType fillPercentage() {
+            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
+            try {
+                return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public static FractionalVerticalBlock forFraction(RationalType frac) {
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
+            RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
+            for (FractionalVerticalBlock block : values()) {
+                if (onlyFrac.compareTo(block.value) <= 0) return block;
+            }
+            return FULL;
+        }
+
+        public static FractionalVerticalBlock forFraction(RealType frac) {
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            if (Zero.isZero(frac)) return EMPTY;
+            if (One.isUnity(frac)) return FULL;
+            RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
+            for (FractionalVerticalBlock block : values()) {
+                if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
+            }
+            return FULL;
+        }
+    }
+
+    /**
+     * These represent Unicode graphic blocks that &ldquo;grow&rdquo; down from above.
+     * Note that there are fewer defined choices here than for, e.g., {@link FractionalVerticalBlock}.
+     * This will limit the accuracy in plotting a histogram with negative values.
+     */
+    public enum FractionalVerticalInverseBlock {
+        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE)),
+        ONE_EIGHTH('\u2594', new RationalImpl("1/8")),
+        ONE_HALF('\u2580', new RationalImpl("1/2")),
+        SEVEN_EIGHTHS('\u2593', new RationalImpl("7/8")), // we're close to whole, so fake it with a dark shaded block
+        FULL('\u2588', new RationalImpl(BigInteger.ONE, BigInteger.ONE));
+
+        private final char rep;
+        private final RationalType value;
+
+        FractionalVerticalInverseBlock(char representation, RationalType value) {
+            this.rep = representation;
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return Character.toString(rep);
+        }
+
+        public RealType fillPercentage() {
+            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
+            try {
+                return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        public static FractionalVerticalInverseBlock forFraction(RationalType frac) {
+            boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
+            RationalType onlyFrac = takeFraction ? (RationalType) frac.magnitude().subtract(MathUtils.trunc(frac.magnitude())) : frac.magnitude();
+            for (FractionalVerticalInverseBlock block : values()) {
+                if (onlyFrac.compareTo(block.value) <= 0) return block;
+            }
+            return FULL;
+        }
+
+        public static FractionalVerticalInverseBlock forFraction(RealType frac) {
+            if (Zero.isZero(frac)) return EMPTY;
+            if (One.isUnity(frac)) return FULL;
+            RealType onlyFrac = (RealType) frac.magnitude().subtract(MathUtils.trunc(frac.magnitude()));
+            for (FractionalVerticalInverseBlock block : values()) {
+                if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
+            }
+            return FULL;
+        }
     }
 }
