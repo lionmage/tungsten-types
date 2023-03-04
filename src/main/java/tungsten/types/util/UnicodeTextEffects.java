@@ -26,17 +26,12 @@ package tungsten.types.util;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
-import tungsten.types.numerics.impl.One;
-import tungsten.types.numerics.impl.RationalImpl;
-import tungsten.types.numerics.impl.RealImpl;
-import tungsten.types.numerics.impl.Zero;
+import tungsten.types.numerics.impl.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Utility methods for creating Unicode strings that render with
@@ -300,7 +295,7 @@ public class UnicodeTextEffects {
         FIVE_EIGHTHS('\u258B', new RationalImpl("5/8")),
         THREE_FOURTHS('\u258A', new RationalImpl("3/4")),
         SEVEN_EIGHTHS('\u2589', new RationalImpl("7/8")),
-        FULL('\u2588', new RationalImpl(BigInteger.ONE, BigInteger.ONE));
+        FULL('\u2588', ONE);
 
         private final char rep;
         private final RationalType value;
@@ -355,7 +350,7 @@ public class UnicodeTextEffects {
         FIVE_EIGHTHS('\u2585', new RationalImpl("5/8")),
         THREE_FOURTHS('\u2586', new RationalImpl("3/4")),
         SEVEN_EIGHTHS('\u2587', new RationalImpl("7/8")),
-        FULL('\u2588', new RationalImpl(BigInteger.ONE, BigInteger.ONE));
+        FULL('\u2588', ONE);
 
         private final char rep;
         private final RationalType value;
@@ -411,7 +406,7 @@ public class UnicodeTextEffects {
         ONE_EIGHTH('\u2594', new RationalImpl("1/8")),
         ONE_HALF('\u2580', new RationalImpl("1/2")),
         SEVEN_EIGHTHS('\u2593', new RationalImpl("7/8")), // we're close to whole, so fake it with a dark shaded block
-        FULL('\u2588', new RationalImpl(BigInteger.ONE, BigInteger.ONE));
+        FULL('\u2588', ONE);
 
         private final char rep;
         private final RationalType value;
@@ -473,5 +468,52 @@ public class UnicodeTextEffects {
         public String toString() {
             return Character.toString(rep);
         }
+    }
+
+    /**
+     * Generate a histogram using Unicode symbols given a set of data values. Data is presented as a
+     * series of vertical bars, one for each data point present in the input, laid out left-to-right.
+     *
+     * @param values        a {@link List} of real values, each representing a histogram &ldquo;bucket&rdquo;
+     * @param blockHeight   the height of the generated histogram in character rows
+     * @param hruleInterval the frequency of horizontal rules to be plotted; horizontal rules will be generated
+     *                      every {@code hruleInterval} rows
+     * @param spaceBetween  if true, generate horizontal fill between vertical bars representing data
+     * @return a {@link List} of {@link String}s representing the histogram plot, in rendering order
+     */
+    public static List<String> histoPlot(List<RealType> values, int blockHeight, int hruleInterval, boolean spaceBetween) {
+        List<String> rows = new ArrayList<>(blockHeight);
+        // no negatives
+        if (values.parallelStream().anyMatch(value -> value.sign() == Sign.NEGATIVE)) throw new IllegalArgumentException("Negative histogram values are unsupported");
+        final RealType maxVal = values.parallelStream().max(RealType::compareTo).orElseThrow();
+        final RealType blockSize = (RealType) maxVal.divide(new IntegerImpl(BigInteger.valueOf(blockHeight)));
+
+        int width = values.size();
+        if (spaceBetween) width += values.size() - 1;
+        for (int row = 0; row < blockHeight; row++) {
+            StringBuilder buf = new StringBuilder(width);
+            RealType rowTop = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row + 1L)));
+            RealType rowBottom = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row)));
+            for (RealType value : values) {
+                if (value.compareTo(rowBottom) <= 0) {
+                    buf.append(row % hruleInterval == 0 ? HorizontalFill.EMPTY : HorizontalFill.LIGHT_TRIPLE_DASH);
+                } else {
+                    // plot the full or partial block
+                    if (value.compareTo(rowTop) >= 0) {
+                        buf.append(FractionalVerticalBlock.FULL);
+                    } else {
+                        RealType frac = (RealType) value.subtract(rowBottom).divide(blockSize);
+                        buf.append(FractionalVerticalBlock.forFraction(frac));
+                    }
+                }
+                if (spaceBetween && buf.length() < width) buf.append(row % hruleInterval == 0 ? HorizontalFill.EMPTY : HorizontalFill.LIGHT_TRIPLE_DASH);
+            }
+
+            // finally, append completed row to our collection
+            rows.add(buf.toString());
+        }
+
+        Collections.reverse(rows);
+        return rows;
     }
 }
