@@ -496,7 +496,7 @@ public class UnicodeTextEffects {
             RealType rowBottom = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row)));
             for (RealType value : values) {
                 if (value.compareTo(rowBottom) <= 0) {
-                    buf.append(row % hruleInterval == 0 ? HorizontalFill.EMPTY : HorizontalFill.LIGHT_TRIPLE_DASH);
+                    buf.append(row % hruleInterval == 0 ? HorizontalFill.LIGHT_TRIPLE_DASH : HorizontalFill.EMPTY);
                 } else {
                     // plot the full or partial block
                     if (value.compareTo(rowTop) >= 0) {
@@ -506,7 +506,7 @@ public class UnicodeTextEffects {
                         buf.append(FractionalVerticalBlock.forFraction(frac));
                     }
                 }
-                if (spaceBetween && buf.length() < width) buf.append(row % hruleInterval == 0 ? HorizontalFill.EMPTY : HorizontalFill.LIGHT_TRIPLE_DASH);
+                if (spaceBetween && buf.length() < width) buf.append(row % hruleInterval == 0 ? HorizontalFill.LIGHT_TRIPLE_DASH : HorizontalFill.EMPTY);
             }
 
             // finally, append completed row to our collection
