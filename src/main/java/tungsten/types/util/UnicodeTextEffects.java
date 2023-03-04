@@ -281,6 +281,10 @@ public class UnicodeTextEffects {
             this.rep = representation;
         }
 
+        public String nOf(int n) {
+            return String.valueOf(rep).repeat(Math.max(0, n));
+        }
+
         @Override
         public String toString() {
             return Character.toString(rep);
@@ -448,6 +452,26 @@ public class UnicodeTextEffects {
                 if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
             }
             return FULL;
+        }
+    }
+
+    public enum HorizontalFill {
+        EMPTY(' '), LIGHT_TRIPLE_DASH('\u2504'), LIGHT_QUADRUPLE_DASH('\u2508'),
+        HEAVY_TRIPLE_DASH('\u2505'), HEAVY_QUADRUPLE_DASH('\u2509');
+
+        private final char rep;
+
+        HorizontalFill(char representation) {
+            this.rep = representation;
+        }
+
+        public String nOf(int n) {
+            return String.valueOf(rep).repeat(Math.max(0, n));
+        }
+
+        @Override
+        public String toString() {
+            return Character.toString(rep);
         }
     }
 }
