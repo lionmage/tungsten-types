@@ -535,6 +535,19 @@ public class UnicodeTextEffects {
         return rows;
     }
 
+    /**
+     * Generate a bar chart / histogram plot with each datum represented by a horizontal bar.
+     *
+     * @param labels          the labels for the data points; if null, no labels are rendered
+     * @param labelBlockWidth the width of the labels, in character blocks; ignored if no labels are present
+     * @param values          the real-valued data points or &ldquo;buckets&rdquo; to be plotted
+     * @param blockWidth      the width of the plot, in character blocks
+     * @param vruleInterval   the frequency of vertical rules to be plotted; vertical rules
+     *                        will be generated every {@code vruleInterval} columns
+     * @param spaceBetween    if true, generate vertical fill between horizontal bars
+     *                        representing data
+     * @return a {@link List} of {@link String}s representing the histogram plot, in rendering order
+     */
     public static List<String> horizontalHistoPlot(String[] labels, int labelBlockWidth, List<RealType> values, int blockWidth, int vruleInterval, boolean spaceBetween) {
         if (labels != null && labels.length != values.size()) throw new IllegalArgumentException("Number of labels must match number of samples");
         List<String> rows = new ArrayList<>(spaceBetween ? values.size() * 2 - 1 : values.size());
@@ -546,7 +559,9 @@ public class UnicodeTextEffects {
         for (int k = 0; k < values.size(); k++) {
             StringBuilder buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
             if (labels != null) {
+                // if there are labels, render them right-justified
                 if (labels[k].length() > labelBlockWidth) {
+                    // label is too long, so render with an ellipsis
                     buf.append(labels[k], 0, labelBlockWidth - 1).append('\u2026');
                 } else {
                     int fill = labelBlockWidth - labels[k].length();
@@ -559,6 +574,7 @@ public class UnicodeTextEffects {
             int solidFill = barWidth.floor().asBigInteger().intValue();
             RealType frac = (RealType) barWidth.subtract(barWidth.floor());
             buf.append(FractionalHorizontalBlock.FULL.nOf(solidFill)).append(FractionalHorizontalBlock.forFraction(frac));
+            // fill in the remainder of the row
             for (int j = solidFill + 1; j < blockWidth; j++) {
                 buf.append(j % vruleInterval == 0 ? VerticalFill.LIGHT_TRIPLE_DASH : VerticalFill.EMPTY);
             }
