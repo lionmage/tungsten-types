@@ -310,6 +310,8 @@ public class UnicodeTextEffects {
             return Character.toString(rep);
         }
 
+        public String nOf(int n) { return String.valueOf(rep).repeat(n); }
+
         public RealType fillPercentage() {
             final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
             try {
@@ -470,6 +472,22 @@ public class UnicodeTextEffects {
         }
     }
 
+    public enum VerticalFill {
+        EMPTY(' '), LIGHT_TRIPLE_DASH('\u2506'), LIGHT_QUADRUPLE_DASH('\u250A'),
+        HEAVY_TRIPLE_DASH('\u2507'), HEAVY_QUADRUPLE_DASH('\u250B');
+
+        private final char rep;
+
+        VerticalFill(char representation) {
+            this.rep = representation;
+        }
+
+        @Override
+        public String toString() {
+            return Character.toString(rep);
+        }
+    }
+
     /**
      * Generate a histogram using Unicode symbols given a set of data values. Data is presented as a
      * series of vertical bars, one for each data point present in the input, laid out left-to-right.
@@ -514,6 +532,52 @@ public class UnicodeTextEffects {
         }
 
         Collections.reverse(rows);
+        return rows;
+    }
+
+    public static List<String> horizontalHistoPlot(String[] labels, int labelBlockWidth, List<RealType> values, int blockWidth, int vruleInterval, boolean spaceBetween) {
+        if (labels != null && labels.length != values.size()) throw new IllegalArgumentException("Number of labels must match number of samples");
+        List<String> rows = new ArrayList<>(spaceBetween ? values.size() * 2 - 1 : values.size());
+
+        if (values.parallelStream().anyMatch(value -> value.sign() == Sign.NEGATIVE)) throw new IllegalArgumentException("Negative histogram values are unsupported");
+        final RealType maxVal = values.parallelStream().max(RealType::compareTo).orElseThrow();
+        final RealType blockSize = (RealType) maxVal.divide(new IntegerImpl(BigInteger.valueOf(blockWidth)));
+
+        for (int k = 0; k < values.size(); k++) {
+            StringBuilder buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
+            if (labels != null) {
+                if (labels[k].length() > labelBlockWidth) {
+                    buf.append(labels[k], 0, labelBlockWidth - 1).append('\u2026');
+                } else {
+                    int fill = labelBlockWidth - labels[k].length();
+                    if (fill > 0) buf.append(" ".repeat(fill));
+                    buf.append(labels[k]);
+                }
+            }
+            // compute the number of solid blocks
+            RealType barWidth = (RealType) values.get(k).divide(blockSize);
+            int solidFill = barWidth.floor().asBigInteger().intValue();
+            RealType frac = (RealType) barWidth.subtract(barWidth.floor());
+            buf.append(FractionalHorizontalBlock.FULL.nOf(solidFill)).append(FractionalHorizontalBlock.forFraction(frac));
+            for (int j = solidFill + 1; j < blockWidth; j++) {
+                buf.append(j % vruleInterval == 0 ? VerticalFill.LIGHT_TRIPLE_DASH : VerticalFill.EMPTY);
+            }
+            rows.add(buf.toString());
+
+            // and then add a row of space if needed
+            if (spaceBetween && k < values.size() - 1) {
+                buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
+                if (labels != null) {
+                    buf.append(" ".repeat(labelBlockWidth));
+                }
+                for (int j = 0; j < blockWidth; j++) {
+                    buf.append(j % vruleInterval == 0 ? VerticalFill.LIGHT_TRIPLE_DASH : VerticalFill.EMPTY);
+                }
+
+                rows.add(buf.toString());
+            }
+        }
+
         return rows;
     }
 }
