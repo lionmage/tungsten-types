@@ -67,7 +67,8 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     }
     
     public ColumnarMatrix(T[][] source) {
-        for (int column = 0; column < source[0].length; column++) {
+        final int columns = source[0].length;
+        for (int column = 0; column < columns; column++) {
             append(extractColumn(source, column));
         }
     }
@@ -77,7 +78,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     }
     
     private ColumnVector<T> extractColumn(T[][] source, int column) {
-        final int rows = source[0].length;
+        final int rows = source.length;
         // normally, I'd use the following trick on source, but since source
         // is an array, I'm not sure if any type info is preserved
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
