@@ -162,7 +162,7 @@ public class RealVector implements Vector<RealType> {
             return (RealType) sumOfSquares.sqrt().coerceTo(RealType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() result.", ex);
-            throw new IllegalStateException("Failed coercion of real sqrt()", ex);
+            throw new IllegalStateException("While computing sqrt(" + sumOfSquares + ")", ex);
         }
     }
 
@@ -197,7 +197,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public Vector<RealType> crossProduct(Vector<RealType> other) {
         if (this.length() != other.length()) {
-            throw new ArithmeticException("Cannot compute cross product for vectors of different dimension.");
+            throw new ArithmeticException("Cannot compute cross product for vectors of different dimension");
         }
         RealVector result;
         if (this.length() == 3L) {

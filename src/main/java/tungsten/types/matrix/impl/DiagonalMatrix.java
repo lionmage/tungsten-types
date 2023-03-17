@@ -172,7 +172,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     @Override
     public DiagonalMatrix<? extends Numeric> inverse() {
         if (Arrays.stream(elements).anyMatch(Zero::isZero)) {
-            throw new ArithmeticException("Diagonal matrices with any 0 elements on the diagonal have no inverse.");
+            throw new ArithmeticException("Diagonal matrices with any 0 elements on the diagonal have no inverse");
         }
         Numeric[] result = Arrays.stream(elements).map(Numeric::inverse).toArray(Numeric[]::new);
         return new DiagonalMatrix<>(result);
