@@ -99,32 +99,12 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     @Override
     public T determinant() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T accum = elements[0];
-        try {
-            for (int idx = 1; idx < elements.length; idx++) {
-                accum = (T) accum.multiply(elements[idx]).coerceTo(clazz);
-            }
-            return accum;
-        } catch (CoercionException ce) {
-            throw new IllegalStateException(ce);
-        }
+        return (T) Arrays.stream(elements).reduce((a, b) -> (T) a.multiply(b)).orElseThrow();
     }
 
     @Override
     public T trace() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T accum = elements[0];
-        try {
-            for (int idx = 1; idx < elements.length; idx++) {
-                accum = (T) accum.add(elements[idx]).coerceTo(clazz);
-            }
-            return accum;
-        } catch (CoercionException ce) {
-            throw new IllegalStateException(ce);
-        }
+        return (T) Arrays.stream(elements).reduce((a, b) -> (T) a.add(b)).orElseThrow();
     }
 
     @Override
@@ -135,7 +115,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     @Override
     public Matrix<T> add(Matrix<T> addend) {
         if (addend.rows() != this.rows() || addend.columns() != this.columns()) {
-            throw new ArithmeticException("Addend must match dimensions of this diagonal matrix.");
+            throw new ArithmeticException("Addend must match dimensions of this diagonal matrix");
         }
         
         BasicMatrix<T> result = new BasicMatrix<>(addend);
@@ -155,6 +135,17 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
+        if (this.columns() != multiplier.rows()) {
+            throw new ArithmeticException("Multiplier rows must match the columns of this diagonal matrix");
+        }
+        if (multiplier instanceof DiagonalMatrix) {
+            DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
+            T[] prod = (T[]) Array.newInstance(elements[0].getClass(), elements.length);
+            for (int idx = 0; idx < elements.length; idx++) {
+                prod[idx] = (T) elements[idx].multiply(other.elements[idx]);
+            }
+            return new DiagonalMatrix<>(prod);
+        }
         BasicMatrix<T> result = new BasicMatrix<>();
         // scale the rows of the multiplier
         for (long idx = 0L; idx < this.rows(); idx++) {

@@ -205,7 +205,15 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
+        }
+        if (multiplier instanceof DiagonalMatrix) {
+            DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
+            ColumnarMatrix<T> result = new ColumnarMatrix<>();
+            for (long column = 0L; column < columns(); column++) {
+                result.append(getColumn(column).scale(other.valueAt(column, column)));
+            }
+            return result;
         }
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
@@ -228,12 +236,12 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         if (columns.isEmpty() || column.length() == this.rows()) {
             columns.add(column);
         } else {
-            throw new IllegalArgumentException("Column vector must have " + this.rows() + " elements.");
+            throw new IllegalArgumentException("Column vector must have " + this.rows() + " elements");
         }
     }
     
     public ColumnarMatrix<T> removeColumn(long column) {
-        if (column < 0L || column >= columns()) throw new IndexOutOfBoundsException("Column " + column + " does not exist.");
+        if (column < 0L || column >= columns()) throw new IndexOutOfBoundsException("Column " + column + " does not exist");
         ColumnarMatrix<T> result = new ColumnarMatrix<>();
         for (long colidx = 0L; colidx < columns(); colidx++) {
             if (colidx == column) continue;
@@ -243,7 +251,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     }
     
     public ColumnarMatrix<T> removeRow(long row) {
-        if (row < 0L || row >= rows()) throw new IndexOutOfBoundsException("Row " + row + " does not exist.");
+        if (row < 0L || row >= rows()) throw new IndexOutOfBoundsException("Row " + row + " does not exist");
         ColumnarMatrix<T> result = new ColumnarMatrix<>();
         for (long colidx = 0L; colidx < columns(); colidx++) {
             result.append(removeElementAt(getColumn(colidx), row));
