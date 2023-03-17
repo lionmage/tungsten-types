@@ -90,13 +90,13 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public long columns() {
-        return (long) columns.size();
+        return columns.size();
     }
 
     @Override
     public long rows() {
         if (columns.isEmpty()) return 0L;
-        return columns.get(0).length();  // length of the first colidx vector
+        return columns.get(0).length();  // length of the first column vector
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public T determinant() {
         if (rows() != columns()) {
-            throw new ArithmeticException("Can only compute determinant for a square matrix.");
+            throw new ArithmeticException("Can only compute determinant for a square matrix");
         }
         if (columns() == 1L) { // 1x1 matrix
             return valueAt(0L, 0L);
@@ -146,7 +146,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
             }
         } catch (CoercionException ex) {
             Logger.getLogger(ColumnarMatrix.class.getName()).log(Level.SEVERE, "Coercion failed computing determinant.", ex);
-            throw new ArithmeticException("Coercion failed: " + ex.getMessage());
+            throw new ArithmeticException("While converting determinant result: " + ex.getMessage());
         }
     }
 
@@ -391,7 +391,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     public RowVector<T> getRow(long row) {
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T[] result = (T[]) Array.newInstance(clazz, (int) rows());
+        T[] result = (T[]) Array.newInstance(clazz, columns.size());
         for (long col = 0L; col < columns(); col++) {
             result[(int) col] = getColumn(col).elementAt(row);
         }
