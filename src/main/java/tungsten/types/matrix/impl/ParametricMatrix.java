@@ -206,7 +206,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Matrix) {
-            Matrix<? extends Numeric> that = (Matrix<Numeric>) o;
+            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
             if (this.rows() != that.rows() || this.columns() != that.columns()) return false;
             for (long row = 0L; row < rows(); row++) {
                 for (long column = 0L; column < columns(); column++) {

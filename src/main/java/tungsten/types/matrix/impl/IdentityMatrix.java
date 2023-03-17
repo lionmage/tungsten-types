@@ -54,7 +54,7 @@ public class IdentityMatrix implements Matrix<Numeric> {
     public Numeric valueAt(long row, long column) {
         if (row < 0L || row >= elementCount || column < 0L || column >= elementCount) {
             throw new IndexOutOfBoundsException("Row and column indices must be between 0 and " +
-                    (elementCount - 1L) + ", inclusive.");
+                    (elementCount - 1L) + ", inclusive");
         }
         if (row == column) return One.getInstance(mctx);
         return ExactZero.getInstance(mctx);
@@ -87,17 +87,24 @@ public class IdentityMatrix implements Matrix<Numeric> {
 
     @Override
     public Matrix<Numeric> scale(Numeric scaleFactor) {
+        // TODO find a more sensible cutover value
+        if (elementCount > (long) Integer.MAX_VALUE) {
+            return new ParametricMatrix<>(elementCount, elementCount, (row, column) -> {
+               if (row.longValue() == column.longValue()) return scaleFactor;
+               return ExactZero.getInstance(mctx);
+            });
+        }
         Numeric[] elements = new Numeric[(int) elementCount];
         for (int idx = 0; idx < (int) elementCount; idx++) {
             elements[idx] = scaleFactor;
         }
-        return new DiagonalMatrix<Numeric>(elements);
+        return new DiagonalMatrix<>(elements);
     }
 
     @Override
     public Matrix<Numeric> add(Matrix<Numeric> addend) {
         if (addend.rows() != this.rows() || addend.columns() != this.columns()) {
-            throw new ArithmeticException("Addend must match dimensions of this diagonal matrix.");
+            throw new ArithmeticException("Addend must match dimensions of this diagonal matrix");
         }
 
         final Numeric one = One.getInstance(mctx);

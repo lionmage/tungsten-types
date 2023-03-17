@@ -25,6 +25,7 @@ package tungsten.types.matrix.impl;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.impl.IntegerImpl;
@@ -107,6 +108,22 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         } finally {
             cacheLock.unlock();
         }
+    }
+
+    public Matrix<T> getSubMatrix(int blockRow, int blockColumn) {
+        if (blockRow < 0 || blockRow > subMatrices.length - 1 ||
+                blockColumn < 0 || blockColumn > subMatrices[0].length - 1) {
+            throw new IndexOutOfBoundsException("Indices " + blockRow + ", " + blockColumn + " do not refer to a valid submatrix");
+        }
+        return subMatrices[blockRow][blockColumn];
+    }
+
+    public int subMatrixRows() {
+        return subMatrices.length;
+    }
+
+    public int subMatrixColumns() {
+        return subMatrices[0].length;
     }
     
     private int getTileRow(long rowIndex) {
@@ -332,8 +349,14 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             // else do it the old-fashioned way
             Matrix<? extends Numeric> that = (Matrix<Numeric>) o;
             if (rows() != that.rows()) return false;
-            for (long row = 0L; row < rows(); row++) {
-                if (!getRow(row).equals(that.getRow(row))) return false;
+            if (that.getClass().isAnnotationPresent(Columnar.class)) {
+                for (long column = 0L; column < columns(); column++) {
+                    if (!getColumn(column).equals(that.getColumn(column))) return false;
+                }
+            } else {
+                for (long row = 0L; row < rows(); row++) {
+                    if (!getRow(row).equals(that.getRow(row))) return false;
+                }
             }
             return true;
         }

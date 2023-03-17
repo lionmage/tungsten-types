@@ -26,6 +26,7 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.Zero;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -91,6 +92,25 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
     public Numeric trace() {
         if (columns() != rows()) throw new ArithmeticException("Cannot compute trace of a non-square matrix");
         return ExactZero.getInstance(mctx);
+    }
+
+    public static boolean isZeroMatrix(Matrix<? extends Numeric> matrix) {
+        if (matrix instanceof ZeroMatrix) return true;  // short circuit test
+        if (matrix.rows() == matrix.columns()) {
+            // square matrices give us some shortcuts — first check the diagonal
+            for (long idx = 0L; idx < matrix.rows(); idx++) {
+                if (!Zero.isZero(matrix.valueAt(idx, idx))) return false;
+            }
+            // if the diagonal is all 0, check the upper & lower triangularity
+            return  matrix.isLowerTriangular() && matrix.isUpperTriangular();
+        }
+        // non-square matrices get the more laborious version
+        for (long row = 0L; row < matrix.rows(); row++) {
+            for (long column = 0L; column < matrix.columns(); column++) {
+                if (!Zero.isZero(matrix.valueAt(row, column))) return false;
+            }
+        }
+        return true;
     }
     
     @Override

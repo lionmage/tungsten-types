@@ -28,7 +28,6 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.IdentityMatrix;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.Sign;
-import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.vector.ColumnVector;
@@ -62,7 +61,7 @@ public interface Matrix<T extends Numeric> {
         if (rows() == 1L) return false;  // singleton matrix can't really be either upper or lower triangular
 
         for (long row = 1L; row < rows(); row++) {
-            for (long column = 0L; column < columns() - row; column++) {
+            for (long column = 0L; column < columns() - (rows() - row); column++) {
                 if (!Zero.isZero(valueAt(row, column))) return false;
             }
         }
@@ -137,12 +136,16 @@ public interface Matrix<T extends Numeric> {
         final long columns = this.rows();
         final Matrix<T> source = this;
         
-        return new Matrix<T>() {
+        return new Matrix<>() {
             @Override
-            public long columns() { return columns; }
+            public long columns() {
+                return columns;
+            }
 
             @Override
-            public long rows() { return rows; }
+            public long rows() {
+                return rows;
+            }
 
             @Override
             public T valueAt(long row, long column) {
@@ -176,7 +179,7 @@ public interface Matrix<T extends Numeric> {
                 // (A*B)^T = B^T * A^T
                 return multiplier.transpose().multiply(source).transpose();
             }
-            
+
             @Override
             public Matrix<T> transpose() {
                 return source;
@@ -187,7 +190,7 @@ public interface Matrix<T extends Numeric> {
                 // the inverse of the transpose is the transpose of the inverse of the original matrix
                 return source.inverse().transpose();
             }
-            
+
             @Override
             public Matrix<T> scale(T scaleFactor) {
                 return source.scale(scaleFactor).transpose();

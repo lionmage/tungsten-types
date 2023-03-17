@@ -187,7 +187,7 @@ public class ImaginaryUnit implements ComplexType {
     }
 
     @Override
-    public Numeric inverse() {
+    public ComplexType inverse() {
         // 1/i = -i
         return this.conjugate();
     }

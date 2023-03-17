@@ -23,18 +23,17 @@
  */
 package tungsten.types.util;
 
-import tungsten.types.*;
 import tungsten.types.Set;
 import tungsten.types.Vector;
+import tungsten.types.*;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.UnaryFunction;
-import tungsten.types.functions.impl.*;
-import tungsten.types.matrix.impl.AggregateMatrix;
-import tungsten.types.matrix.impl.BasicMatrix;
-import tungsten.types.matrix.impl.PaddedMatrix;
-import tungsten.types.matrix.impl.SubMatrix;
+import tungsten.types.functions.impl.Exp;
+import tungsten.types.functions.impl.NaturalLog;
+import tungsten.types.functions.impl.Negate;
+import tungsten.types.matrix.impl.*;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
@@ -49,6 +48,8 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+import java.util.stream.StreamSupport;
 
 import static tungsten.types.Range.BoundType;
 
@@ -688,6 +689,201 @@ public class MathUtils {
                 break;
         }
         return new BasicMatrix<>(temp);
+    }
+
+    /**
+     * Compute the conjugate transpose of a given matrix A, denoted A<sup>*</sup>.
+     * This is equivalent to taking the transpose of A and then taking the complex
+     * conjugate of each value contained therein.
+     * @param original the original matrix for which we want the conjugate transpose
+     * @return the conjugate transpose of {@code original}
+     */
+    public static Matrix<ComplexType> conjugateTranspose(Matrix<? extends Numeric> original) {
+        // TODO set a more reasonable threshold
+        if (original.rows() > (long) Integer.MAX_VALUE || original.columns() > (long) Integer.MAX_VALUE) {
+            return new ParametricMatrix<>(original.columns(), original.rows(), (row, column) -> {
+                try {
+                    ComplexType interim = (ComplexType) original.valueAt(column, row).coerceTo(ComplexType.class);
+                    return interim.conjugate();
+                } catch (CoercionException e) {
+                    throw new ArithmeticException("Could not compute conjugate for element at " + row + ", " + column);
+                }
+            });
+        }
+        // otherwise use a 2D array as a working copy
+        ComplexType[][] working = new ComplexType[(int) original.columns()][(int) original.rows()];
+        try {
+            for (long j = 0L; j < original.columns(); j++) {
+                for (long k = 0L; k < original.rows(); k++) {
+                    ComplexType value = (ComplexType) original.valueAt(k, j).coerceTo(ComplexType.class);
+                    working[(int) j][(int) k] = value.conjugate();
+                }
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Any type should be coercible to ComplexType", e);
+        }
+        return new BasicMatrix<>(working);
+    }
+
+    /**
+     * Determine if a given matrix is normal.
+     * A matrix is considered normal if it commutes with its conjugate transpose.
+     * In other words, A<sup>*</sup>A = AA<sup>*</sup>.
+     * @param matrix the {@link Matrix} to test whether it is normal
+     * @return true if the supplied {@link Matrix} is normal, false otherwise
+     */
+    public static boolean isNormal(Matrix<? extends Numeric> matrix) {
+        if (matrix.rows() != matrix.columns()) return false;  // non-square matrices are non-normal
+        Matrix<ComplexType> conjXpose = conjugateTranspose(matrix);
+        Matrix<ComplexType> inputAsCplx = new ParametricMatrix<>(matrix.rows(), matrix.columns(), (row, column) -> {
+            try {
+                return (ComplexType) matrix.valueAt(row, column).coerceTo(ComplexType.class);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Unable to coerce element at " + row + ", " + column);
+            }
+        });
+        // IntelliJ (and probably other IDEs) will complain that equals() is between objects of
+        // inconvertible types, but this is some high-grade horseshit owing to the way Java
+        // implements generic type support.  Matrix<ComplexType> is not considered a subtype
+        // of Matrix<Numeric> (the supertype of ZeroMatrix).  Yet the equals() method of ZeroMatrix
+        // delegates to ParametricMatrix.equals(), which tests two matrices for equality based upon
+        // element-wise comparison using Numeric.equals()...
+        // Ultimately, it's just easier to create a method ZeroMatrix.isZeroMatrix() which tests
+        // the cell values for equality to zero.
+        return ZeroMatrix.isZeroMatrix(inputAsCplx.multiply(conjXpose).subtract(conjXpose.multiply(inputAsCplx)));
+    }
+
+    /**
+     * Determine if a complex matrix is Hermitian (that is, equal to its own conjugate transpose).
+     * @param cplxMatrix the complex matrix to test
+     * @return true if the given matrix is Hermitian, false otherwise
+     */
+    public static boolean isHermitian(Matrix<ComplexType> cplxMatrix) {
+        return cplxMatrix.equals(conjugateTranspose(cplxMatrix));
+    }
+
+    public static Set<? extends Numeric> eigenvaluesOf(Matrix<? extends Numeric> M) {
+        if (M.rows() != M.columns()) throw new IllegalArgumentException("Cannot compute eigenvalues for a non-square matrix");
+        if (M.isTriangular()) {
+            // the values on the diagonal are the eigenvalues
+            NumericSet diagonalElements = new NumericSet();
+            LongStream.range(0L, M.rows()).mapToObj(idx -> M.valueAt(idx, idx)).forEach(diagonalElements::append);
+            return diagonalElements;
+        }
+        // if M is block-diagonal, then the eigenvalues of M are the eigenvalues of all submatrices on the diagonal
+        if (M instanceof AggregateMatrix) {
+            AggregateMatrix<? extends Numeric> blockMatrix = (AggregateMatrix<? extends Numeric>) M;
+            if (blockMatrix.subMatrixRows() != blockMatrix.subMatrixColumns()) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.WARNING,
+                        "Block matrix is {0}×{1} but the tiles are laid out {2}×{3} (non-square).",
+                        new Object[] { blockMatrix.rows(), blockMatrix.columns(),
+                                blockMatrix.subMatrixRows(), blockMatrix.subMatrixColumns() });
+            }
+            if (isBlockDiagonal(blockMatrix)) {
+                NumericSet allEigenvalues = new NumericSet();
+                for (int idx = 0; idx < blockMatrix.subMatrixRows(); idx++) {
+                    Set<? extends Numeric> subMatrixEigenvalues = eigenvaluesOf(blockMatrix.getSubMatrix(idx, idx));
+                    StreamSupport.stream(subMatrixEigenvalues.spliterator(), false).forEach(allEigenvalues::append);
+                }
+                return allEigenvalues;
+            }
+        }
+        if (M.rows() == 2L) {
+            // 2×2 matrices are trivial to compute the eigenvalues of
+            return computeEigenvaluesFor2x2(M);
+        }
+        if (M.rows() == 3L && isSymmetric(M)) {
+            return computeEigenvaluesFor3x3Symmetric(M);
+        }
+
+        // we can't handle this type of matrix yet
+        throw new UnsupportedOperationException("Cannot compute eigenvalues for square matrix of size " + M.rows());
+    }
+
+    public static boolean isBlockDiagonal(AggregateMatrix<? extends Numeric> blockMatrix) {
+        for (int blockRow = 0; blockRow < blockMatrix.subMatrixRows(); blockRow++) {
+            for (int blockCol = 0; blockCol < blockMatrix.subMatrixColumns(); blockCol++) {
+                if (blockRow == blockCol) continue;
+                if (!ZeroMatrix.isZeroMatrix(blockMatrix.getSubMatrix(blockRow, blockCol))) return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isSymmetric(Matrix<? extends Numeric> matrix) {
+        if (matrix instanceof DiagonalMatrix) return true;
+        if (matrix.rows() != matrix.columns()) return false;
+        for (long row = 0L; row < matrix.rows() - 1L; row++) {
+            for (long column = row + 1L; column < matrix.columns(); column++) {
+                if (!matrix.valueAt(row, column).equals(matrix.valueAt(column, row))) return false;
+            }
+        }
+        return true;
+    }
+
+    private static Set<Numeric> computeEigenvaluesFor2x2(Matrix<? extends Numeric> matrix) {
+        Numeric diagSum = matrix.valueAt(0L, 0L).add(matrix.valueAt(1L, 1L));
+        Numeric diagDiff = matrix.valueAt(0L, 0L).subtract(matrix.valueAt(1L, 1L));
+        final IntegerType four = new IntegerImpl(BigInteger.valueOf(4L));
+        Numeric term2 = diagDiff.multiply(diagDiff)
+                .add(four.multiply(matrix.valueAt(0L, 1L)).multiply(matrix.valueAt(1L, 0L)))
+                .sqrt();
+        final IntegerType two = new IntegerImpl(TWO);
+        return Set.of(diagSum.add(term2).divide(two), diagSum.subtract(term2).divide(two));
+    }
+
+    private static Set<ComplexType> computeEigenvaluesFor3x3Symmetric(Matrix<? extends Numeric> matrix) {
+        final MathContext ctx = matrix.valueAt(0L, 0L).getMathContext();
+        final RealType two = new RealImpl(decTWO, ctx);
+        final RealType three = new RealImpl(BigDecimal.valueOf(3L), ctx);
+        final RealType six = new RealImpl(BigDecimal.valueOf(6L), ctx);
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        final RealType negone = new RealImpl(BigDecimal.valueOf(-1L), ctx);
+        final RealType pi = Pi.getInstance(ctx);
+        try {
+            ComplexType triangleSq = (ComplexType) matrix.valueAt(0L, 1L).multiply(matrix.valueAt(0L, 1L))
+                    .add(matrix.valueAt(0L, 2L).multiply(matrix.valueAt(0L, 2L)))
+                    .add(matrix.valueAt(1L, 2L).multiply(matrix.valueAt(1L, 2L))).coerceTo(ComplexType.class);
+            ComplexType q = (ComplexType) matrix.trace().divide(three).coerceTo(ComplexType.class);
+            ComplexType intermediate = (ComplexType) LongStream.range(0L, matrix.rows()).mapToObj(idx -> matrix.valueAt(idx, idx))
+                    .map(z -> z.multiply(z)).reduce(triangleSq.multiply(two), Numeric::add).coerceTo(ComplexType.class);
+            ComplexType p = (ComplexType) intermediate.divide(six).sqrt();
+            Matrix<ComplexType> A = new ParametricMatrix<>(matrix.rows(), matrix.columns(), (row, column) -> {
+                try {
+                    return (ComplexType) matrix.valueAt(row, column).coerceTo(ComplexType.class);
+                } catch (CoercionException e) {
+                    throw new ArithmeticException("Unable to coerce element at " + row + ", " + column);
+                }
+            });
+            Matrix<ComplexType> B = A.subtract(lambdaMatrix(3L, q));
+            ComplexType r = (ComplexType) B.determinant().divide(two);
+            ComplexType phi;
+            if (r.isCoercibleTo(RealType.class) && matrix.valueAt(0L, 0L) instanceof RealType) {
+                // if the matrix is real, ensure we keep the value of phi within bounds
+                RealType reR = r.real();
+                if (reR.compareTo(negone) <= 0) phi = new ComplexPolarImpl((RealType) pi.divide(three));
+                else if (reR.compareTo(one) >= 0) phi = new ComplexRectImpl(new RealImpl(BigDecimal.ZERO, ctx));
+                else phi = (ComplexType) arccos(reR).divide(three).coerceTo(ComplexType.class);
+            } else {
+                phi = (ComplexType) arccos(r).divide(three);
+            }
+            ComplexType eig1 = (ComplexType) q.add(p.multiply(cos(phi)).multiply(two));
+            ComplexType nextAngle = (ComplexType) phi.add(two.multiply(pi).divide(three));
+            ComplexType eig2 = (ComplexType) q.add(p.multiply(cos(nextAngle)).multiply(two));
+            // since A.trace() = eig1 + eig2 + eig3, we can solve for eig3
+            ComplexType eig3 = (ComplexType) A.trace().subtract(eig1).subtract(eig2);
+            return Set.of(eig1, eig2, eig3);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("While computing eigenvalues: " + e.getMessage());
+        }
+    }
+
+    private static Matrix<ComplexType> lambdaMatrix(long dimension, ComplexType lambda) {
+        final ComplexType zero = new ComplexRectImpl(new RealImpl(BigDecimal.ZERO, lambda.getMathContext()));
+        return new ParametricMatrix<>(dimension, dimension, (row, column) -> {
+            if (row.longValue() == column.longValue()) return lambda;
+            return zero;
+        });
     }
 
     /**
