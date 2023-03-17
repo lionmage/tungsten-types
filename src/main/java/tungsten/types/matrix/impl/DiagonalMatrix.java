@@ -29,14 +29,19 @@ import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
+import tungsten.types.vector.impl.ComplexVector;
+import tungsten.types.vector.impl.RealVector;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
+import java.math.MathContext;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +60,17 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     public DiagonalMatrix(T... elements) {
         this.elements = Arrays.copyOf(elements, elements.length);
     }
-    
+
+    /**
+     * Constructor which initializes a diagonal matrix with the
+     * elements of a vector.  Note that this is equivalent to
+     * the <em>diag</em> operator:<br/>
+     * For vector <strong>a</strong> with elements a<sub>0</sub>, a<sub>1</sub>, &hellip;, a<sub>n - 1</sub>,
+     * the diagonal matrix <strong>D</strong> may be denoted
+     * <strong>D</strong>&nbsp;=&nbsp;diag(a<sub>0</sub>,&thinsp;&hellip;,&thinsp;a<sub>n - 1</sub>)
+     * or <strong>D</strong>&nbsp;=&nbsp;diag(<strong>a</strong>).
+     * @param source a vector containing the elements for this diagonal matrix
+     */
     public DiagonalMatrix(Vector<T> source) {
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) source.getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
@@ -99,12 +114,12 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     @Override
     public T determinant() {
-        return (T) Arrays.stream(elements).reduce((a, b) -> (T) a.multiply(b)).orElseThrow();
+        return Arrays.stream(elements).reduce((a, b) -> (T) a.multiply(b)).orElseThrow();
     }
 
     @Override
     public T trace() {
-        return (T) Arrays.stream(elements).reduce((a, b) -> (T) a.add(b)).orElseThrow();
+        return Arrays.stream(elements).reduce((a, b) -> (T) a.add(b)).orElseThrow();
     }
 
     @Override
@@ -193,9 +208,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         final Euler e = Euler.getInstance(elements[0].getMathContext());
 
         Numeric[] result = Arrays.stream(elements)
-                .map(element -> {
-                    return element instanceof ComplexType ? e.exp((ComplexType) element) : e.exp(limitedUpconvert(element));
-                }).toArray(Numeric[]::new);
+                .map(element -> element instanceof ComplexType ? e.exp((ComplexType) element) : e.exp(limitedUpconvert(element)))
+                .toArray(Numeric[]::new);
         return new DiagonalMatrix<>(result);
     }
     
@@ -232,6 +246,130 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         T[] scaled = Arrays.stream(elements).map(element -> element.multiply(scaleFactor))
                 .map(clazz::cast).toArray(size -> (T[]) Array.newInstance(clazz, size));
         return new DiagonalMatrix<>(scaled);
+    }
+
+    /**
+     * This is the <em>diag</em> operator, intended to convert a diagonal matrix into a vector.
+     * It is the effective inverse of {@link DiagonalMatrix#DiagonalMatrix(Vector)}.<br/>
+     * For a diagonal matrix <strong>D</strong>,
+     * diag(<strong>D</strong>)&nbsp;=&nbsp;[a<sub>0</sub>,&thinsp;&hellip;,&thinsp;a<sub>n - 1</sub>]<sup>T</sup>
+     *
+     * @return a vector containing the diagonal elements of this matrix
+     */
+    public Vector<T> diag() {
+        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        return new Vector<>() {
+            @Override
+            public long length() {
+                return elements.length;
+            }
+
+            @Override
+            public T elementAt(long position) {
+                return elements[(int) position];
+            }
+
+            @Override
+            public void setElementAt(T element, long position) {
+                throw new UnsupportedOperationException("diag vector is a read-only view");
+            }
+
+            @Override
+            public void append(T element) {
+                throw new UnsupportedOperationException("diag vector is a read-only view");
+            }
+
+            @Override
+            public Vector<T> add(Vector<T> addend) {
+                return addend.add(this);
+            }
+
+            @Override
+            public Vector<T> subtract(Vector<T> subtrahend) {
+                return subtrahend.negate().add(this);
+            }
+
+            @Override
+            public Vector<T> negate() {
+                T negone = OptionalOperations.dynamicInstantiate(clazz, -1);
+                return scale(negone);
+            }
+
+            @Override
+            public Vector<T> scale(T factor) {
+                return DiagonalMatrix.this.scale(factor).diag();
+            }
+
+            @Override
+            public T magnitude() {
+                try {
+                    return (T) Arrays.stream(elements).map(x -> x.multiply(x)).reduce(Numeric::add).map(Numeric::sqrt)
+                            .orElseThrow().coerceTo(clazz);
+                } catch (CoercionException e) {
+                    // this should never happen
+                    throw new IllegalStateException(e);
+                }
+            }
+
+            @Override
+            public T dotProduct(Vector<T> other) {
+                if (length() != other.length()) {
+                    throw new ArithmeticException("Vectors must be of the same length");
+                }
+                Numeric accum = ExactZero.getInstance(getMathContext());
+                for (int i = 0; i < elements.length; i++) {
+                    accum = accum.add(elements[i].multiply(other.elementAt(i)));
+                }
+                try {
+                    return (T) accum.coerceTo(clazz);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("Dot product computed as: " + accum, e);
+                }
+            }
+
+            @Override
+            public Vector<T> crossProduct(Vector<T> other) {
+                NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
+                switch (h) {
+                    case REAL:
+                        RealVector realVector = new RealVector((RealType[]) elements, getMathContext());
+                        return (Vector<T>) realVector.crossProduct((Vector<RealType>) other);
+                    case COMPLEX:
+                        ComplexVector cplxVector = new ComplexVector((ComplexType[]) elements, getMathContext());
+                        return (Vector<T>) cplxVector.crossProduct((Vector<ComplexType>) other);
+                    default:
+                        throw new ArithmeticException("Cross product is supported only for real and complex vectors");
+                }
+            }
+
+            @Override
+            public Vector<T> normalize() {
+                try {
+                    T scaleFactor = (T) magnitude().inverse().coerceTo(clazz);
+                    return DiagonalMatrix.this.scale(scaleFactor).diag();
+                } catch (CoercionException e) {
+                    throw new ArithmeticException("While computing inverse of magnitude " + magnitude() +
+                            ": " + e.getMessage());
+                }
+            }
+
+            @Override
+            public RealType computeAngle(Vector<T> other) {
+                Numeric cosine = this.dotProduct(other).divide(this.magnitude().multiply(other.magnitude()));
+                Numeric angle = MathUtils.arccos(cosine);
+                if (angle instanceof RealType) return (RealType) angle;
+                else if (angle instanceof ComplexType) {
+                    return ((ComplexType) angle).real();
+                }
+                throw new ArithmeticException("arccos() gave an unexpected result: " + angle);
+            }
+
+            @Override
+            public MathContext getMathContext() {
+                return elements[0].getMathContext();
+            }
+        };
     }
     
     @Override

@@ -56,7 +56,7 @@ public class RealVector implements Vector<RealType> {
      */
     public RealVector(long initialCapacity) {
         if (initialCapacity > (long) Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("This implementation of Vector cannot store " + initialCapacity + " elements.");
+            throw new IllegalArgumentException("This implementation of Vector cannot store " + initialCapacity + " elements");
         }
         this.elements = new ArrayList<>((int) initialCapacity);
     }
@@ -87,7 +87,7 @@ public class RealVector implements Vector<RealType> {
     
     public void setMathContext(MathContext mctx) {
         if (mctx == null) {
-            throw new IllegalArgumentException("MathContext must not be null.");
+            throw new IllegalArgumentException("MathContext must not be null");
         }
         this.mctx = mctx;
     }
@@ -199,7 +199,7 @@ public class RealVector implements Vector<RealType> {
         if (this.length() != other.length()) {
             throw new ArithmeticException("Cannot compute cross product for vectors of different dimension.");
         }
-        RealVector result = null;
+        RealVector result;
         if (this.length() == 3L) {
             //  A×B = (a2*b3 - a3*b2, a3*b1 - a1*b3, a1*b2 - a2*b1)
             result = new RealVector(3L);
@@ -238,12 +238,7 @@ public class RealVector implements Vector<RealType> {
         RealType cosine = (RealType) this.dotProduct(other).divide(this.magnitude().multiply(other.magnitude()));
         Numeric angle = MathUtils.arccos(cosine);
         if (angle instanceof RealType) {
-            try {
-                return (RealType) angle.coerceTo(RealType.class);
-            } catch (CoercionException e) {
-                throw new IllegalStateException("While computing angle between vectors, could not coerce result to RealType: " +
-                        angle);
-            }
+            return (RealType) angle;
         }
         throw new ArithmeticException("arccos computed a non-real result: " + angle);
     }
