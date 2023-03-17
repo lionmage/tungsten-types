@@ -37,6 +37,8 @@ import tungsten.types.matrix.impl.*;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
+import tungsten.types.vector.ColumnVector;
+import tungsten.types.vector.RowVector;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -762,6 +764,26 @@ public class MathUtils {
         return cplxMatrix.equals(conjugateTranspose(cplxMatrix));
     }
 
+    public static boolean isOfType(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {
+        if (matrix.getClass().isAnnotationPresent(Columnar.class)) {
+            return LongStream.range(0L, matrix.columns()).mapToObj(matrix::getColumn).flatMap(ColumnVector::stream)
+                    .map(Object::getClass).allMatch(clazz::isAssignableFrom);
+        }
+        return LongStream.range(0L, matrix.rows()).mapToObj(matrix::getRow).flatMap(RowVector::stream)
+                .map(Object::getClass).allMatch(clazz::isAssignableFrom);
+    }
+
+    /**
+     * Compute the eigenvalues for the given matrix. The returned {@link Set}
+     * may be heterogeneous (i.e., {@link Set<Numeric>} which can contain
+     * any subclass of {@link Set}).<br/>
+     * <strong>Note:</strong> This method is currently only guaranteed to
+     * produce results for triangular matrices and 2&times;2 matrices.
+     * Symmetric 3&times;3 matrices are also supported. There is very
+     * limited support for block-diagonal matrices.
+     * @param M the {@link Matrix} for which we wish to obtain the eigenvalues
+     * @return a {@link Set} of eigenvalues
+     */
     public static Set<? extends Numeric> eigenvaluesOf(Matrix<? extends Numeric> M) {
         if (M.rows() != M.columns()) throw new IllegalArgumentException("Cannot compute eigenvalues for a non-square matrix");
         if (M.isTriangular()) {
@@ -775,7 +797,7 @@ public class MathUtils {
             AggregateMatrix<? extends Numeric> blockMatrix = (AggregateMatrix<? extends Numeric>) M;
             if (blockMatrix.subMatrixRows() != blockMatrix.subMatrixColumns()) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.WARNING,
-                        "Block matrix is {0}×{1} but the tiles are laid out {2}×{3} (non-square).",
+                        "Block matrix is {0}×{1} (detected as square) but the tiles are laid out {2}×{3} (non-square).",
                         new Object[] { blockMatrix.rows(), blockMatrix.columns(),
                                 blockMatrix.subMatrixRows(), blockMatrix.subMatrixColumns() });
             }
@@ -858,7 +880,7 @@ public class MathUtils {
             Matrix<ComplexType> B = A.subtract(lambdaMatrix(3L, q));
             ComplexType r = (ComplexType) B.determinant().divide(two);
             ComplexType phi;
-            if (r.isCoercibleTo(RealType.class) && matrix.valueAt(0L, 0L) instanceof RealType) {
+            if (r.isCoercibleTo(RealType.class) && isOfType(matrix, RealType.class)) {
                 // if the matrix is real, ensure we keep the value of phi within bounds
                 RealType reR = r.real();
                 if (reR.compareTo(negone) <= 0) phi = new ComplexPolarImpl((RealType) pi.divide(three));
@@ -1265,6 +1287,7 @@ public class MathUtils {
     }
 
     public static ComplexType cos(ComplexType z) {
+        if (z.isCoercibleTo(RealType.class)) return new ComplexRectImpl(cos(z.real()));
         final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
         final ComplexType iz = (ComplexType) i.multiply(z);
         final Euler e = Euler.getInstance(z.getMathContext());
@@ -1272,6 +1295,7 @@ public class MathUtils {
     }
 
     public static ComplexType sin(ComplexType z) {
+        if (z.isCoercibleTo(RealType.class)) return new ComplexRectImpl(sin(z.real()));
         final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
         final ComplexType iz = (ComplexType) i.multiply(z);
         final Euler e = Euler.getInstance(z.getMathContext());
