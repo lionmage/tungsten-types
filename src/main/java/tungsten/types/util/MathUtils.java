@@ -765,6 +765,13 @@ public class MathUtils {
     }
 
     public static boolean isOfType(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {
+        if (matrix instanceof DiagonalMatrix) {
+            // To guard against a heterogeneous matrix causing problems, we must check
+            // one off-diagonal cell.
+            return LongStream.range(0L, matrix.rows()).mapToObj(idx -> matrix.valueAt(idx, idx))
+                    .map(Object::getClass).allMatch(clazz::isAssignableFrom) &&
+                    clazz.isAssignableFrom(matrix.valueAt(0L, matrix.columns() - 1L).getClass());
+        }
         if (matrix.getClass().isAnnotationPresent(Columnar.class)) {
             return LongStream.range(0L, matrix.columns()).mapToObj(matrix::getColumn).flatMap(ColumnVector::stream)
                     .map(Object::getClass).allMatch(clazz::isAssignableFrom);
@@ -835,6 +842,7 @@ public class MathUtils {
     public static boolean isSymmetric(Matrix<? extends Numeric> matrix) {
         if (matrix instanceof DiagonalMatrix) return true;
         if (matrix.rows() != matrix.columns()) return false;
+        if (matrix.rows() == 1L) return true; // a singleton matrix is always symmetric
         for (long row = 0L; row < matrix.rows() - 1L; row++) {
             for (long column = row + 1L; column < matrix.columns(); column++) {
                 if (!matrix.valueAt(row, column).equals(matrix.valueAt(column, row))) return false;

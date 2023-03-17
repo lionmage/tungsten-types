@@ -101,8 +101,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     public T determinant() {
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
+        T accum = elements[0];
         try {
-            T accum = (T) elements[0].coerceTo(clazz);
             for (int idx = 1; idx < elements.length; idx++) {
                 accum = (T) accum.multiply(elements[idx]).coerceTo(clazz);
             }
@@ -116,8 +116,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     public T trace() {
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
+        T accum = elements[0];
         try {
-            T accum = elements[0];
             for (int idx = 1; idx < elements.length; idx++) {
                 accum = (T) accum.add(elements[idx]).coerceTo(clazz);
             }
