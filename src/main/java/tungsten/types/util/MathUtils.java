@@ -856,8 +856,8 @@ public class MathUtils {
     }
 
     /**
-     * Perform back substitution to solve Ux&nbsp;=&nbsp;c for x,
-     * where U is an upper-triangular matrix and c is a vector.
+     * Perform back substitution to solve <strong>U</strong>x&#x20d7;&nbsp;=&nbsp;c&#x20d7; for x&#x20d7;,
+     * where <strong>U</strong> is an upper-triangular matrix and c&#x20d7; is a vector.
      *
      * @param U a {@link Matrix} in upper-triangular form, that is, {@code U.isUpperTriangular()} returns {@code true}
      * @param c a {@link Vector} of values which must have the same number of elements as U has rows

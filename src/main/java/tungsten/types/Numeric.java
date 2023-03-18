@@ -29,7 +29,8 @@ import java.math.MathContext;
 /**
  * Root interface for all numeric types.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public interface Numeric {
     boolean isExact();
@@ -41,7 +42,15 @@ public interface Numeric {
                 this.getClass(), numtype);
     }
 
-    Numeric magnitude();
+    /**
+     * Computes the magnitude of this value. For many {@link Numeric} types,
+     * this is equivalent to computing the absolute value. The return type is
+     * guaranteed to implement {@link Comparable}, useful for types that are not
+     * themselves comparable (e.g., complex numbers).
+     * @return the magnitude of {@code this}
+     * @param <R> the return type of the calculation, which may not be the same as {@code this.getClass()}
+     */
+    <R extends Numeric & Comparable<? super R>> R magnitude();
     Numeric negate();
     
     Numeric add(Numeric addend);
