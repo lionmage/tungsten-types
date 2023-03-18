@@ -39,6 +39,7 @@ import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
+import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ComplexVector;
 import tungsten.types.vector.impl.RealVector;
 
@@ -885,7 +886,7 @@ public class MathUtils {
         for (long i = n - 1L; i >= 0L; i--) {
             Numeric sum = ExactZero.getInstance(c.getMathContext());
             for (long j = i + 1L; j < n; j++) {
-                sum = sum.add(x.elementAt(j).multiply(U.valueAt(i,j)));
+                sum = sum.add(x.elementAt(j).multiply(U.valueAt(i, j)));
             }
             try {
                 T value = (T) c.elementAt(i).subtract(sum).multiply(U.valueAt(i, i).inverse()).coerceTo(clazz);
@@ -898,6 +899,20 @@ public class MathUtils {
         }
 
         return x;
+    }
+
+    private static <T extends Numeric> ColumnVector<T> columnVectorFrom(Vector<? super T> source, Class<T> clazz) {
+        List<T> converted = new LinkedList<>();
+        try {
+            for (long index = 0L; index < source.length(); index++) {
+                T value = (T) source.elementAt(index).coerceTo(clazz);
+                converted.add(value);
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While converting " + source + " to a column vector", e);
+        }
+        // TODO add logic to return a List-based column vector when source is sufficiently long
+        return new ArrayColumnVector<>(converted);
     }
 
     private static Set<Numeric> computeEigenvaluesFor2x2(Matrix<? extends Numeric> matrix) {
