@@ -39,7 +39,10 @@ import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
+import tungsten.types.vector.impl.ComplexVector;
+import tungsten.types.vector.impl.RealVector;
 
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -849,6 +852,52 @@ public class MathUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * Perform back substitution to solve Ux&nbsp;=&nbsp;c for x,
+     * where U is an upper-triangular matrix and c is a vector.
+     *
+     * @param U a {@link Matrix} in upper-triangular form, that is, {@code U.isUpperTriangular()} returns {@code true}
+     * @param c a {@link Vector} of values which must have the same number of elements as U has rows
+     * @return the solution vector
+     * @param <T> the type of U and the result
+     */
+    public static <T extends Numeric> Vector<T> backSubstitution(Matrix<T> U, Vector<? super T> c) {
+        if (U.rows() != c.length()) throw new IllegalArgumentException("Matrix U must have the same number of rows as elements in Vector c");
+        if (!U.isUpperTriangular() || U.rows() != U.columns()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
+        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) U.getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
+        Vector<T> x;
+        switch (h) {
+            case COMPLEX:
+                x = (Vector<T>) new ComplexVector(c.length());
+                break;
+            case REAL:
+                x = (Vector<T>) new RealVector(c.length());
+                break;
+            default:
+                throw new UnsupportedOperationException("No vector type defined for " + clazz.getTypeName());
+        }
+        final long n = U.rows();  // also U.columns() would work since U is an upper-triangular square matrix
+
+        for (long i = n - 1L; i >= 0L; i--) {
+            Numeric sum = ExactZero.getInstance(c.getMathContext());
+            for (long j = i + 1L; j < n; j++) {
+                sum = sum.add(x.elementAt(j).multiply(U.valueAt(i,j)));
+            }
+            try {
+                T value = (T) c.elementAt(i).subtract(sum).multiply(U.valueAt(i, i).inverse()).coerceTo(clazz);
+                x.setElementAt(value, i);
+            } catch (CoercionException fatal) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                        "While computing the " + i + "th element of x for Ux = c, c = " + c, fatal);
+                throw new ArithmeticException("Coercion error while computing " + i + "th element of solution vector");
+            }
+        }
+
+        return x;
     }
 
     private static Set<Numeric> computeEigenvaluesFor2x2(Matrix<? extends Numeric> matrix) {
