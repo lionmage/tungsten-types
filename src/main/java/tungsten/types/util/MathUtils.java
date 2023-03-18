@@ -865,7 +865,7 @@ public class MathUtils {
      */
     public static <T extends Numeric> Vector<T> backSubstitution(Matrix<T> U, Vector<? super T> c) {
         if (U.rows() != c.length()) throw new IllegalArgumentException("Matrix U must have the same number of rows as elements in Vector c");
-        if (!U.isUpperTriangular() || U.rows() != U.columns()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
+        if (U.rows() != U.columns() || !U.isUpperTriangular()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
         final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) U.getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
