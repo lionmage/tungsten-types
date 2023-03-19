@@ -880,6 +880,31 @@ public class MathUtils {
     }
 
     /**
+     * Given matrix <strong>A</strong> and vector b&#x20d7;, perform Gaussian elimination
+     * and then solve for x&#x20d7; in the equation <strong>A</strong>x&#x20d7;&nbsp;=&nbsp;b&#x20d7;.
+     * @param A a square matrix
+     * @param b a vector of values with a length corresponding to {@code A.rows()}
+     * @return the solution to the equation <strong>A</strong>x&#x20d7;&nbsp;=&nbsp;b&#x20d7;
+     * @param <T> the type of the elements of {@code A} and {@code b}
+     */
+    public static <T extends Numeric> Vector<T> triangularizeAndSolve(Matrix<T> A, Vector<T> b) {
+        if (A.rows() != A.columns()) throw new IllegalArgumentException("A must be square");
+        if (b.length() != A.rows()) throw new IllegalArgumentException("Length of b must equal rows of A");
+        final long n = A.rows();
+
+        Matrix<T> U = A;
+        ColumnVector<T> c = b instanceof ColumnVector ? (ColumnVector<T>) b : new ArrayColumnVector<>(b);
+        for (long j = 1L; j < n - 1L; j++) {
+            Matrix<T> intermediate = gaussianElimination(U, c, j);
+            List<Matrix<T>> parts = splitAugmentedMatrix(intermediate);
+            U = parts.get(0);
+            c = (ColumnVector<T>) parts.get(1);
+            // TODO do we want a bailout condition if U is already upper-triangular?
+        }
+        return backSubstitution(U, c);
+    }
+
+    /**
      * Perform Gaussian elimination on a matrix <strong>A</strong> and vector b&#x20d7;.
      * The result is a reduced matrix <strong>U</strong> and associated vector c&#x20d7;
      * which, after the final pivot, is in upper-triangular form, suitable for backsolving in the form
