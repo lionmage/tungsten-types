@@ -85,18 +85,18 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (!rows.isEmpty()) {
             return rows.get(0).columns();
         }
-        throw new IllegalStateException("This matrix has no rows.");
+        throw new IllegalStateException("This matrix has no rows");
     }
 
     @Override
     public long rows() {
-        return (long) rows.size();
+        return rows.size();
     }
 
     @Override
     public T valueAt(long row, long column) {
         if (row < 0L || row >= rows() || column < 0L || column >= columns()) {
-            throw new IndexOutOfBoundsException("Row and column indices must be within bounds.");
+            throw new IndexOutOfBoundsException("Row and column indices must be within bounds");
         }
         return rows.get((int) row).elementAt((int) column);
     }
@@ -152,14 +152,14 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
             }
         } catch (CoercionException ex) {
             Logger.getLogger(BasicMatrix.class.getName()).log(Level.SEVERE, "Coercion failed computing determinant.", ex);
-            throw new ArithmeticException("Coercion failed: " + ex.getMessage());
+            throw new ArithmeticException("While computing determinant: " + ex.getMessage());
         }
     }
 
     @Override
     public Matrix<T> add(Matrix<T> addend) {
         if (this.rows() != addend.rows() || this.columns() != addend.columns()) {
-            throw new ArithmeticException("Addend must match dimensions of matrix.");
+            throw new ArithmeticException("Addend must match dimensions of matrix");
         }
         BasicMatrix<T> result = new BasicMatrix<>();
         for (long row = 0L; row < rows(); row++) {
@@ -252,9 +252,9 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
      * @param column a column vector representing the new column to append
      */
     public void append(ColumnVector<T> column) {
-        if (rows.isEmpty()) throw new UnsupportedOperationException("Appending a column to an empty BasicMatrix is not supported.");
+        if (rows.isEmpty()) throw new UnsupportedOperationException("Appending a column to an empty BasicMatrix is not supported");
         if (column.rows() != this.rows()) {
-            throw new IllegalArgumentException("Column vector has wrong number of elements.");
+            throw new IllegalArgumentException("Column vector has wrong number of elements");
         }
         columnCache.put(columns(), column);  // cache the column before updating the rows
 
@@ -277,11 +277,11 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<? extends Numeric> inverse() {
         if (rows() != columns()) {
-            throw new ArithmeticException("Cannot invert a non-square matrix.");
+            throw new ArithmeticException("Cannot invert a non-square matrix");
         }
         final T det = this.determinant();
         if (Zero.isZero(det)) {
-            throw new ArithmeticException("Matrix is singular.");
+            throw new ArithmeticException("Matrix is singular");
         }
         if (rows() == 1L) {
             return new SingletonMatrix<>(valueAt(0L, 0L).inverse());

@@ -856,6 +856,81 @@ public class MathUtils {
     }
 
     /**
+     * Decompose an augmented matrix [<strong>A</strong>|b&#x20d7;] into
+     * <strong>A</strong> and column vector b&#x20d7;.
+     * @param augmented the augmented matrix to decompose
+     * @return a {@link List} containing a matrix and a column vector
+     * @param <T> the type of the elements of {@code augmented}
+     */
+    public static <T extends Numeric> List<Matrix<T>> splitAugmentedMatrix(Matrix<T> augmented) {
+        final long lastColumn = augmented.columns() - 1L;
+        ColumnVector<T> rhs = augmented.getColumn(lastColumn);
+        Matrix<T> lhs;
+        if (augmented instanceof BasicMatrix) {
+            BasicMatrix<T> M = (BasicMatrix<T>) augmented;
+            M.removeColumn(lastColumn);
+            lhs = M;
+        } else {
+            lhs = new SubMatrix<>(augmented, 0L, 0L, augmented.rows() - 1L, lastColumn - 1L);
+        }
+        assert lhs.rows() == lhs.columns();  // lhs should be a square matrix
+        return List.of(lhs, rhs);
+    }
+
+    /**
+     * Perform Gaussian elimination on a matrix <strong>A</strong> and vector b&#x20d7;.
+     * The result is a reduced matrix <strong>U</strong> and associated vector c&#x20d7;
+     * which, after the final pivot, is in upper-triangular form, suitable for backsolving in the form
+     * <strong>U</strong>x&#x20d7;&nbsp;=&nbsp;c&#x20d7;.
+     *
+     * @param A the n&times;n {@link Matrix} we wish to reduce
+     * @param b the associated {@link Vector}
+     * @param j the row on which to pivot
+     * @return an augmented n&thinsp;&times;&thinsp;n+1 matrix containing a reduced matrix and its
+     *  associated vector in the form [<strong>U</strong>|c&#x20d7;]
+     * @param <T> the numeric type of the elements of {@code A} and {@code b}
+     */
+    public static <T extends Numeric> Matrix<T> gaussianElimination(Matrix<T> A, Vector<T> b, long j) {
+        if (j < 0L || j >= A.rows()) throw new IndexOutOfBoundsException("Index j must be between 0 and " + A.rows());
+        if (A.columns() != A.rows()) throw new IllegalArgumentException("Matrix is non-square");
+        if (A.rows() != b.length()) throw new IllegalArgumentException("Vector length must match rows of matrix");
+        BasicMatrix<T> U = new BasicMatrix<>(A);
+        // for convenience, we attach b to A and create an augmented matrix
+        U.append(new ArrayColumnVector<>(b));
+        final long n = A.rows();
+
+        if (Zero.isZero(U.valueAt(j, j))) {
+            Comparator<Numeric> comp = obtainGenericComparator();
+            Numeric biggestValue = ExactZero.getInstance(b.getMathContext());
+            long kRow = j;
+
+            for (long k = j + 1L; k < n; k++) {
+                if (comp.compare(U.valueAt(k, j).magnitude(), biggestValue) > 0) {
+                    biggestValue = U.valueAt(k, j).magnitude();
+                    kRow = k;
+                }
+            }
+            // swap rows j and kRow
+            // Note: original algorithm only bothers exchanging elements starting at column j
+            U.exchangeRows(j, kRow);  // this also effectively swaps elements of the b vector
+        }
+        T pivot = U.valueAt(j, j);
+        if (Zero.isZero(pivot)) {
+            throw new ArithmeticException("Matrix A is singular");
+        }
+        // reduce the rows
+        for (long i = j + 1L; i < n; i++) {
+            T multiplier = (T) U.valueAt(i, j).divide(pivot);
+            for (long l = j; l < n + 1L; l++) { // ensure we include the column corresponding to c
+                T updValue = (T) U.valueAt(i, l).subtract(U.valueAt(j, l).multiply(multiplier));
+                U.setValueAt(updValue, i, l);
+            }
+        }
+
+        return U;
+    }
+
+    /**
      * Perform back substitution to solve <strong>U</strong>x&#x20d7;&nbsp;=&nbsp;c&#x20d7; for x&#x20d7;,
      * where <strong>U</strong> is an upper-triangular matrix and c&#x20d7; is a vector.
      *
