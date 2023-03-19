@@ -922,12 +922,14 @@ public class MathUtils {
 
         Matrix<T> U = A;
         ColumnVector<T> c = b instanceof ColumnVector ? (ColumnVector<T>) b : new ArrayColumnVector<>(b);
-        for (long j = 1L; j < n - 1L; j++) {
+        for (long j = 0L; j < n - 1L; j++) {
             Matrix<T> intermediate = gaussianElimination(U, c, j);
             List<Matrix<T>> parts = splitAugmentedMatrix(intermediate);
             U = parts.get(0);
             c = (ColumnVector<T>) parts.get(1);
-            // TODO do we want a bailout condition if U is already upper-triangular?
+            // we could put a bailout condition here if the matrix U is already upper triangular
+            // if (U.isUpperTriangular()) break;
+            // but that might cost us more than just continuing the iteration... needs more thought
         }
         return backSubstitution(U, c);
     }
