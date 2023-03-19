@@ -857,9 +857,7 @@ public class MathUtils {
 
     /**
      * Decompose an augmented matrix [<strong>A</strong>|b&#x20d7;] into
-     * <strong>A</strong> and column vector b&#x20d7;. <strong>Note:</strong> if the argument
-     * {@code augmented} is a supported mutable implementation of {@link Matrix}
-     * (e.g. {@link BasicMatrix}), the original matrix may be modified in-place.
+     * <strong>A</strong> and column vector b&#x20d7;.
      * @param augmented the augmented matrix to decompose
      * @return a {@link List} containing a matrix and a column vector
      * @param <T> the type of the elements of {@code augmented}
@@ -869,9 +867,9 @@ public class MathUtils {
         ColumnVector<T> rhs = augmented.getColumn(lastColumn);
         Matrix<T> lhs;
         if (augmented instanceof BasicMatrix) {
-            BasicMatrix<T> M = (BasicMatrix<T>) augmented;
-            M.removeColumn(lastColumn);
-            lhs = M;
+            lhs = ((BasicMatrix<T>) augmented).removeColumn(lastColumn);
+        } else if (augmented instanceof ColumnarMatrix) {
+            lhs = ((ColumnarMatrix<T>) augmented).removeColumn(lastColumn);
         } else {
             lhs = new SubMatrix<>(augmented, 0L, 0L, augmented.rows() - 1L, lastColumn - 1L);
         }
