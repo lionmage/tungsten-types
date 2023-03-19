@@ -42,6 +42,7 @@ import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ComplexVector;
 import tungsten.types.vector.impl.RealVector;
+import tungsten.types.vector.impl.ZeroVector;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
@@ -831,6 +832,35 @@ public class MathUtils {
 
         // we can't handle this type of matrix yet
         throw new UnsupportedOperationException("Cannot compute eigenvalues for square matrix of size " + M.rows());
+    }
+
+    /**
+     * Given a matrix <strong>M</strong> and a set of eigenvalues, computes the eigenvectors.
+     * @param M           a square matrix
+     * @param eigenvalues a set of one or more eigenvalues of <strong>M</strong>, though
+     *                    this set need not be comprehensive
+     * @return a {@link Map} of eigenvalues and their corresponding eigenvectors
+     * @param <T> the type of the elements of <strong>M</strong> and its eigenvalues
+     */
+    public static <T extends Numeric> Map<T, Vector<T>> eigenvectorsOf(Matrix<T> M, Set<T> eigenvalues) {
+        if (eigenvalues.cardinality() <= 0L) throw new IllegalArgumentException("No eigenvalues to solve for");
+        Map<T, Vector<T>> results = new HashMap<>((int) eigenvalues.cardinality());
+
+        try {
+            for (T value : eigenvalues) {
+                final Class<T> clazz = (Class<T>) value.getClass();
+                T zero = (T) ExactZero.getInstance(value.getMathContext()).coerceTo(clazz);
+                Vector<T> zeroVector = columnVectorFrom(ZeroVector.getInstance(M.rows(), value.getMathContext()), clazz);
+                Matrix<T> lambdaMatrix = new ParametricMatrix<>(M.rows(), M.columns(), (row, column) -> {
+                    if (row.longValue() == column.longValue()) return value;
+                    return zero;
+                });
+                results.put(value, triangularizeAndSolve(M.subtract(lambdaMatrix), zeroVector));
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While obtaining a zero instance and converting it", e);
+        }
+        return results;
     }
 
     public static boolean isBlockDiagonal(AggregateMatrix<? extends Numeric> blockMatrix) {
