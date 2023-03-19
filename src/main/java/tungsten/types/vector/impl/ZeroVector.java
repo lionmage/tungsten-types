@@ -94,17 +94,17 @@ public class ZeroVector implements Vector<Numeric> {
         if (position >= 0L && position < length) {
             return zero;
         }
-        throw new IndexOutOfBoundsException("Specified index is out of range.");
+        throw new IndexOutOfBoundsException("Specified index is out of range");
     }
 
     @Override
     public void setElementAt(Numeric element, long position) {
-        throw new UnsupportedOperationException("Zero vector is immutable.");
+        throw new UnsupportedOperationException("Zero vector is immutable");
     }
 
     @Override
     public void append(Numeric element) {
-        throw new UnsupportedOperationException("Zero vector is immutable.");
+        throw new UnsupportedOperationException("Zero vector is immutable");
     }
 
     @Override
@@ -144,7 +144,7 @@ public class ZeroVector implements Vector<Numeric> {
 
     @Override
     public Vector<Numeric> normalize() {
-        throw new UnsupportedOperationException("Zero vector cannot be normalized.");
+        throw new UnsupportedOperationException("Zero vector cannot be normalized");
     }
 
     @Override
@@ -154,7 +154,7 @@ public class ZeroVector implements Vector<Numeric> {
 
     @Override
     public RealType computeAngle(Vector<Numeric> other) {
-        throw new UnsupportedOperationException("Zero vector cannot form an angle with any vector.");
+        throw new UnsupportedOperationException("Zero vector cannot form an angle with any vector");
     }
     
     @Override

@@ -65,6 +65,7 @@ public class ComplexVector implements Vector<ComplexType> {
     
     public ComplexVector(List<ComplexType> elements) {
         this.elements = elements;
+        setMathContext(MathUtils.inferMathContext(elements));
     }
     
     public ComplexVector(ComplexType[] cplxArray, MathContext mctx) {
@@ -120,6 +121,7 @@ public class ComplexVector implements Vector<ComplexType> {
 
     @Override
     public void append(ComplexType element) {
+        if (elements.isEmpty()) setMathContext(element.getMathContext());
         elements.add(element);
     }
 
@@ -245,7 +247,7 @@ public class ComplexVector implements Vector<ComplexType> {
         if (this.length() != other.length()) {
             throw new ArithmeticException("Cannot compute cross product for vectors of different dimension");
         }
-        ComplexVector result = null;
+        ComplexVector result;
         if (this.length() == 3L || this.length() == 7L) {
             result = new ComplexVector(this.length());
             int maxidx = (int) this.length();

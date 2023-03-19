@@ -857,7 +857,9 @@ public class MathUtils {
 
     /**
      * Decompose an augmented matrix [<strong>A</strong>|b&#x20d7;] into
-     * <strong>A</strong> and column vector b&#x20d7;.
+     * <strong>A</strong> and column vector b&#x20d7;. <strong>Note:</strong> if the argument
+     * {@code augmented} is a supported mutable implementation of {@link Matrix}
+     * (e.g. {@link BasicMatrix}), the original matrix may be modified in-place.
      * @param augmented the augmented matrix to decompose
      * @return a {@link List} containing a matrix and a column vector
      * @param <T> the type of the elements of {@code augmented}

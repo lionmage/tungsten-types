@@ -4,6 +4,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.util.MathUtils;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 
@@ -26,7 +27,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
         this.elementArray = elements;
         if (elements != null && elements.length > 0) {
             if (elementType == null) elementType = (Class<T>) elements[0].getClass();
-            setMathContext(elements[0].getMathContext());
+            setMathContext(MathUtils.inferMathContext(List.of(elements)));
         }
     }
 
@@ -36,7 +37,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
         }
         this.elementArray = (T[]) Array.newInstance(elementType, elementList.size());
         elementList.toArray(elementArray);
-        setMathContext(elementArray[0].getMathContext());
+        setMathContext(MathUtils.inferMathContext(elementList));
     }
 
     public ArrayRowVector(Vector<T> source) {
@@ -90,6 +91,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
         } else {
             updated[0] = element;
         }
+        if (elementArray == null || elementArray.length == 0) setMathContext(element.getMathContext());
         elementArray = updated;
     }
 

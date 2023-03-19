@@ -69,6 +69,7 @@ public class RealVector implements Vector<RealType> {
      */
     public RealVector(List<RealType> elements) {
         this.elements = elements;
+        setMathContext(MathUtils.inferMathContext(elements));
     }
     
     /**
@@ -245,16 +246,17 @@ public class RealVector implements Vector<RealType> {
 
     @Override
     public void append(RealType element) {
+        if (elements.isEmpty()) setMathContext(element.getMathContext());
         elements.add(element);
     }
 
     @Override
     public Vector<RealType> scale(RealType factor) {
         RealVector result = new RealVector(this.length());
-        result.setMathContext(mctx);
         for (RealType element : elements) {
             result.append((RealType) element.multiply(factor));
         }
+        result.setMathContext(mctx);
         return result;
     }
 
