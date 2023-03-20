@@ -201,16 +201,24 @@ public class MathUtils {
             
             Numeric intermediate = new RealImpl(x.magnitude().asBigDecimal(), mctx, x.isExact());
             Numeric factor = intermediate;
-            for (int idx = 2; idx <= Math.abs(n); idx++) {
+            int m = Math.abs(n);
+            int start = 2;
+            if (m % 2 == 0) {
+                factor = factor.multiply(factor);
+                intermediate = factor;
+                m >>= 1;
+                start--;
+            }
+            for (int idx = start; idx <= m; idx++) {
                 intermediate = intermediate.multiply(factor);
             }
             if (n < 0) intermediate = intermediate.inverse();
-            // if n is odd, preserve original sign
-            if (x.sign() == Sign.NEGATIVE && n % 2 != 0) intermediate = intermediate.negate();
+            // if |n| is odd, preserve original sign
+            if (x.sign() == Sign.NEGATIVE && m % 2 != 0) intermediate = intermediate.negate();
             return (RealType) intermediate.coerceTo(RealType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
-            throw new ArithmeticException("Failure to coerce to RealType");
+            throw new ArithmeticException("Failure to coerce result to RealType");
         }
     }
 
@@ -231,14 +239,22 @@ public class MathUtils {
 
             Numeric intermediate = x;
             Numeric factor = intermediate;
-            for (long idx = 2L; idx <= Math.abs(n); idx++) {
+            long m = Math.abs(n);
+            long start = 2L;
+            if (m % 2L == 0L) {
+                factor = factor.multiply(factor);
+                intermediate = factor;
+                m >>= 1L;
+                start--;
+            }
+            for (long idx = start; idx <= m; idx++) {
                 intermediate = intermediate.multiply(factor);
             }
             if (n < 0L) intermediate = intermediate.inverse();
             return (ComplexType) intermediate.coerceTo(ComplexType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
-            throw new ArithmeticException("Failure to coerce to ComplexType");
+            throw new ArithmeticException("Failure to coerce result to ComplexType");
         }
     }
     
