@@ -282,10 +282,14 @@ public class MathUtils {
             // use the identity ln(a*10^n) = ln(a) + n*ln(10)
             RealType ln10 = lnSeries(new RealImpl(BigDecimal.TEN), mctx);
             try {
-                return (RealType) ln(mantissa, mctx).add(ln10.multiply(exponent).coerceTo(RealType.class));
+                // We are mainly coercing here out of an abundance of caution, so if something does break, we log it well.
+                return (RealType) ln(mantissa, mctx).add(ln10.multiply(exponent)).coerceTo(RealType.class);
             } catch (CoercionException ex) {
-                Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce ln(10)*n to RealType.", ex);
-                throw new IllegalStateException("Multiplication of real and integer should return a real value");
+                Logger logger = Logger.getLogger(MathUtils.class.getName());
+                logger.log(Level.SEVERE, "While computing ln(a\u2009×\u200910\u207F) = ln(a) + n\u2009×\u2009ln(10).", ex);
+                logger.log(Level.INFO, "Attempted to decompose ln(x) for x\u2009=\u2009{0} with mantissa\u2009=\u2009{1} and exponent\u2009=\u2009{2}.",
+                        new Object[] {x, mantissa, exponent});
+                throw new IllegalStateException("Calculation of ln(a × 10\u207F) = ln(a) + n × ln(10) failed to generate a real value", ex);
             }
         }
         
@@ -1297,6 +1301,11 @@ public class MathUtils {
         }
     }
 
+    /**
+     * Compute the natural logarithm of a complex value.
+     * @param z the value we want to calculate the natural logarithm of
+     * @return the natural logarithm as a {@link ComplexType} value
+     */
     public static ComplexType ln(ComplexType z) {
         return new ComplexRectImpl(ln(z.magnitude()), z.argument());
     }
