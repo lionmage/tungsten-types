@@ -579,8 +579,8 @@ public class MathUtils {
     }
 
     /**
-     * Method intended to determine the lowest precision of a {@link List} of {@link Numeric} arguments.
-     * @param args a {@link List} of {@link Numeric} arguments
+     * Method intended to determine the lowest precision of a {@link Collection} of {@link Numeric} arguments.
+     * @param args a {@link Collection} of {@link Numeric} arguments
      * @return a {@link MathContext} constructed from the given arguments, or {@link MathContext#UNLIMITED} if none can be inferred from arguments
      */
     public static MathContext inferMathContext(Collection<? extends Numeric> args) {
@@ -840,7 +840,7 @@ public class MathUtils {
      * @param eigenvalues a set of one or more eigenvalues of <strong>M</strong>, though
      *                    this set need not be comprehensive
      * @return a {@link Map} of eigenvalues and their corresponding eigenvectors
-     * @param <T> the type of the elements of <strong>M</strong> and its eigenvalues
+     * @param <T> the type of the elements of {@code M} and its eigenvalues
      */
     public static <T extends Numeric> Map<T, Vector<T>> eigenvectorsOf(Matrix<T> M, Set<T> eigenvalues) {
         if (eigenvalues.cardinality() <= 0L) throw new IllegalArgumentException("No eigenvalues to solve for");
