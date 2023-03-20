@@ -429,8 +429,11 @@ public class MathUtils {
                     RationalType ratexponent = (RationalType) exponent.coerceTo(RationalType.class);
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
-                    Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to rational.", ex);
-                    throw new IllegalStateException("Unable to generate rational approximation of " + exponent, ex);
+                    // recover by using exponential identity, which is more costly than rational exponentiation
+                    final Euler e = Euler.getInstance(mctx);
+                    // use the identity x^y = e^(y * ln(x))
+                    RealType arg = (RealType) ln(base).multiply(exponent);
+                    return e.exp(arg);
                 }
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
@@ -475,8 +478,10 @@ public class MathUtils {
                     RationalType ratexponent = (RationalType) exponent.coerceTo(RationalType.class);
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
-                    Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce real to rational.", ex);
-                    throw new IllegalStateException("Unable to generate rational approximation of " + exponent, ex);
+                    // recover by converting to complex and executing that way
+                    final Euler e = Euler.getInstance(mctx);
+                    ComplexType arg = (ComplexType) ln(base).multiply(exponent);
+                    return e.exp(arg);
                 }
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
@@ -1270,14 +1275,14 @@ public class MathUtils {
         if (A.getClass().isAnnotationPresent(Columnar.class) && B.getClass().isAnnotationPresent(Columnar.class)) {
             // go by columns instead of by rows (optimal for any columnar store)
             for (long column = 0L; column < A.columns(); column++) {
-                if (!MathUtils.areEqualToWithin((Vector<RealType>) A.getColumn(column),
+                if (!MathUtils.areEqualToWithin(A.getColumn(column),
                         (Vector<RealType>) B.getColumn(column), epsilon)) return false;
             }
             return true;
         } else {
             // default behavior is to compare by rows
             for (long row = 0L; row < A.rows(); row++) {
-                if (!MathUtils.areEqualToWithin((Vector<RealType>) A.getRow(row),
+                if (!MathUtils.areEqualToWithin(A.getRow(row),
                         (Vector<RealType>) B.getRow(row), epsilon)) return false;
             }
             return true;
