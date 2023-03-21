@@ -221,23 +221,30 @@ public class MathUtils {
         }
     }
 
-    public static ComplexType computeIntegerExponent(ComplexType x, long n, MathContext mctx) {
-        if (n == 0L) return new ComplexRectImpl(new RealImpl(BigDecimal.ONE, mctx, x.isExact()));
-        if (n == 1L) return x;
+    /**
+     * Compute z<sup>n</sup> for complex z.
+     * @param z    the complex value to be raised to the given exponent
+     * @param n    the exponent
+     * @param mctx the MathContext to be used for any intermediate real values
+     * @return z raised to the n<sup>th</sup> power
+     */
+    public static ComplexType computeIntegerExponent(ComplexType z, long n, MathContext mctx) {
+        if (n == 0L) return new ComplexRectImpl(new RealImpl(BigDecimal.ONE, mctx, z.isExact()));
+        if (n == 1L) return z;
         if (n == -1L) {
-            return x.inverse();
+            return z.inverse();
         }
-        if (x.getClass().isAnnotationPresent(Polar.class)) {
+        if (z.getClass().isAnnotationPresent(Polar.class)) {
             // computing powers of complex numbers in polar form is much faster and easier
             final IntegerImpl exponent = new IntegerImpl(BigInteger.valueOf(n));
-            RealType modulus = computeIntegerExponent(x.magnitude(), exponent);
-            RealType argument = (RealType) x.argument().multiply(exponent);
-            return new ComplexPolarImpl(modulus, argument, x.isExact());
+            RealType modulus = computeIntegerExponent(z.magnitude(), exponent);
+            RealType argument = (RealType) z.argument().multiply(exponent);
+            return new ComplexPolarImpl(modulus, argument, z.isExact());
         }
 
         try {
             Numeric intermediate = One.getInstance(mctx);
-            Numeric factor = x;
+            Numeric factor = z;
             long m = Math.abs(n);
             if (m % 2L == 1L) {  // odd exponents are a simple corner case
                 intermediate = factor;
