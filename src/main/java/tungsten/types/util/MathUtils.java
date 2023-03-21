@@ -224,18 +224,18 @@ public class MathUtils {
     public static ComplexType computeIntegerExponent(ComplexType x, long n, MathContext mctx) {
         if (n == 0L) return new ComplexRectImpl(new RealImpl(BigDecimal.ONE, mctx, x.isExact()));
         if (n == 1L) return x;
-        try {
-            if (n == -1L) {
-                return (ComplexType) x.inverse().coerceTo(ComplexType.class);
-            }
-            if (x.getClass().isAnnotationPresent(Polar.class)) {
-                // computing powers of complex numbers in polar form is much faster and easier
-                final IntegerImpl exponent = new IntegerImpl(BigInteger.valueOf(n));
-                RealType modulus = computeIntegerExponent(x.magnitude(), exponent);
-                RealType argument = (RealType) x.argument().multiply(exponent);
-                return new ComplexPolarImpl(modulus, argument, x.isExact());
-            }
+        if (n == -1L) {
+            return x.inverse();
+        }
+        if (x.getClass().isAnnotationPresent(Polar.class)) {
+            // computing powers of complex numbers in polar form is much faster and easier
+            final IntegerImpl exponent = new IntegerImpl(BigInteger.valueOf(n));
+            RealType modulus = computeIntegerExponent(x.magnitude(), exponent);
+            RealType argument = (RealType) x.argument().multiply(exponent);
+            return new ComplexPolarImpl(modulus, argument, x.isExact());
+        }
 
+        try {
             Numeric intermediate = One.getInstance(mctx);
             Numeric factor = x;
             long m = Math.abs(n);
