@@ -69,7 +69,7 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
     @Override
     public Matrix<Numeric> add(Matrix<Numeric> addend) {
         if (addend.rows() != this.rows() || addend.columns() != this.columns()) {
-            throw new ArithmeticException("Dimensional mismatch.");
+            throw new ArithmeticException("Dimensional mismatch with addend");
         }
         return addend;
     }
