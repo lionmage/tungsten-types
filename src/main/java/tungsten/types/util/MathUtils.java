@@ -210,7 +210,7 @@ public class MathUtils {
                 factor = factor.multiply(factor);
                 m >>= 1;
             }
-            intermediate = intermediate.multiply(factor);
+            for (int k = 0; k < m; k++) intermediate = intermediate.multiply(factor);
             if (n < 0) intermediate = intermediate.inverse();
             // if |n| is odd, preserve original sign
             if (x.sign() == Sign.NEGATIVE && Math.abs(n) % 2 != 0) intermediate = intermediate.negate();
@@ -247,7 +247,7 @@ public class MathUtils {
                 factor = factor.multiply(factor);
                 m >>= 1L;
             }
-            intermediate = intermediate.multiply(factor);
+            for (long k = 0L; k < m; k++) intermediate = intermediate.multiply(factor);
             if (n < 0L) intermediate = intermediate.inverse();
             return (ComplexType) intermediate.coerceTo(ComplexType.class);
         } catch (CoercionException ex) {
