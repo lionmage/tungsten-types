@@ -152,12 +152,18 @@ public class MathUtils {
     public static RealType computeIntegerExponent(Numeric x, IntegerType n) {
         final RealType result;
         final BigInteger exponent = n.asBigInteger();
-        
+        final boolean exactness = x.isExact() && n.isExact();
+
         if (exponent.equals(BigInteger.ZERO)) {
-            result = new RealImpl(BigDecimal.ONE, x.getMathContext());
+            result = new RealImpl(BigDecimal.ONE, x.getMathContext(), exactness);
         } else {
             try {
                 result = computeIntegerExponent((RealType) x.coerceTo(RealType.class), exponent.intValueExact());
+                if (result.isExact() != exactness) {
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                            "Expected exactness of {0} but got {1} for calculating {2}^{3}",
+                            new Object[] {exactness, result.isExact(), x, n});
+                }
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce argument to RealType.", ex);
                 throw new ArithmeticException("While coercing argument to computeIntegerExponent: " + ex.getMessage());
@@ -167,21 +173,8 @@ public class MathUtils {
         return result;
     }
     
-    public static ComplexType computeIntegerExponent(ComplexType x, IntegerType n) {
-        final BigInteger exponent = n.asBigInteger();
-        
-        long count = exponent.longValueExact() - 1L;
-        ComplexType accum = x;
-        try {
-            while (count > 0) {
-                accum = (ComplexType) accum.multiply(accum).coerceTo(ComplexType.class);
-                count--;
-            }
-        } catch (CoercionException ce) {
-            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce accumulator to a complex value.", ce);
-            throw new ArithmeticException("While coercing result: " + ce.getMessage());
-        }
-        return accum;
+    public static ComplexType computeIntegerExponent(ComplexType z, IntegerType n) {
+        return computeIntegerExponent(z, n.asBigInteger().longValueExact(), z.getMathContext());
     }
     
     /**
@@ -225,7 +218,8 @@ public class MathUtils {
      * Compute z<sup>n</sup> for complex z.
      * @param z    the complex value to be raised to the given exponent
      * @param n    the exponent
-     * @param mctx the MathContext to be used for any intermediate real values
+     * @param mctx the {@link MathContext} to be used for any intermediate real values, which may not be
+     *             reflected in the result
      * @return z raised to the n<sup>th</sup> power
      */
     public static ComplexType computeIntegerExponent(ComplexType z, long n, MathContext mctx) {
