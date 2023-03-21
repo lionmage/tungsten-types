@@ -355,7 +355,7 @@ public class IntegerImpl implements IntegerType {
                 Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer multiply.", ex);
             }
         }
-        throw new UnsupportedOperationException("Multiplication operation unsupported.");
+        throw new UnsupportedOperationException("Multiplication operation unsupported");
     }
 
     @Override
@@ -379,7 +379,7 @@ public class IntegerImpl implements IntegerType {
                 Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer divide.", ex);
             }
         }
-        throw new UnsupportedOperationException("Division operation unsupported.");
+        throw new UnsupportedOperationException("Division operation unsupported");
     }
 
     @Override
@@ -388,7 +388,7 @@ public class IntegerImpl implements IntegerType {
             // 1 and -1 are their own inverse
             return this;
         } else if (val.equals(BigInteger.ZERO)) {
-            throw new ArithmeticException("Cannot compute inverse of 0.");
+            throw new ArithmeticException("Cannot compute inverse of 0");
         }
         return new RationalImpl(BigInteger.ONE, val, exact);
     }
@@ -407,7 +407,7 @@ public class IntegerImpl implements IntegerType {
     @Override
     public IntegerType sqrt() {
         if (val.signum() < 0) {
-            throw new ArithmeticException("Cannot obtain square root of negative integers.");
+            throw new ArithmeticException("Cannot obtain square root of negative integers");
         }
         final BigInteger result = val.sqrt();
         final boolean exactness = exact && result.multiply(result).equals(val);

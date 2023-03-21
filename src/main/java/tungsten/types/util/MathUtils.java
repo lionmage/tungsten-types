@@ -206,16 +206,14 @@ public class MathUtils {
                 intermediate = factor;
                 m--;
             }
-            if (m > 0 && m % 2 == 0) {
+            while (m % 2 == 0) {
                 factor = factor.multiply(factor);
                 m >>= 1;
             }
-            for (int idx = 0; idx < m; idx++) {
-                intermediate = intermediate.multiply(factor);
-            }
+            intermediate = intermediate.multiply(factor);
             if (n < 0) intermediate = intermediate.inverse();
             // if |n| is odd, preserve original sign
-            if (x.sign() == Sign.NEGATIVE && m % 2 != 0) intermediate = intermediate.negate();
+            if (x.sign() == Sign.NEGATIVE && Math.abs(n) % 2 != 0) intermediate = intermediate.negate();
             return (RealType) intermediate.coerceTo(RealType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
@@ -245,13 +243,11 @@ public class MathUtils {
                 intermediate = factor;
                 m--;
             }
-            if (m > 0L && m % 2L == 0L) {
+            while (m % 2L == 0L) {
                 factor = factor.multiply(factor);
                 m >>= 1L;
             }
-            for (long idx = 0L; idx < m; idx++) {
-                intermediate = intermediate.multiply(factor);
-            }
+            intermediate = intermediate.multiply(factor);
             if (n < 0L) intermediate = intermediate.inverse();
             return (ComplexType) intermediate.coerceTo(ComplexType.class);
         } catch (CoercionException ex) {
