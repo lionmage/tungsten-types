@@ -199,17 +199,18 @@ public class MathUtils {
                 return (RealType) x.inverse().coerceTo(RealType.class);
             }
             
-            Numeric intermediate = new RealImpl(x.magnitude().asBigDecimal(), mctx, x.isExact());
-            Numeric factor = intermediate;
+            Numeric intermediate = One.getInstance(mctx);
+            Numeric factor = new RealImpl(x.magnitude().asBigDecimal(), mctx, x.isExact());
             int m = Math.abs(n);
-            int start = 2;
-            if (m % 2 == 0) {
-                factor = factor.multiply(factor);
+            if (m % 2 == 1) {  // handle the corner case of odd exponents
                 intermediate = factor;
-                m >>= 1;
-                start--;
+                m--;
             }
-            for (int idx = start; idx <= m; idx++) {
+            if (m > 0 && m % 2 == 0) {
+                factor = factor.multiply(factor);
+                m >>= 1;
+            }
+            for (int idx = 0; idx < m; idx++) {
                 intermediate = intermediate.multiply(factor);
             }
             if (n < 0) intermediate = intermediate.inverse();
@@ -230,24 +231,25 @@ public class MathUtils {
                 return (ComplexType) x.inverse().coerceTo(ComplexType.class);
             }
             if (x.getClass().isAnnotationPresent(Polar.class)) {
-                // computing powers of Complex numbers in polar form is much faster and easier
-                IntegerImpl exponent = new IntegerImpl(BigInteger.valueOf(n));
+                // computing powers of complex numbers in polar form is much faster and easier
+                final IntegerImpl exponent = new IntegerImpl(BigInteger.valueOf(n));
                 RealType modulus = computeIntegerExponent(x.magnitude(), exponent);
                 RealType argument = (RealType) x.argument().multiply(exponent);
                 return new ComplexPolarImpl(modulus, argument, x.isExact());
             }
 
-            Numeric intermediate = x;
-            Numeric factor = intermediate;
+            Numeric intermediate = One.getInstance(mctx);
+            Numeric factor = x;
             long m = Math.abs(n);
-            long start = 2L;
-            if (m % 2L == 0L) {
-                factor = factor.multiply(factor);
+            if (m % 2L == 1L) {  // odd exponents are a simple corner case
                 intermediate = factor;
-                m >>= 1L;
-                start--;
+                m--;
             }
-            for (long idx = start; idx <= m; idx++) {
+            if (m > 0L && m % 2L == 0L) {
+                factor = factor.multiply(factor);
+                m >>= 1L;
+            }
+            for (long idx = 0L; idx < m; idx++) {
                 intermediate = intermediate.multiply(factor);
             }
             if (n < 0L) intermediate = intermediate.inverse();
@@ -288,7 +290,7 @@ public class MathUtils {
         }
         if (x.asBigDecimal().compareTo(BigDecimal.ZERO) <= 0) {
             if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return RealInfinity.getInstance(Sign.NEGATIVE, mctx);
-            throw new ArithmeticException("ln is undefined for values < 0");
+            throw new ArithmeticException("ln() is undefined for values < 0");
         }
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
         
@@ -494,7 +496,7 @@ public class MathUtils {
                     RationalType ratexponent = (RationalType) exponent.coerceTo(RationalType.class);
                     return generalizedExponent(base, ratexponent, mctx);
                 } catch (CoercionException ex) {
-                    // recover by converting to complex and executing that way
+                    // recover by using the exponential identity
                     final Euler e = Euler.getInstance(mctx);
                     ComplexType arg = (ComplexType) ln(base).multiply(exponent);
                     return e.exp(arg);
