@@ -723,6 +723,31 @@ public class MathUtils {
     }
 
     /**
+     * Compute the Hadamard product for two n&times;n matrices.
+     * In standard notation, that is <strong>A&#x2218;B</strong>.
+     * Note that, unlike regular matrix multiplication, the Hadamard
+     * product is commutative.
+     * @param A the first matrix in the product
+     * @param B the second matrix in the product
+     * @return the Hadamard product of {@code A} and {@code B}
+     * @param <T> the element type for the input matrices
+     */
+    public static <T extends Numeric> Matrix<T> hadamardProduct(Matrix<T> A, Matrix<T> B) {
+        if (A.rows() != B.rows() || A.columns() != B.columns()) {
+            throw new ArithmeticException("Matrices must be of equal dimension");
+        }
+        return new ParametricMatrix<>(A.rows(), A.columns(),
+                (row, column) -> (T) A.valueAt(row, column).multiply(B.valueAt(row, column)));
+    }
+
+    public static <T extends Numeric> Matrix<T> hadamardProduct(Vector<T> a, Vector<T> b) {
+        if (a.length() != b.length()) throw new ArithmeticException("Vectors must be of equal dimension");
+        Matrix<T> diag = new DiagonalMatrix<>(a);
+        ColumnVector<T> col = new ArrayColumnVector<>(b);
+        return diag.multiply(col);
+    }
+
+    /**
      * Compute the conjugate transpose of a given matrix A, denoted A<sup>*</sup>.
      * This is equivalent to taking the transpose of A and then taking the complex
      * conjugate of each value contained therein.
@@ -793,6 +818,29 @@ public class MathUtils {
         return cplxMatrix.equals(conjugateTranspose(cplxMatrix));
     }
 
+    /**
+     * Determine if a matrix is orthogonal. That is, the columns and rows
+     * of the matrix are orthonormal vectors.
+     * @param M the matrix to test for orthogonality
+     * @return true if the matrix is orthogonal, false otherwise
+     */
+    public static boolean isOrthogonal(Matrix<RealType> M) {
+        if (M.rows() != M.columns()) return false;  // must be a square matrix
+        return M.transpose().equals(M.inverse());
+    }
+
+    /**
+     * Determine if a matrix is unitary.  This is the complex equivalent
+     * to orthogonality.
+     * @param C the matrix to test
+     * @return true if the matrix is unitary, false otherwise
+     * @see #isOrthogonal(Matrix)
+     */
+    public static boolean isUnitary(Matrix<ComplexType> C) {
+        if (C.rows() != C.columns()) return false;  // must be square
+        return conjugateTranspose(C).equals(C.inverse());
+    }
+
     public static boolean isOfType(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {
         if (matrix instanceof DiagonalMatrix) {
             // To guard against a heterogeneous matrix causing problems, we must check
@@ -812,13 +860,18 @@ public class MathUtils {
     /**
      * Compute the eigenvalues for the given matrix. The returned {@link Set}
      * may be heterogeneous (i.e., {@link Set<Numeric>} which can contain
-     * any subclass of {@link Set}).<br/>
+     * any subclass of {@link Numeric}).<br/>
      * <strong>Note:</strong> This method is currently only guaranteed to
      * produce results for triangular matrices and 2&times;2 matrices.
      * Symmetric 3&times;3 matrices are also supported. There is very
-     * limited support for block-diagonal matrices.
+     * limited support for block-diagonal matrices &mdash;
+     * those implemented using {@link AggregateMatrix}, specifically.
+     * If all else fails, this method will attempt to determine eigenvalues
+     * using the QR algorithm, which repeatedly applies {@link #computeQRdecomposition(Matrix) QR decomposition}
+     * and thus is costly.
      * @param M the {@link Matrix} for which we wish to obtain the eigenvalues
      * @return a {@link Set} of eigenvalues
+     * @see <a href="https://en.wikipedia.org/wiki/QR_algorithm">the Wikipedia article on the QR algorithm</a>
      */
     public static Set<? extends Numeric> eigenvaluesOf(Matrix<? extends Numeric> M) {
         if (M.rows() != M.columns()) throw new IllegalArgumentException("Cannot compute eigenvalues for a non-square matrix");
@@ -853,9 +906,69 @@ public class MathUtils {
         if (M.rows() == 3L && isSymmetric(M)) {
             return computeEigenvaluesFor3x3Symmetric(M);
         }
+        // let's try QR decomposition
+        List<Matrix<Numeric>> decomp = computeQRdecomposition((Matrix<Numeric>) M);
+        Matrix<Numeric> Q = decomp.get(0);
+        Matrix<Numeric> R = decomp.get(1);
+        // pull the MathContext from the last column, which should serve as a proxy for the whole matrix
+        MathContext ctx = M.getColumn(M.columns() - 1L).getMathContext();
+        RealType epsilon = computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
+        if (isUpperTriangularWithin(R, epsilon)) {
+            Matrix<Numeric> A;
+            do {
+                A = R.multiply(Q);
+                // the lower (left) triangle might not be filled with exactly zeroes, so check within some tolerance epsilon
+                if (isUpperTriangularWithin(A, epsilon)) break;
+                decomp = computeQRdecomposition(A);
+                Q = decomp.get(0);
+                R = decomp.get(1);
+            } while (!isUpperTriangularWithin(A, epsilon));
+            // pick off the eigenvalues from the diagonal
+            NumericSet results = new NumericSet();
+            for (long idx = 0L; idx < A.rows(); idx++) {
+                results.append(A.valueAt(idx, idx));
+            }
+            return results;
+        } else {
+            Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                    "QR decomposition failed. R is not upper-triangular to within {1}:\n{0}",
+                    new Object[] {R, epsilon});
+        }
 
         // we can't handle this type of matrix yet
         throw new UnsupportedOperationException("Cannot compute eigenvalues for square matrix of size " + M.rows());
+    }
+
+    /**
+     * Determine if a given matrix is upper-triangular within some tolerance.
+     * More formally, determines if all the matrix elements in the lower (left) triangle
+     * are &lt;&thinsp;&epsilon; for some value &#x1D700; that satisfies the
+     * inequality 0 &lt; &#x1D700; &#x226A; 1.
+     * @param M       the matrix to test for upper-triangularity
+     * @param epsilon the tolerance value &epsilon; denoting the maximum acceptable error
+     * @return true if the given matrix satisfies the error-tolerance criteria for upper-triangularity,
+     *  false otherwise
+     */
+    public static boolean isUpperTriangularWithin(Matrix<? extends Numeric> M, RealType epsilon) {
+        if (!epsilonRange.contains(epsilon)) throw new IllegalArgumentException("Tolerance should be in range 0 < \uD835\uDF00 \u226A 1");
+        if (M.columns() != M.rows()) return false;
+        if (M.rows() == 1L) return false;  // singleton matrix can't really be triangular
+
+        for (long row = 1L; row < M.rows(); row++) {
+            for (long column = 0L; column < M.columns() - (M.rows() - row); column++) {
+                try {
+                    if (((RealType) M.valueAt(row, column).magnitude().coerceTo(RealType.class)).compareTo(epsilon) >= 0) {
+                        return false;
+                    }
+                } catch (CoercionException e) {
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.WARNING,
+                            "Failed to coerce the magnitude of the matrix element at {0},{1} to a real value",
+                            new Object[] {row, column});
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -913,7 +1026,7 @@ public class MathUtils {
      * Decompose an augmented matrix [<strong>A</strong>|b&#x20d7;] into
      * <strong>A</strong> and column vector b&#x20d7;.
      * @param augmented the augmented matrix to decompose
-     * @return a {@link List} containing a matrix and a column vector
+     * @return a {@link List} containing a matrix and a column vector, in that order
      * @param <T> the type of the elements of {@code augmented}
      */
     public static <T extends Numeric> List<Matrix<T>> splitAugmentedMatrix(Matrix<T> augmented) {
@@ -1134,6 +1247,25 @@ public class MathUtils {
             if (row.longValue() == column.longValue()) return lambda;
             return zero;
         });
+    }
+
+    /**
+     * Decompose a matrix A into Q and R such that A&nbsp;=&nbsp;QR,
+     * where Q is an orthogonal matrix and R is an upper-triangular matrix.
+     * This implementation uses the Gram-Schmidt process.
+     * @param A the matrix to be decomposed
+     * @return a {@link List} containing Q and R, in that order
+     * @param <T> the type of the elements of {@code A}
+     * @see <a href="https://en.wikipedia.org/wiki/QR_decomposition">the Wikipedia article on QR decomposition</a>
+     */
+    public static <T extends Numeric> List<Matrix<T>> computeQRdecomposition(Matrix<T> A) {
+        ColumnarMatrix<T> Q = new ColumnarMatrix<>();
+        for (long col = 0L; col < A.columns(); col++) {
+            ColumnVector<T> cvec = new ArrayColumnVector<>(A.getColumn(col).normalize());
+            Q.append(cvec);
+        }
+        Matrix<T> R = isOfType(A, ComplexType.class) ? (Matrix<T>) conjugateTranspose(Q).multiply((Matrix<ComplexType>) A) : Q.transpose().multiply(A);
+        return List.of(Q, R);
     }
 
     /**
