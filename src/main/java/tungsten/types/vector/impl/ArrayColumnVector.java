@@ -89,9 +89,14 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public void append(T element) {
-        T[] updated = (T[]) Array.newInstance(elementType, elementArray.length + 1);
-        System.arraycopy(elementArray, 0, updated, 0, elementArray.length);
-        updated[elementArray.length] = element;
+        T[] updated = (T[]) Array.newInstance(elementType, elementArray == null ? 1 : elementArray.length + 1);
+        if (elementArray != null && elementArray.length > 0) {
+            System.arraycopy(elementArray, 0, updated, 0, elementArray.length);
+            updated[elementArray.length] = element;
+        } else {
+            updated[0] = element;
+        }
+        if (elementArray == null || elementArray.length == 0) setMathContext(element.getMathContext());
         elementArray = updated;
     }
 
