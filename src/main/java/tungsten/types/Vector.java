@@ -26,6 +26,7 @@ package tungsten.types;
 
 import tungsten.types.numerics.RealType;
 
+import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 
 /**
@@ -39,35 +40,49 @@ public interface Vector<T extends Numeric> {
      * This is the dimensionality of this vector.
      * @return the number of elements, or dimension
      */
-    public long length();
+    long length();
     /**
      * Returns the element contained in this vector at {@code position}.
      * @param position the 0-based position within the vector
      * @return the specified element
      */
-    public T elementAt(long position);
+    T elementAt(long position);
     /**
      * Set or replace the element at {@code position}.
      * @param element the new element
      * @param position the 0-based position within the vector
      */
-    public void setElementAt(T element, long position);
+    void setElementAt(T element, long position);
     /**
      * Append the given element to this vector.  This has
      * the side effect of increasing the {@link #length() }.
      * @param element the element to append
      */
-    public void append(T element);
-    public Vector<T> add(Vector<T> addend);
-    public Vector<T> subtract(Vector<T> subtrahend);
-    public Vector<T> negate();
-    public Vector<T> scale(T factor);
+    void append(T element);
+    Vector<T> add(Vector<T> addend);
+    Vector<T> subtract(Vector<T> subtrahend);
+    Vector<T> negate();
+    Vector<T> scale(T factor);
     /**
      * Compute the magnitude of this vector.  This is
      * equivalent to geometric length of this vector.
-     * @return the magnitude
+     * @return this vector's magnitude
      */
-    public T magnitude();
+    T magnitude();
+
+    /**
+     * Obtain the type of the elements contained by this {@link Vector}.
+     * @return the {@link Class} of the vector elements
+     */
+    default Class<T> getElementType() {
+        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        if (clazz == null && length() > 0L) {
+            clazz = (Class<T>) elementAt(0L).getClass();
+        }
+        return clazz;
+    }
+
     /**
      * Compute the dot product of this vector and the given vector.
      * Dividing this result by the product of {@code this.magnitude()}
@@ -76,28 +91,32 @@ public interface Vector<T extends Numeric> {
      * @param other the vector with which to compute the dot product
      * @return the dot product
      */
-    public T dotProduct(Vector<T> other);
+    T dotProduct(Vector<T> other);
     /**
      * Compute the cross product of this vector and the given vector.
      * The resulting vector is orthogonal to this and {@code other},
-     * with a magnitude equal to ||this||&sdot;||other||&sdot;sin(&theta;) and
-     * &theta; being the angle between these two vectors;
+     * with a magnitude equal to ||this||&sdot;||other||&sdot;sin(&theta;) &mdash;
+     * with &theta; being the angle between these two vectors.
+     * <br/><strong>Note:</strong> The cross product of two vectors
+     * is only defined for 3- and 7-dimensions. Other dimensionalities, or
+     * a dimensional mismatch between the two vectors, should result in
+     * an exception being thrown.
      * @param other the vector with which to compute the cross product
      * @return the cross product
      */
-    public Vector<T> crossProduct(Vector<T> other);
+    Vector<T> crossProduct(Vector<T> other);
     /**
      * Return a normalized vector that has the same direction as this
      * vector, but with a magnitude of 1 (i.e., a unit vector).
      * @return the normalized vector
      */
-    public Vector<T> normalize();
+    Vector<T> normalize();
     /**
      * Compute the angle in radians between this vector and the given vector.
      * @param other the other vector
      * @return the value of the angle between these vectors in radians
      */
-    public RealType computeAngle(Vector<T> other);
+    RealType computeAngle(Vector<T> other);
     
-    public MathContext getMathContext();
+    MathContext getMathContext();
 }

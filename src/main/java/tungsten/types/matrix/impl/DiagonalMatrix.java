@@ -42,7 +42,9 @@ import tungsten.types.vector.impl.RealVector;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -72,8 +74,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
      * @param source a vector containing the elements for this diagonal matrix
      */
     public DiagonalMatrix(Vector<T> source) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) source.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = source.getElementType();
         int arrayLength = source.length() > (long) Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) source.length();
         if (arrayLength < source.length()) {
             Logger.getLogger(DiagonalMatrix.class.getName()).log(Level.WARNING,
@@ -101,8 +102,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         if (row == column) {
             return elements[(int) row];
         }
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) elements[0].getClass();
         try {
             return (T) ExactZero.getInstance(elements[0].getMathContext()).coerceTo(clazz);
         } catch (CoercionException ex) {
@@ -134,8 +134,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         
         BasicMatrix<T> result = new BasicMatrix<>(addend);
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) elements[0].getClass();
 
         try {
             for (long idx = 0L; idx < this.rows(); idx++) {
@@ -181,15 +180,18 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     @Override
     public Matrix<? extends Numeric> pow(Numeric n) {
         Numeric[] result;
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) elements[0].getClass();
         if (RealType.class.isAssignableFrom(clazz)) {
             result = Arrays.stream(elements)
                     .map(element -> MathUtils.generalizedExponent((RealType) element, n, element.getMathContext()))
                     .toArray(Numeric[]::new);
+        } else if (ComplexType.class.isAssignableFrom(clazz)) {
+            result = Arrays.stream(elements)
+                    .map(element -> MathUtils.generalizedExponent((ComplexType) element, n, element.getMathContext()))
+                    .toArray(Numeric[]::new);
         } else {
             if (!n.isCoercibleTo(IntegerType.class)) {
-                throw new IllegalArgumentException("Currently, non-integer exponents are not supported for non-real types");
+                throw new IllegalArgumentException("Currently, non-integer exponents are not supported for non-real and non-complex types");
             }
 
             try {
@@ -241,8 +243,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     @Override
     public DiagonalMatrix<T> scale(T scaleFactor) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) elements[0].getClass();
         T[] scaled = Arrays.stream(elements).map(element -> element.multiply(scaleFactor))
                 .map(clazz::cast).toArray(size -> (T[]) Array.newInstance(clazz, size));
         return new DiagonalMatrix<>(scaled);
@@ -257,8 +258,6 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
      * @return a vector containing the diagonal elements of this matrix
      */
     public Vector<T> diag() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
         return new Vector<>() {
             @Override
             public long length() {
@@ -292,7 +291,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
             @Override
             public Vector<T> negate() {
-                T negone = OptionalOperations.dynamicInstantiate(clazz, -1);
+                T negone = OptionalOperations.dynamicInstantiate(getElementType(), -1);
                 return scale(negone);
             }
 
@@ -304,8 +303,11 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             @Override
             public T magnitude() {
                 try {
-                    return (T) Arrays.stream(elements).map(x -> x.multiply(x)).reduce(Numeric::add).map(Numeric::sqrt)
-                            .orElseThrow().coerceTo(clazz);
+                    return (T) Arrays.stream(elements).map(x -> {
+                                T r = x.magnitude();
+                                return r.multiply(r);
+                            }).reduce(Numeric::add).map(Numeric::sqrt)
+                            .orElseThrow().coerceTo(getElementType());
                 } catch (CoercionException e) {
                     // this should never happen
                     throw new IllegalStateException(e);
@@ -318,11 +320,17 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                     throw new ArithmeticException("Vectors must be of the same length");
                 }
                 Numeric accum = ExactZero.getInstance(getMathContext());
+                if (ComplexType.class.isAssignableFrom(other.getElementType())) {
+                    List<T> copyOf = new ArrayList<>((int) other.length());
+                    for (long k = 0L; k < other.length(); k++) copyOf.add(other.elementAt(k));
+                    other = (Vector<T>) new ComplexVector((List<ComplexType>) copyOf).conjugate();
+                }
+
                 for (int i = 0; i < elements.length; i++) {
                     accum = accum.add(elements[i].multiply(other.elementAt(i)));
                 }
                 try {
-                    return (T) accum.coerceTo(clazz);
+                    return (T) accum.coerceTo(getElementType());
                 } catch (CoercionException e) {
                     throw new IllegalStateException("Dot product computed as: " + accum, e);
                 }
@@ -330,7 +338,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
             @Override
             public Vector<T> crossProduct(Vector<T> other) {
-                NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
+                NumericHierarchy h = NumericHierarchy.forNumericType(getElementType());
                 switch (h) {
                     case REAL:
                         RealVector realVector = new RealVector((RealType[]) elements, getMathContext());
@@ -346,7 +354,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             @Override
             public Vector<T> normalize() {
                 try {
-                    T scaleFactor = (T) magnitude().inverse().coerceTo(clazz);
+                    T scaleFactor = (T) magnitude().inverse().coerceTo(getElementType());
                     return DiagonalMatrix.this.scale(scaleFactor).diag();
                 } catch (CoercionException e) {
                     throw new ArithmeticException("While computing inverse of magnitude " + magnitude() +

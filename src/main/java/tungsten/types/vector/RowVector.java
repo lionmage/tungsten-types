@@ -31,13 +31,15 @@ import tungsten.types.matrix.impl.SingletonMatrix;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.impl.ComplexVector;
 import tungsten.types.vector.impl.RealVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -90,11 +92,13 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public T magnitude() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = getElementType();
         try {
             T zero = (T) ExactZero.getInstance(mctx).coerceTo(clazz);
-            return (T) stream().reduce(zero, (x, y) -> (T) x.add(y.multiply(y))).sqrt().coerceTo(clazz);
+            return (T) stream().reduce(zero, (x, y) -> {
+                T r = y.magnitude();
+                return (T) x.add(r.multiply(r));
+            }).sqrt().coerceTo(clazz);
         } catch (CoercionException ex) {
             Logger.getLogger(RowVector.class.getName()).log(Level.SEVERE, "Unable to compute magnitude of row vector.", ex);
             throw new ArithmeticException("Cannot compute magnitude of row vector");
@@ -103,9 +107,13 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public T dotProduct(Vector<T> other) {
-        if (other.length() != this.length()) throw new ArithmeticException("Cannot compute dot product for vectors of different length.");
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        if (other.length() != this.length()) throw new ArithmeticException("Cannot compute dot product for vectors of different length");
+        final Class<T> clazz = getElementType();
+        if (ComplexType.class.isAssignableFrom(other.getElementType())) {
+            List<T> copyOf = new ArrayList<>((int) other.length());
+            for (long k = 0L; k < other.length(); k++) copyOf.add(other.elementAt(k));
+            other = (Vector<T>) new ComplexVector((List<ComplexType>) copyOf).conjugate();
+        }
         try {
             Numeric accum = ExactZero.getInstance(mctx);
             for (long i = 0L; i < this.length(); i++) {
@@ -121,10 +129,8 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     @Override
     public Vector<T> crossProduct(Vector<T> other) {
         if (other.length() != this.length()) throw new ArithmeticException("Cannot compute cross product for vectors of different dimension.");
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) other.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        final Class<T> myclass = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = other.getElementType();
+        final Class<T> myclass = getElementType();
         if (OptionalOperations.findCommonType(clazz, myclass) == Numeric.class) {
             throw new UnsupportedOperationException("No types in common between " +
                     clazz.getTypeName() + " and " + myclass.getTypeName());
@@ -158,8 +164,7 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public Vector<T> normalize() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = getElementType();
         try {
             return this.scale((T) this.magnitude().inverse().coerceTo(clazz));
         } catch (CoercionException ex) {
@@ -171,7 +176,15 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public RealType computeAngle(Vector<T> other) {
-        throw new UnsupportedOperationException("Not supported yet");
+        Numeric cosine = this.dotProduct(other).divide(this.magnitude().multiply(other.magnitude()));
+        try {
+            return (RealType) MathUtils.arccos(cosine).coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            Logger.getLogger(ColumnVector.class.getName()).log(Level.INFO,
+                    "While computing the angle between {0} and {1}, cos = {2}: " + e.getMessage(),
+                    new Object[] {this, other, cosine});
+            throw new ArithmeticException("arccos computed a non-real angle from " + cosine);
+        }
     }
 
     @Override

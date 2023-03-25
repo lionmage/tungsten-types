@@ -26,6 +26,7 @@ package tungsten.types.vector.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RealImpl;
@@ -94,6 +95,11 @@ public class RealVector implements Vector<RealType> {
     }
 
     @Override
+    public Class<RealType> getElementType() {
+        return RealType.class;
+    }
+
+    @Override
     public long length() {
         return elements.size();
     }
@@ -109,7 +115,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public void setElementAt(RealType element, long position) {
         if (position > (long) Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("Index exceeds what this Vector implementation supports.");
+            throw new IndexOutOfBoundsException("Index exceeds what this Vector implementation supports");
         }
         elements.set((int) position, element);
     }
@@ -155,10 +161,10 @@ public class RealVector implements Vector<RealType> {
     public RealType magnitude() {
         BigDecimal accum = BigDecimal.ZERO;
         for (RealType element : elements) {
-            accum = accum.add(element.asBigDecimal().multiply(element.asBigDecimal(), mctx), mctx);
+            final BigDecimal raw = element.asBigDecimal();
+            accum = accum.add(raw.multiply(raw, mctx), mctx);
         }
-        RealImpl sumOfSquares = new RealImpl(accum);
-        sumOfSquares.setMathContext(mctx);
+        RealType sumOfSquares = new RealImpl(accum, mctx);
         try {
             return (RealType) sumOfSquares.sqrt().coerceTo(RealType.class);
         } catch (CoercionException ex) {
@@ -174,7 +180,9 @@ public class RealVector implements Vector<RealType> {
         }
         BigDecimal accum = BigDecimal.ZERO;
         for (long idx = 0L; idx < this.length(); idx++) {
-            accum = accum.add(((RealType) this.elementAt(idx).multiply(other.elementAt(idx))).asBigDecimal(), mctx);
+            final BigDecimal lhs = this.elementAt(idx).asBigDecimal();
+            final BigDecimal rhs = other.elementAt(idx).asBigDecimal();
+            accum = accum.add(lhs.multiply(rhs, mctx), mctx);
         }
         return new RealImpl(accum, mctx);
     }
@@ -240,6 +248,13 @@ public class RealVector implements Vector<RealType> {
         Numeric angle = MathUtils.arccos(cosine);
         if (angle instanceof RealType) {
             return (RealType) angle;
+        } else if (angle instanceof ComplexType) {
+            // if there's a complex result for real cosine values, there might just be some negligible
+            // garbage in the imaginary part -- if so, it should be safe to return the real part
+            Logger.getLogger(RealVector.class.getName()).log(Level.INFO,
+                    "arccos computed a complex result {0} while computing the angle between {1} and {2}. Returning the real portion.",
+                    new Object[] {angle, this, other});
+            return ((ComplexType) angle).real();
         }
         throw new ArithmeticException("arccos computed a non-real result: " + angle);
     }

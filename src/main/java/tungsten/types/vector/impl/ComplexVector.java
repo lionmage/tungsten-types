@@ -99,6 +99,11 @@ public class ComplexVector implements Vector<ComplexType> {
     }
 
     @Override
+    public Class<ComplexType> getElementType() {
+        return ComplexType.class;
+    }
+
+    @Override
     public long length() {
         return elements.size();
     }
@@ -183,17 +188,16 @@ public class ComplexVector implements Vector<ComplexType> {
 
     @Override
     public ComplexType magnitude() {
-        Numeric result = this.dotProduct(this).sqrt();
+        Numeric result = this.dotProduct(this).sqrt(); // conjugate is performed in dotProduct()
         if (result instanceof ComplexType) {
             ComplexType cplx = (ComplexType) result;
-            assert(cplx.real().asBigDecimal().compareTo(BigDecimal.ZERO) >= 0);
+            assert(cplx.real().sign() != Sign.NEGATIVE);
             assert(cplx.imaginary().sign() == Sign.ZERO);
             return cplx;
         } else if (result instanceof RealType) {
             RealType real = (RealType) result;
-            assert(real.sign() == Sign.POSITIVE || real.sign() == Sign.ZERO);
-            RealType zero = new RealImpl(BigDecimal.ZERO, mctx, true);
-            return new ComplexRectImpl(real, zero);
+            assert(real.sign() != Sign.NEGATIVE);
+            return new ComplexRectImpl(real);
         } else {
             try {
                 return (ComplexType) result.coerceTo(ComplexType.class);
@@ -286,7 +290,7 @@ public class ComplexVector implements Vector<ComplexType> {
                 return ((ComplexType) result).real();
             }
         } catch (CoercionException ex) {
-            Logger.getLogger(ComplexVector.class.getName()).log(Level.SEVERE, "Could not coerce vector magnitude to real.", ex);
+            Logger.getLogger(ComplexVector.class.getName()).log(Level.SEVERE, "While computing the angle between " + this + " and " + other, ex);
         }
         throw new ArithmeticException("Unable to compute angle between two complex vectors");
     }

@@ -28,6 +28,7 @@ import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ComplexRectImpl;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.numerics.impl.Zero;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -38,12 +39,9 @@ import java.math.MathContext;
  * {@code Vector<RealType>} as an argument, but this class acts as a
  * lightweight wrapper that only generates new instances of {@code Vector<ComplexType>}
  * when necessary.
- * 
- * This class would also provide an excellent wrapper for {@link ZeroVector} so
- * we only need to have a single implementation of the zero vector for all
- * arithmetic types we want to deal with.
  *
- * @author tarquin
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class ComplexRealVectorAdapter implements Vector<ComplexType> {
     private final Vector<RealType> realVector;
@@ -69,7 +67,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
         if (element.imaginary().equals(ZERO)) {
             realVector.setElementAt(element.real(), position);
         }
-        throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>.");
+        throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>");
     }
 
     @Override
@@ -77,7 +75,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
         if (element.imaginary().equals(ZERO)) {
             realVector.append(element.real());
         }
-        throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>.");
+        throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>");
     }
 
     @Override
@@ -103,7 +101,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
 
     @Override
     public Vector<ComplexType> scale(ComplexType factor) {
-        if (factor.imaginary().equals(ZERO)) {
+        if (Zero.isZero(factor.imaginary())) {
             return new ComplexRealVectorAdapter(realVector.scale(factor.real()));
         }
         return new ComplexVector(realVector).scale(factor);

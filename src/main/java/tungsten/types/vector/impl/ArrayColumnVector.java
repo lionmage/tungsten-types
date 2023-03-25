@@ -9,7 +9,6 @@ import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -19,22 +18,17 @@ import java.util.stream.Stream;
 
 public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
     private T[] elementArray;
-    private Class<T> elementType = (Class<T>) ((Class) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[0]);
 
     @SafeVarargs
     public ArrayColumnVector(T... elements) {
         elementArray = elements;
         if (elements != null && elements.length > 0) {
-            if (elementType == null) elementType = (Class<T>) elements[0].getClass();
             setMathContext(MathUtils.inferMathContext(List.of(elements)));
         }
     }
 
     public ArrayColumnVector(List<T> elementList) {
-        if (elementList.size() > 0 && elementType == null) {
-            elementType = (Class<T>) elementList.get(0).getClass();
-        }
+        Class<T> elementType = elementList.size() > 0 ? (Class<T>) elementList.get(0).getClass() : getElementType();
         this.elementArray = (T[]) Array.newInstance(elementType, elementList.size());
         elementList.toArray(elementArray);
         setMathContext(MathUtils.inferMathContext(elementList));
@@ -44,9 +38,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         if (source.length() > (long) Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Vector is too large to fit into an array");
         }
-        if (source.length() > 0L && elementType == null) {
-            elementType = (Class<T>) source.elementAt(0L).getClass();
-        }
+        Class<T> elementType = source.length() > 0L ? (Class<T>) source.elementAt(0L).getClass() : getElementType();
         this.elementArray = (T[]) Array.newInstance(elementType, (int) source.length());
         for (long index = 0L; index < source.length(); index++) {
             setElementAt(source.elementAt(index), index);
@@ -59,7 +51,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         if (row < 0L || row > length() - 1L) {
             throw new IndexOutOfBoundsException("Element " + row + " does not exist");
         }
-        T[] result = (T[]) Array.newInstance(elementType, 1);
+        T[] result = (T[]) Array.newInstance(getElementType(), 1);
         result[0] = elementArray[(int) row];
         return new ArrayRowVector<>(result);
     }
@@ -89,7 +81,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public void append(T element) {
-        T[] updated = (T[]) Array.newInstance(elementType, elementArray == null ? 1 : elementArray.length + 1);
+        T[] updated = (T[]) Array.newInstance(getElementType(), elementArray == null ? 1 : elementArray.length + 1);
         if (elementArray != null && elementArray.length > 0) {
             System.arraycopy(elementArray, 0, updated, 0, elementArray.length);
             updated[elementArray.length] = element;
@@ -105,6 +97,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         if (addend.length() != this.length()) throw new ArithmeticException("Cannot add vectors of different lengths");
         if (addend instanceof RowVector) throw new ArithmeticException("Cannot add a row vector to a column vector");
 
+        final Class<T> elementType = getElementType();
         T[] sumArray = (T[]) Array.newInstance(elementType, elementArray.length);
         try {
             for (int i = 0; i < elementArray.length; i++) {
@@ -119,6 +112,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public ColumnVector<T> negate() {
+        final Class<T> elementType = getElementType();
         T[] negArray = Arrays.stream(elementArray).map(Numeric::negate)
                 .map(elementType::cast).toArray(size -> (T[]) Array.newInstance(elementType, size));
         return new ArrayColumnVector<>(negArray);
@@ -126,6 +120,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public ColumnVector<T> scale(T factor) {
+        final Class<T> elementType = getElementType();
         T[] scaledArray = (T[]) Array.newInstance(elementType, elementArray.length);
         try {
             for (int i = 0; i < elementArray.length; i++) {
@@ -148,6 +143,7 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         if (addend.rows() != rows() || addend.columns() != columns()) {
             throw new ArithmeticException("Dimension mismatch for single-column matrix");
         }
+        final Class<T> elementType = getElementType();
         T[] result = (T[]) Array.newInstance(elementType, elementArray.length);
         try {
             for (long index = 0L; index < elementArray.length; index++) {

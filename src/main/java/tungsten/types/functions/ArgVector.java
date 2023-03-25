@@ -26,11 +26,12 @@ package tungsten.types.functions;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.util.MathUtils;
+import tungsten.types.vector.impl.ComplexVector;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 import java.util.*;
 import java.util.logging.Level;
@@ -164,31 +165,34 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public T magnitude() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
         final Numeric zero = ExactZero.getInstance(getMathContext());
-        Numeric sumOfSquares = args.values().parallelStream().map(x -> x.multiply(x))
-                .reduce(zero, Numeric::add);
+        Numeric sumOfSquares = args.values().parallelStream().map(x -> {
+            T r = x.magnitude();
+            return r.multiply(r);
+        }).reduce(zero, Numeric::add);
         try {
-            return (T) sumOfSquares.sqrt().coerceTo(clazz);
+            return (T) sumOfSquares.sqrt().coerceTo(getElementType());
         } catch (CoercionException e) {
-            throw new ArithmeticException("Problem coercing to " + clazz.getTypeName() +
-                    " while computing magnitude.");
+            throw new ArithmeticException("Problem coercing sqrt(" + sumOfSquares +
+                    ") while computing magnitude");
         }
     }
 
     @Override
     public T dotProduct(Vector<T> other) {
         if (this.length() != other.length()) throw new ArithmeticException("Vectors are of different lengths");
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
         long idx = 0L;
         Numeric accum = ExactZero.getInstance(getMathContext());
+        if (ComplexType.class.isAssignableFrom(other.getElementType())) {
+            List<T> copyOf = new ArrayList<>((int) other.length());
+            for (long k = 0L; k < other.length(); k++) copyOf.add(other.elementAt(k));
+            other = (Vector<T>) new ComplexVector((List<ComplexType>) copyOf).conjugate();
+        }
         for (T element : args.values()) {
             accum = accum.add(element.multiply(other.elementAt(idx++)));
         }
         try {
-            return (T) accum.coerceTo(clazz);
+            return (T) accum.coerceTo(getElementType());
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to compute dot product", e);
         }
@@ -205,8 +209,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public ArgVector<T> normalize() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = getElementType();
         try {
             return this.scale((T) this.magnitude().inverse().coerceTo(clazz));
         } catch (CoercionException ex) {

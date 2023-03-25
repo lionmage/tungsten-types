@@ -153,6 +153,11 @@ public class ZeroVector implements Vector<Numeric> {
     }
 
     @Override
+    public Class<Numeric> getElementType() {
+        return Numeric.class;
+    }
+
+    @Override
     public RealType computeAngle(Vector<Numeric> other) {
         throw new UnsupportedOperationException("Zero vector cannot form an angle with any vector");
     }
