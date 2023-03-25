@@ -39,10 +39,7 @@ import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.NumericSet;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
-import tungsten.types.vector.impl.ArrayColumnVector;
-import tungsten.types.vector.impl.ComplexVector;
-import tungsten.types.vector.impl.RealVector;
-import tungsten.types.vector.impl.ZeroVector;
+import tungsten.types.vector.impl.*;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
@@ -755,6 +752,23 @@ public class MathUtils {
      * @return the conjugate transpose of {@code original}
      */
     public static Matrix<ComplexType> conjugateTranspose(Matrix<? extends Numeric> original) {
+        if (original instanceof Vector) {
+            Vector<Numeric> asVector = (Vector<Numeric>) original;
+            ComplexType[] cplxElements = new ComplexType[(int) asVector.length()];
+            try {
+                for (int idx = 0; idx < cplxElements.length; idx++)
+                    cplxElements[idx] = ((ComplexType) asVector.elementAt(idx).coerceTo(ComplexType.class)).conjugate();
+            } catch (CoercionException fail) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "While computing complex conjugate before transpose.", fail);
+                throw new ArithmeticException("Unable to compute conjugate for " + asVector);
+            }
+            if (asVector instanceof RowVector) {
+                return new ArrayColumnVector<>(cplxElements);
+            } else if (asVector instanceof ColumnVector) {
+                return new ArrayRowVector<>(cplxElements);
+            }
+            throw new IllegalStateException("Unknown class implementing both Matrix and Vector: " + original.getClass().getTypeName());
+        }
         // TODO set a more reasonable threshold
         if (original.rows() > (long) Integer.MAX_VALUE || original.columns() > (long) Integer.MAX_VALUE) {
             return new ParametricMatrix<>(original.columns(), original.rows(), (row, column) -> {
