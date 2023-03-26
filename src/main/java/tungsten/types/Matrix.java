@@ -30,6 +30,7 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -276,5 +277,24 @@ public interface Matrix<T extends Numeric> {
             temp[j] = valueAt(j, column);
         }
         return new ArrayColumnVector<>(temp);
+    }
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default Matrix<T> plus(Matrix<T> operand) {
+        return this.add(operand);
+    }
+    default Matrix<T> minus(Matrix<T> operand) {
+        return this.subtract(operand);
+    }
+    default Matrix<? extends Numeric> power(Numeric operand) {
+        return this.pow(operand);
+    }
+    default Matrix<T> negative() {
+        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        T negOne = OptionalOperations.dynamicInstantiate(clazz, -1);
+        return this.scale(negOne);
     }
 }
