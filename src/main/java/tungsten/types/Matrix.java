@@ -30,7 +30,6 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
-import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -259,8 +258,9 @@ public interface Matrix<T extends Numeric> {
     
     default RowVector<T> getRow(long row)
     {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
+        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
+        if (clazz == null) clazz = (Class<T>) valueAt(row, 0L).getClass();
         T[] temp = (T[]) Array.newInstance(clazz, (int) columns());
         for (int i = 0; i < columns(); i++) {
             temp[i] = valueAt(row, i);
@@ -272,6 +272,7 @@ public interface Matrix<T extends Numeric> {
     {
         Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
+        if (clazz == null) clazz = (Class<T>) valueAt(0L, column).getClass();
         T[] temp = (T[]) Array.newInstance(clazz, (int) rows());
         for (int j = 0; j < rows(); j++) {
             temp[j] = valueAt(j, column);
@@ -290,11 +291,5 @@ public interface Matrix<T extends Numeric> {
     }
     default Matrix<? extends Numeric> power(Numeric operand) {
         return this.pow(operand);
-    }
-    default Matrix<T> negative() {
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        T negOne = OptionalOperations.dynamicInstantiate(clazz, -1);
-        return this.scale(negOne);
     }
 }

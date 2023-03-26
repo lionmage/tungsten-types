@@ -444,4 +444,14 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         hash = 71 * hash + Objects.hashCode(this.rows);
         return hash;
     }
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    public void leftShift(RowVector<T> row) {
+        this.append(row);
+    }
+    public void leftShift(ColumnVector<T> column) {
+        this.append(column);
+    }
 }

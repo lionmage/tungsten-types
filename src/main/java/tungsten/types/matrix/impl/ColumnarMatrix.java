@@ -417,4 +417,17 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         hash = 97 * hash + Objects.hashCode(this.columns);
         return hash;
     }
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    public void leftShift(RowVector<T> row) {
+        if (row.length() != columns()) throw new IllegalArgumentException("Row vector does not match the width of this matrix");
+        for (int column = 0; column < columns.size(); column++) {
+            columns.get(column).append(row.elementAt(column));
+        }
+    }
+    public void leftShift(ColumnVector<T> column) {
+        this.append(column);
+    }
 }
