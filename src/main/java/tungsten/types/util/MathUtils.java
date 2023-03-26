@@ -842,7 +842,15 @@ public class MathUtils {
      */
     public static boolean isOrthogonal(Matrix<RealType> M) {
         if (M.rows() != M.columns()) return false;  // must be a square matrix
-        return M.transpose().equals(M.inverse());
+        try {
+            return M.transpose().equals(M.inverse());
+        } catch (ArithmeticException e) {
+            // it makes more sense to log the event and return false
+            // this is less costly than pre-checking if the matrix is singular
+            Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                    "While computing matrix inverse for comparison to transpose.", e);
+            return false;
+        }
     }
 
     /**
