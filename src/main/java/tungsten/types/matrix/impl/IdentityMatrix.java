@@ -28,6 +28,7 @@ import tungsten.types.Numeric;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -87,8 +88,7 @@ public class IdentityMatrix implements Matrix<Numeric> {
 
     @Override
     public Matrix<Numeric> scale(Numeric scaleFactor) {
-        // TODO find a more sensible cutover value
-        if (elementCount > (long) Integer.MAX_VALUE) {
+        if (elementCount > MathUtils.MAX_CLONE_DEPTH) {
             return new ParametricMatrix<>(elementCount, elementCount, (row, column) -> {
                if (row.longValue() == column.longValue()) return scaleFactor;
                return ExactZero.getInstance(mctx);

@@ -744,6 +744,8 @@ public class MathUtils {
         return diag.multiply(col);
     }
 
+    public static long MAX_CLONE_DEPTH = (long) Integer.MAX_VALUE >> 4L;
+
     /**
      * Compute the conjugate transpose of a given matrix A, denoted A<sup>*</sup>.
      * This is equivalent to taking the transpose of A and then taking the complex
@@ -769,8 +771,8 @@ public class MathUtils {
             }
             throw new IllegalStateException("Unknown class implementing both Matrix and Vector: " + original.getClass().getTypeName());
         }
-        // TODO set a more reasonable threshold
-        if (original.rows() > (long) Integer.MAX_VALUE || original.columns() > (long) Integer.MAX_VALUE) {
+        // if the matrix is big enough, return a transformed view
+        if (original.rows() > MAX_CLONE_DEPTH || original.columns() > MAX_CLONE_DEPTH) {
             return new ParametricMatrix<>(original.columns(), original.rows(), (row, column) -> {
                 try {
                     ComplexType interim = (ComplexType) original.valueAt(column, row).coerceTo(ComplexType.class);
@@ -852,7 +854,15 @@ public class MathUtils {
      */
     public static boolean isUnitary(Matrix<ComplexType> C) {
         if (C.rows() != C.columns()) return false;  // must be square
-        return conjugateTranspose(C).equals(C.inverse());
+        try {
+            return conjugateTranspose(C).equals(C.inverse());
+        } catch (ArithmeticException e) {
+            // it makes more sense to log the event and return false
+            // this is less costly than pre-checking if the matrix is singular
+            Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                    "While computing matrix inverse for comparison to conjugate transpose.", e);
+            return false;
+        }
     }
 
     public static boolean isOfType(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {

@@ -28,6 +28,7 @@ import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.MathUtils;
 import tungsten.types.vector.impl.ArrayRowVector;
 import tungsten.types.vector.RowVector;
 
@@ -35,6 +36,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A matrix implementation where the values of the matrix are given
@@ -88,7 +91,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public T determinant() {
         if (rows() != columns()) {
-            throw new ArithmeticException("Can only compute determinant for a square matrix.");
+            throw new ArithmeticException("Can only compute determinant for a square matrix");
         }
         if (rows() == 1L) { // 1x1 matrix
             return valueAt(0L, 0L);
@@ -100,17 +103,20 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
             T d = valueAt(1L, 1L);
             return (T) a.multiply(d).subtract(c.multiply(b));  // should not require coercion here
         }
+        if (rows() > MathUtils.MAX_CLONE_DEPTH) {
+            return new SubMatrix<>(this).determinant();
+        }
         return new BasicMatrix<>(this).determinant();
     }
 
     @Override
     public Matrix<? extends Numeric> inverse() {
         if (rows() != columns()) {
-            throw new ArithmeticException("Cannot invert a non-square matrix.");
+            throw new ArithmeticException("Cannot invert a non-square matrix");
         }
         final T det = this.determinant();
         if (Zero.isZero(det)) {
-            throw new ArithmeticException("Matrix is singular.");
+            throw new ArithmeticException("Matrix is singular");
         }
         if (rows() == 1L) {
             return new SingletonMatrix<>(valueAt(0L, 0L).inverse());
@@ -124,6 +130,9 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
             result.append(new ArrayRowVector<>(d, b.negate()).scale(scale));
             result.append(new ArrayRowVector<>(c.negate(), a).scale(scale));
             return result;
+        }
+        if (rows() > MathUtils.MAX_CLONE_DEPTH) {
+            return new SubMatrix<>(this).inverse();
         }
         return new BasicMatrix<>(this).inverse();
     }
@@ -150,10 +159,10 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (columns != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
         
-        final Class<? extends Numeric> clazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
+        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) rows, (int) multiplier.columns());
         for (long row = 0L; row < rows; row++) {
@@ -167,9 +176,8 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public Matrix<T> scale(T scaleFactor) {
-        final BiFunction<Long, Long, T> scaleFunction = generatorFunction.internal.andThen(x -> {
-            return (T) x.multiply(scaleFactor);
-        });
+        final BiFunction<Long, Long, T> scaleFunction =
+                generatorFunction.internal.andThen(x -> (T) x.multiply(scaleFactor));
         return new ParametricMatrix<>(rows, columns, scaleFunction);
     }
     
@@ -184,11 +192,17 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
         NumericHierarchy targetType = NumericHierarchy.forNumericType(clazz);
         Class<T> currentClazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
-        NumericHierarchy currentType = NumericHierarchy.forNumericType(currentClazz);
-        // if our elements are already of the requested type, just cast and return
-        if (currentType == targetType) return (Matrix<R>) this;
-        if (currentType.compareTo(targetType) > 0) {
-            throw new ArithmeticException("Cannot upconvert elements of " + currentType + " to elements of " + targetType);
+        if (currentClazz != null) {
+            NumericHierarchy currentType = NumericHierarchy.forNumericType(currentClazz);
+            // if our elements are already of the requested type, just cast and return
+            if (currentType == targetType) return (Matrix<R>) this;
+            if (currentType.compareTo(targetType) > 0) {
+                throw new ArithmeticException("Cannot upconvert elements of " + currentType + " to elements of " + targetType);
+            }
+        } else {
+            Logger.getLogger(ParametricMatrix.class.getName()).log(Level.WARNING,
+                    "Unable to determine actual type argument for {0}. Skipping sanity checks to ensure we can upconvert to element type {1}.",
+                    new Object[] {this.getClass().getTypeName(), clazz.getTypeName()});
         }
         
         // for efficiency, unwrapping the internal function of the generator so that we're not range checking twice
