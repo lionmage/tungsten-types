@@ -119,4 +119,27 @@ public interface Vector<T extends Numeric> {
     RealType computeAngle(Vector<T> other);
     
     MathContext getMathContext();
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    default Vector<T> plus(Vector<T> operand) {
+        return this.add(operand);
+    }
+    default Vector<T> minus(Vector<T> operand) {
+        return this.subtract(operand);
+    }
+    default Vector<T> negative() {
+        return this.negate();
+    }
+    default Vector<T> leftShift(T element) {
+        this.append(element);
+        return this;
+    }
+    default T getAt(int i) {
+        return this.elementAt(i);
+    }
+    default void putAt(int i, T element) {
+        this.setElementAt(element, i);
+    }
 }
