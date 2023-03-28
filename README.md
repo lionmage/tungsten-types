@@ -41,7 +41,11 @@ to create a mathematical language and environment which leverages this work.
 In addition to Java support, I am including preliminary support for Groovy. Right now, this
 takes the form of adding methods to basic types so that Groovy can use them with its
 built-in operators. This also has the side benefit of making testing much faster using
-e.g. GroovyConsole (built into IntelliJ IDEA). **Note:** I had originally intended to
+e.g. GroovyConsole (built into IntelliJ IDEA). Operator overloading has been applied to
+both vector and matrix types in addition to all numeric types. Per Groovy convention,
+Vector supports negative indexing for the [] operator.
+
+**Note:** I had originally intended to
 include Groovy scripts and Categories in this project, but due to classpath limitations
 with IntelliJ and its Gradle integration, I have decided to move Groovy-specific stuff
 into a separate project. This README will be updated once that project is spun up.

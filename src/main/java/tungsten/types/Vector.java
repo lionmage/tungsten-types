@@ -137,9 +137,11 @@ public interface Vector<T extends Numeric> {
         return this;
     }
     default T getAt(int i) {
+        if (i < 0) return this.elementAt(length() + i);
         return this.elementAt(i);
     }
     default void putAt(int i, T element) {
+        if (i < 0) this.setElementAt(element, length() + i);
         this.setElementAt(element, i);
     }
 }
