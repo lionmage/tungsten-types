@@ -309,8 +309,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     public <R extends Numeric> Matrix<R> upconvert(Class<R> clazz) {
         // first, check to make sure we can do this -- ensure R is a wider type than T
         NumericHierarchy targetType = NumericHierarchy.forNumericType(clazz);
-        Class<T> currentClazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> currentClazz = rows.get(0).getElementType();
         NumericHierarchy currentType = NumericHierarchy.forNumericType(currentClazz);
         // if our elements are already of the requested type, just cast and return
         if (currentType == targetType) return (Matrix<R>) this;
@@ -342,8 +341,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     }
     
     public BasicMatrix<T> removeColumn(long column) {
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = rows.get(0).getElementType();
         ArrayList<RowVector<T>> result = new ArrayList<>();
         for (RowVector<T> row : rows) {
             int arrIdx = 0;
@@ -371,8 +369,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     }
     
     public BasicMatrix<T> cofactor() {
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = rows.get(0).getElementType();
         T[][] result = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) this.columns());
         for (long row = 0L; row < rows(); row++) {
             for (long column = 0L; column < columns(); column++) {

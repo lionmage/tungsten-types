@@ -117,8 +117,7 @@ public interface Matrix<T extends Numeric> {
             throw new ArithmeticException("Trace is only defined for square matrices.");
         }
         Numeric accum = valueAt(0L, 0L);
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) accum.getClass();
         for (long index = 1L; index < this.columns(); index++) {
             accum = accum.add(valueAt(index, index));
         }
@@ -127,7 +126,7 @@ public interface Matrix<T extends Numeric> {
         } catch (CoercionException ex) {
             Logger.getLogger(Matrix.class.getName()).log(Level.SEVERE,
                     "Could not coerce " + accum + " to " + clazz.getTypeName(), ex);
-            throw new ArithmeticException("Type coercion failed.");
+            throw new ArithmeticException("Type coercion failed");
         }
     }
     
@@ -151,7 +150,7 @@ public interface Matrix<T extends Numeric> {
             public T valueAt(long row, long column) {
                 if (row < 0L || row >= rows || column < 0L || column >= columns) {
                     throw new IndexOutOfBoundsException("row:" + row + ", column:" + column +
-                            " is out of bounds for a " + rows + " by " + columns + " matrix.");
+                            " is out of bounds for a " + rows + " by " + columns + " matrix");
                 }
                 return source.valueAt(column, row);
             }
@@ -214,12 +213,12 @@ public interface Matrix<T extends Numeric> {
     
     default Matrix<? extends Numeric> pow(Numeric n) {
         if (!(n instanceof IntegerType)) {
-            throw new IllegalArgumentException("Non-integer exponents are not allowed for this type of matrix.");
+            throw new IllegalArgumentException("Non-integer exponents are not allowed for this type of matrix");
         }
         if (((IntegerType) n).sign() == Sign.NEGATIVE) {
             throw new IllegalArgumentException("Exponent must be non-negative.");
         }
-        if (rows() != columns()) throw new ArithmeticException("Cannot compute power of non-square matrix.");
+        if (rows() != columns()) throw new ArithmeticException("Cannot compute power of non-square matrix");
         BigInteger exponent = ((IntegerType) n).asBigInteger();
         MathContext mctx = valueAt(0L, 0L).getMathContext();
         if (exponent.equals(BigInteger.ZERO)) return new IdentityMatrix(rows(), mctx);
@@ -246,8 +245,7 @@ public interface Matrix<T extends Numeric> {
     }
 
     default Matrix<T> subtract(Matrix<T> subtrahend) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) subtrahend.valueAt(0L, 0L).getClass();
         try {
             final T negOne = (T) new IntegerImpl(BigInteger.valueOf(-1L)).coerceTo(clazz);
             return this.add(subtrahend.scale(negOne));

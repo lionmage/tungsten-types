@@ -81,8 +81,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         final int rows = source.length;
         // normally, I'd use the following trick on source, but since source
         // is an array, I'm not sure if any type info is preserved
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) source[0][0].getClass();
         T[] temp = (T[]) Array.newInstance(clazz, rows);
         for (int i = 0; i < rows; i++) temp[i] = source[i][column];
         return new ArrayColumnVector<>(temp);
@@ -216,8 +215,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
             }
             return result;
         }
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) multiplier.valueAt(0L, 0L).getClass();
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
             RowVector<T> rowvec = this.getRow(row);
@@ -286,8 +284,8 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
                 try {
                     accum[(int) row] = (R) originalColumn.elementAt(row).coerceTo(clazz);
                 } catch (CoercionException ex) {
-                    Logger.getLogger(BasicMatrix.class.getName()).log(Level.SEVERE,
-                            "Coercion failed while upconverting matrix element to " + clazz.getTypeName(), ex);
+                    Logger.getLogger(ColumnarMatrix.class.getName()).log(Level.SEVERE,
+                            "Coercion failed while upconverting matrix element at " + row + ",\u2009" + column + " to " + clazz.getTypeName(), ex);
                     throw new ArithmeticException(String.format("While converting value %s to %s at %d, %d",
                             valueAt(row, column), clazz.getTypeName(), row, column));
                 }
@@ -310,8 +308,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     }
     
     public ColumnarMatrix<T> cofactor() {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = columns.get(0).getElementType();
         T[][] result = (T[][]) Array.newInstance(clazz, (int) this.rows(), columns.size());
         for (long row = 0L; row < rows(); row++) {
             for (long column = 0L; column < columns(); column++) {
@@ -389,8 +386,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public RowVector<T> getRow(long row) {
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = columns.get(0).getElementType();
         T[] result = (T[]) Array.newInstance(clazz, columns.size());
         for (long col = 0L; col < columns(); col++) {
             result[(int) col] = getColumn(col).elementAt(row);
