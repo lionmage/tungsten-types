@@ -798,6 +798,36 @@ public class MathUtils {
     }
 
     /**
+     * Compute &#x212f;<sup>X</sup> for a square matrix <strong>X</strong>.
+     * Since the calculation is an infinite series, we only compute k terms,
+     * where k is derived from the {@link MathContext} of the elements in {@code X}.
+     * @param X a n&times;n matrix
+     * @return the n&times;n matrix that is an approximation of &#x212f;<sup>X</sup>
+     */
+    public static Matrix<? extends Numeric> exp(Matrix<? extends Numeric> X) {
+        if (X instanceof DiagonalMatrix) return ((DiagonalMatrix<? extends Numeric>) X).exp();
+        if (X instanceof SingletonMatrix || (X.columns() == 1L && X.rows() == 1L)) {
+            final Numeric value = X.valueAt(0L, 0L);
+            final Euler e = Euler.getInstance(value.getMathContext());
+            try {
+                return new SingletonMatrix<>(value instanceof ComplexType ? e.exp((ComplexType) value) :
+                        e.exp((RealType) value.coerceTo(RealType.class)));
+            } catch (CoercionException ex) {
+                throw new ArithmeticException("Cannot compute \u212F^X: " + ex.getMessage());
+            }
+        }
+        if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for non-square matrix");
+        final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
+        Matrix<Numeric> intermediate = new ZeroMatrix(X.rows(), ctx);
+        long sumLimit = ctx.getPrecision() + 4L; // will get at least 4 terms if precision = 0 (Unlimited)
+        for (long k = 0; k < sumLimit; k++) {
+            IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
+            intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
+        }
+        return intermediate;
+    }
+
+    /**
      * Determine if a given matrix is normal.
      * A matrix is considered normal if it commutes with its conjugate transpose.
      * In other words, A<sup>*</sup>A = AA<sup>*</sup>.

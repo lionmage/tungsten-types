@@ -216,7 +216,7 @@ public interface Matrix<T extends Numeric> {
             throw new IllegalArgumentException("Non-integer exponents are not allowed for this type of matrix");
         }
         if (((IntegerType) n).sign() == Sign.NEGATIVE) {
-            throw new IllegalArgumentException("Exponent must be non-negative.");
+            throw new IllegalArgumentException("Exponent must be non-negative");
         }
         if (rows() != columns()) throw new ArithmeticException("Cannot compute power of non-square matrix");
         BigInteger exponent = ((IntegerType) n).asBigInteger();
