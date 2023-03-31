@@ -1,4 +1,4 @@
-package tungsten.types.functions.support;
+package tungsten.types.functions.curvefit;
 /*
  * The MIT License
  *
@@ -23,38 +23,12 @@ package tungsten.types.functions.support;
  * THE SOFTWARE.
  */
 
+import tungsten.types.functions.NumericFunction;
+import tungsten.types.functions.support.Coordinates;
 import tungsten.types.numerics.RealType;
 
-public class Coordinates2D extends Coordinates {
-    public Coordinates2D(RealType x, RealType y) {
-        inputs = new RealType[1];
-        inputs[0] = x;
-        value = y;
-    }
+import java.util.List;
 
-    public Coordinates2D(RealType x, RealType y, RealType relativeError) {
-        this(x, y);
-        highError = relativeError;  // error is symmetric
-    }
-
-    public RealType getX() {
-        return inputs[0];
-    }
-
-    public RealType getY() {
-        return getValue();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append('(').append("x:").append(getX())
-                .append(", ").append("y:").append(getY());
-        if (lowError == null && highError != null) {
-            // only bother showing symmetric error
-            buf.append("\u2009\u00B1\u2009").append(highError);
-        }
-        buf.append(')');
-        return buf.toString();
-    }
+public interface CurveFittingStrategy {
+    NumericFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints);
 }
