@@ -26,6 +26,7 @@ package tungsten.types.functions.support;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
 
 import java.util.Arrays;
 import java.util.List;
@@ -83,6 +84,9 @@ public class Coordinates {
     }
 
     public void setAsymmetricRelativeError(RealType lowError, RealType highError) {
+        if (lowError.sign() != Sign.NEGATIVE || highError.sign() != Sign.POSITIVE) {
+            throw new IllegalArgumentException("Invalid bounds");
+        }
         this.lowError = lowError;
         this.highError = highError;
     }
