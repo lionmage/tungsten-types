@@ -55,7 +55,7 @@ public class Coordinates {
      * while the n<sup>th</sup> value would represent the value of f()
      * evaluated at those arguments.  For experimental data,
      * the final value would represent some measurement taken with
-     * respect to the parameters occurring before it.
+     * respect to the parameters/constraints occurring before it.
      * @param coordinateValues a {@link List} of {@link RealType} values representing
      *                         a single set of coordinates
      */
@@ -99,6 +99,7 @@ public class Coordinates {
         return new Range<>((RealType) lowError.add(value), (RealType) highError.add(value), Range.BoundType.EXCLUSIVE);
     }
 
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
 
@@ -107,7 +108,7 @@ public class Coordinates {
         if (lowError == null) {
             if (highError != null) buf.append("\u2009\u00B1\u2009").append(highError);
         } else {
-            buf.append(" (").append(lowError).append(", ").append(highError).append(')');
+            buf.append(" (").append(lowError).append(",\u2009").append(highError).append(')');
         }
 
         return buf.toString();

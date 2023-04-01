@@ -816,11 +816,11 @@ public class MathUtils {
                 throw new ArithmeticException("Cannot compute \u212F^X: " + ex.getMessage());
             }
         }
-        if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for non-square matrix");
+        if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
         Matrix<Numeric> intermediate = new ZeroMatrix(X.rows(), ctx);
         long sumLimit = ctx.getPrecision() + 4L; // will get at least 4 terms if precision = 0 (Unlimited)
-        for (long k = 0; k < sumLimit; k++) {
+        for (long k = 0L; k < sumLimit; k++) {
             IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
             intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
         }
@@ -904,6 +904,9 @@ public class MathUtils {
     }
 
     public static boolean isOfType(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {
+        if (matrix instanceof SingletonMatrix || (matrix.rows() == 1L && matrix.columns() == 1L)) {
+            return clazz.isAssignableFrom(matrix.valueAt(0L, 0L).getClass());
+        }
         if (matrix instanceof DiagonalMatrix) {
             // To guard against a heterogeneous matrix causing problems, we must check
             // one off-diagonal cell.
@@ -1024,7 +1027,7 @@ public class MathUtils {
                     }
                 } catch (CoercionException e) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.WARNING,
-                            "Failed to coerce the magnitude of the matrix element at {0},{1} to a real value",
+                            "Failed to coerce the magnitude of the matrix element at {0},{1} to a real value.",
                             new Object[] {row, column});
                     return false;
                 }
