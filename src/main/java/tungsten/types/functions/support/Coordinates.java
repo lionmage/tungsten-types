@@ -110,6 +110,12 @@ public class Coordinates {
         this.highError = highError;
     }
 
+    /**
+     * Obtain the error range for this datum. Note that the {@link Range} returned
+     * is absolute; thus, the values contained therein bracket the value
+     * returned by {@link #getValue()}.
+     * @return the error bounds for this datum
+     */
     public Range<RealType> getErrorBounds() {
         if (lowError == null) {
             return new Range<>((RealType) highError.negate().add(value),
