@@ -27,7 +27,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
 
     public void addFunctionForRange(Range<T> range, UnaryFunction<T, R> func) {
         if (internalMap.keySet().parallelStream().anyMatch(r -> r.contains(range))) {
-            throw new IllegalArgumentException("Range " + range + " is a subset of an existing range.");
+            throw new IllegalArgumentException("Range " + range + " is a subset of an existing range");
         }
         internalMap.put(range, func);
         boundsChecked = false;  // mappings have changed, so force a re-check before using this function again
@@ -35,7 +35,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
 
 
     private final Supplier<IllegalArgumentException> outOfBounds =
-            () -> new IllegalArgumentException("Function argument is not within any range bounds.");
+            () -> new IllegalArgumentException("Function argument is not within any range bounds");
 
     @Override
     public R apply(ArgVector<T> arguments) {
@@ -84,7 +84,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
     }
 
     private final Supplier<IllegalStateException> noBoundsFound =
-            () -> new IllegalStateException("Piecewise function has no ranges, or the ranges have improperly specified bounds.");
+            () -> new IllegalStateException("Piecewise function has no ranges, or the ranges have improperly specified bounds");
 
     @Override
     public Range<RealType> inputRange(String argName) {
@@ -97,7 +97,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
         try {
             return new Range<>((RealType) lowest.coerceTo(RealType.class), lowerType, (RealType) highest.coerceTo(RealType.class), upperType);
         } catch (CoercionException e) {
-            throw new IllegalStateException("Could not coerce bounds to real.", e);
+            throw new IllegalStateException("Could not coerce bounds to real", e);
         }
     }
 

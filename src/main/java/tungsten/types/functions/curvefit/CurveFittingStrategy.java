@@ -31,4 +31,6 @@ import java.util.List;
 
 public interface CurveFittingStrategy {
     NumericFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints);
+    CurveType supportedType();
+    String name();
 }
