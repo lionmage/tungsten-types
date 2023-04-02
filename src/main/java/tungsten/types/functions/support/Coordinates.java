@@ -50,8 +50,8 @@ public class Coordinates {
      * Constructor which takes a tuple of values as a {@link List}.
      * It is assumed that the final value of the tuple is the value
      * associated with the parameters or constraints specified before it.
-     * For a function f(x<sub>0</sub>, x<sub>1</sub>, &hellip;), the first
-     * n - 1 values of the tuple would represent the function's arguments,
+     * For a function f(x<sub>0</sub>,&thinsp;x<sub>1</sub>,&thinsp;&hellip;), the first
+     * n&nbsp;&minus;&nbsp;1 values of the tuple would represent the function's arguments,
      * while the n<sup>th</sup> value would represent the value of f()
      * evaluated at those arguments.  For experimental data,
      * the final value would represent some measurement taken with
@@ -69,10 +69,22 @@ public class Coordinates {
         // this is intended for subclasses only
     }
 
+    /**
+     * Obtain the arity of this datum.  The arity is the number of constraints
+     * or parameters, thus it does not include the value itself.
+     * @return the number of constraints for this data point
+     */
     public long arity() {
         return inputs.length;
     }
 
+    /**
+     * Obtain the i<sup>th</sup> constraint or parameter for this datum. Note
+     * that negative indexing is supported.
+     * @param i the index of the constraint to obtain
+     * @return the constraint
+     * @throws IndexOutOfBoundsException if {@code i} points to a non-existent constraint
+     */
     public RealType getOrdinate(int i) {
         if (i < 0) return inputs[inputs.length + i];  // negative indexing
         if (i > inputs.length) throw new IndexOutOfBoundsException("Index " + i + " exceeds arity " + arity());
@@ -83,6 +95,13 @@ public class Coordinates {
         return value;
     }
 
+    /**
+     * When the error bounds for a value are asymmetric, use this method to set the
+     * bounds for a given datum.  Note that these error values are relative to the
+     * value, not absolute.
+     * @param lowError  the lower bound of the error relative to {@link #getValue()}
+     * @param highError the upper bound of the error relative to {@link #getValue()}
+     */
     public void setAsymmetricRelativeError(RealType lowError, RealType highError) {
         if (lowError.sign() != Sign.NEGATIVE || highError.sign() != Sign.POSITIVE) {
             throw new IllegalArgumentException("Invalid bounds");
