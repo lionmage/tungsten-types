@@ -89,7 +89,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
     @Override
     public Range<RealType> inputRange(String argName) {
         T lowest = internalMap.keySet().parallelStream().map(Range::getLowerBound).min(T::compareTo).orElseThrow(noBoundsFound);
-        T highest = internalMap.keySet().parallelStream().map(Range::getUpperBound).min(T::compareTo).orElseThrow(noBoundsFound);
+        T highest = internalMap.keySet().parallelStream().map(Range::getUpperBound).max(T::compareTo).orElseThrow(noBoundsFound);
         Range.BoundType lowerType = internalMap.keySet().stream().filter(r -> r.getLowerBound().equals(lowest)).findFirst()
                 .orElseThrow().isLowerClosed() ? Range.BoundType.INCLUSIVE : Range.BoundType.EXCLUSIVE;
         Range.BoundType upperType = internalMap.keySet().stream().filter(r -> r.getUpperBound().equals(highest)).findFirst()

@@ -28,7 +28,7 @@ import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.curvefit.CurveFittingStrategy;
 import tungsten.types.functions.curvefit.CurveType;
 import tungsten.types.functions.impl.CubicSpline2D;
-import tungsten.types.functions.impl.RealPiecewiseFunction;
+import tungsten.types.functions.impl.PiecewiseFunction;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.numerics.RealType;
@@ -39,6 +39,16 @@ import java.math.MathContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * A curve-fitting strategy which generates a series of {@link CubicSpline2D spline functions}
+ * to approximate a curve that passes through a set of data points or &ldquo;control points.&rdquo;
+ * These splines are wrapped inside a {@link PiecewiseFunction} that offers no smoothing since
+ * the splines are guaranteed to be both continuous and smooth (to a certain order) at their
+ * transition points.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ *  or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Spline_(mathematics)#Algorithm_for_computing_natural_cubic_splines">the basic algorithm used here</a>
+ */
 public class CubicSplineStrategy implements CurveFittingStrategy {
     @Override
     public UnaryFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints) {
@@ -82,9 +92,8 @@ public class CubicSplineStrategy implements CurveFittingStrategy {
                     .subtract(h[j].multiply(c[j + 1].add(TWO.multiply(c[j]))).divide(THREE));
             d[j] = (RealType) c[j + 1].subtract(c[j]).divide(THREE.multiply(h[j]));
         }
-        RealType epsilon = new RealImpl(BigDecimal.TEN.pow(1 - ctx.getPrecision(), ctx)
-                .divide(BigDecimal.valueOf(2L), ctx), ctx);
-        RealPiecewiseFunction result = new RealPiecewiseFunction(epsilon);
+        // we don't need smoothing, so we don't need a RealPiecewiseFunction
+        PiecewiseFunction<RealType, RealType> result = new PiecewiseFunction<>();
         for (int i = 0; i < dataPoints.size() - 2; i++) {
             // final range for series is inclusive at terminus
             Range<RealType> pieceRange = new Range<>(C.get(i).getX(), Range.BoundType.INCLUSIVE,

@@ -31,6 +31,17 @@ import java.util.List;
 
 public interface CurveFittingStrategy {
     NumericFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints);
+
+    /**
+     * The type of data supported by this curve fitting strategy &mdash; i.e., whether this
+     * strategy can handle data with a given number of dimensions.
+     * @return the type of curve (2D, 3D, etc.) this strategy supports
+     */
     CurveType supportedType();
+
+    /**
+     * Returns the name of the strategy. This name should be both human-readable and unique.
+     * @return the name of this strategy
+     */
     String name();
 }
