@@ -232,9 +232,20 @@ public class Euler implements RealType {
      * @return &#x212f;<sup>x</sup>
      */
     public RealType exp(RealType x) {
-        if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return new RealImpl(BigDecimal.ONE);
+        // we need to do this check first since asBigDecimal will fail for RealInfinity
+        if (x instanceof RealInfinity) {
+            switch (x.sign()) {
+                case NEGATIVE:
+                    return new RealImpl(BigDecimal.ZERO, mctx);
+                case POSITIVE:
+                    return x;
+                default:
+                    throw new IllegalStateException("Unknown state for " + x);
+            }
+        }
+        if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return new RealImpl(BigDecimal.ONE, mctx);
         else if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) return this;
-        
+
         // otherwise compute the series
         BigDecimal sum = BigDecimal.ZERO;
         MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());

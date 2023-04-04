@@ -421,6 +421,28 @@ public class MathUtils {
         } else if (One.isUnity(exponent)) {
             return base;
         }
+        if (exponent instanceof RealInfinity) {
+            if (base.sign() == Sign.POSITIVE) {
+                switch (((RealInfinity) exponent).sign()) {
+                    case NEGATIVE:
+                        return new RealImpl(BigDecimal.ZERO, mctx);
+                    case POSITIVE:
+                        return RealInfinity.getInstance(Sign.POSITIVE, mctx);
+                    default:
+                        throw new IllegalStateException("Unknown state for " + exponent);
+                }
+            } else {
+                if (((RealInfinity) exponent).sign() == Sign.NEGATIVE) {
+                    return new RealImpl(BigDecimal.ZERO, mctx);
+                }
+                throw new ArithmeticException(base + "^" + exponent + " does not converge");
+            }
+        } else if (exponent instanceof PosInfinity) {
+            if (base.sign() == Sign.POSITIVE) return RealInfinity.getInstance(Sign.POSITIVE, mctx);
+            throw new ArithmeticException(base + "^" + exponent + " does not converge");
+        } else if (exponent instanceof NegInfinity) {
+            return new RealImpl(BigDecimal.ZERO, mctx);
+        }
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
         switch (htype) {
             case INTEGER:
