@@ -23,11 +23,17 @@ package tungsten.types.functions.curvefit;
  * THE SOFTWARE.
  */
 
+import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.RealImpl;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,7 +145,7 @@ public class CurveFitter {
         if (ordinates == null || ordinates.length == 0) throw new IllegalArgumentException("ordinates must not be empty");
         Comparator<Coordinates> cmp = Comparator.comparing((Coordinates x) -> x.getOrdinate(ordinates[0]));
         for (int k = 1; k < ordinates.length; k++) {
-            int finalK = k;
+            final int finalK = k;
             cmp = cmp.thenComparing((Coordinates x) -> x.getOrdinate(ordinates[finalK]));
         }
         List<? extends Coordinates> result = coordinates.stream()
@@ -150,5 +156,62 @@ public class CurveFitter {
                 "Sorted {0} coordinates by ordinate indices {1}",
                 new Object[] {coordinates.size(), ordinates});
         coordinates = result;
+    }
+
+    /**
+     * Takes a {@link List} of raw coordinate data, potentially multidimensional
+     * and potentially containing multiple values for a given ordinate, and reduces
+     * it to a 2-dimensional set of coordinates.  Multiple values associated with
+     * a given ordinate are averaged, and the standard deviation is used as the
+     * relative error.
+     * @param raw      the raw coordinate data
+     * @param ordinate the index of the ordinate to reduce by
+     * @return a {@link List} of {@link Coordinates2D} representing the reduced data set
+     */
+    public static List<Coordinates2D> reduce(List<? extends Coordinates> raw, int ordinate) {
+        TreeMap<RealType, List<RealType>> reductionMap = new TreeMap<>();
+        raw.parallelStream().forEach(x -> {
+            if (reductionMap.containsKey(x.getOrdinate(ordinate))) {
+                reductionMap.get(x.getOrdinate(ordinate)).add(x.getValue());
+            } else {
+                reductionMap.put(x.getOrdinate(ordinate), arrayListOf(x.getValue()));
+            }
+        });
+        // now reduce the original data to a set with averaged values and std dev as the error
+        List<Coordinates2D> reduced = new ArrayList<>(reductionMap.size());
+        reductionMap.forEach((x, yvals) -> {
+            Coordinates2D coord;
+            if (yvals.size() == 1) {
+                coord = new Coordinates2D(x, yvals.get(0), new RealImpl(BigDecimal.ZERO));
+            } else {
+                List<RealType> meanAndStdev = computeMeanAndStdDev(yvals);
+                coord = new Coordinates2D(x, meanAndStdev.get(0), meanAndStdev.get(1));
+            }
+            reduced.add(coord);
+        });
+        return reduced;
+    }
+
+    private static List<RealType> arrayListOf(RealType value) {
+        List<RealType> list = new ArrayList<>();
+        list.add(value);
+        return list;
+    }
+
+    private static List<RealType> computeMeanAndStdDev(List<RealType> values) {
+        final RealType zero = new RealImpl(BigDecimal.ZERO, values.get(0).getMathContext());
+        IntegerImpl populationSize = new IntegerImpl(BigInteger.valueOf(values.size()));
+        final Numeric mean = values.parallelStream().map(Numeric.class::cast).reduce(zero, Numeric::add)
+                .divide(populationSize);
+        Numeric variance = values.parallelStream().map(Numeric.class::cast).map(x -> x.subtract(mean))
+                .map(x -> x.multiply(x)).reduce(zero, Numeric::add).divide(populationSize);
+        try {
+            return List.of((RealType) mean.coerceTo(RealType.class), (RealType) variance.sqrt().coerceTo(RealType.class));
+        } catch (CoercionException e) {
+            Logger.getLogger(CurveFitter.class.getName()).log(Level.SEVERE,
+                    "Unable to coerce mean={0} and variance={1} to real values given a population of size {2}.",
+                    new Object[] {mean, variance, populationSize});
+            throw new IllegalStateException(e);
+        }
     }
 }
