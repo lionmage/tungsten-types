@@ -1,4 +1,27 @@
 package tungsten.types.functions.curvefit;
+/*
+ * The MIT License
+ *
+ * Copyright © 2023 Robert Poole <Tarquin.AZ@gmail.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
@@ -6,18 +29,25 @@ import tungsten.types.functions.support.Coordinates3D;
 import tungsten.types.numerics.RealType;
 
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * This is the main entry point for users wishing to do curve fitting.
+ * The class contains everything you need to look up and apply curve
+ * fitting strategies.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ *  or <a href="mailto:tarquin@alumni.mit.edu">MIT alumni e-mail</a>
+ */
 public class CurveFitter {
     CurveType characteristic;
     List<? extends Coordinates> coordinates;
 
-    public CurveFitter(List<? extends Coordinates> coordinates) {
+    public CurveFitter(List<? extends Coordinates> coordinates, boolean skipIntegrityCheck) {
+        if (coordinates == null) throw new IllegalArgumentException("Coordinates must be non-empty");
         this.coordinates = coordinates;
         if (coordinates.parallelStream().allMatch(Coordinates2D.class::isInstance)) {
             characteristic = CurveType.CURVE_2D;
@@ -26,12 +56,17 @@ public class CurveFitter {
         } else {
             characteristic = CurveType.MULTI;
         }
-        if (!checkIntegrity()) {
+        if (!skipIntegrityCheck && !checkIntegrity()) {
             throw new IllegalArgumentException("Coordinates failed integrity check");
         }
     }
 
+    public CurveFitter(List<? extends Coordinates> coordinates) {
+        this(coordinates, false);
+    }
+
     private boolean checkIntegrity() {
+        if (coordinates.size() < 2) return false;
         if (characteristic == CurveType.CURVE_2D) {
             // check that there are no duplicate X values
             TreeSet<RealType> values = new TreeSet<>();
@@ -62,6 +97,22 @@ public class CurveFitter {
         } else {
             throw new IllegalStateException("2D curves cannot be sorted in Y");
         }
+    }
+
+    public RealType minOrdinateValue(int ordinate) {
+        return coordinates.parallelStream().map(x -> x.getOrdinate(ordinate)).min(RealType::compareTo).orElseThrow();
+    }
+
+    public RealType maxOrdinateValue(int ordinate) {
+        return coordinates.parallelStream().map(x -> x.getOrdinate(ordinate)).max(RealType::compareTo).orElseThrow();
+    }
+
+    public Coordinates minValueAt() {
+        return coordinates.parallelStream().min(Comparator.comparing(Coordinates::getValue)).orElseThrow();
+    }
+
+    public Coordinates maxValueAt() {
+        return coordinates.parallelStream().max(Comparator.comparing(Coordinates::getValue)).orElseThrow();
     }
 
     /**
