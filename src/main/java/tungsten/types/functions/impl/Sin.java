@@ -194,6 +194,15 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
     }
 
     @Override
+    public UnaryFunction<? super RealType, RealType> composeWith(UnaryFunction<? super RealType, RealType> before) {
+        if (before instanceof Negate) {
+            // sin(-x) = -sin(x)
+            return this.andThen(Negate.getInstance(RealType.class));
+        }
+        return super.composeWith(before);
+    }
+
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder().append("sin");
         Optional<UnaryFunction<RealType, ? extends RealType>> encompassing = this.getComposingFunction();

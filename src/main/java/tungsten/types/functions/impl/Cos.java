@@ -189,6 +189,15 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
     }
 
     @Override
+    public UnaryFunction<? super RealType, RealType> composeWith(UnaryFunction<? super RealType, RealType> before) {
+        if (before instanceof Negate) {
+            // cos(-x) = cos(x)
+            return this;
+        }
+        return super.composeWith(before);
+    }
+
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder().append("cos");
         Optional<UnaryFunction<RealType, ? extends RealType>> encompassing = this.getComposingFunction();
