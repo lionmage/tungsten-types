@@ -25,6 +25,8 @@ package tungsten.types.functions.curvefit;
 
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.exceptions.StrategyNotFoundException;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
@@ -35,6 +37,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -87,6 +90,15 @@ public class CurveFitter {
                     .map(Coordinates2D::getX).allMatch(values::add);
         }
         return true;
+    }
+
+    private final Supplier<StrategyNotFoundException> noMatchingStrategy =
+            () -> new StrategyNotFoundException("No matching strategy found");
+
+    public NumericFunction<RealType, RealType> fitToData() {
+        CurveFittingStrategy strategy = loader.stream().filter(s -> s.get().supportedType() == characteristic)
+                .findFirst().orElseThrow(noMatchingStrategy).get();
+        return strategy.fitToCoordinates(coordinates);
     }
 
     public void sortDataBy(int ordinate) {
@@ -182,7 +194,7 @@ public class CurveFitter {
         reductionMap.forEach((x, yvals) -> {
             Coordinates2D coord;
             if (yvals.size() == 1) {
-                coord = new Coordinates2D(x, yvals.get(0), new RealImpl(BigDecimal.ZERO));
+                coord = new Coordinates2D(x, yvals.get(0), new RealImpl(BigDecimal.ZERO, yvals.get(0).getMathContext()));
             } else {
                 List<RealType> meanAndStdev = computeMeanAndStdDev(yvals);
                 coord = new Coordinates2D(x, meanAndStdev.get(0), meanAndStdev.get(1));
