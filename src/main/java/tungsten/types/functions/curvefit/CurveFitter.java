@@ -28,9 +28,7 @@ import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
 import tungsten.types.numerics.RealType;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -43,8 +41,9 @@ import java.util.stream.Collectors;
  *  or <a href="mailto:tarquin@alumni.mit.edu">MIT alumni e-mail</a>
  */
 public class CurveFitter {
-    CurveType characteristic;
+    final CurveType characteristic;
     List<? extends Coordinates> coordinates;
+    final ServiceLoader<CurveFittingStrategy> loader;
 
     public CurveFitter(List<? extends Coordinates> coordinates, boolean skipIntegrityCheck) {
         if (coordinates == null) throw new IllegalArgumentException("Coordinates must be non-empty");
@@ -58,6 +57,14 @@ public class CurveFitter {
         }
         if (!skipIntegrityCheck && !checkIntegrity()) {
             throw new IllegalArgumentException("Coordinates failed integrity check");
+        }
+        // initialize the service loader
+        try {
+            loader = ServiceLoader.load(CurveFittingStrategy.class);
+        } catch (ServiceConfigurationError fatal) {
+            Logger.getLogger(CurveFitter.class.getName()).log(Level.SEVERE,
+                    "While attempting to instantiate a ServiceLoader<CurveFittingStrategy>", fatal);
+            throw new IllegalStateException(fatal);
         }
     }
 
@@ -107,10 +114,18 @@ public class CurveFitter {
         return coordinates.parallelStream().map(x -> x.getOrdinate(ordinate)).max(RealType::compareTo).orElseThrow();
     }
 
+    /**
+     * Return the {@link Coordinates} of the lowest-valued datum.
+     * @return the coordinates with the lowest value
+     */
     public Coordinates minValueAt() {
         return coordinates.parallelStream().min(Comparator.comparing(Coordinates::getValue)).orElseThrow();
     }
 
+    /**
+     * Return the {@link Coordinates} of the highest-valued datum.
+     * @return the coordinates with the highest value
+     */
     public Coordinates maxValueAt() {
         return coordinates.parallelStream().max(Comparator.comparing(Coordinates::getValue)).orElseThrow();
     }
