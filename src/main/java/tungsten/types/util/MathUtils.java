@@ -480,6 +480,13 @@ public class MathUtils {
         }
     }
 
+    public static ComplexType generalizedExponent(RealType base, ComplexType exponent, MathContext mctx) {
+        // this logic could not be folded into the generalizedExponent() method above without changing that method's return type
+        // this method should be equivalent of converting base to a ComplexType and calling the generalizedExponent()
+        // method below, but this method should be faster (uses real-valued ln(), no exp()) and involves fewer temporary objects
+        return new ComplexPolarImpl(generalizedExponent(base, exponent.real(), mctx), (RealType) ln(base, mctx).multiply(exponent.imaginary()));
+    }
+
     public static ComplexType generalizedExponent(ComplexType base, Numeric exponent, MathContext mctx) {
         if (Zero.isZero(exponent)) {
             try {
