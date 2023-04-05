@@ -182,9 +182,15 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         Numeric[] result;
         final Class<T> clazz = (Class<T>) elements[0].getClass();
         if (RealType.class.isAssignableFrom(clazz)) {
-            result = Arrays.stream(elements)
-                    .map(element -> MathUtils.generalizedExponent((RealType) element, n, element.getMathContext()))
-                    .toArray(Numeric[]::new);
+            if (n instanceof ComplexType) {
+                result = Arrays.stream(elements)
+                        .map(element -> MathUtils.generalizedExponent((RealType) element, (ComplexType) n, element.getMathContext()))
+                        .toArray(Numeric[]::new);
+            } else {
+                result = Arrays.stream(elements)
+                        .map(element -> MathUtils.generalizedExponent((RealType) element, n, element.getMathContext()))
+                        .toArray(Numeric[]::new);
+            }
         } else if (ComplexType.class.isAssignableFrom(clazz)) {
             result = Arrays.stream(elements)
                     .map(element -> MathUtils.generalizedExponent((ComplexType) element, n, element.getMathContext()))

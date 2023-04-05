@@ -90,7 +90,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
                         accum = accum.multiply(intermediate);
                     } else {
                         if (!arguments.elementAt(index).isCoercibleTo(RealType.class)) {
-                            throw new IllegalArgumentException("Element " + index + " of input vector cannot be coerced to real.");
+                            throw new IllegalArgumentException("Element " + index + " of input vector cannot be coerced to real");
                         }
                         RealType realArg = (RealType) arguments.elementAt(index).coerceTo(RealType.class);
                         RealType intermediate = MathUtils.generalizedExponent(realArg,

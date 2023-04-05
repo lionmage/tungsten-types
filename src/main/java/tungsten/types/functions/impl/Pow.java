@@ -100,6 +100,9 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 case COMPLEX:
                     return (R) MathUtils.generalizedExponent((ComplexType) intermediate, exponent, ctx).coerceTo(outputClazz);
                 case REAL:
+                    if (exponent instanceof ComplexType) {
+                        return (R) MathUtils.generalizedExponent((RealType) intermediate, (ComplexType) exponent, ctx).coerceTo(outputClazz);
+                    }
                     return (R) MathUtils.generalizedExponent((RealType) intermediate, exponent, ctx).coerceTo(outputClazz);
                 default:
                     RealType coerced = (RealType) intermediate.coerceTo(RealType.class);
