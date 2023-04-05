@@ -24,6 +24,7 @@ package tungsten.types.functions.curvefit;
  */
 
 import tungsten.types.Numeric;
+import tungsten.types.annotations.StrategySupports;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.exceptions.StrategyNotFoundException;
 import tungsten.types.functions.NumericFunction;
@@ -96,7 +97,21 @@ public class CurveFitter {
             () -> new StrategyNotFoundException("No matching strategy found");
 
     public NumericFunction<RealType, RealType> fitToData() {
-        CurveFittingStrategy strategy = loader.stream().filter(s -> s.get().supportedType() == characteristic)
+        CurveFittingStrategy strategy = loader.stream()
+                .filter(s -> s.type().isAnnotationPresent(StrategySupports.class)
+                        && s.type().getAnnotation(StrategySupports.class).type() == characteristic)
+                .findFirst().orElseThrow(noMatchingStrategy).get();
+        return strategy.fitToCoordinates(coordinates);
+    }
+
+    public NumericFunction<RealType, RealType> fitToData(String strategyName) {
+        int wildcard = strategyName.indexOf('*');
+        String nameToCompare = wildcard >= 1 ? strategyName.substring(0, wildcard) : strategyName.trim();
+        CurveFittingStrategy strategy = loader.stream()
+                .filter(s -> s.type().isAnnotationPresent(StrategySupports.class)
+                        && s.type().getAnnotation(StrategySupports.class).type() == characteristic)
+                .filter(s -> wildcard >= 1 ? s.type().getAnnotation(StrategySupports.class).name().startsWith(nameToCompare)
+                        : s.type().getAnnotation(StrategySupports.class).name().equals(nameToCompare))
                 .findFirst().orElseThrow(noMatchingStrategy).get();
         return strategy.fitToCoordinates(coordinates);
     }

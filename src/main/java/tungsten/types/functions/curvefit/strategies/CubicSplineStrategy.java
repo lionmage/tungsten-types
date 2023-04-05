@@ -24,6 +24,7 @@ package tungsten.types.functions.curvefit.strategies;
  */
 
 import tungsten.types.Range;
+import tungsten.types.annotations.StrategySupports;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.curvefit.CurveFittingStrategy;
 import tungsten.types.functions.curvefit.CurveType;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
  *  or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://en.wikipedia.org/wiki/Spline_(mathematics)#Algorithm_for_computing_natural_cubic_splines">the basic algorithm used here</a>
  */
+@StrategySupports(name = "cubic splines", type = CurveType.CURVE_2D)
 public class CubicSplineStrategy implements CurveFittingStrategy {
     @Override
     public UnaryFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints) {
