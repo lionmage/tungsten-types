@@ -40,7 +40,6 @@ import tungsten.types.vector.impl.ComplexVector;
 import tungsten.types.vector.impl.RealVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
