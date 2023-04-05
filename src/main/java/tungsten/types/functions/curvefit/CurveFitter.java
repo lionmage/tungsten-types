@@ -106,7 +106,7 @@ public class CurveFitter {
 
     public NumericFunction<RealType, RealType> fitToData(String strategyName) {
         int wildcard = strategyName.indexOf('*');
-        String nameToCompare = wildcard >= 1 ? strategyName.substring(0, wildcard) : strategyName.trim();
+        String nameToCompare = wildcard >= 1 ? strategyName.substring(0, wildcard) : strategyName.replace("*", "").trim();
         CurveFittingStrategy strategy = loader.stream()
                 .filter(s -> s.type().isAnnotationPresent(StrategySupports.class)
                         && s.type().getAnnotation(StrategySupports.class).type() == characteristic)
