@@ -92,8 +92,9 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         return new RealImpl(BigDecimal.ZERO, mctx);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Numeric magnitude() {
+    public Zero magnitude() {
         return this;
     }
 
@@ -215,7 +216,8 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         }
         if (o instanceof Comparable) {
             try {
-                return ((Comparable) this.coerceTo(o.getClass())).compareTo(o);
+                Comparable<Numeric> that = (Comparable<Numeric>) o;
+                return -that.compareTo(this.coerceTo(o.getClass()));
             } catch (CoercionException ex) {
                 Logger.getLogger(Zero.class.getName()).log(Level.SEVERE, "Exception during comparison with " + o, ex);
             }
