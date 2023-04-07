@@ -848,12 +848,30 @@ public class MathUtils {
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
         Matrix<Numeric> intermediate = new ZeroMatrix(X.rows(), ctx);
-        long sumLimit = ctx.getPrecision() + 4L; // will get at least 4 terms if precision = 0 (Unlimited)
+        // since this series can converge (very) slowly, this multiplier may need to be increased
+        long sumLimit = 2L * ctx.getPrecision() + 4L; // will get at least 4 terms if precision = 0 (Unlimited)
         for (long k = 0L; k < sumLimit; k++) {
             IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
             intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
         }
-        return intermediate;
+        // return a special anonymous subclass of BasicMatrix which computes the
+        // determinant based on the trace of X, which is much cheaper than the default calculation
+        return new BasicMatrix<>(intermediate) {
+            @Override
+            public Numeric determinant() {
+                Euler e = Euler.getInstance(ctx);
+                Numeric tr = X.trace();
+                if (tr instanceof ComplexType) {
+                    return e.exp((ComplexType) tr);
+                } else {
+                    try {
+                        return e.exp((RealType) tr.coerceTo(RealType.class));
+                    } catch (CoercionException ex) {
+                        throw new IllegalStateException("While computing determinant from trace", ex);
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -1728,7 +1746,7 @@ public class MathUtils {
         final RealType epsilon = computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
         // check for zero crossings before incurring the cost of computing
         // an in-range argument or calculating the sin() and cos() power series
-        RealType argOverPi = (RealType) x.divide(pi).magnitude();
+        RealType argOverPi = x.divide(pi).magnitude();
         if (((RealType) argOverPi.subtract(argOverPi.floor())).compareTo(epsilon) < 0) {
             // tan(x) has zero crossings periodically at x=k𝜋 ∀ k ∈ 𝕴
             return new RealImpl(BigDecimal.ZERO, ctx);
