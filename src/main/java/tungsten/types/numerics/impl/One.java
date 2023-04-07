@@ -111,7 +111,7 @@ public class One implements Numeric, Comparable<Numeric> {
     }
     
     private RealType obtainRealUnity() {
-        return new RealImpl(BigDecimal.ONE);
+        return new RealImpl(BigDecimal.ONE, mctx);
     }
     
     private RealType obtainRealZero() {

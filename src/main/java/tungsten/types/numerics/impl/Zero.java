@@ -83,7 +83,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
                 retval = new ComplexRectImpl(obtainRealZero(), obtainRealZero());
                 break;
             default:
-                throw new CoercionException("Cannot coerce zero to expected type.", Zero.class, numtype);
+                throw new CoercionException("Cannot coerce zero to expected type", Zero.class, numtype);
         }
         return retval;
     }
