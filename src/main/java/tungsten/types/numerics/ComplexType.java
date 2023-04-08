@@ -33,6 +33,8 @@ import tungsten.types.util.MathUtils;
  * @author Robert Poole
  */
 public interface ComplexType extends Numeric {
+    String ENABLE_EXTENDED_CPLX = "tungsten.types.numerics.ComplexType.extended.enable";
+    @SuppressWarnings("unchecked")
     @Override
     RealType magnitude();
     @Override
@@ -52,6 +54,15 @@ public interface ComplexType extends Numeric {
      */
     RealType argument();
     Set<ComplexType> nthRoots(IntegerType n);
+
+    /**
+     * Method to determine if the extended complex plane &#x2102;<sub>&infin;</sub>
+     * is enabled.
+     * @return true if enabled, false otherwise
+     */
+    static boolean isExtendedEnabled() {
+        return Boolean.getBoolean(ENABLE_EXTENDED_CPLX);
+    }
 
     /*
     Methods necessary for Groovy operator overloading follow.
