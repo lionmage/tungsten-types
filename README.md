@@ -14,6 +14,16 @@ numeric types:
 * Numerics that are actually comparable implement the Comparable interface.
 * Full support for complex numbers in both polar and rectangular form.
 * There is implicit coercion during most math operations, as well as explicit coercion available to the developer.
+* There are representations of infinity:
+  * Abstract representations of positive and negative infinity
+  * Real representations of +∞ and -∞
+  * If enabled, there is a point at infinity ∞ in the extended complex numbers ℂ∪{∞}
+* In addition to basic numeric types, vectors and matrices are fully supported.
+* Functions are supported:
+  * Single- or multi-variate
+  * Basic functional building-blocks are provided with full composition possible
+  * Symbolic and numeric differentiation are supported (currently, full support for unary functions only)
+* There is preliminary support for data reduction and curve fitting.
 
 Systems like Sage leverage a lot of small Unix-like apps to do the work,
 which adheres to the Unix philosophy that each application should only do
