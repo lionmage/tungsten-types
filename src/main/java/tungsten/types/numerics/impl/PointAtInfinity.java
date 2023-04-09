@@ -60,7 +60,7 @@ public class PointAtInfinity implements ComplexType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
-        if (subtrahend instanceof PointAtInfinity) {
+        if (this.equals(subtrahend)) {
             throw new ArithmeticException("∞ \u2212 ∞ is undefined");
         }
         return this;
