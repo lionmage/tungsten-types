@@ -2,6 +2,7 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.Set;
+import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
@@ -22,6 +23,7 @@ import java.util.List;
  *     an article on the Point at Infinity</a>
  * @see <a href="https://proofwiki.org/wiki/Definition:Complex_Point_at_Infinity">the definition at ProofWiki</a>
  */
+@Constant(name = "cplx-infinity", representation="\u221E")
 public class PointAtInfinity implements ComplexType {
     private static final PointAtInfinity instance = new PointAtInfinity();
 
@@ -260,6 +262,6 @@ public class PointAtInfinity implements ComplexType {
 
     @Override
     public String toString() {
-        return "\u221E";
+        return "\u221E \u2208 \u2102 ͚";
     }
 }

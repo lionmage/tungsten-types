@@ -102,7 +102,7 @@ public class RealInfinity implements RealType {
 
     @Override
     public BigDecimal asBigDecimal() {
-        throw new UnsupportedOperationException("There is no BigDecimal representation for Infinity.");
+        throw new UnsupportedOperationException("There is no BigDecimal representation for infinity");
     }
 
     @Override
@@ -112,7 +112,7 @@ public class RealInfinity implements RealType {
 
     @Override
     public Set<ComplexType> nthRoots(IntegerType n) {
-        throw new UnsupportedOperationException("Not supported.");
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
@@ -123,7 +123,8 @@ public class RealInfinity implements RealType {
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         // short circuit if the caller is asking for a Real
-        if (numtype.isAssignableFrom(RealType.class)) return true;
+        if (RealType.class.isAssignableFrom(numtype) ||
+                (ComplexType.class.isAssignableFrom(numtype) && ComplexType.isExtendedEnabled())) return true;
 
         switch (sign) {
             case POSITIVE:
@@ -138,7 +139,11 @@ public class RealInfinity implements RealType {
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         // short circuit coercion to self-type
-        if (numtype.isAssignableFrom(RealType.class)) return this;
+        if (RealType.class.isAssignableFrom(numtype)) return this;
+        if (ComplexType.class.isAssignableFrom(numtype) && ComplexType.isExtendedEnabled()) {
+            // both +∞ and -∞ on the real line map to the point at infinity in the extended complex numbers
+            return PointAtInfinity.getInstance();
+        }
         
         if (isCoercibleTo(numtype)) {
             switch (sign) {
@@ -148,7 +153,7 @@ public class RealInfinity implements RealType {
                     return NegInfinity.getInstance(mctx);
             }
         }
-        throw new CoercionException("Coercion of " + sign + " Infinity to the requested type is not supported.",
+        throw new CoercionException("Coercion of " + sign + " Infinity to the requested type is not supported",
                 RealInfinity.class, numtype);
     }
 

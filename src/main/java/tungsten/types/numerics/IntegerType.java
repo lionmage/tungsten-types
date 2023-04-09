@@ -33,6 +33,7 @@ import java.math.BigInteger;
  * @author Robert Poole
  */
 public interface IntegerType extends Numeric, Comparable<IntegerType> {
+    @SuppressWarnings("unchecked")
     @Override
     IntegerType magnitude();
     @Override

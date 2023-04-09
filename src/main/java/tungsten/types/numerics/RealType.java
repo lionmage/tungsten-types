@@ -37,6 +37,7 @@ import java.math.BigInteger;
  */
 public interface RealType extends Numeric, Comparable<RealType> {
     boolean isIrrational();
+    @SuppressWarnings("unchecked")
     @Override
     RealType magnitude();
     @Override

@@ -50,7 +50,7 @@ public interface Numeric {
      * @return the magnitude of {@code this}
      * @param <R> the return type of the calculation, which may not be the same as {@code this.getClass()}
      */
-    <R extends Numeric & Comparable<? super R>> R magnitude();
+    <R extends Numeric & Comparable<R>> R magnitude();
     Numeric negate();
     
     Numeric add(Numeric addend);

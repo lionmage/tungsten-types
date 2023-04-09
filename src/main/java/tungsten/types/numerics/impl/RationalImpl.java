@@ -232,7 +232,7 @@ public class RationalImpl implements RationalType {
                 } else if (numerator.equals(BigInteger.ZERO)) {
                     return ExactZero.getInstance(mctx);
                 } else {
-                    throw new CoercionException("Cannot convert fraction to integer.", this.getClass(), numtype);
+                    throw new CoercionException("Cannot convert fraction to integer", this.getClass(), numtype);
                 }
             case RATIONAL:
                 return this;
@@ -243,7 +243,7 @@ public class RationalImpl implements RationalType {
                 final RealImpl creal = new RealImpl(this, mctx);
                 return new ComplexRectImpl(creal, zero, exact);
             default:
-                throw new CoercionException("Cannot convert rational to unknown type.", this.getClass(), numtype);
+                throw new CoercionException("Cannot convert rational to unknown type", this.getClass(), numtype);
         }
     }
 
@@ -268,7 +268,7 @@ public class RationalImpl implements RationalType {
                 Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during rational add.", ex);
             }
         }
-        throw new UnsupportedOperationException("Addition operation unsupported.");
+        throw new UnsupportedOperationException("Addition operation unsupported");
     }
 
     @Override
@@ -293,7 +293,7 @@ public class RationalImpl implements RationalType {
                         "Failed to coerce type during rational subtract.", ex);
             }
         }
-        throw new UnsupportedOperationException("Subtraction operation unsupported.");
+        throw new UnsupportedOperationException("Subtraction operation unsupported");
     }
 
     @Override
@@ -320,7 +320,7 @@ public class RationalImpl implements RationalType {
                         "Failed to coerce type during rational multiply.", ex);
             }
         }
-        throw new UnsupportedOperationException("Multiplication operation unsupported.");
+        throw new UnsupportedOperationException("Multiplication operation unsupported");
     }
 
     @Override
@@ -402,7 +402,7 @@ public class RationalImpl implements RationalType {
                     final RationalType val = (RationalType) that.coerceTo(RationalType.class);
                     return this.equals(val);
                 } catch (CoercionException e) {
-                    throw new IllegalStateException("Failed to coerce to RationalType after test for coercibility.", e);
+                    throw new IllegalStateException("Failed to coerce to RationalType after test for coercibility", e);
                 }
             }
         }

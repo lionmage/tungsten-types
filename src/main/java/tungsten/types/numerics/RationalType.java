@@ -41,6 +41,7 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
      * number in reduced form.
      * @return the magnitude of this value
      */
+    @SuppressWarnings("unchecked")
     @Override
     RationalType magnitude();
     @Override

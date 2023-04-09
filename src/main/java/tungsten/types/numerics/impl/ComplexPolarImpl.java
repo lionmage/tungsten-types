@@ -236,6 +236,9 @@ public class ComplexPolarImpl implements ComplexType {
     public Numeric add(Numeric addend) {
         if (Zero.isZero(addend)) return this;
         if (addend instanceof ComplexType) {
+            if (addend instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
+                return PointAtInfinity.getInstance();
+            }
             ComplexType cadd = (ComplexType) addend;
             return new ComplexRectImpl((RealType) this.real().add(cadd.real()),
                     (RealType) this.imaginary().add(cadd.imaginary()),
@@ -257,6 +260,10 @@ public class ComplexPolarImpl implements ComplexType {
     public Numeric subtract(Numeric subtrahend) {
         if (Zero.isZero(subtrahend)) return this;
         if (subtrahend instanceof ComplexType) {
+            if (subtrahend instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
+                // there is only one infinity
+                return PointAtInfinity.getInstance();
+            }
             ComplexType csub = (ComplexType) subtrahend;
             return new ComplexRectImpl((RealType) this.real().subtract(csub.real()),
                     (RealType) this.imaginary().subtract(csub.imaginary()),
@@ -279,6 +286,10 @@ public class ComplexPolarImpl implements ComplexType {
         if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
         if (One.isUnity(multiplier)) return this;
         if (multiplier instanceof ComplexType) {
+            if (multiplier instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
+                if (Zero.isZero(this.modulus)) throw new ArithmeticException("0 \u22C5 ∞ is undefined");
+                return PointAtInfinity.getInstance();
+            }
             ComplexType cmult = (ComplexType) multiplier;
             RealType modnew = (RealType) modulus.multiply(cmult.magnitude());
             RealType argnew = (RealType) argument.add(cmult.argument());
@@ -307,9 +318,15 @@ public class ComplexPolarImpl implements ComplexType {
 
     @Override
     public Numeric divide(Numeric divisor) {
-        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
+        if (Zero.isZero(divisor)) {
+            if (ComplexType.isExtendedEnabled()) return PointAtInfinity.getInstance();
+            throw new ArithmeticException("Division by 0");
+        }
         if (One.isUnity(divisor)) return this;
         if (divisor instanceof ComplexType) {
+            if (divisor instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
+                return new ComplexPolarImpl(new RealImpl(BigDecimal.ZERO, mctx));
+            }
             ComplexType cdiv = (ComplexType) divisor;
             RealType modnew = (RealType) modulus.divide(cdiv.magnitude());
             RealType argnew = (RealType) argument.subtract(cdiv.argument());
@@ -340,6 +357,9 @@ public class ComplexPolarImpl implements ComplexType {
 
     @Override
     public ComplexType inverse() {
+        if (Zero.isZero(modulus) && ComplexType.isExtendedEnabled()) {
+            return PointAtInfinity.getInstance();
+        }
         // special case of division where the numerator has a modulus of 1
         // and an argument of 0
         return new ComplexPolarImpl((RealType) modulus.inverse(), argument.negate(), exact);
@@ -409,6 +429,7 @@ public class ComplexPolarImpl implements ComplexType {
                     testEquals(this.normalizeArgument().asBigDecimal(), BigDecimal.ZERO);
         }
         if (o instanceof ComplexType) {
+            if (o instanceof PointAtInfinity) return false;
             ComplexType that = (ComplexType) o;
             if (this.isExact() != that.isExact()) return false;
             return this.modulus.equals(that.magnitude()) && this.normalizeArgument().equals(that.argument());
