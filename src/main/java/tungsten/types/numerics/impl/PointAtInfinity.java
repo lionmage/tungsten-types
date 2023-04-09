@@ -76,7 +76,7 @@ public class PointAtInfinity implements ComplexType {
 
     @Override
     public Numeric divide(Numeric divisor) {
-        if (divisor instanceof PointAtInfinity) throw new ArithmeticException("∞/∞ is undefined");
+        if (this.equals(divisor)) throw new ArithmeticException("∞/∞ is undefined");
         return this;
     }
 
@@ -257,6 +257,7 @@ public class PointAtInfinity implements ComplexType {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) return false;
         return obj instanceof PointAtInfinity;
     }
 
