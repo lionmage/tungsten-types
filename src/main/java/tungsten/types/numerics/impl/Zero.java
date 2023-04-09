@@ -110,21 +110,31 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (subtrahend instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
+            return PointAtInfinity.getInstance();
+        }
         return subtrahend.negate();
     }
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (multiplier instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
+            throw new ArithmeticException("0 \u22C5 ∞ is undefined");
+        }
         return this;
     }
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor) && ComplexType.isExtendedEnabled()) {
+            throw new ArithmeticException("0/0 is undefined");
+        }
         return this;
     }
 
     @Override
     public Numeric inverse() {
+        if (ComplexType.isExtendedEnabled()) return PointAtInfinity.getInstance();
         throw new ArithmeticException("Cannot divide by zero");
     }
 

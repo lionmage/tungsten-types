@@ -158,6 +158,14 @@ public class One implements Numeric, Comparable<Numeric> {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (ComplexType.isExtendedEnabled()) {
+            if (divisor instanceof PointAtInfinity) {
+                return ExactZero.getInstance(mctx);
+            }
+            if (Zero.isZero(divisor)) {
+                return PointAtInfinity.getInstance();
+            }
+        }
         return divisor.inverse();
     }
 
@@ -232,7 +240,7 @@ public class One implements Numeric, Comparable<Numeric> {
                     return ((RealType) val).asBigDecimal().compareTo(BigDecimal.ONE) == 0;
                 case COMPLEX:
                     final ComplexType that = (ComplexType) val;
-                    return isUnity(that.real()) && isUnity(that.imaginary());
+                    return isUnity(that.real()) && Zero.isZero(that.imaginary());
             }
         }
         return false;
