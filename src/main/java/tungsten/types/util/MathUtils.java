@@ -155,7 +155,7 @@ public class MathUtils {
             result = new RealImpl(BigDecimal.ONE, x.getMathContext(), exactness);
         } else {
             try {
-                result = computeIntegerExponent((RealType) x.coerceTo(RealType.class), exponent.intValueExact());
+                result = computeIntegerExponent((RealType) x.coerceTo(RealType.class), exponent.longValueExact());
                 if (result.isExact() != exactness) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
                             "Expected exactness of {0} but got {1} for calculating {2}^{3}",
@@ -181,29 +181,29 @@ public class MathUtils {
      * @param mctx the {@link MathContext} for computing the exponent
      * @return x raised to the n<sup>th</sup> power
      */
-    public static RealType computeIntegerExponent(RealType x, int n, MathContext mctx) {
-        if (n == 0) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
-        if (n == 1) return x;
+    public static RealType computeIntegerExponent(RealType x, long n, MathContext mctx) {
+        if (n == 0L) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
+        if (n == 1L) return x;
         try {
-            if (n == -1) {
+            if (n == -1L) {
                 return (RealType) x.inverse().coerceTo(RealType.class);
             }
             
             Numeric intermediate = One.getInstance(mctx);
             Numeric factor = new RealImpl(x.magnitude().asBigDecimal(), mctx, x.isExact());
-            int m = Math.abs(n);
-            if (m % 2 == 1) {  // handle the corner case of odd exponents
+            long m = Math.abs(n);
+            if (m % 2L == 1L) {  // handle the corner case of odd exponents
                 intermediate = factor;
                 m--;
             }
-            while (m % 2 == 0) {
+            while (m % 2L == 0L) {
                 factor = factor.multiply(factor);
                 m >>= 1;
             }
-            for (int k = 0; k < m; k++) intermediate = intermediate.multiply(factor);
-            if (n < 0) intermediate = intermediate.inverse();
+            for (long k = 0; k < m; k++) intermediate = intermediate.multiply(factor);
+            if (n < 0L) intermediate = intermediate.inverse();
             // if |n| is odd, preserve original sign
-            if (x.sign() == Sign.NEGATIVE && Math.abs(n) % 2 != 0) intermediate = intermediate.negate();
+            if (x.sign() == Sign.NEGATIVE && Math.abs(n) % 2L != 0L) intermediate = intermediate.negate();
             return (RealType) intermediate.coerceTo(RealType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
@@ -260,7 +260,7 @@ public class MathUtils {
      * @param n the integer exponent
      * @return x raised to the n<sup>th</sup> power
      */
-    public static RealType computeIntegerExponent(RealType x, int n) {
+    public static RealType computeIntegerExponent(RealType x, long n) {
         return computeIntegerExponent(x, n, x.getMathContext());
     }
     
@@ -446,7 +446,7 @@ public class MathUtils {
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
         switch (htype) {
             case INTEGER:
-                int n = ((IntegerType) exponent).asBigInteger().intValueExact();
+                long n = ((IntegerType) exponent).asBigInteger().longValueExact();
                 return computeIntegerExponent(base, n, mctx);
             case REAL:
                 if (exponent.isCoercibleTo(IntegerType.class)) {
@@ -472,7 +472,7 @@ public class MathUtils {
             case RATIONAL:
                 // use the identity b^(u/v) = vth root of b^u
                 RationalType ratexponent = (RationalType) exponent;
-                final int n_num = ratexponent.numerator().asBigInteger().intValueExact();
+                final long n_num = ratexponent.numerator().asBigInteger().longValueExact();
                 RealType intermediate = computeIntegerExponent(base, n_num, mctx);
                 return nthRoot(intermediate, ratexponent.denominator(), mctx);
             default:
@@ -502,7 +502,8 @@ public class MathUtils {
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
         switch (htype) {
             case INTEGER:
-                int n = ((IntegerType) exponent).asBigInteger().intValueExact();
+                final long MAX_INT = (long) Integer.MAX_VALUE;
+                long n = ((IntegerType) exponent).asBigInteger().longValueExact();
                 return computeIntegerExponent(base, n, mctx);
             case REAL:
                 if (exponent.isCoercibleTo(IntegerType.class)) {
@@ -574,7 +575,11 @@ public class MathUtils {
                 throw new IllegalStateException(ex);
             }
         }
-        
+
+        // sadly, we need to use int here because we're relying on
+        // BigDecimal.pow() for speed and efficiency
+        // on the other hand, if we are taking nth roots of values where n > MAX_INTEGER,
+        // we might have other problems...
         final int nint = n.asBigInteger().intValueExact();
         final BigDecimal ncalc = new BigDecimal(n.asBigInteger());
         final BigDecimal nminus1 = ncalc.subtract(BigDecimal.ONE);
