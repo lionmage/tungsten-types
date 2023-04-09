@@ -26,6 +26,7 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
+import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.ExactZero;
@@ -160,6 +161,15 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     public Matrix<T> add(Matrix<T> addend) {
         if (this.rows() != addend.rows() || this.columns() != addend.columns()) {
             throw new ArithmeticException("Addend must match dimensions of matrix");
+        }
+        if (addend.getClass().isAnnotationPresent(Columnar.class) &&
+                (long) columnCache.size() > columns() / 3L) {
+            ColumnarMatrix<T> cresult = new ColumnarMatrix<>();
+            for (long column = 0L; column < columns(); column++) {
+                ColumnVector<T> colsum = this.getColumn(column).add((Vector<T>) addend.getColumn(column));
+                cresult.append(colsum);
+            }
+            return cresult;
         }
         BasicMatrix<T> result = new BasicMatrix<>();
         for (long row = 0L; row < rows(); row++) {
