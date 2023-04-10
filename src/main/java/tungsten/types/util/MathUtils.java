@@ -173,7 +173,13 @@ public class MathUtils {
     public static ComplexType computeIntegerExponent(ComplexType z, IntegerType n) {
         return computeIntegerExponent(z, n.asBigInteger().longValueExact(), z.getMathContext());
     }
-    
+
+    // This is the value of the maximum allowed integer exponent for
+    // BigDecimal.pow(), as documented in the JDK.  This could be adjusted
+    // lower in the future, but never higher.  (The absolute upper
+    // limit would be the maximum value of int.)
+    private static final long MAX_INT_FOR_EXPONENT = 999999999L;
+
     /**
      * Compute x<sup>n</sup>.
      * @param x the value to take the exponent of
@@ -184,6 +190,12 @@ public class MathUtils {
     public static RealType computeIntegerExponent(RealType x, long n, MathContext mctx) {
         if (n == 0L) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
         if (n == 1L) return x;
+        // if n falls within a certain integer range, delegate to BigDecimal.pow()
+        if (Math.abs(n) < MAX_INT_FOR_EXPONENT) {
+            RealImpl real = new RealImpl(x.asBigDecimal().pow((int) n, mctx), mctx, x.isExact());
+            real.setIrrational(x.isIrrational());
+            return real;
+        }
         try {
             if (n == -1L) {
                 return (RealType) x.inverse().coerceTo(RealType.class);
@@ -403,7 +415,9 @@ public class MathUtils {
     }
     
     /**
-     * Compute the general case of x<sup>y</sup>, where x and y are both real numbers.
+     * Compute the general case of x<sup>y</sup>, where x is a real number
+     * and y is anything generally coercible to a real (i.e., integer,
+     * rational, or real values).
      * @param base the value to raise to a given power
      * @param exponent the power to which we want to raise {@code base}
      * @param mctx the {@link MathContext} to use for this calculation
@@ -482,7 +496,7 @@ public class MathUtils {
 
     public static ComplexType generalizedExponent(RealType base, ComplexType exponent, MathContext mctx) {
         // this logic could not be folded into the generalizedExponent() method above without changing that method's return type
-        // this method should be equivalent of converting base to a ComplexType and calling the generalizedExponent()
+        // this method should be the equivalent of converting base to a ComplexType and calling the generalizedExponent()
         // method below, but this method should be faster (uses real-valued ln(), no exp()) and involves fewer temporary objects
         return new ComplexPolarImpl(generalizedExponent(base, exponent.real(), mctx), (RealType) ln(base, mctx).multiply(exponent.imaginary()));
     }
@@ -545,7 +559,7 @@ public class MathUtils {
 
     /**
      * Compute the n<sup>th</sup> root of a real value a.  The result is the principal
-     * root of the equation x<sup>n</sup> = a.  Note that the {@link MathContext}
+     * root of the equation x<sup>n</sup>&nbsp;=&nbsp;a.  Note that the {@link MathContext}
      * is inferred from the argument {@code a}.
      * @param a the value for which we want to find a root
      * @param n the degree of the root
@@ -557,7 +571,7 @@ public class MathUtils {
     
     /**
      * Compute the n<sup>th</sup> root of a real value a.  The result is the principal
-     * root of the equation x<sup>n</sup> = a.  The {@link MathContext}
+     * root of the equation x<sup>n</sup>&nbsp;=&nbsp;a.  The {@link MathContext}
      * is explicitly supplied.
      * @param a the value for which we want to find a root
      * @param n the degree of the root
@@ -605,16 +619,17 @@ public class MathUtils {
     }
     
     /**
-     * Compute the n<sup>th</sup> roots of unity, &#x212f;<sup>2&pi;&#x2148;k/n</sup> for {k=0, 1, 2, &hellip;, n&minus;1}.
+     * Compute the n<sup>th</sup> roots of unity, &#x212f;<sup>2&pi;&#x2148;k/n</sup> for
+     * {k=0,&thinsp;1,&thinsp;2,&thinsp;&hellip;,&thinsp;n&minus;1}.
      * @param n the degree of the roots
      * @param mctx the {@link MathContext} for computing these values
      * @return a {@link Set} of {@code n} complex roots
      */
     public static Set<ComplexType> rootsOfUnity(long n, MathContext mctx) {
         if (n < 1L) throw new IllegalArgumentException("Degree of roots must be \u2265 1");
-        final RealImpl decTwo = new RealImpl(new BigDecimal(TWO));
+        final RealImpl decTwo = new RealImpl(new BigDecimal(TWO), mctx);
         decTwo.setMathContext(mctx);
-        final RealImpl decOne = new RealImpl(BigDecimal.ONE);
+        final RealImpl decOne = new RealImpl(BigDecimal.ONE, mctx);
         decOne.setMathContext(mctx);
         final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(decTwo);
         NumericSet set = new NumericSet();
