@@ -158,8 +158,8 @@ public class MathUtils {
                 result = computeIntegerExponent((RealType) x.coerceTo(RealType.class), exponent.longValueExact());
                 if (result.isExact() != exactness) {
                     Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
-                            "Expected exactness of {0} but got {1} for calculating {2}^{3}",
-                            new Object[] {exactness, result.isExact(), x, n});
+                            "Expected exactness of {0} but got {1} for calculating {2}{3}.",
+                            new Object[] {exactness, result.isExact(), x, UnicodeTextEffects.numericSuperscript(n.asBigInteger().intValue())});
                 }
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Failed to coerce argument to RealType.", ex);
@@ -435,11 +435,11 @@ public class MathUtils {
                 if (((RealInfinity) exponent).sign() == Sign.NEGATIVE) {
                     return new RealImpl(BigDecimal.ZERO, mctx);
                 }
-                throw new ArithmeticException(base + "^" + exponent + " does not converge");
+                throw new ArithmeticException(base + UnicodeTextEffects.convertToSuperscript(exponent.toString()) + " does not converge");
             }
         } else if (exponent instanceof PosInfinity) {
             if (base.sign() == Sign.POSITIVE) return RealInfinity.getInstance(Sign.POSITIVE, mctx);
-            throw new ArithmeticException(base + "^" + exponent + " does not converge");
+            throw new ArithmeticException(base + UnicodeTextEffects.convertToSuperscript(exponent.toString()) + " does not converge");
         } else if (exponent instanceof NegInfinity) {
             return new RealImpl(BigDecimal.ZERO, mctx);
         }
@@ -502,7 +502,6 @@ public class MathUtils {
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
         switch (htype) {
             case INTEGER:
-                final long MAX_INT = (long) Integer.MAX_VALUE;
                 long n = ((IntegerType) exponent).asBigInteger().longValueExact();
                 return computeIntegerExponent(base, n, mctx);
             case REAL:
@@ -847,7 +846,7 @@ public class MathUtils {
                 return new SingletonMatrix<>(value instanceof ComplexType ? e.exp((ComplexType) value) :
                         e.exp((RealType) value.coerceTo(RealType.class)));
             } catch (CoercionException ex) {
-                throw new ArithmeticException("Cannot compute \u212F^X: " + ex.getMessage());
+                throw new ArithmeticException("Cannot compute \u212Fˣ: " + ex.getMessage());
             }
         }
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
@@ -1494,7 +1493,7 @@ public class MathUtils {
             throw new IllegalArgumentException("Argument epsilon must satisfy 0 < \uD835\uDF00 \u226A 1"); // U+1D700 MATHEMATICAL ITALIC SMALL EPSILON
         }
         
-        final RealType difference = (RealType) A.subtract(B).magnitude();
+        final RealType difference = A.subtract(B).magnitude();
         return difference.compareTo(epsilon) < 0;
     }
     
