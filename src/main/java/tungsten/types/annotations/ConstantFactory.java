@@ -58,6 +58,16 @@ public @interface ConstantFactory {
     Class<?>[] argTypes() default {}; // note: clients/processors will need to test for arrayLength > 0
 
     /**
+     * In the rare case where we have a factory method without any arguments,
+     * this field can be specified with a value of {@code true}.  The default
+     * value is {@code false}.
+     * @return true if the annotated method has no arguments &mdash; note that clients and
+     *  processors must treat this as superseding values specified by {@link #argType()}
+     *  or {@link #argTypes()}
+     */
+    boolean noArgs() default false;
+
+    /**
      * This can be used to report back the concrete type expected from
      * the factory class, which may be a subtype of the declared return type.
      * @return the {@link Numeric} subinterface or concrete type of the return value

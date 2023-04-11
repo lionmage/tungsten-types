@@ -3,6 +3,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
@@ -31,7 +32,11 @@ public class PointAtInfinity implements ComplexType {
         // we just need a private default constructor
     }
 
+    @ConstantFactory(noArgs = true, returnType = ComplexType.class)
     public static ComplexType getInstance() {
+        if (!ComplexType.isExtendedEnabled()) {
+            throw new ArithmeticException("Extended complex numbers \u2102\u222A{\u221E} are not enabled");
+        }
         return instance;
     }
 
