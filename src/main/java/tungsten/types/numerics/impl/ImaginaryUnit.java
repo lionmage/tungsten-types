@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
@@ -45,7 +46,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-@Constant(name = "imaginary unit", representation = "\u2148")
+@Constant(name = "imaginary-unit", representation = "\u2148")
 public class ImaginaryUnit implements ComplexType {
     private final RealType TWO;
 
@@ -59,6 +60,7 @@ public class ImaginaryUnit implements ComplexType {
     private static final Map<MathContext, ImaginaryUnit> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
 
+    @ConstantFactory(returnType = ComplexType.class)
     public static ComplexType getInstance(MathContext mctx) {
         instanceLock.lock();
         try {

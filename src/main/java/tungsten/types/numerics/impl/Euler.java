@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
@@ -76,6 +77,7 @@ public class Euler implements RealType {
      * @param mctx provides the desired precision and {@link RoundingMode} used for internal calculations
      * @return an instance of &#x212f; to the specified precision
      */
+    @ConstantFactory(returnType = Euler.class)
     public static Euler getInstance(MathContext mctx) {
         instanceLock.lock();
         try {

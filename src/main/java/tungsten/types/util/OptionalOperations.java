@@ -24,11 +24,14 @@ package tungsten.types.util;
  */
 
 import tungsten.types.Numeric;
+import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -55,7 +58,68 @@ public class OptionalOperations {
         }  catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
             throw new IllegalStateException("Fatal error while obtaining or using constructor for a Numeric subclass", fatal);
         } catch (NoSuchMethodException e) {
-            // attempt to recover if at all possible
+            if (clazz.isAnnotationPresent(Constant.class)) {
+                // this is a constant, so find the annotated factory method and use it
+                Constant constAnnotation = clazz.getAnnotation(Constant.class);
+                if (Arrays.stream(clazz.getMethods()).anyMatch(m -> m.isAnnotationPresent(ConstantFactory.class))) {
+                    Logger.getLogger(OptionalOperations.class.getName()).log(Level.FINE,
+                            "Detected @ConstantFactory annotation inside {0}", clazz.getTypeName());
+                    Optional<Method> method = Arrays.stream(clazz.getMethods()).filter(m -> m.isAnnotationPresent(ConstantFactory.class))
+                            .filter(m -> (m.getModifiers() & Modifier.STATIC) != 0)  // we expect the factory method to be static
+                            .filter(m -> m.getReturnType().isAssignableFrom(clazz)).findFirst();
+                    if (method.isPresent()) {
+                        final Method m = method.get();
+                        Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
+                                "Constant factory method {0} will be invoked on {1} to obtain {2}",
+                                new Object[]{m.getName(), clazz.getName(), constAnnotation.name()});
+                        ConstantFactory factoryAnnotation = m.getAnnotation(ConstantFactory.class);
+                        if (factoryAnnotation.noArgs()) {
+                            try {
+                                return (T) m.invoke(null, (Object) null);
+                            } catch (IllegalAccessException | InvocationTargetException ex) {
+                                throw new IllegalStateException("While invoking factory method for " + constAnnotation.representation(), ex);
+                            }
+                        } else {
+                            String[] args = strValue.split("\\s*;\\s*");  // stringified arguments are separated by a semicolon
+                            if (m.getParameterCount() != args.length ||
+                                    (factoryAnnotation.argTypes().length > 0 && factoryAnnotation.argTypes().length != args.length)) {
+                                throw new IllegalArgumentException(String.format("Expected %1$d arguments for %2$s, but parsed %3$d instead: %4$s",
+                                        m.getParameterCount(), m.getName(), args.length, Arrays.toString(args)));
+                            }
+                            MathContext ctx = null;
+                            Sign sign = null;
+                            int ctxIdx = -1, signIdx = -1;
+                            for (int i = 0; i < m.getParameterCount(); i++) {
+                                Class<?> argtype = factoryAnnotation.argTypes().length == 0 ? factoryAnnotation.argType() : factoryAnnotation.argTypes()[i];
+                                if (MathContext.class.isAssignableFrom(argtype)) {
+                                    ctx = new MathContext(args[i]);
+                                    ctxIdx = i;
+                                }
+                                else if (Sign.class.isAssignableFrom(argtype)) {
+                                    sign = Sign.valueOf(args[i].trim());
+                                    signIdx = i;
+                                }
+                                else {
+                                    Logger.getLogger(OptionalOperations.class.getName()).log(Level.WARNING,
+                                            "Unknown argument type {0} with initializer string {1} for factory method {2}.",
+                                            new Object[] {argtype.getTypeName(), args[i], m.getName()});
+                                }
+                            }
+                            Object[] invArgs = new Object[m.getParameterCount()];
+                            if (ctxIdx >= 0) invArgs[ctxIdx] = ctx;
+                            if (signIdx >= 0) invArgs[signIdx] = sign;
+                            // other arguments captured go here
+                            try {
+                                return (T) m.invoke(null, invArgs);
+                            } catch (IllegalAccessException | InvocationTargetException ex) {
+                                throw new IllegalStateException("While invoking factory method for " + constAnnotation.representation(), ex);
+                            }
+                        }
+                    }
+                }
+            }
+            // attempt to recover if at all possible -- if no annotations present, the typical pattern is to provide a
+            // getInstance() method which takes a single MathContext argument
             Optional<Method> generator = Arrays.stream(toInstantiate.getMethods()).filter(m -> "getInstance".equals(m.getName()))
                     .filter(m -> m.getParameterCount() == 1)
                     .filter(m -> MathContext.class.isAssignableFrom(m.getParameterTypes()[0]))
@@ -84,6 +148,149 @@ public class OptionalOperations {
                 return (T) new ComplexRectImpl(realVal);
         }
         throw new UnsupportedOperationException("No way to construct an instance of " + h + " at this time");
+    }
+
+    public static <R extends Numeric> R instantiateConstant(String constName, MathContext mctx) {
+        Collection<Class<?>> constClasses =
+                ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
+        for (Class<?> type : constClasses) {
+            Constant constAnno = type.getAnnotation(Constant.class);
+            if (!constAnno.name().equals(constName)) continue;
+
+            Optional<Method> method = Arrays.stream(type.getMethods()).filter(m -> m.isAnnotationPresent(ConstantFactory.class))
+                    .filter(m -> (m.getModifiers() & Modifier.STATIC) != 0)  // we expect the factory method to be static
+                    .filter(m -> m.getReturnType().isAssignableFrom(type)).findFirst();
+            if (method.isPresent()) {
+                final Method m = method.get();
+                Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
+                        "Constant factory method {0} will be invoked on {1} to obtain {2}",
+                        new Object[]{m.getName(), type.getName(), constAnno.representation()});
+                ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
+                try {
+                    if (factoryAnno.noArgs()) {
+                        return (R) m.invoke(null, (Object) null);
+                    } else if (m.getParameterCount() == 1 && MathContext.class.isAssignableFrom(m.getParameterTypes()[0])) {
+                        if (factoryAnno.argTypes().length > 1) {
+                            throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
+                        }
+                        return (R) m.invoke(null, mctx);
+                    } else if (m.getParameterCount() == 2 &&
+                            MathContext.class.isAssignableFrom(m.getParameterTypes()[0]) &&
+                            Sign.class.isAssignableFrom(m.getParameterTypes()[1])) {
+                        if (factoryAnno.argTypes().length != 2) {
+                            throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
+                        }
+                        // we don't have enough info for this version of this utility method, so throw an exception
+                        throw new UnsupportedOperationException("Factory method " + m.getName() +
+                                " requires MathContext and Sign, but we have only MathContext");
+                    } else {
+                        throw new UnsupportedOperationException("instantiateConstant() cannot currently handle > 1 factory args");
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new IllegalStateException("While attempting to instantiate constant " + constName, e);
+                }
+            }
+        }
+        // if we fall through, we failed -- should we return null instead of throwing an exception?
+        throw new IllegalArgumentException("No constant found named " + constName);
+    }
+
+    public static <R extends Numeric> R instantiateConstant(String constName, MathContext mctx, Sign sign) {
+        Collection<Class<?>> constClasses =
+                ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
+        for (Class<?> type : constClasses) {
+            Constant constAnno = type.getAnnotation(Constant.class);
+            if (!constAnno.name().equals(constName)) continue;
+
+            Optional<Method> method = Arrays.stream(type.getMethods()).filter(m -> m.isAnnotationPresent(ConstantFactory.class))
+                    .filter(m -> (m.getModifiers() & Modifier.STATIC) != 0)  // we expect the factory method to be static
+                    .filter(m -> m.getReturnType().isAssignableFrom(type)).findFirst();
+            if (method.isPresent()) {
+                final Method m = method.get();
+                Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
+                        "Constant factory method {0} will be invoked on {1} to obtain {2}",
+                        new Object[]{m.getName(), type.getName(), constAnno.representation()});
+                ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
+                try {
+                    if (factoryAnno.noArgs()) {
+                        return (R) m.invoke(null, (Object) null);
+                    } else if (m.getParameterCount() == 1 && MathContext.class.isAssignableFrom(m.getParameterTypes()[0])) {
+                        if (factoryAnno.argTypes().length > 1) {
+                            throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
+                        }
+                        return (R) m.invoke(null, mctx);
+                    } else if (m.getParameterCount() == 2 &&
+                            MathContext.class.isAssignableFrom(m.getParameterTypes()[0]) &&
+                            Sign.class.isAssignableFrom(m.getParameterTypes()[1])) {
+                        if (factoryAnno.argTypes().length != 2) {
+                            throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
+                        }
+                        return (R) m.invoke(null, mctx, sign);
+                    } else {
+                        throw new UnsupportedOperationException("instantiateConstant() cannot currently handle > 2 factory args");
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new IllegalStateException("While attempting to instantiate constant " + constName, e);
+                }
+            }
+        }
+        // if we fall through, we failed -- should we return null instead of throwing an exception?
+        throw new IllegalArgumentException("No constant found named " + constName);
+    }
+
+    public static <R extends Numeric> R instantiateConstant(String constName, Object... arguments) {
+        Collection<Class<?>> constClasses =
+                ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
+        for (Class<?> type : constClasses) {
+            Constant constAnno = type.getAnnotation(Constant.class);
+            if (!constAnno.name().equals(constName)) continue;
+
+            Optional<Method> method = Arrays.stream(type.getMethods()).filter(m -> m.isAnnotationPresent(ConstantFactory.class))
+                    .filter(m -> (m.getModifiers() & Modifier.STATIC) != 0)  // we expect the factory method to be static
+                    .filter(m -> m.getReturnType().isAssignableFrom(type))
+                    .filter(m -> m.getParameterCount() == (arguments == null ? 0 : arguments.length)).findFirst();
+            if (method.isPresent()) {
+                final Method m = method.get();
+                Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
+                        "Constant factory method {0} will be invoked on {1} to obtain {2}",
+                        new Object[] {m.getName(), type.getName(), constAnno.representation()});
+                ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
+                try {
+                    if (factoryAnno.noArgs()) {
+                        if (arguments != null && arguments.length > 0) {
+                            throw new IllegalArgumentException("Factory method " + m.getName() + " requires no arguments");
+                        }
+                        return (R) m.invoke(null, (Object) null);
+                    } else {
+                        final int argLen = arguments == null ? 0 : arguments.length;
+                        if (m.getParameterCount() != argLen) {
+                            throw new IllegalArgumentException("Factory method expected " + m.getParameterCount() +
+                                    " arguments, but got " + argLen);
+                        }
+                        if (argLen > 0) {
+                            Class<?>[] parameterTypes = factoryAnno.argTypes().length == 0 ? new Class[1] : new Class[argLen];
+                            if (factoryAnno.argTypes().length == 0) parameterTypes[0] = factoryAnno.argType();
+                            else System.arraycopy(factoryAnno.argTypes(), 0, parameterTypes, 0, argLen);
+                            for (int k = 0; k < argLen; k++) {
+                                assert m.getParameterTypes()[k].isAssignableFrom(parameterTypes[k]);
+                                assert m.getParameterTypes()[k].isAssignableFrom(arguments[k].getClass());
+                            }
+                            return (R) m.invoke(null, arguments);
+                        } else {
+                            Logger.getLogger(OptionalOperations.class.getName()).log(Level.WARNING,
+                                    "No arguments supplied to instantiateConstant(), nor are they " +
+                                            "required by {0}, but noArgs is not set true in " +
+                                            "@ConstantFactory annotation.", m.getName());
+                            throw new IllegalStateException("Missing noArgs param on @ConstantFactory");
+                        }
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new IllegalStateException("While attempting to instantiate constant " + constName, e);
+                }
+            }
+        }
+        // if we fall through, we failed -- should we return null instead of throwing an exception?
+        throw new IllegalArgumentException("No constant found named " + constName);
     }
 
     public static Class<? extends Numeric> findCommonType(Class<? extends Numeric> type1, Class<? extends Numeric> type2) {

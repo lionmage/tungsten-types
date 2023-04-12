@@ -7,11 +7,13 @@ import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.*;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Derived from the work of Ian Robertson.
@@ -120,5 +122,26 @@ public class ClassTools {
             throw new IllegalArgumentException("There is no concrete class for type " + potential.getTypeName());
         }
         return (Class<? extends T>) ourClass;
+    }
+
+    public static Collection<Class<?>> findClassesInPackage(String packageName, Class<? extends Annotation> withAnnotation) {
+        InputStream stream = ClassLoader.getSystemClassLoader()
+                .getResourceAsStream(packageName.replaceAll("[.]", "/"));
+        if (stream == null) throw new IllegalStateException("Cannot open InputStream of class resources");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        return reader.lines()
+                .filter(line -> line.endsWith(".class"))
+                .map(line -> obtainClass(line, packageName))
+                .filter(c -> c.isAnnotationPresent(withAnnotation))
+                .collect(Collectors.toSet());
+    }
+
+    private static Class<?> obtainClass(String className, String packageName) {
+        try {
+            // className will always end in .class here, so no need to add extra error checking
+            return Class.forName(packageName + "." + className.substring(0, className.lastIndexOf('.')));
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("While attempting to load " + className, e);
+        }
     }
 }

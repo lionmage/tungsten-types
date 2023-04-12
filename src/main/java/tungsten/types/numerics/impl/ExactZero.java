@@ -1,6 +1,7 @@
 package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 
@@ -19,6 +20,7 @@ public class ExactZero extends Zero {
     private static final Map<MathContext, ExactZero> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
 
+    @ConstantFactory
     public static Numeric getInstance(MathContext mctx) {
         instanceLock.lock();
         try {

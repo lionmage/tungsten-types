@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 
@@ -76,6 +77,7 @@ public class Pi implements RealType {
      * @param mctx provides the desired precision and {@link RoundingMode} used for internal calculations
      * @return an instance of &pi; to the specified precision
      */
+    @ConstantFactory(returnType = Pi.class)  // could also use RealType.class
     public static Pi getInstance(MathContext mctx) {
         instanceLock.lock();
         try {
