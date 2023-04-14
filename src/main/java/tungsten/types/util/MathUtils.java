@@ -64,17 +64,46 @@ import static tungsten.types.Range.BoundType;
  */
 public class MathUtils {
     public static final String THETA = "\u03B8";
+    /**
+     * The {@link String} representing the System property that
+     * governs whether internally-provided Java math operations
+     * are to be preferred during calculation.
+     */
     public static final String PREFER_INBUILT = "tungsten.types.numerics.MathUtils.prefer.native";
     private static final BigInteger TWO = BigInteger.valueOf(2L);
     
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
 
+    /**
+     * Checks configuration and returns {@code true} if we should
+     * prefer built-in operations (i.e., those supplied by Java) over
+     * implementations supplied by Tungsten.  Typically, built-in
+     * operations execute faster at the expense of lower accuracy.
+     * For example, {@link BigDecimal#pow(int, MathContext)} returns
+     * a result that is accurate to within 2 ULPs, whereas
+     * {@link #computeIntegerExponent(RealType, long, MathContext)}
+     * may give more accurate results at the cost of slower performance.
+     * @return true if the system is configured to prefer Java-supplied
+     *  operations, false otherwise
+     * @see #PREFER_INBUILT
+     */
     public static boolean useBuiltInOperations() {
         String value = System.getProperty(PREFER_INBUILT, "true");
         return Boolean.parseBoolean(value);
     }
-    
+
+    /**
+     * Compute n! &mdash; the factorial of integer value n.
+     * Note that this implementation uses caching of previously
+     * computed values both for short-circuit evaluation
+     * and for computing new values.  Caching for values
+     * of n&nbsp;&gt;&nbsp;{@link Long#MAX_VALUE} is not
+     * guaranteed.
+     * @param n a non-negative integer value
+     * @return the value of n!
+     */
     public static IntegerType factorial(IntegerType n) {
+        if (n.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Factorial undefined for " + n);
         if (n.asBigInteger().equals(BigInteger.ZERO) || n.asBigInteger().equals(BigInteger.ONE)) {
             return new IntegerImpl(BigInteger.ONE);
         } else if (getCacheFor(n) != null) {
@@ -98,7 +127,8 @@ public class MathUtils {
      * If there's a cached factorial value, find the highest key that is less
      * than n.
      * @param n the upper bound of our search
-     * @return the highest cache key given the search parameter
+     * @return the highest cache key given the search parameter, or null
+     *  if no key is found
      */
     private static Long findMaxKeyUnder(IntegerType n) {
         try {
@@ -140,11 +170,25 @@ public class MathUtils {
         return getCacheFor(n.asBigInteger());
     }
 
+    /**
+     * Round a value x to the given {@link MathContext}.
+     * @param x   the real value to be rounded
+     * @param ctx the {@link MathContext} to apply
+     * @return the value x rounded
+     */
     public static RealType round(RealType x, MathContext ctx) {
         BigDecimal value = x.asBigDecimal().round(ctx);
         return new RealImpl(value, ctx, false);
     }
 
+    /**
+     * Round a value z to the given {@link MathContext}. This operation
+     * is equivalent to performing a rounding operation on each of the
+     * components of the complex value z.
+     * @param z   the complex value to be rounded
+     * @param ctx the {@link MathContext} to apply
+     * @return the complex value z rounded
+     */
     public static ComplexType round(ComplexType z, MathContext ctx) {
         if (z.getClass().isAnnotationPresent(Polar.class)) {
             return new ComplexPolarImpl(round(z.magnitude(), ctx), round(z.argument(), ctx), false);

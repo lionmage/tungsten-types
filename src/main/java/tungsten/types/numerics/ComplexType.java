@@ -33,6 +33,10 @@ import tungsten.types.util.MathUtils;
  * @author Robert Poole
  */
 public interface ComplexType extends Numeric {
+    /**
+     * String value of the System property governing
+     * whether extended complex numbers are enabled.
+     */
     String ENABLE_EXTENDED_CPLX = "tungsten.types.numerics.ComplexType.extended.enable";
     @SuppressWarnings("unchecked")
     @Override
@@ -59,6 +63,7 @@ public interface ComplexType extends Numeric {
      * Method to determine if the extended complex plane &#x2102;<sub>&infin;</sub>
      * is enabled.
      * @return true if enabled, false otherwise
+     * @see #ENABLE_EXTENDED_CPLX
      */
     static boolean isExtendedEnabled() {
         return Boolean.getBoolean(ENABLE_EXTENDED_CPLX);
