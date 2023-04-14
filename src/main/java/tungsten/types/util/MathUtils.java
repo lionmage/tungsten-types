@@ -64,9 +64,15 @@ import static tungsten.types.Range.BoundType;
  */
 public class MathUtils {
     public static final String THETA = "\u03B8";
+    public static final String PREFER_INBUILT = "tungsten.types.numerics.MathUtils.prefer.native";
     private static final BigInteger TWO = BigInteger.valueOf(2L);
     
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
+
+    public static boolean useBuiltInOperations() {
+        String value = System.getProperty(PREFER_INBUILT, "true");
+        return Boolean.parseBoolean(value);
+    }
     
     public static IntegerType factorial(IntegerType n) {
         if (n.asBigInteger().equals(BigInteger.ZERO) || n.asBigInteger().equals(BigInteger.ONE)) {
@@ -191,7 +197,7 @@ public class MathUtils {
         if (n == 0L) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
         if (n == 1L) return x;
         // if n falls within a certain integer range, delegate to BigDecimal.pow()
-        if (Math.abs(n) < MAX_INT_FOR_EXPONENT) {
+        if (useBuiltInOperations() && Math.abs(n) < MAX_INT_FOR_EXPONENT) {
             RealImpl real = new RealImpl(x.asBigDecimal().pow((int) n, mctx), mctx, x.isExact());
             real.setIrrational(x.isIrrational());
             return real;
@@ -200,9 +206,11 @@ public class MathUtils {
             if (n == -1L) {
                 return (RealType) x.inverse().coerceTo(RealType.class);
             }
-            
-            Numeric intermediate = One.getInstance(mctx);
-            Numeric factor = new RealImpl(x.magnitude().asBigDecimal(), mctx, x.isExact());
+
+            // TODO figure out if we can get away with only 2 extra digits of precision
+            MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
+            Numeric intermediate = One.getInstance(compctx);
+            Numeric factor = new RealImpl(x.magnitude().asBigDecimal(), compctx, x.isExact());
             long m = Math.abs(n);
             if (m % 2L == 1L) {  // handle the corner case of odd exponents
                 intermediate = factor;
@@ -216,7 +224,7 @@ public class MathUtils {
             if (n < 0L) intermediate = intermediate.inverse();
             // if |n| is odd, preserve original sign
             if (x.sign() == Sign.NEGATIVE && Math.abs(n) % 2L != 0L) intermediate = intermediate.negate();
-            return (RealType) intermediate.coerceTo(RealType.class);
+            return round((RealType) intermediate.coerceTo(RealType.class), mctx);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "Unrecoverable exception thrown while computing integer exponent.", ex);
             throw new ArithmeticException("Failure to coerce result to RealType");
