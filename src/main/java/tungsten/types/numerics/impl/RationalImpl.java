@@ -364,6 +364,9 @@ public class RationalImpl implements RationalType {
             root.setMathContext(mctx);
             return root;
         } else {
+            if (MathUtils.useBuiltInOperations()) {
+                return new RealImpl(this.asBigDecimal().sqrt(mctx), false);
+            }
             try {
                 RealType realNum = (RealType) reduced.numerator().coerceTo(RealType.class);
                 RealType realDenom = (RealType) reduced.denominator().coerceTo(RealType.class);

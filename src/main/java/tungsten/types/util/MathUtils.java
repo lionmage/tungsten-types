@@ -631,6 +631,7 @@ public class MathUtils {
      * @return the {@code n}th root of {@code a}
      */
     public static RealType nthRoot(RealType a, IntegerType n, MathContext mctx) {
+        if (n.sign() != Sign.POSITIVE) throw new IllegalArgumentException("Degree of root must be positive");
         final BigDecimal A = a.asBigDecimal();
         if (A.compareTo(BigDecimal.ZERO) == 0) {
             try {
@@ -639,6 +640,12 @@ public class MathUtils {
                 // we should never get here
                 throw new IllegalStateException(ex);
             }
+        }
+        if (n.isEven() && a.sign() == Sign.NEGATIVE) {
+            throw new ArithmeticException("Cannot compute a real-valued " + n + "th root of " + a);
+        }
+        if (n.asBigInteger().longValue() == 2L && useBuiltInOperations()) {
+            return new RealImpl(A.sqrt(mctx), mctx, a.isExact());  // faster but sloppier
         }
 
         // sadly, we need to use int here because we're relying on
@@ -1663,7 +1670,8 @@ public class MathUtils {
             return two.multiply(arctan(term.subtract(x).divide(y)));
         }
         if (x.compareTo(zero) < 0 && Zero.isZero(y)) {
-            return Pi.getInstance(y.getMathContext());
+            // use the MathContext of the non-zero argument in this case
+            return Pi.getInstance(x.getMathContext());
         }
         // undefined otherwise, i.e., x = 0 and y = 0
         throw new ArithmeticException(String.format("Could not calculate atan2 for y = %1$s, x = %2$s",
