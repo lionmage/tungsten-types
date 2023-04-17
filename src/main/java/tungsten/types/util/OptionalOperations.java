@@ -59,78 +59,12 @@ public class OptionalOperations {
             throw new IllegalStateException("Fatal error while obtaining or using constructor for a Numeric subclass", fatal);
         } catch (NoSuchMethodException e) {
             if (clazz.isAnnotationPresent(Constant.class)) {
-                // this is a constant, so find the annotated factory method and use it
+                // this is a constant, so throw an exception and inform the user
+                // that instantiateConstant() is what they need
                 Constant constAnnotation = clazz.getAnnotation(Constant.class);
-                if (Arrays.stream(clazz.getMethods()).anyMatch(m -> m.isAnnotationPresent(ConstantFactory.class))) {
-                    Logger.getLogger(OptionalOperations.class.getName()).log(Level.FINE,
-                            "Detected @ConstantFactory annotation inside {0}", clazz.getTypeName());
-                    Optional<Method> method = Arrays.stream(clazz.getMethods()).filter(m -> m.isAnnotationPresent(ConstantFactory.class))
-                            .filter(m -> (m.getModifiers() & Modifier.STATIC) != 0)  // we expect the factory method to be static
-                            .filter(m -> m.getReturnType().isAssignableFrom(clazz)).findFirst();
-                    if (method.isPresent()) {
-                        final Method m = method.get();
-                        Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
-                                "Constant factory method {0} will be invoked on {1} to obtain {2}",
-                                new Object[]{m.getName(), clazz.getName(), constAnnotation.name()});
-                        ConstantFactory factoryAnnotation = m.getAnnotation(ConstantFactory.class);
-                        if (factoryAnnotation.noArgs()) {
-                            try {
-                                return (T) m.invoke(null, (Object) null);
-                            } catch (IllegalAccessException | InvocationTargetException ex) {
-                                throw new IllegalStateException("While invoking factory method for " + constAnnotation.representation(), ex);
-                            }
-                        } else {
-                            String[] args = strValue.split("\\s*;\\s*");  // stringified arguments are separated by a semicolon
-                            if (m.getParameterCount() != args.length ||
-                                    (factoryAnnotation.argTypes().length > 0 && factoryAnnotation.argTypes().length != args.length)) {
-                                throw new IllegalArgumentException(String.format("Expected %1$d arguments for %2$s, but parsed %3$d instead: %4$s",
-                                        m.getParameterCount(), m.getName(), args.length, Arrays.toString(args)));
-                            }
-                            MathContext ctx = null;
-                            Sign sign = null;
-                            int ctxIdx = -1, signIdx = -1;
-                            for (int i = 0; i < m.getParameterCount(); i++) {
-                                Class<?> argtype = factoryAnnotation.argTypes().length == 0 ? factoryAnnotation.argType() : factoryAnnotation.argTypes()[i];
-                                if (MathContext.class.isAssignableFrom(argtype)) {
-                                    ctx = new MathContext(args[i]);
-                                    ctxIdx = i;
-                                }
-                                else if (Sign.class.isAssignableFrom(argtype)) {
-                                    sign = Sign.valueOf(args[i].trim());
-                                    signIdx = i;
-                                }
-                                else {
-                                    Logger.getLogger(OptionalOperations.class.getName()).log(Level.WARNING,
-                                            "Unknown argument type {0} with initializer string {1} for factory method {2}.",
-                                            new Object[] {argtype.getTypeName(), args[i], m.getName()});
-                                }
-                            }
-                            Object[] invArgs = new Object[m.getParameterCount()];
-                            if (ctxIdx >= 0) invArgs[ctxIdx] = ctx;
-                            if (signIdx >= 0) invArgs[signIdx] = sign;
-                            // other arguments captured go here
-                            try {
-                                return (T) m.invoke(null, invArgs);
-                            } catch (IllegalAccessException | InvocationTargetException ex) {
-                                throw new IllegalStateException("While invoking factory method for " + constAnnotation.representation(), ex);
-                            }
-                        }
-                    }
-                }
-            }
-            // attempt to recover if at all possible -- if no annotations present, the typical pattern is to provide a
-            // getInstance() method which takes a single MathContext argument
-            Optional<Method> generator = Arrays.stream(toInstantiate.getMethods()).filter(m -> "getInstance".equals(m.getName()))
-                    .filter(m -> m.getParameterCount() == 1)
-                    .filter(m -> MathContext.class.isAssignableFrom(m.getParameterTypes()[0]))
-                    .findFirst();
-            if (generator.isPresent()) {
-                MathContext ctx = new MathContext(strValue);  // in this case, we interpret the String as a constructor arg for MathContext
-                try {
-                    generator.get().invoke(null, ctx);  // method should be static, so first argument of invoke is null
-                } catch (IllegalAccessException | InvocationTargetException ex) {
-                    throw new IllegalStateException("While attempting to recover from failed constructor lookup", ex);
-                }
+                throw new UnsupportedOperationException("Class " + clazz.getName() + " represents the constant " +
+                        constAnnotation.name() + " (" + constAnnotation.representation() + ") and should be " +
+                        "instantiated with instantiateConstant() instead");
             }
             throw new IllegalArgumentException("No String-based constructor for class " + toInstantiate.getTypeName(), e);
         }
