@@ -13,26 +13,26 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
-public class ListRowVector<T extends Numeric> extends RowVector<T> {
+public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     public static final long RANDOM_ACCESS_THRESHOLD = 1_000L;
     private final List<T> elements;
     private transient long elementCount = -1L;
     private final ReadWriteLock rwl = new ReentrantReadWriteLock();
 
-    public ListRowVector() {
+    public ListColumnVector() {
         elements = new LinkedList<>();
         elementCount = 0L;
     }
 
-    public ListRowVector(List<T> source) {
+    public ListColumnVector(List<T> source) {
         elements = source;
     }
 
     /**
      * A copy constructor.
-     * @param source the {@link RowVector} to duplicate
+     * @param source the {@link ColumnVector} to duplicate
      */
-    public ListRowVector(RowVector<T> source) {
+    public ListColumnVector(ColumnVector<T> source) {
         if (source.length() < RANDOM_ACCESS_THRESHOLD) {
             elements = new ArrayList<>();
         } else {
@@ -115,7 +115,7 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
     }
 
     @Override
-    public RowVector<T> add(Vector<T> addend) {
+    public ColumnVector<T> add(Vector<T> addend) {
         if (addend.length() != this.length()) throw new IllegalArgumentException("Vectors must be of the same length");
         Lock lock = rwl.readLock();
         lock.lock();
@@ -125,7 +125,7 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
                 T sum = (T) elementAt(k).add(addend.elementAt(k)).coerceTo(getElementType());
                 result.add(sum);
             }
-            return new ListRowVector<>(result);
+            return new ListColumnVector<>(result);
         } catch (CoercionException e) {
             throw new IllegalStateException("While adding vectors", e);
         } finally {
@@ -134,58 +134,58 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
     }
 
     @Override
-    public RowVector<T> negate() {
+    public ColumnVector<T> negate() {
         Lock lock = rwl.readLock();
         lock.lock();
         try {
             LinkedList<T> result = new LinkedList<>();
             elements.stream().map(Numeric::negate).map(getElementType()::cast).forEachOrdered(result::add);
-            return new ListRowVector<>(result);
+            return new ListColumnVector<>(result);
         } finally {
             lock.unlock();
         }
     }
 
     @Override
-    public RowVector<T> scale(T factor) {
+    public ColumnVector<T> scale(T factor) {
         Lock lock = rwl.readLock();
         lock.lock();
         try {
             LinkedList<T> result = new LinkedList<>();
             elements.stream().map(x -> x.multiply(factor)).map(getElementType()::cast).forEachOrdered(result::add);
-            return new ListRowVector<>(result);
+            return new ListColumnVector<>(result);
         } finally {
             lock.unlock();
         }
     }
 
     @Override
-    public ColumnVector<T> transpose() {
-        return new ListColumnVector<>(elements);
+    public RowVector<T> transpose() {
+        return new ListRowVector<>(elements);
+    }
+
+    @Override
+    public Matrix<T> add(Matrix<T> addend) {
+        if (addend.columns() != 1L || addend.rows() != length()) {
+            throw new IllegalArgumentException("Matrices must have equal dimensions");
+        }
+        return add((Vector<T>) addend.getColumn(0L));
     }
 
     /**
      * Obtain an in-order {@link Stream} of the
-     * elements in this row vector. For concurrency
+     * elements in this column vector. For concurrency
      * safety, this method obtains a read lock
      * internally and does not relinquish that lock
      * until the stream is closed.  It is thus
      * not recommended to obtain a stream if
      * concurrent write operations are expected.
-     * @return a stream of this row vector's elements
+     * @return a stream of this column vector's elements
      */
     @Override
     public Stream<T> stream() {
         final Lock lock = rwl.readLock();
         lock.lock();
         return elements.stream().onClose(lock::unlock);
-    }
-
-    @Override
-    public Matrix<T> add(Matrix<T> addend) {
-        if (addend.rows() != 1L || addend.columns() != length()) {
-            throw new IllegalArgumentException("Matrices must have equal dimensions");
-        }
-        return add((Vector<T>) addend.getRow(0L));
     }
 }
