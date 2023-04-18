@@ -108,7 +108,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
             // may likewise refuse to append an element
             // besides which, if add() throws an exception, the next line of code won't
             // execute no matter what!
-            if (success) elementCount++;
+            if (success && elementCount >= 0L) elementCount++;
         } finally {
             lock.unlock();
         }
@@ -187,5 +187,10 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
         final Lock lock = rwl.readLock();
         lock.lock();
         return elements.stream().onClose(lock::unlock);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(elements, rwl, getMathContext());
     }
 }
