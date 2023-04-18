@@ -228,7 +228,7 @@ public class MathUtils {
     // BigDecimal.pow(), as documented in the JDK.  This could be adjusted
     // lower in the future, but never higher.  (The absolute upper
     // limit would be the maximum value of int.)
-    private static final long MAX_INT_FOR_EXPONENT = 999999999L;
+    private static final long MAX_INT_FOR_EXPONENT = 999_999_999L;
 
     /**
      * Compute x<sup>n</sup>.
