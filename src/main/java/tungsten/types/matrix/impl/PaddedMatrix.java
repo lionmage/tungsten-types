@@ -32,9 +32,14 @@ import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.vector.impl.ListColumnVector;
+import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Given a source {@link Matrix}, this class creates a new, larger
@@ -96,10 +101,31 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
         return super.determinant();
     }
 
+    private static final long MAX_INT = Integer.MAX_VALUE;
+
     @Override
     public RowVector<T> getRow(long row) {
         if (row >= source.rows() && row < this.rows()) {
-            // TODO accommodate List-based row vectors here
+            if (this.columns() > 10L) {
+                // we shouldn't be wasting an array for something like this
+                if (this.columns() > MAX_INT) {
+                    // we need to iteratively build a LinkedList that has the
+                    // correct number of elements we need since the total number
+                    // is greater than a single call to Collections.nCopies can provide
+                    long columnCount = this.columns();
+                    List<T> elements = new LinkedList<>();
+                    do {
+                        int takeN = columnCount > MAX_INT ? Integer.MAX_VALUE : (int) (columnCount % MAX_INT);
+                        elements.addAll(Collections.nCopies(takeN, padValue));
+                    } while ((columnCount -= MAX_INT) > 0);
+                    return new ListRowVector<>(elements);
+                }
+                // this is more efficient, however, since the List returned by
+                // Collections.nCopies itself only holds a single reference to the
+                // data element provided, and therefore it's tiny with fast
+                // synthetic accessor methods
+                return new ListRowVector<>(Collections.nCopies((int) this.columns(), padValue));
+            }
             T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.columns());
             Arrays.fill(elements, padValue);
             return new ArrayRowVector<>(elements);
@@ -110,7 +136,18 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
     @Override
     public ColumnVector<T> getColumn(long column) {
         if (column >= source.columns() && column < this.columns()) {
-            // TODO accommodate List-based column vectors here
+            if (this.columns() > 10L) {
+                if (this.columns() > MAX_INT) {
+                    long columnCount = this.columns();
+                    List<T> elements = new LinkedList<>();
+                    do {
+                        int takeN = columnCount > MAX_INT ? Integer.MAX_VALUE : (int) (columnCount % MAX_INT);
+                        elements.addAll(Collections.nCopies(takeN, padValue));
+                    } while ((columnCount -= MAX_INT) > 0);
+                    return new ListColumnVector<>(elements);
+                }
+                return new ListColumnVector<>(Collections.nCopies((int) this.columns(), padValue));
+            }
             T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.rows());
             Arrays.fill(elements, padValue);
             return new ArrayColumnVector<>(elements);
