@@ -29,9 +29,7 @@ import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
-import tungsten.types.vector.impl.ArrayColumnVector;
-import tungsten.types.vector.impl.ArrayRowVector;
-import tungsten.types.vector.impl.ZeroVector;
+import tungsten.types.vector.impl.*;
 
 import java.math.MathContext;
 
@@ -56,14 +54,12 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
     
     @Override
     public RowVector<Numeric> getRow(long row) {
-        // TODO fix this when we get List-based vectors
-        return new ArrayRowVector<>(ZeroVector.getInstance(this.columns(), mctx));
+        return new ListRowVector<>(ZeroVector.getInstance(this.columns(), mctx));
     }
     
     @Override
     public ColumnVector<Numeric> getColumn(long column) {
-        // TODO fix this when we get List-based vectors
-        return new ArrayColumnVector<>(ZeroVector.getInstance(this.rows(), mctx));
+        return new ListColumnVector<>(ZeroVector.getInstance(this.rows(), mctx));
     }
     
     @Override

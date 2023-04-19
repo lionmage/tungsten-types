@@ -34,11 +34,20 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
      */
     public ListRowVector(RowVector<T> source) {
         if (source.length() < RANDOM_ACCESS_THRESHOLD) {
-            elements = new ArrayList<>();
+            elements = new ArrayList<>((int) source.length());
         } else {
             elements = new LinkedList<>();
         }
         source.stream().forEachOrdered(elements::add);
+    }
+
+    public ListRowVector(Vector<T> source) {
+        if (source.length() < RANDOM_ACCESS_THRESHOLD) {
+            elements = new ArrayList<>((int) source.length());
+        } else {
+            elements = new LinkedList<>();
+        }
+        for (long k = 0L; k < source.length(); k++) elements.add(source.elementAt(k));
     }
 
     @Override

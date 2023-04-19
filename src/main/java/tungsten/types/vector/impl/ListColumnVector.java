@@ -41,6 +41,15 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
         source.stream().forEachOrdered(elements::add);
     }
 
+    public ListColumnVector(Vector<T> source) {
+        if (source.length() < RANDOM_ACCESS_THRESHOLD) {
+            elements = new ArrayList<>();
+        } else {
+            elements = new LinkedList<>();
+        }
+        for (long k = 0L; k < source.length(); k++) elements.add(source.elementAt(k));
+    }
+
     @Override
     public long length() {
         if (elementCount < 0L) {

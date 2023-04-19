@@ -1361,6 +1361,7 @@ public class MathUtils {
     }
 
     private static <T extends Numeric> ColumnVector<T> columnVectorFrom(Vector<? super T> source, Class<T> clazz) {
+        final long THRESHOLD = 1_000L;
         List<T> converted = new LinkedList<>();
         try {
             for (long index = 0L; index < source.length(); index++) {
@@ -1370,7 +1371,7 @@ public class MathUtils {
         } catch (CoercionException e) {
             throw new IllegalStateException("While converting " + source + " to a column vector", e);
         }
-        // TODO add logic to return a List-based column vector when source is sufficiently long
+        if (source.length() > THRESHOLD) return new ListColumnVector<>(converted);
         return new ArrayColumnVector<>(converted);
     }
 
