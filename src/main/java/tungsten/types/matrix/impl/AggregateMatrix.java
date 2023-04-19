@@ -32,8 +32,8 @@ import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
-import tungsten.types.vector.impl.ArrayColumnVector;
-import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.vector.impl.ListColumnVector;
+import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -301,9 +301,8 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     public RowVector<T> getRow(long row) {
         final int tileRow = getTileRow(row);
         final long rowIndex = getSubRowIndex(tileRow, row);
-        // TODO fix this when we get List-based vectors
-        RowVector<T> result = new ArrayRowVector<>();
-        Arrays.stream(subMatrices[tileRow]).map(tr -> tr.getRow(rowIndex).stream()).flatMap(e -> e).forEachOrdered(result::append);
+        RowVector<T> result = new ListRowVector<>();
+        Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream()).forEachOrdered(result::append);
         return result;
     }
 
@@ -311,10 +310,9 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     public ColumnVector<T> getColumn(long column) {
         final int tileColumn = getTileColumn(column);
         final long columnIndex = getSubColumnIndex(tileColumn, column);
-        // TODO fix this when we get List-based vectors
-        ColumnVector<T> result = new ArrayColumnVector<>();
-        for (int rowidx = 0; rowidx < subMatrices.length; rowidx++) {
-            subMatrices[rowidx][tileColumn].getColumn(columnIndex).stream().forEachOrdered(result::append);
+        ColumnVector<T> result = new ListColumnVector<>();
+        for (Matrix<T>[] subMatrix : subMatrices) {
+            subMatrix[tileColumn].getColumn(columnIndex).stream().forEachOrdered(result::append);
         }
         return result;
     }

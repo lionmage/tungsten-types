@@ -35,6 +35,7 @@ import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -418,7 +419,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
                 else if (column == column2) row.add(rowVec.elementAt(column1));
                 else row.add(rowVec.elementAt(column));
             }
-            result.add(new ArrayRowVector<>(row));  // TODO this might be better with a List-based RowVector
+            result.add(new ListRowVector<>(row));
         });
         
         return new BasicMatrix<>(result);
