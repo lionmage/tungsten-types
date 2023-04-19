@@ -121,7 +121,7 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
                     return new ListRowVector<>(elements);
                 }
                 // this is more efficient, however, since the List returned by
-                // Collections.nCopies itself only holds a single reference to the
+                // Collections.nCopies() itself only holds a single reference to the
                 // data element provided, and therefore it's tiny with fast
                 // synthetic accessor methods
                 return new ListRowVector<>(Collections.nCopies((int) this.columns(), padValue));
@@ -136,17 +136,17 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
     @Override
     public ColumnVector<T> getColumn(long column) {
         if (column >= source.columns() && column < this.columns()) {
-            if (this.columns() > 10L) {
-                if (this.columns() > MAX_INT) {
-                    long columnCount = this.columns();
+            if (this.rows() > 10L) {
+                if (this.rows() > MAX_INT) {
+                    long rowCount = this.rows();
                     List<T> elements = new LinkedList<>();
                     do {
-                        int takeN = columnCount > MAX_INT ? Integer.MAX_VALUE : (int) (columnCount % MAX_INT);
+                        int takeN = rowCount > MAX_INT ? Integer.MAX_VALUE : (int) (rowCount % MAX_INT);
                         elements.addAll(Collections.nCopies(takeN, padValue));
-                    } while ((columnCount -= MAX_INT) > 0);
+                    } while ((rowCount -= MAX_INT) > 0);
                     return new ListColumnVector<>(elements);
                 }
-                return new ListColumnVector<>(Collections.nCopies((int) this.columns(), padValue));
+                return new ListColumnVector<>(Collections.nCopies((int) this.rows(), padValue));
             }
             T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.rows());
             Arrays.fill(elements, padValue);
