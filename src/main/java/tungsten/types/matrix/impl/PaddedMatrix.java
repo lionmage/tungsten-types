@@ -50,6 +50,7 @@ import java.util.List;
  * @author Robert Poole
  */
 public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
+    public static final long VECTOR_SIZE_THRESHOLD = 10L;
     final T padValue;
     final Matrix<T> source;
 
@@ -106,7 +107,7 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
     @Override
     public RowVector<T> getRow(long row) {
         if (row >= source.rows() && row < this.rows()) {
-            if (this.columns() > 10L) {
+            if (this.columns() > VECTOR_SIZE_THRESHOLD) {
                 // we shouldn't be wasting an array for something like this
                 if (this.columns() > MAX_INT) {
                     // we need to iteratively build a LinkedList that has the
@@ -117,7 +118,7 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
                     do {
                         int takeN = columnCount > MAX_INT ? Integer.MAX_VALUE : (int) (columnCount % MAX_INT);
                         elements.addAll(Collections.nCopies(takeN, padValue));
-                    } while ((columnCount -= MAX_INT) > 0);
+                    } while ((columnCount -= MAX_INT) > 0L);
                     return new ListRowVector<>(elements);
                 }
                 // this is more efficient, however, since the List returned by
@@ -136,14 +137,14 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
     @Override
     public ColumnVector<T> getColumn(long column) {
         if (column >= source.columns() && column < this.columns()) {
-            if (this.rows() > 10L) {
+            if (this.rows() > VECTOR_SIZE_THRESHOLD) {
                 if (this.rows() > MAX_INT) {
                     long rowCount = this.rows();
                     List<T> elements = new LinkedList<>();
                     do {
                         int takeN = rowCount > MAX_INT ? Integer.MAX_VALUE : (int) (rowCount % MAX_INT);
                         elements.addAll(Collections.nCopies(takeN, padValue));
-                    } while ((rowCount -= MAX_INT) > 0);
+                    } while ((rowCount -= MAX_INT) > 0L);
                     return new ListColumnVector<>(elements);
                 }
                 return new ListColumnVector<>(Collections.nCopies((int) this.rows(), padValue));
