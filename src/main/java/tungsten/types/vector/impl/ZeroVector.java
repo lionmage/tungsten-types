@@ -32,6 +32,7 @@ import tungsten.types.numerics.impl.Zero;
 import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -159,7 +160,16 @@ public class ZeroVector implements Vector<Numeric> {
 
     @Override
     public RealType computeAngle(Vector<Numeric> other) {
-        throw new UnsupportedOperationException("Zero vector cannot form an angle with any vector");
+        throw new ArithmeticException("Zero vector cannot form an angle with any vector");
+    }
+
+    public static boolean isZeroVector(Vector<? extends Numeric> vector) {
+        if (vector instanceof ZeroVector) return true;
+        for (long k = 0L; k < vector.length(); k++) {
+            if (!Zero.isZero(vector.elementAt(k))) return false;
+        }
+        // all elements have been matched
+        return true;
     }
     
     @Override
@@ -167,12 +177,13 @@ public class ZeroVector implements Vector<Numeric> {
         if (o instanceof Vector) {
             Vector<? extends Numeric> that = (Vector<? extends Numeric>) o;
             if (that.length() != this.length()) return false;
-            for (long k = 0L; k < that.length(); k++) {
-                if (!Zero.isZero(that.elementAt(k))) return false;
-            }
-            // we must have matched all elements
-            return true;
+            return isZeroVector(that);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(zero, length, mctx);
     }
 }
