@@ -213,6 +213,16 @@ public class MathUtils {
         return new RealImpl(value, ctx, false);
     }
 
+    public static RealType random(Range<RealType> range) {
+        MathContext ctx = inferMathContext(List.of(range.getLowerBound(), range.getUpperBound()));
+        RealType span = (RealType) range.getUpperBound().subtract(range.getLowerBound());
+        RealType randVal;
+        do {
+            randVal = new RealImpl(BigDecimal.valueOf(Math.random()), ctx, false);
+        } while (!range.isLowerClosed() && Zero.isZero(randVal));  // exclude values from lower limit if needed
+        return (RealType) range.getLowerBound().add(span.multiply(randVal));
+    }
+
     /**
      * Round a value z to the given {@link MathContext}. This operation
      * is equivalent to performing a rounding operation on each of the
@@ -988,7 +998,9 @@ public class MathUtils {
      * Compute the Moore-Penrose inverse of a matrix.  This is a generalization of the
      * inverse of a square matrix, and can be used to solve a linear system of equations
      * represented by a non-square matrix. Given a matrix A, the Moore-Penrose inverse
-     * is written as A<sup>+</sup>.
+     * is written as A<sup>+</sup>.<br/>
+     * If the supplied matrix is neither of full column rank nor full row rank, the
+     * iterative algorithm by Ben-Israel and Cohen will be used.
      * @param M the {@link Matrix} for which to compute the Moore-Penrose inverse
      * @return the Moore-Penrose inverse of {@code M}, denoted M<sup>+</sup>
      * @see <a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse">the related article at Wikipedia</a>
@@ -1004,9 +1016,9 @@ public class MathUtils {
         Matrix<ComplexType> Mcplx = new ParametricMatrix<>(M.rows(), M.columns(), (row, column) -> {
             try {
                 return (ComplexType) M.valueAt(row, column).coerceTo(ComplexType.class);
-            } catch (CoercionException e) {
+            } catch (CoercionException ce) {
                 throw new IllegalStateException(String.format("Unable to upconvert element %s at %d,\u2009%d",
-                        M.valueAt(row, column), row, column), e);
+                        M.valueAt(row, column), row, column), ce);
             }
         });
         Logger logger = Logger.getLogger(MathUtils.class.getName());
@@ -1023,12 +1035,22 @@ public class MathUtils {
             logger.log(Level.FINE, "Computing A\u207A = A\u20F0(AA\u20F0)\u207B\u00B9");
             return Mcxp.multiply((Matrix<ComplexType>) prod.inverse());
         } else {
+            ComplexType sigma = sigma_1(Mcplx);
+            ComplexType sigSquared = (ComplexType) sigma.multiply(sigma.conjugate());  // this should actually be a real (i.e., zero imaginary part)
+            ComplexType maxAlpha = (ComplexType) new RealImpl(decTWO).divide(sigSquared);  // should work without coercion
+            RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
+            Range<RealType> alphaRange = new Range<>(zero, maxAlpha.real(), BoundType.EXCLUSIVE);
+            ComplexType scale = (ComplexType) maxAlpha.multiply(random(alphaRange));
+            ComplexType cplxTwo = new ComplexRectImpl(new RealImpl(decTWO, sigma.getMathContext()), zero, true);
+
             // take the iterative approach
-            Matrix<ComplexType> intermediate;
+            Matrix<ComplexType> intermediate = Mcxp.scale(scale);
+            int count = 0;
+            do {
+                intermediate = intermediate.scale(cplxTwo).subtract(intermediate.multiply(Mcplx).multiply(intermediate));
+            } while (++count < 25);  // TODO find a better way to estimate how many iterations we need
+            return intermediate;
         }
-        // TODO handle the general case where the rank of the matrix is < min(columns, rows)
-        logger.log(Level.INFO, "No strategy found for computing M\u207A for M with rank = {0}", rank);
-        throw new ArithmeticException("Unable to compute pseudoinverse");
     }
 
     /**
