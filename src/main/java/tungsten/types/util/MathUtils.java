@@ -984,6 +984,116 @@ public class MathUtils {
         };
     }
 
+    /**
+     * Compute the Moore-Penrose inverse of a matrix.  This is a generalization of the
+     * inverse of a square matrix, and can be used to solve a linear system of equations
+     * represented by a non-square matrix. Given a matrix A, the Moore-Penrose inverse
+     * is written as A<sup>+</sup>.
+     * @param M the {@link Matrix} for which to compute the Moore-Penrose inverse
+     * @return the Moore-Penrose inverse of {@code M}, denoted M<sup>+</sup>
+     * @see <a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse">the related article at Wikipedia</a>
+     */
+    public static Matrix<? extends Numeric> pseudoInverse(Matrix<? extends Numeric> M) {
+        // if M is square, it's a degenerate case
+        if (M.rows() == M.columns()) {
+            return M.inverse();
+        }
+        // otherwise compute the pseudoinverse
+        long rank = rank(M);
+        Matrix<ComplexType> Mcxp = conjugateTranspose(M);
+        Matrix<ComplexType> Mcplx = new ParametricMatrix<>(M.rows(), M.columns(), (row, column) -> {
+            try {
+                return (ComplexType) M.valueAt(row, column).coerceTo(ComplexType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException(String.format("Unable to upconvert element %s at %d,\u2009%d",
+                        M.valueAt(row, column), row, column), e);
+            }
+        });
+        Logger logger = Logger.getLogger(MathUtils.class.getName());
+        if (rank == M.columns()) {
+            // full column rank
+            logger.log(Level.FINE, "Computing A\u20F0A");
+            Matrix<ComplexType> prod = Mcxp.multiply(Mcplx);  // A⃰A
+            logger.log(Level.FINE, "Computing A\u207A = (A\u20F0A)\u207B\u00B9A\u20F0");
+            return ((Matrix<ComplexType>) prod.inverse()).multiply(Mcxp);
+        } else if (rank == M.rows()) {
+            // full row rank
+            logger.log(Level.FINE, "Computing AA\u20F0");
+            Matrix<? extends Numeric> prod = Mcplx.multiply(Mcxp);  // AA⃰
+            logger.log(Level.FINE, "Computing A\u207A = A\u20F0(AA\u20F0)\u207B\u00B9");
+            return Mcxp.multiply((Matrix<ComplexType>) prod.inverse());
+        }
+        // TODO handle the general case where the rank of the matrix is < min(columns, rows)
+        logger.log(Level.INFO, "No strategy found for computing M\u207A for M with rank = {0}", rank);
+        throw new ArithmeticException("Unable to compute pseudoinverse");
+    }
+
+    public Matrix<RealType> reify(Matrix<ComplexType> C) {
+        BasicMatrix<RealType> result = new BasicMatrix<>();
+        for (long row = 0L; row < C.rows(); row++) {
+            RowVector<ComplexType> orig = C.getRow(row);
+            if (orig.stream().parallel().anyMatch(c -> !c.isCoercibleTo(RealType.class))) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                        "Row {0} of source matrix contains elements that cannot be converted to RealType: {1}",
+                        new Object[] {row, orig});
+                throw new ArithmeticException("Source matrix cannot be converted to real, row = " + row);
+            }
+            RowVector<RealType> converted = new ListRowVector<>();
+            orig.stream().map(ComplexType::real).forEachOrdered(converted::append);
+            result.append(converted);
+        }
+        return result;
+    }
+
+    public static long rankUpperLimit(Matrix<? extends Numeric> M) {
+        return Math.min(M.rows(), M.columns());
+    }
+
+    public static long rank(Matrix<? extends Numeric> M) {
+        Matrix<? extends Numeric> R = toReducedRowEchelonForm(M);
+        long rank = 0L;
+        for (long rowIdx = 0L; rowIdx < R.rows(); rowIdx++) {
+            if (!ZeroVector.isZeroVector(R.getRow(rowIdx))) rank++;
+        }
+        return rank;
+    }
+
+    /**
+     * Convert a given matrix to reduced row echelon form.
+     * The original {@link Matrix} is not changed, even if it is
+     * a mutable subclass.
+     * @param M the matrix to be converted
+     * @return the converted matrix in reduced row echelon form
+     * @see <a href="https://en.wikipedia.org/wiki/Row_echelon_form">the Wikipedia article</a>, which
+     *  outlines the basic algorithm
+     */
+    public static Matrix<? extends Numeric> toReducedRowEchelonForm(Matrix<? extends Numeric> M) {
+        long lead = 0L;
+        BasicMatrix<Numeric> MM = new BasicMatrix<>((Matrix<Numeric>) M);
+
+        for (long r = 0L; r < M.rows(); r++) {
+            if (M.columns() < lead) break;
+
+            long i = r;
+            while (Zero.isZero(MM.valueAt(i, lead))) {
+                if (M.rows() == ++i) {
+                    i = r;
+                    if (M.columns() == ++lead) return MM; // exit completely
+                }
+            }
+            if (i != r) MM.exchangeRows(i, r);
+            MM.updateRow(r, MM.getRow(r).scale(MM.valueAt(r, lead).inverse()));
+            for (long j = 0L; j < M.rows(); j++) {
+                if (j == r) continue;
+                RowVector<Numeric> jthRow = MM.getRow(j);
+                Vector<Numeric> subtrahend = MM.getRow(r).scale(MM.valueAt(j, lead));
+                MM.updateRow(j, jthRow.subtract(subtrahend));
+            }
+            lead++;
+        }
+        return MM;
+    }
+
     public static boolean areLinearlyIndependent(List<Vector<? extends Numeric>> vectors) {
         final long veclen = vectors.get(0).length();
         final long numVec = vectors.parallelStream().count();

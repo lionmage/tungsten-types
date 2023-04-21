@@ -366,7 +366,21 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         }
         return new BasicMatrix<>(result);
     }
-    
+
+    public void updateRow(long rowIndex, RowVector<T> row) {
+        if (rowIndex < 0L || rowIndex >= rows()) throw new IndexOutOfBoundsException("Row " + rowIndex + " does not exist");
+        if (row.length() != columns()) throw new IllegalArgumentException("Provided RowVector must match column dimension");
+        rows.set((int) rowIndex, row);
+    }
+
+    public void updateColumn(long colIndex, ColumnVector<T> column) {
+        if (colIndex < 0L || colIndex >= columns()) throw new IndexOutOfBoundsException("Column " + colIndex + " does not exist");
+        if (column.length() != rows()) throw new IllegalArgumentException("Provided ColumnVector must match row dimension");
+        for (long rowIdx = 0L; rowIdx < rows(); rowIdx++) {
+            setValueAt(column.elementAt(rowIdx), rowIdx, colIndex);
+        }
+    }
+
     /**
      * Return a matrix with row {@code row} and column {@code column}
      * removed.
