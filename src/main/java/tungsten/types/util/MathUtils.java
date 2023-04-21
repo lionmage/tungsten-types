@@ -1022,13 +1022,43 @@ public class MathUtils {
             Matrix<? extends Numeric> prod = Mcplx.multiply(Mcxp);  // AA⃰
             logger.log(Level.FINE, "Computing A\u207A = A\u20F0(AA\u20F0)\u207B\u00B9");
             return Mcxp.multiply((Matrix<ComplexType>) prod.inverse());
+        } else {
+            // take the iterative approach
+            Matrix<ComplexType> intermediate;
         }
         // TODO handle the general case where the rank of the matrix is < min(columns, rows)
         logger.log(Level.INFO, "No strategy found for computing M\u207A for M with rank = {0}", rank);
         throw new ArithmeticException("Unable to compute pseudoinverse");
     }
 
-    public Matrix<RealType> reify(Matrix<ComplexType> C) {
+    /**
+     * Compute &sigma;<sub>1</sub>(M) of any {@link Matrix} M, which returns the single largest
+     * value of M (i.e., the matrix element with the greatest {@link Numeric#magnitude() magnitude}).
+     * @param M any {@link Matrix}
+     * @return the element of {@code M} with the greatest magnitude
+     * @param <T> the numeric type of the elements of {@code M} and the return value
+     */
+    public static <T extends Numeric> T sigma_1(Matrix<T> M) {
+        T maxVal = null;
+
+        if (M.getClass().isAnnotationPresent(Columnar.class)) {
+            for (long col = 0L; col < M.columns(); col++) {
+                ColumnVector<T> column = M.getColumn(col);
+                T colMax = column.stream().max((x, y) -> x.magnitude().compareTo(y.magnitude())).orElseThrow();
+                if (maxVal == null || colMax.magnitude().compareTo(maxVal.magnitude()) > 0) maxVal = colMax;
+            }
+        } else {
+            for (long rowidx = 0L; rowidx < M.rows(); rowidx++) {
+                RowVector<T> row = M.getRow(rowidx);
+                T rowMax = row.stream().max((x, y) -> x.magnitude().compareTo(y.magnitude())).orElseThrow();
+                if (maxVal == null || rowMax.magnitude().compareTo(maxVal.magnitude()) > 0) maxVal = rowMax;
+            }
+        }
+
+        return maxVal;
+    }
+
+    public static Matrix<RealType> reify(Matrix<ComplexType> C) {
         BasicMatrix<RealType> result = new BasicMatrix<>();
         for (long row = 0L; row < C.rows(); row++) {
             RowVector<ComplexType> orig = C.getRow(row);
