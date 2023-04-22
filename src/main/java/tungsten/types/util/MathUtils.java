@@ -1037,21 +1037,23 @@ public class MathUtils {
         } else if (rank == M.rows()) {
             // full row rank
             logger.log(Level.FINE, "Computing AA\u20F0");
-            Matrix<? extends Numeric> prod = Mcplx.multiply(Mcxp);  // AA⃰
+            Matrix<ComplexType> prod = Mcplx.multiply(Mcxp);  // AA⃰
             logger.log(Level.FINE, "Computing A\u207A = A\u20F0(AA\u20F0)\u207B\u00B9");
             return Mcxp.multiply((Matrix<ComplexType>) prod.inverse());
         } else {
-            ComplexType sigma = sigma_1(Mcplx);
+            final ComplexType sigma = sigma_1(Mcplx);
             ComplexType sigSquared = (ComplexType) sigma.multiply(sigma.conjugate());  // this should actually be a real (i.e., zero imaginary part)
             ComplexType maxAlpha = (ComplexType) new RealImpl(decTWO).divide(sigSquared);  // should work without coercion
-            RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
+            final RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
             Range<RealType> alphaRange = new Range<>(zero, maxAlpha.real(), BoundType.EXCLUSIVE);
-            ComplexType scale = new ComplexRectImpl(random(alphaRange));
+            final ComplexType scale = new ComplexRectImpl(random(alphaRange));
             ComplexType cplxTwo = new ComplexRectImpl(new RealImpl(decTWO, sigma.getMathContext()), zero, true);
 
             // take the iterative approach
             Matrix<ComplexType> intermediate = Mcxp.scale(scale);
-            final int iterationLimit = 3 * sigma.getMathContext().getPrecision() + 2;
+            final int iterationLimit = 3 * sigma.getMathContext().getPrecision() + 2;  // Needs tuning!
+            logger.log(Level.INFO, "Computing {3} terms of convergent series A\u2093\u208A\u2081 = 2A\u2093 - A\u2093AA\u2093 for " +
+                    "{0}\u00D7{1} matrix A with rank {2}.", new Object[] {M.rows(), M.columns(), rank, iterationLimit});
             int count = 0;
             do {
                 intermediate = intermediate.scale(cplxTwo).subtract(intermediate.multiply(Mcplx).multiply(intermediate));
