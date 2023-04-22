@@ -213,6 +213,12 @@ public class MathUtils {
         return new RealImpl(value, ctx, false);
     }
 
+    /**
+     * Generates a random real value that fits within the provided range.
+     * @param range the {@link Range<RealType>} that specifies the lower and upper
+     *              bounds of the value to be generated
+     * @return a random number in the specified {@code range}
+     */
     public static RealType random(Range<RealType> range) {
         MathContext ctx = inferMathContext(List.of(range.getLowerBound(), range.getUpperBound()));
         RealType span = (RealType) range.getUpperBound().subtract(range.getLowerBound());
@@ -1040,15 +1046,16 @@ public class MathUtils {
             ComplexType maxAlpha = (ComplexType) new RealImpl(decTWO).divide(sigSquared);  // should work without coercion
             RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
             Range<RealType> alphaRange = new Range<>(zero, maxAlpha.real(), BoundType.EXCLUSIVE);
-            ComplexType scale = (ComplexType) maxAlpha.multiply(random(alphaRange));
+            ComplexType scale = new ComplexRectImpl(random(alphaRange));
             ComplexType cplxTwo = new ComplexRectImpl(new RealImpl(decTWO, sigma.getMathContext()), zero, true);
 
             // take the iterative approach
             Matrix<ComplexType> intermediate = Mcxp.scale(scale);
+            final int iterationLimit = 3 * sigma.getMathContext().getPrecision() + 2;
             int count = 0;
             do {
                 intermediate = intermediate.scale(cplxTwo).subtract(intermediate.multiply(Mcplx).multiply(intermediate));
-            } while (++count < 25);  // TODO find a better way to estimate how many iterations we need
+            } while (++count < iterationLimit);  // TODO find a better way to estimate how many iterations we need
             return intermediate;
         }
     }
@@ -1058,7 +1065,7 @@ public class MathUtils {
      * value of M (i.e., the matrix element with the greatest {@link Numeric#magnitude() magnitude}).
      * @param M any {@link Matrix}
      * @return the element of {@code M} with the greatest magnitude
-     * @param <T> the numeric type of the elements of {@code M} and the return value
+     * @param <T> the numeric type of the elements of {@code M} as well as the return value
      */
     public static <T extends Numeric> T sigma_1(Matrix<T> M) {
         T maxVal = null;
