@@ -107,6 +107,7 @@ public class RealImpl implements RealType {
         val = new BigDecimal(init.asBigInteger());
         exact = init.isExact();
         irrational = false;
+        mctx = init.getMathContext();  // the default for integers is better than MathContext.UNLIMITED
     }
     
     public void setIrrational(boolean irrational) {
@@ -342,7 +343,12 @@ public class RealImpl implements RealType {
     @Override
     public Numeric sqrt() {
         if (isIntegralValue() && sign().compareTo(Sign.ZERO) >= 0) {
-            IntegerImpl intval = new IntegerImpl(val.toBigIntegerExact(), exact);
+            IntegerImpl intval = new IntegerImpl(val.toBigIntegerExact(), exact) {
+                @Override
+                public MathContext getMathContext() {
+                    return mctx; // use the MathContext of the source real
+                }
+            };
             if (intval.isPerfectSquare()) {
                 return intval.sqrt();
             }
@@ -359,6 +365,7 @@ public class RealImpl implements RealType {
         }
 
         // otherwise, use the built-in square root
+        System.out.println("Val = " + val + " with MathContext = " + mctx);
         BigDecimal principalRoot = val.sqrt(mctx);
         principalRoot = principalRoot.stripTrailingZeros(); // ensure this representation is as compact as possible
         final boolean atLimit = fractionalLengthDifference(principalRoot) == 0;

@@ -80,8 +80,9 @@ public class ComplexPolarImpl implements ComplexType {
 
     public ComplexPolarImpl(RealType realVal) {
         this.modulus = realVal.magnitude();
-        this.argument = realVal.sign() == Sign.NEGATIVE ? Pi.getInstance(realVal.getMathContext()) :
-                new RealImpl(BigDecimal.ZERO, realVal.getMathContext());
+        this.mctx = realVal.getMathContext();
+        this.argument = realVal.sign() == Sign.NEGATIVE ? Pi.getInstance(mctx) :
+                new RealImpl(BigDecimal.ZERO, mctx);
         this.exact = realVal.isExact();
     }
 
@@ -128,6 +129,9 @@ public class ComplexPolarImpl implements ComplexType {
     
     @Override
     public RealType magnitude() {
+        if (ComplexType.isPromotePrecision() && modulus.getMathContext().getPrecision() < mctx.getPrecision()) {
+            return new RealImpl(modulus.asBigDecimal(), mctx, modulus.isExact());
+        }
         return modulus;
     }
 
@@ -158,6 +162,9 @@ public class ComplexPolarImpl implements ComplexType {
 
     @Override
     public RealType argument() {
+        if (ComplexType.isPromotePrecision() && argument.getMathContext().getPrecision() < mctx.getPrecision()) {
+            return new RealImpl(argument.asBigDecimal(), mctx, argument.isExact());
+        }
         return argument;
     }
 

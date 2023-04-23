@@ -411,7 +411,13 @@ public class IntegerImpl implements IntegerType {
         }
         final BigInteger result = val.sqrt();
         final boolean exactness = exact && result.multiply(result).equals(val);
-        return new IntegerImpl(result, exactness);
+        final MathContext rootCtx = getMathContext();  // we explicitly inherit the MathContext, which may be custom
+        return new IntegerImpl(result, exactness) {
+            @Override
+            public MathContext getMathContext() {
+                return rootCtx;
+            }
+        };
 
         // I'm keeping this here because this code is just too interesting to throw away... and
         // under Java 8, there is no sqrt() method for either BigInteger or BigDecimal.
