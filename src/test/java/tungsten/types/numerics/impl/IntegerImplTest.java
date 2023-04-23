@@ -149,15 +149,15 @@ public class IntegerImplTest {
         System.out.println("isPerfectSquare");
         IntegerImpl instance = new IntegerImpl("18");
         boolean result = instance.isPerfectSquare();
-        assertEquals("18 is not a perfect square", false, result);
+        assertFalse("18 is not a perfect square", result);
         
         instance = new IntegerImpl("100");
         result = instance.isPerfectSquare();
-        assertEquals(true, result);
+        assertTrue(result);
         
         instance = new IntegerImpl("4096");
         result = instance.isPerfectSquare();
-        assertEquals(true, result);
+        assertTrue(result);
     }
 
     /**

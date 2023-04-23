@@ -251,15 +251,9 @@ public class ComplexRectImplTest {
     public void testSqrt() {
         System.out.println("sqrt");
         ComplexRectImpl instance = (ComplexRectImpl) twoTwo.multiply(twoTwo);
-//        RationalType angscale = new RationalImpl("1/8", MathContext.DECIMAL128);
-//        RealType angle = (RealType) Pi.getInstance(MathContext.DECIMAL128).multiply(angscale);
-//        RealType modulus = MathUtils.nthRoot(two, new IntegerImpl("4"), MathContext.DECIMAL128);
         ComplexType expResult = twoTwo;
 //        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "true");
-        dumpStatsFor(instance);
-        dumpStatsFor(expResult);
         Numeric result = instance.sqrt();
-        dumpStatsFor(result);
         assertTrue(result instanceof ComplexType);
         assertTrue(expResult.isExact());
         assertTrue(result.isExact());
@@ -270,11 +264,6 @@ public class ComplexRectImplTest {
 //        result = instance.sqrt();
 //        assertEquals(expResult.real(), ((ComplexType) result).real());
 //        assertEquals(expResult.imaginary(), ((ComplexType) result).imaginary());
-    }
-
-    private void dumpStatsFor(Numeric val) {
-        System.out.println("Value " + val + " is a " + val.getClass().getTypeName());
-        System.out.println("  and has exactness = " + val.isExact() + " and MathContext = " + val.getMathContext());
     }
 
     /**

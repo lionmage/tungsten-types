@@ -68,7 +68,7 @@ public class RealImplTest {
     @Test
     public void testIsIrrational() {
         System.out.println("isIrrational");
-        RealImpl instance = (RealImpl) new RealImpl("2");
+        RealImpl instance = new RealImpl("2");
         instance.setMathContext(MathContext.DECIMAL128);
         boolean expResult = true;
         boolean result = ((RealType) instance.sqrt()).isIrrational();
@@ -264,7 +264,6 @@ public class RealImplTest {
         instance.setMathContext(myctx);
         Numeric expResult = new RealImpl("0.5");
         Numeric result = instance.sqrt();
-        System.out.println("Result is " + result);
         assertEquals(expResult, result);
         assertFalse(((RealType) result).isIrrational());
         
@@ -277,7 +276,6 @@ public class RealImplTest {
         instance = new RealImpl("2.0");
         instance.setMathContext(myctx);
         result = instance.sqrt();
-        System.out.println("Sqrt(2) is " + result);
         assertFalse(result.isExact());
         assertTrue(((RealType) result).isIrrational());
     }

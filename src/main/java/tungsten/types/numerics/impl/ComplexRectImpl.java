@@ -142,11 +142,6 @@ public class ComplexRectImpl implements ComplexType {
             RealType imsq = (RealType) im_f.multiply(im_f);
             // this should return an object with correct exact and irrational properties
             try {
-                System.out.println("real mctx = " + re_f.getMathContext());
-                System.out.println("imag mctx = " + im_f.getMathContext());
-                System.out.println("resq mctx = " + resq.getMathContext());
-                System.out.println("imsq mctx = " + imsq.getMathContext());
-                System.out.println("sum mctx == " + resq.add(imsq).getMathContext());
                 return (RealType) resq.add(imsq).sqrt().coerceTo(RealType.class);
             } catch (CoercionException fatal) {
                 throw new IllegalStateException("While computing sqrt() for magnitude", fatal);
@@ -372,7 +367,6 @@ public class ComplexRectImpl implements ComplexType {
     public Numeric sqrt() {
         try {
             final RealType re_f = real();
-            System.out.println("fixed real " + re_f + " has mc " + re_f.getMathContext());
             // Must use coercion since sqrt() can return an integer for perfect squares
             RealType rootreal = (RealType) magnitude().add(re_f).divide(TWO).sqrt().coerceTo(RealType.class);
             RealType rootimag = (RealType) magnitude().subtract(re_f).divide(TWO).sqrt().coerceTo(RealType.class);

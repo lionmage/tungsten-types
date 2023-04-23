@@ -365,7 +365,6 @@ public class RealImpl implements RealType {
         }
 
         // otherwise, use the built-in square root
-        System.out.println("Val = " + val + " with MathContext = " + mctx);
         BigDecimal principalRoot = val.sqrt(mctx);
         principalRoot = principalRoot.stripTrailingZeros(); // ensure this representation is as compact as possible
         final boolean atLimit = fractionalLengthDifference(principalRoot) == 0;
