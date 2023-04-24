@@ -1941,7 +1941,9 @@ public class MathUtils {
         final ComplexType param;
         try {
             param = (ComplexType) z.coerceTo(ComplexType.class);
-        } catch (CoercionException e) {
+        } catch (CoercionException fatal) {
+            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                    "While computing arctan of " + z, fatal);
             throw new ArithmeticException(z + " is inconvertible to complex");
         }
         final RealType one = new RealImpl(BigDecimal.ONE, z.getMathContext());
