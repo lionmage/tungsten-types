@@ -142,6 +142,8 @@ public class ComplexRectImplTest {
     public void testArgument() {
         System.out.println("argument");
         ComplexRectImpl instance = oneOne;
+        // since oneOne was "badly" created, force the correct behavior
+        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "true");
         RealType four = new RealImpl("4", instance.getMathContext());
         RealType expResult = (RealType) Pi.getInstance(instance.getMathContext()).divide(four);
         RealType result = instance.argument();
@@ -206,13 +208,11 @@ public class ComplexRectImplTest {
     @Test
     public void testMultiply() {
         System.out.println("multiply");
-        Numeric multiplier = null;
-        ComplexRectImpl instance = null;
-        Numeric expResult = null;
+        Numeric multiplier = twoTwo;
+        ComplexRectImpl instance = oneOne;
+        Numeric expResult = new ComplexRectImpl(zero, new RealImpl("4", MathContext.DECIMAL128));
         Numeric result = instance.multiply(multiplier);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -221,13 +221,17 @@ public class ComplexRectImplTest {
     @Test
     public void testDivide() {
         System.out.println("divide");
-        Numeric divisor = null;
-        ComplexRectImpl instance = null;
-        Numeric expResult = null;
+        Numeric divisor = two;
+        ComplexRectImpl instance = twoTwo;
+        Numeric expResult = oneOne;
         Numeric result = instance.divide(divisor);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+
+        divisor = twoTwo;
+        expResult = one;
+        result = instance.divide(divisor);
+        assertTrue(One.isUnity(result));
+        assertEquals(expResult, result);
     }
 
     /**
@@ -320,20 +324,6 @@ public class ComplexRectImplTest {
         ComplexRectImpl instance = null;
         int expResult = 0;
         int result = instance.hashCode();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of toString method, of class ComplexRectImpl.
-     */
-    @Test
-    public void testToString() {
-        System.out.println("toString");
-        ComplexRectImpl instance = null;
-        String expResult = "";
-        String result = instance.toString();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

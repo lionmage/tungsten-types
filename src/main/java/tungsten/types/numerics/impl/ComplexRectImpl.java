@@ -204,10 +204,20 @@ public class ComplexRectImpl implements ComplexType {
                     throw new IllegalStateException("Invalid sign value for imaginary component");
             }
         }
+        if (imag.sign() == Sign.ZERO) {
+            switch (real.sign()) {
+                case POSITIVE:
+                    return ComplexRectImpl.ZERO;
+                case NEGATIVE:
+                    return Pi.getInstance(mctx);
+                default:
+                    throw new IllegalStateException("We should never have reached this statement");
+            }
+        }
         // for the general case, we need to compute the arctangent
         try {
             // The return value should be a real, but coerce just in case
-            return (RealType) atan2(imag, real).coerceTo(RealType.class);
+            return (RealType) atan2(imaginary(), real()).coerceTo(RealType.class);
         } catch (CoercionException e) {
             throw new ArithmeticException("Cannot coerce atan2 result to a real value");
         }

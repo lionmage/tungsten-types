@@ -413,6 +413,13 @@ public class RealImpl implements RealType {
             return val.toBigIntegerExact().equals(that.asBigInteger());
         } else if (!irrational && o instanceof RationalType) {
             return rationalize().equals(o);
+        } else if (o instanceof ComplexType) {
+            ComplexType that = (ComplexType) o;
+            // it's cheaper to extract the real portion of a complex value
+            // than to upconvert oneself for a comparison
+            if (that.isCoercibleTo(RealType.class)) {
+                return this.equals(that.real());
+            }
         }
         return false;
     }

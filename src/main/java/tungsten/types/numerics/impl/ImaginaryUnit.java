@@ -43,9 +43,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A representation of the imaginary unit &#x2148;, or the unit imaginary number.
+ * Note that although this class has been marked with the {@link Polar @Polar interface},
+ * it does not have any specific internal representation.  Nevertheless, it is
+ * both safe and performant to treat instances of this object as {@code @Polar}
+ * where such optimizations exist.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
+@Polar
 @Constant(name = "imaginary-unit", representation = "\u2148")
 public class ImaginaryUnit implements ComplexType {
     private final RealType TWO;
@@ -75,11 +80,14 @@ public class ImaginaryUnit implements ComplexType {
         }
     }
 
+    /**
+     * This will always give a result that satisfies
+     * {@code One.isUnity(value) == true}.
+     * @return a real value equal to 1
+     */
     @Override
     public RealType magnitude() {
-        final RealImpl one = new RealImpl(BigDecimal.ONE);
-        one.setMathContext(mctx);
-        return one;
+        return new RealImpl(BigDecimal.ONE, mctx);
     }
 
     @Override
@@ -94,18 +102,18 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public RealType real() {
-        final RealImpl real = new RealImpl(BigDecimal.ZERO);
-        real.setMathContext(mctx);
-        return real;
+        return new RealImpl(BigDecimal.ZERO, mctx);
     }
 
     @Override
     public RealType imaginary() {
-        final RealImpl imag = new RealImpl(BigDecimal.ONE);
-        imag.setMathContext(mctx);
-        return imag;
+        return new RealImpl(BigDecimal.ONE, mctx);
     }
 
+    /**
+     * This will always return &pi;/2.
+     * @return the real value equivalent to &pi;/2
+     */
     @Override
     public RealType argument() {
         // since this value lies on the positive imaginary axis, the argument is pi/2
@@ -148,6 +156,14 @@ public class ImaginaryUnit implements ComplexType {
         if (addend instanceof ImaginaryUnit) {
             return new ComplexRectImpl(real(), (RealType) imaginary().multiply(TWO));
         }
+        if (addend.isCoercibleTo(RealType.class)) {
+            try {
+                RealType re = (RealType) addend.coerceTo(RealType.class);
+                return new ComplexRectImpl(re, imaginary());
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Addend should be coercible to real, but is not");
+            }
+        }
         return addend.add(this);
     }
 
@@ -156,6 +172,14 @@ public class ImaginaryUnit implements ComplexType {
         if (subtrahend instanceof ImaginaryUnit) {
             return ExactZero.getInstance(mctx);
         }
+        if (subtrahend.isCoercibleTo(RealType.class)) {
+            try {
+                RealType re = (RealType) subtrahend.negate().coerceTo(RealType.class);
+                return new ComplexRectImpl(re, imaginary());
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Subtrahend should be coercible to real, but is not");
+            }
+        }
         return subtrahend.negate().add(this);
     }
 
@@ -163,9 +187,7 @@ public class ImaginaryUnit implements ComplexType {
     public Numeric multiply(Numeric multiplier) {
         if (multiplier instanceof ImaginaryUnit) {
             // i * i = -1
-            final RealImpl result = new RealImpl(BigDecimal.valueOf(-1L));
-            result.setMathContext(mctx);
-            return result;
+            return new RealImpl(BigDecimal.valueOf(-1L), mctx);
         } else if (multiplier instanceof ComplexType) {
             // multiplying by i is a rotation
             final ComplexType val = (ComplexType) multiplier;
@@ -176,7 +198,7 @@ public class ImaginaryUnit implements ComplexType {
             return new ComplexRectImpl((RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class),
                     (RealType) multiplier.coerceTo(RealType.class));
         } catch (CoercionException e) {
-            throw new ArithmeticException("Could not coerce " + multiplier + " to a real type.");
+            throw new ArithmeticException("Could not coerce " + multiplier + " to a real type");
         }
     }
 

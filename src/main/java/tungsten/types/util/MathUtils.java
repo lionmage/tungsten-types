@@ -1912,10 +1912,69 @@ public class MathUtils {
     }
 
     public static Numeric arctan(Numeric z) {
-        final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
-        final ComplexType coeff = (ComplexType) i.negate().divide(new RealImpl(decTWO, z.getMathContext()));
-        ComplexType frac = (ComplexType) i.subtract(z).divide(i.add(z));
-        return coeff.multiply(ln(frac));
+        if (z.getClass().isAnnotationPresent(Polar.class)) {
+            final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
+            final ComplexType coeff = (ComplexType) i.negate().divide(new RealImpl(decTWO, z.getMathContext()));
+            ComplexType frac = (ComplexType) i.subtract(z).divide(i.add(z));
+            return coeff.multiply(ln(frac));
+        }
+        // To avoid a potential infinite regression, compute atan() with a
+        // series instead.
+        return arctanEuler(z);
+    }
+
+    /**
+     * The main implementation of {@link #arctan(Numeric)} has one flaw:
+     * For non-polar complex numbers, {@link ComplexType#argument()} requires
+     * computation using {@link #atan2(RealType, RealType)}, which delegates
+     * to {@link #arctan(Numeric)}.  Unfortunately, that method computes the
+     * result of ln(z) using {@code z.argument()}, which results in an
+     * infinite loop.<br/>
+     * One solution is to compute arctan() using some kind of power series.
+     * We've already implemented Maclaurin series (special case of Taylor
+     * series) for cos() and sin(), but Euler discovered a series for arctan()
+     * that converges faster.  That's what's implemented here.
+     * @param z a value (can be complex)
+     * @return the computed value of atan(z)
+     */
+    public static Numeric arctanEuler(Numeric z) {
+        final ComplexType param;
+        try {
+            param = (ComplexType) z.coerceTo(ComplexType.class);
+        } catch (CoercionException e) {
+            throw new ArithmeticException(z + " is inconvertible to complex");
+        }
+        final RealType one = new RealImpl(BigDecimal.ONE, z.getMathContext());
+        ComplexType zsq = (ComplexType) param.multiply(param);
+        ComplexType coeff = (ComplexType) param.divide(zsq.add(one));
+        long numTerms = z.getMathContext().getPrecision() * 2L + 3L;
+        return coeff.multiply(atanEulerSum(param, numTerms));
+    }
+
+    private static Numeric atanEulerSum(ComplexType z, long terms) {
+        if (terms < 1L) throw new IllegalArgumentException("Requested number of terms is " + terms);
+        Numeric accum = ExactZero.getInstance(z.getMathContext());
+        for (long n = 0L; n < terms; n++) {
+            accum = accum.add(atanEulerProduct(z, n));
+        }
+        return accum;
+    }
+
+    private static Numeric atanEulerProduct(ComplexType z, long n) {
+        if (n < 0) throw new IllegalArgumentException("Product undefined for n < 0");
+        if (n == 0) return One.getInstance(z.getMathContext());  // the empty product
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), z.getMathContext());
+        final ComplexType zsq = (ComplexType) z.multiply(z);
+        Numeric accum = One.getInstance(z.getMathContext());
+        RealType one = new RealImpl(BigDecimal.ONE, z.getMathContext());
+        for (long k = 1L; k <= n; k++) {
+            IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
+            ComplexType num = (ComplexType) two.multiply(kval).multiply(zsq);
+            IntegerType twoKplus1 = new IntegerImpl(BigInteger.valueOf(2L * k + 1L));
+            ComplexType denom = (ComplexType) zsq.add(one).multiply(twoKplus1);
+            accum = accum.multiply(num).divide(denom);
+        }
+        return accum;
     }
 
     public static Numeric atan2(RealType y, RealType x) {
