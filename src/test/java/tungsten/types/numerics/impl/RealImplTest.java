@@ -70,9 +70,8 @@ public class RealImplTest {
         System.out.println("isIrrational");
         RealImpl instance = new RealImpl("2");
         instance.setMathContext(MathContext.DECIMAL128);
-        boolean expResult = true;
         boolean result = ((RealType) instance.sqrt()).isIrrational();
-        assertEquals("Square root of 2 should be irrational", expResult, result);
+        assertTrue("Square root of 2 should be irrational", result);
     }
 
     /**

@@ -31,6 +31,7 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 
 import static org.junit.Assert.*;
@@ -147,6 +148,14 @@ public class ComplexRectImplTest {
         RealType four = new RealImpl("4", instance.getMathContext());
         RealType expResult = (RealType) Pi.getInstance(instance.getMathContext()).divide(four);
         RealType result = instance.argument();
+        System.out.println("Instance precision: " + instance.getMathContext().getPrecision());
+        System.out.println("Result precision: " + result.getMathContext().getPrecision());
+        RealType absErr = expResult.subtract(result).magnitude();
+        System.out.println("Absolute error: " + absErr);
+        BigDecimal percentage = absErr.asBigDecimal()
+                        .divide(expResult.asBigDecimal(), new MathContext(4))
+                                .multiply(BigDecimal.valueOf(100L));
+        System.out.println("Percentage error: " + percentage.stripTrailingZeros() + "%");
         assertEquals(expResult, result);
     }
 
@@ -171,9 +180,9 @@ public class ComplexRectImplTest {
         System.out.println("coerceTo");
         Class<? extends Numeric> numtype = RealType.class;
         ComplexRectImpl instance = new ComplexRectImpl(one, zero);
-        Numeric expResult = one;
         Numeric result = instance.coerceTo(numtype);
-        assertEquals(expResult, result);
+        assertEquals(one, result);
+        assertTrue(result instanceof RealType);
     }
 
     /**
@@ -240,12 +249,10 @@ public class ComplexRectImplTest {
     @Test
     public void testInverse() {
         System.out.println("inverse");
-        ComplexRectImpl instance = null;
-        Numeric expResult = null;
+        ComplexRectImpl instance = twoTwo;
+        Numeric expResult = new ComplexRectImpl("0.25 - 0.25i");
         Numeric result = instance.inverse();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -276,13 +283,12 @@ public class ComplexRectImplTest {
     @Test
     public void testNthRoots_IntegerType() {
         System.out.println("nthRoots");
-        IntegerType n = null;
-        ComplexRectImpl instance = null;
-        Set<ComplexType> expResult = null;
+        IntegerType n = new IntegerImpl(BigInteger.valueOf(3L));
+        ComplexRectImpl instance = twoTwo;
+//        Set<ComplexType> expResult = null;
         Set<ComplexType> result = instance.nthRoots(n);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+//        assertEquals(expResult, result);
+        assertEquals(3L, result.cardinality());
     }
 
     /**
@@ -291,13 +297,12 @@ public class ComplexRectImplTest {
     @Test
     public void testNthRoots_long() {
         System.out.println("nthRoots");
-        long n = 0L;
-        ComplexRectImpl instance = null;
-        Set<ComplexType> expResult = null;
+        long n = 5L;
+        ComplexRectImpl instance = twoTwo;
+//        Set<ComplexType> expResult = null;
         Set<ComplexType> result = instance.nthRoots(n);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+//        assertEquals(expResult, result);
+        assertEquals(5L, result.cardinality());
     }
 
     /**
@@ -306,27 +311,15 @@ public class ComplexRectImplTest {
     @Test
     public void testEquals() {
         System.out.println("equals");
-        Object o = null;
-        ComplexRectImpl instance = null;
-        boolean expResult = false;
+        Object o = new ComplexRectImpl(new RealImpl("2.00000"),
+                new RealImpl("2.000"), true);
+        ComplexRectImpl instance = twoTwo;
         boolean result = instance.equals(o);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+        assertTrue("2 + 2i always equals itself, even with different trailing zeros", result);
 
-    /**
-     * Test of hashCode method, of class ComplexRectImpl.
-     */
-    @Test
-    public void testHashCode() {
-        System.out.println("hashCode");
-        ComplexRectImpl instance = null;
-        int expResult = 0;
-        int result = instance.hashCode();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        o = oneOne;
+        result = instance.equals(o);
+        assertFalse("1 + 1i should not equal 2 + 2i", result);
     }
 
     /**

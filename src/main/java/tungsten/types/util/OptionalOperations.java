@@ -295,4 +295,21 @@ public class OptionalOperations {
             throw new IllegalStateException("Failed to obtain sign for " + value, ex);
         }
     }
+
+    public static boolean setMathContext(Numeric number, MathContext updated) {
+        try {
+            Method m = number.getClass().getMethod("setMathContext", MathContext.class);
+            m.invoke(number, updated);  // setMathContext() doesn't have a return value
+            return true;
+        } catch (NoSuchMethodException e) {
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
+                    "{0} does not have a setMathContext() method, not updating", number.getClass().getTypeName());
+            return false;
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            // this is a warning because these exceptions are unexpected (and potentially problematic)
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.WARNING,
+                    "While attempting to invoke setMathContext() on " + number, e);
+            return false;
+        }
+    }
 }
