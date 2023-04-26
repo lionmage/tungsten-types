@@ -25,14 +25,18 @@ package tungsten.types.numerics.impl;
 
 import org.junit.*;
 import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -217,12 +221,11 @@ public class EulerTest {
     @Test
     public void testMagnitude() {
         System.out.println("magnitude");
-        Euler instance = null;
-        RealType expResult = null;
+        MathContext ctx = new MathContext(100);
+        Euler instance = Euler.getInstance(ctx);
         RealType result = instance.magnitude();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(instance.asBigDecimal(), result.asBigDecimal());
+        assertNotEquals(instance, result);  // Euler isn't equal to anything but other instances of Euler
     }
 
     /**
@@ -231,12 +234,13 @@ public class EulerTest {
     @Test
     public void testNegate() {
         System.out.println("negate");
-        Euler instance = null;
-        RealType expResult = null;
+        Euler instance = Euler.getInstance(MathContext.DECIMAL128);
         RealType result = instance.negate();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(Sign.NEGATIVE, result.sign());
+        assertEquals(instance.asBigDecimal().negate(), result.asBigDecimal());
+        result = result.negate();
+        assertEquals(Sign.POSITIVE, result.sign());
+        assertEquals(instance.asBigDecimal(), result.asBigDecimal());
     }
 
     /**
@@ -245,13 +249,13 @@ public class EulerTest {
     @Test
     public void testIsCoercibleTo() {
         System.out.println("isCoercibleTo");
-        Class<? extends Numeric> numtype = null;
-        Euler instance = null;
-        boolean expResult = false;
+        Class<? extends Numeric> numtype = RealType.class;
+        Euler instance = Euler.getInstance(MathContext.DECIMAL128);
         boolean result = instance.isCoercibleTo(numtype);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertTrue("Euler should always be coercible to a real", result);
+        numtype = RationalType.class;
+        result = instance.isCoercibleTo(numtype);
+        assertFalse("Euler should never be coercible to a rational", result);
     }
 
     /**
@@ -260,73 +264,18 @@ public class EulerTest {
     @Test
     public void testCoerceTo() throws Exception {
         System.out.println("coerceTo");
-        Class<? extends Numeric> numtype = null;
-        Euler instance = null;
-        Numeric expResult = null;
+        Class<? extends Numeric> numtype = RealType.class;
+        Euler instance = Euler.getInstance(MathContext.DECIMAL64);
         Numeric result = instance.coerceTo(numtype);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+        assertTrue(result instanceof RealType);
 
-    /**
-     * Test of add method, of class Euler.
-     */
-    @Test
-    public void testAdd() {
-        System.out.println("add");
-        Numeric addend = null;
-        Euler instance = null;
-        Numeric expResult = null;
-        Numeric result = instance.add(addend);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of subtract method, of class Euler.
-     */
-    @Test
-    public void testSubtract() {
-        System.out.println("subtract");
-        Numeric subtrahend = null;
-        Euler instance = null;
-        Numeric expResult = null;
-        Numeric result = instance.subtract(subtrahend);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of multiply method, of class Euler.
-     */
-    @Test
-    public void testMultiply() {
-        System.out.println("multiply");
-        Numeric multiplier = null;
-        Euler instance = null;
-        Numeric expResult = null;
-        Numeric result = instance.multiply(multiplier);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of divide method, of class Euler.
-     */
-    @Test
-    public void testDivide() {
-        System.out.println("divide");
-        Numeric divisor = null;
-        Euler instance = null;
-        Numeric expResult = null;
-        Numeric result = instance.divide(divisor);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        numtype = RationalType.class;
+        try {
+            result = instance.coerceTo(numtype);
+            fail("We should not get here.  Coercion of Euler to RationalType should fail.");
+        } catch (CoercionException e) {
+            assertEquals(e.getTargetType(), numtype);
+        }
     }
 
     /**
@@ -335,39 +284,19 @@ public class EulerTest {
     @Test
     public void testInverse() {
         System.out.println("inverse");
-        Euler instance = null;
-        Numeric expResult = null;
+        Euler instance = Euler.getInstance(MathContext.DECIMAL128);
         Numeric result = instance.inverse();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertTrue(One.isUnity(MathUtils.round((RealType) result.multiply(instance), MathContext.DECIMAL64)));
     }
 
-    /**
-     * Test of sqrt method, of class Euler.
-     */
     @Test
-    public void testSqrt() {
-        System.out.println("sqrt");
-        Euler instance = null;
-        Numeric expResult = null;
-        Numeric result = instance.sqrt();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of numberOfDigits method, of class Euler.
-     */
-    @Test
-    public void testNumberOfDigits() {
-        System.out.println("numberOfDigits");
-        Euler instance = null;
-        long expResult = 0L;
-        long result = instance.numberOfDigits();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void eulersIdentity() {
+        Euler instance = Euler.getInstance(MathContext.DECIMAL128);
+        Pi pi = Pi.getInstance(MathContext.DECIMAL128);
+        RealType zero = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
+        ComplexType exponent = new ComplexRectImpl(zero, pi);
+        Numeric result = instance.exp(exponent);
+        assertTrue(result.isCoercibleTo(RealType.class));
+        assertTrue("e^{i*pi} should = -1", One.isUnity(result.negate()));
     }
 }

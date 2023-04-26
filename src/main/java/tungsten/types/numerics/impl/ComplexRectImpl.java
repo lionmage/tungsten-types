@@ -34,6 +34,8 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -188,6 +190,10 @@ public class ComplexRectImpl implements ComplexType {
         return imag;
     }
 
+    // computing the argument is costly enough that we should cache it
+    private RealType argCache;
+    private final Lock argLock = new ReentrantLock();
+
     @Override
     public RealType argument() {
         if (real.sign() == Sign.ZERO) {
@@ -215,11 +221,17 @@ public class ComplexRectImpl implements ComplexType {
             }
         }
         // for the general case, we need to compute the arctangent
+        argLock.lock();
         try {
-            // The return value should be a real, but coerce just in case
-            return (RealType) atan2(imaginary(), real()).coerceTo(RealType.class);
+            if (argCache == null) {
+                // The return value should be a real, but coerce just in case
+                argCache = (RealType) atan2(imaginary(), real()).coerceTo(RealType.class);
+            }
+            return argCache;
         } catch (CoercionException e) {
             throw new ArithmeticException("Cannot coerce atan2 result to a real value");
+        } finally {
+            argLock.unlock();
         }
     }
 

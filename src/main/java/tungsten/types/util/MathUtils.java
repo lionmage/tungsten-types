@@ -1825,9 +1825,13 @@ public class MathUtils {
         if (epsilon.sign() != Sign.POSITIVE || !epsilonRange.contains(epsilon)) {
             throw new IllegalArgumentException("Argument epsilon must satisfy 0 < \uD835\uDF00 \u226A 1"); // U+1D700 MATHEMATICAL ITALIC SMALL EPSILON
         }
-        
-        final RealType difference = A.subtract(B).magnitude();
-        return difference.compareTo(epsilon) < 0;
+
+        try {
+            final RealType difference = (RealType) A.subtract(B).magnitude().coerceTo(RealType.class);
+            return difference.compareTo(epsilon) < 0;
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Cannot coerce delta to a real value", e);
+        }
     }
     
     /**
