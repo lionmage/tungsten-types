@@ -34,10 +34,7 @@ import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -117,7 +114,14 @@ public class RealVector implements Vector<RealType> {
         if (position > (long) Integer.MAX_VALUE) {
             throw new IndexOutOfBoundsException("Index exceeds what this Vector implementation supports");
         }
-        elements.set((int) position, element);
+        if (position > (long) elements.size()) {
+            final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
+            int count = (int) position - elements.size();
+            elements.addAll(Collections.nCopies(count, zero));
+            assert position == (long) elements.size();
+        }
+        if (position == (long) elements.size()) elements.add(element);
+        else elements.set((int) position, element);
     }
 
     @Override
@@ -125,7 +129,7 @@ public class RealVector implements Vector<RealType> {
         if (this.length() != addend.length()) {
             throw new ArithmeticException("Cannot add vectors of different length");
         }
-        RealVector result = new RealVector(new ArrayList<>(elements.size()));
+        RealVector result = new RealVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
             RealType sum = (RealType) this.elementAt(idx).add(addend.elementAt(idx));
             result.setElementAt(sum, idx);
@@ -139,7 +143,7 @@ public class RealVector implements Vector<RealType> {
         if (this.length() != subtrahend.length()) {
             throw new ArithmeticException("Cannot subtract vectors of different length");
         }
-        RealVector result = new RealVector(new ArrayList<>(elements.size()));
+        RealVector result = new RealVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
             RealType difference = (RealType) this.elementAt(idx).subtract(subtrahend.elementAt(idx));
             result.setElementAt(difference, idx);

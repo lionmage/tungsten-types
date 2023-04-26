@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,7 +122,15 @@ public class ComplexVector implements Vector<ComplexType> {
         if (position > (long) Integer.MAX_VALUE) {
             throw new IndexOutOfBoundsException("Index exceeds what this vector implementation supports");
         }
-        elements.set((int) position, element);
+        if (position > (long) elements.size()) {
+            final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
+            final ComplexRectImpl czero = new ComplexRectImpl(zero);
+            int count = (int) position - elements.size();
+            elements.addAll(Collections.nCopies(count, czero));
+            assert position == (long) elements.size();
+        }
+        if (position == (long) elements.size()) elements.add(element);
+        else elements.set((int) position, element);
     }
 
     @Override
@@ -135,7 +144,7 @@ public class ComplexVector implements Vector<ComplexType> {
         if (this.length() != addend.length()) {
             throw new ArithmeticException("Cannot add vectors of different length");
         }
-        ComplexVector result = new ComplexVector(new ArrayList<>(elements.size()));
+        ComplexVector result = new ComplexVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
             ComplexType sum = (ComplexType) this.elementAt(idx).add(addend.elementAt(idx));
             result.setElementAt(sum, idx);
@@ -149,7 +158,7 @@ public class ComplexVector implements Vector<ComplexType> {
         if (this.length() != subtrahend.length()) {
             throw new ArithmeticException("Cannot subtract vectors of different length");
         }
-        ComplexVector result = new ComplexVector(new ArrayList<>(elements.size()));
+        ComplexVector result = new ComplexVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
             ComplexType difference = (ComplexType) this.elementAt(idx).subtract(subtrahend.elementAt(idx));
             result.setElementAt(difference, idx);

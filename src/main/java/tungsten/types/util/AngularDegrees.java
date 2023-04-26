@@ -74,7 +74,7 @@ public class AngularDegrees {
     private IntegerType minutes;
     private RealType seconds;
     private RealType decDegrees;
-    private MathContext mctx;
+    private final MathContext mctx;
 
     public AngularDegrees(IntegerType degrees, IntegerType minutes, RealType seconds) {
         this.degrees = degrees;
@@ -138,6 +138,8 @@ public class AngularDegrees {
             decDegrees = new RealImpl(m.group(1));
             updateDMSvalues();
         }
+        mctx = decDegrees.getMathContext().getPrecision() > DEFAULT_CONTEXT.getPrecision() ?
+                decDegrees.getMathContext() : DEFAULT_CONTEXT;
     }
 
     public IntegerType getDegrees() {
