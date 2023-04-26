@@ -128,6 +128,12 @@ public class ComplexRectImpl implements ComplexType {
     
     public void setMathContext(MathContext context) {
         this.mctx = context;
+        argLock.lock();
+        try {
+            argCache = null;  // this must be regenerated
+        } finally {
+            argLock.unlock();
+        }
     }
 
     public static boolean isFastMagnitudeEnabled() {
