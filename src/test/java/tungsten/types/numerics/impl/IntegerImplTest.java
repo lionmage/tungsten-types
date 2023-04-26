@@ -23,7 +23,9 @@
  */
 package tungsten.types.numerics.impl;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
@@ -33,7 +35,7 @@ import tungsten.types.numerics.Sign;
 
 import java.math.BigInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -44,19 +46,11 @@ public class IntegerImplTest {
     public IntegerImplTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -149,7 +143,7 @@ public class IntegerImplTest {
         System.out.println("isPerfectSquare");
         IntegerImpl instance = new IntegerImpl("18");
         boolean result = instance.isPerfectSquare();
-        assertFalse("18 is not a perfect square", result);
+        assertFalse(result, "18 is not a perfect square");
         
         instance = new IntegerImpl("100");
         result = instance.isPerfectSquare();
@@ -171,10 +165,10 @@ public class IntegerImplTest {
         assertEquals(7L, result1);
         IntegerImpl inst_base = new IntegerImpl("132");
         long result_base = inst_base.numberOfDigits();
-        assertEquals("Baseline test", 3L, result_base);
+        assertEquals( 3L, result_base, "Baseline test");
         IntegerImpl inst2 = new IntegerImpl("-32");
         long result2 = inst2.numberOfDigits();
-        assertEquals("Negative number test", 2L, result2);
+        assertEquals(2L, result2, "Negative number test");
         IntegerImpl inst3 = new IntegerImpl(BigInteger.ZERO);
         long result3 = inst3.numberOfDigits();
         assertEquals(1L, result3);

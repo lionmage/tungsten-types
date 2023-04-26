@@ -23,11 +23,14 @@
  */
 package tungsten.types.numerics;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.impl.IntegerImpl;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 /**
  *
@@ -38,19 +41,11 @@ public class NumericHierarchyTest {
     public NumericHierarchyTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -115,7 +110,7 @@ public class NumericHierarchyTest {
         IntegerImpl testval = new IntegerImpl("887554");
         clazz = testval.getClass();
         result = NumericHierarchy.forNumericType(clazz);
-        assertEquals("Implementation class should give same results", expResult, result);
+        assertEquals(expResult, result, "Implementation class should give same results");
     }
     
 }

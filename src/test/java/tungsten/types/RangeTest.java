@@ -23,7 +23,9 @@
  */
 package tungsten.types;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.impl.IntegerImpl;
 
@@ -31,7 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -44,22 +46,14 @@ public class RangeTest {
     public RangeTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
         intrange = new Range(new IntegerImpl("3"), new IntegerImpl("7"), Range.BoundType.INCLUSIVE);
         // This range has an open (exclusive) lower bound, and a closed (inclusive) upper bound
         halfOpen = new Range(new IntegerImpl("0"), Range.BoundType.EXCLUSIVE, new IntegerImpl("10"), Range.BoundType.INCLUSIVE);
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

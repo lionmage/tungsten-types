@@ -23,7 +23,9 @@
  */
 package tungsten.types.numerics.impl;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
@@ -34,7 +36,7 @@ import tungsten.types.numerics.Sign;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -49,15 +51,7 @@ public class RationalImplTest {
     public RationalImplTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
         improper = new RationalImpl(BigInteger.ONE, BigInteger.valueOf(-3L));
         improper2 = new RationalImpl(BigInteger.valueOf(-2L), BigInteger.valueOf(-3L));
@@ -65,7 +59,7 @@ public class RationalImplTest {
         negFromString = new RationalImpl("-4/3");
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

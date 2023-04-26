@@ -23,7 +23,9 @@
  */
 package tungsten.types.numerics.impl;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.numerics.ComplexType;
@@ -34,7 +36,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -49,15 +51,7 @@ public class ComplexRectImplTest {
     public ComplexRectImplTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
         oneOne = new ComplexRectImpl(one, one);
         oneOne.setMathContext(MathContext.DECIMAL128);
@@ -65,7 +59,7 @@ public class ComplexRectImplTest {
         twoTwo = new ComplexRectImpl(two, two);
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
         // reset system properties to their default values
         System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "false");
@@ -315,11 +309,11 @@ public class ComplexRectImplTest {
                 new RealImpl("2.000"), true);
         ComplexRectImpl instance = twoTwo;
         boolean result = instance.equals(o);
-        assertTrue("2 + 2i always equals itself, even with different trailing zeros", result);
+        assertTrue(result, "2 + 2i always equals itself, even with different trailing zeros");
 
         o = oneOne;
         result = instance.equals(o);
-        assertFalse("1 + 1i should not equal 2 + 2i", result);
+        assertFalse(result, "1 + 1i should not equal 2 + 2i");
     }
 
     /**

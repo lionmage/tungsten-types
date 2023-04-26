@@ -23,7 +23,9 @@
  */
 package tungsten.types.numerics.impl;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
@@ -49,19 +51,11 @@ public class PiTest {
     public PiTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -74,7 +68,7 @@ public class PiTest {
         MathContext mctx = new MathContext(8, RoundingMode.HALF_UP);
         BigDecimal expResult = new BigDecimal("3.1415927");
         Pi result = Pi.getInstance(mctx);
-        System.out.println("Pi instance: " + result.toString());
+        System.out.println("Pi instance: " + result);
         String resultstr = result.asBigDecimal().toPlainString();
         System.out.println("Pi value = " + resultstr);
         assertEquals(0, result.asBigDecimal().compareTo(expResult));
@@ -88,7 +82,7 @@ public class PiTest {
         resultstr = result.asBigDecimal().toPlainString();
         String expResultStr = expResult.toPlainString();
         System.out.println("result string has " + (resultstr.length() - 1) + " digits");
-        System.out.println("Testing for " + result.toString());
+        System.out.println("Testing for " + result);
         System.out.println("Expected ends with:\n" + expResultStr.substring(expResultStr.length() - 20));
         System.out.println("Actual ends with:\n" + resultstr.substring(resultstr.length() - 20));
         assertEquals(0, result.asBigDecimal().compareTo(expResult));

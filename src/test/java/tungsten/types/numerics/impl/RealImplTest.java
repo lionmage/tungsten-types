@@ -23,7 +23,9 @@
  */
 package tungsten.types.numerics.impl;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RationalType;
@@ -35,7 +37,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -46,19 +48,11 @@ public class RealImplTest {
     public RealImplTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -71,7 +65,7 @@ public class RealImplTest {
         RealImpl instance = new RealImpl("2");
         instance.setMathContext(MathContext.DECIMAL128);
         boolean result = ((RealType) instance.sqrt()).isIrrational();
-        assertTrue("Square root of 2 should be irrational", result);
+        assertTrue(result, "Square root of 2 should be irrational");
     }
 
     /**
@@ -134,7 +128,7 @@ public class RealImplTest {
         // sqrt should not be exact
         expResult = false;
         result = instance.sqrt().isExact();
-        assertEquals("Square root of 2 should not be exact", expResult, result);
+        assertEquals(expResult, result, "Square root of 2 should not be exact");
     }
 
     /**

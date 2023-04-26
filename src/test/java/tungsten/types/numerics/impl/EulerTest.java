@@ -23,7 +23,9 @@
  */
 package tungsten.types.numerics.impl;
 
-import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
@@ -36,7 +38,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -182,19 +184,11 @@ public class EulerTest {
     public EulerTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -252,10 +246,10 @@ public class EulerTest {
         Class<? extends Numeric> numtype = RealType.class;
         Euler instance = Euler.getInstance(MathContext.DECIMAL128);
         boolean result = instance.isCoercibleTo(numtype);
-        assertTrue("Euler should always be coercible to a real", result);
+        assertTrue(result, "Euler should always be coercible to a real");
         numtype = RationalType.class;
         result = instance.isCoercibleTo(numtype);
-        assertFalse("Euler should never be coercible to a rational", result);
+        assertFalse(result, "Euler should never be coercible to a rational");
     }
 
     /**
@@ -297,6 +291,6 @@ public class EulerTest {
         ComplexType exponent = new ComplexRectImpl(zero, pi);
         Numeric result = instance.exp(exponent);
         assertTrue(result.isCoercibleTo(RealType.class));
-        assertTrue("e^{i*pi} should = -1", One.isUnity(result.negate()));
+        assertTrue(One.isUnity(result.negate()), "e^{i*pi} should = -1");
     }
 }
