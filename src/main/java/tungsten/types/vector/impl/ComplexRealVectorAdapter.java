@@ -108,8 +108,8 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
     }
 
     @Override
-    public ComplexType magnitude() {
-        return new ComplexRectImpl(realVector.magnitude(), ZERO);
+    public RealType magnitude() {
+        return realVector.magnitude();
     }
 
     @Override

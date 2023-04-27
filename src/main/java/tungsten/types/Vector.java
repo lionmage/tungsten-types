@@ -24,10 +24,13 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -68,7 +71,16 @@ public interface Vector<T extends Numeric> {
      * equivalent to geometric length of this vector.
      * @return this vector's magnitude
      */
-    T magnitude();
+    default RealType magnitude() {
+        Numeric result = this.dotProduct(this).sqrt();
+        try {
+            return (RealType) result.coerceTo(RealType.class);
+        } catch (CoercionException ce) {
+            Logger.getLogger(Vector.class.getName()).log(Level.SEVERE,
+                    "Vector magnitude should always be a real value; result = " + result, ce);
+            throw new ArithmeticException("Non-real result: " + result);
+        }
+    }
 
     /**
      * Obtain the type of the elements contained by this {@link Vector}.

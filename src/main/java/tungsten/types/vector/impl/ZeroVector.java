@@ -27,8 +27,10 @@ import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Map;
@@ -129,8 +131,9 @@ public class ZeroVector implements Vector<Numeric> {
     }
 
     @Override
-    public Numeric magnitude() {
-        return zero;
+    public RealType magnitude() {
+        // explicitly avoiding the use of coerceTo() here
+        return new RealImpl(BigDecimal.ZERO, mctx);
     }
 
     @Override

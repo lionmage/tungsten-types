@@ -93,21 +93,6 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
     public abstract ColumnVector<T> scale(T factor);
 
     @Override
-    public T magnitude() {
-        final Class<T> clazz = getElementType();
-        try {
-            T zero = (T) ExactZero.getInstance(mctx).coerceTo(clazz);
-            return (T) stream().reduce(zero, (x, y) -> {
-                T r = y.magnitude();
-                return (T) x.add(r.multiply(r));
-            }).sqrt().coerceTo(clazz);
-        } catch (CoercionException ex) {
-            Logger.getLogger(ColumnVector.class.getName()).log(Level.SEVERE, "Unable to compute magnitude of column vector.", ex);
-            throw new ArithmeticException("Cannot compute magnitude of column vector");
-        }
-    }
-
-    @Override
     public T dotProduct(Vector<T> other) {
         if (other.length() != this.length()) throw new ArithmeticException("Cannot compute dot product for vectors of different length");
         final Class<T> clazz = getElementType();

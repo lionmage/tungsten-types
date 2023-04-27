@@ -162,22 +162,6 @@ public class RealVector implements Vector<RealType> {
     }
 
     @Override
-    public RealType magnitude() {
-        BigDecimal accum = BigDecimal.ZERO;
-        for (RealType element : elements) {
-            final BigDecimal raw = element.asBigDecimal();
-            accum = accum.add(raw.multiply(raw, mctx), mctx);
-        }
-        RealType sumOfSquares = new RealImpl(accum, mctx);
-        try {
-            return (RealType) sumOfSquares.sqrt().coerceTo(RealType.class);
-        } catch (CoercionException ex) {
-            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Failed to coerce sqrt() result.", ex);
-            throw new IllegalStateException("While computing sqrt(" + sumOfSquares + ")", ex);
-        }
-    }
-
-    @Override
     public RealType dotProduct(Vector<RealType> other) {
         if (this.length() != other.length()) {
             throw new ArithmeticException("Cannot compute dot product for vectors of different lengths");

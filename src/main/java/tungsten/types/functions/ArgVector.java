@@ -164,14 +164,14 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     }
 
     @Override
-    public T magnitude() {
+    public RealType magnitude() {
         final Numeric zero = ExactZero.getInstance(getMathContext());
         Numeric sumOfSquares = args.values().parallelStream().map(x -> {
             T r = x.magnitude();
             return r.multiply(r);
         }).reduce(zero, Numeric::add);
         try {
-            return (T) sumOfSquares.sqrt().coerceTo(getElementType());
+            return (RealType) sumOfSquares.sqrt().coerceTo(RealType.class);
         } catch (CoercionException e) {
             throw new ArithmeticException("Problem coercing sqrt(" + sumOfSquares +
                     ") while computing magnitude");

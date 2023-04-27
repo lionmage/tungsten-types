@@ -28,7 +28,6 @@ import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.ComplexRectImpl;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RealImpl;
@@ -193,28 +192,6 @@ public class ComplexVector implements Vector<ComplexType> {
         final ComplexVector result = new ComplexVector(list);
         result.setMathContext(mctx);
         return result;
-    }
-
-    @Override
-    public ComplexType magnitude() {
-        Numeric result = this.dotProduct(this).sqrt(); // conjugate is performed in dotProduct()
-        if (result instanceof ComplexType) {
-            ComplexType cplx = (ComplexType) result;
-            assert(cplx.real().sign() != Sign.NEGATIVE);
-            assert(cplx.imaginary().sign() == Sign.ZERO);
-            return cplx;
-        } else if (result instanceof RealType) {
-            RealType real = (RealType) result;
-            assert(real.sign() != Sign.NEGATIVE);
-            return new ComplexRectImpl(real);
-        } else {
-            try {
-                return (ComplexType) result.coerceTo(ComplexType.class);
-            } catch (CoercionException ex) {
-                Logger.getLogger(ComplexVector.class.getName()).log(Level.SEVERE, "Could not coerce magnitude to complex type.", ex);
-                throw new IllegalStateException("Failed coercion while computing magnitude", ex);
-            }
-        }
     }
 
     @Override

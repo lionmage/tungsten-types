@@ -306,13 +306,13 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             }
 
             @Override
-            public T magnitude() {
+            public RealType magnitude() {
                 try {
-                    return (T) Arrays.stream(elements).map(x -> {
+                    return (RealType) Arrays.stream(elements).map(x -> {
                                 T r = x.magnitude();
                                 return r.multiply(r);
                             }).reduce(Numeric::add).map(Numeric::sqrt)
-                            .orElseThrow().coerceTo(getElementType());
+                            .orElseThrow().coerceTo(RealType.class);
                 } catch (CoercionException e) {
                     // this should never happen
                     throw new IllegalStateException(e);
