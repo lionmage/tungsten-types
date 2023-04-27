@@ -28,7 +28,6 @@ import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.matrix.impl.BasicMatrix;
 import tungsten.types.matrix.impl.SingletonMatrix;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
@@ -56,10 +55,16 @@ import java.util.stream.Stream;
 @Columnar
 public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matrix<T> {
     private MathContext mctx;
+    protected Class<T> elementType;
 
     protected ColumnVector() {
         // default constructor
         mctx = MathContext.UNLIMITED;
+    }
+
+    protected ColumnVector(Class<T> clazz) {
+        this();
+        elementType = clazz;
     }
 
     public void setMathContext(MathContext mctx) {
@@ -180,6 +185,12 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
     }
 
     @Override
+    public Class<T> getElementType() {
+        if (elementType != null) return elementType;
+        return Vector.super.getElementType();
+    }
+
+    @Override
     public long columns() {
         return 1L;
     }
@@ -242,23 +253,11 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
 
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
-        if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have a single row");
+        if (multiplier.rows() == 1L) {
+            return new SingletonMatrix<>(this.dotProduct(multiplier.getRow(0L)));
         }
-        
-        Class<T> clazz = getElementType();
-        T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
 
-        try {
-            for (int row = 0; row < rows(); row++) {
-                for (int column = 0; column < multiplier.columns(); column++) {
-                    temp[row][column] = (T) elementAt(row).multiply(multiplier.valueAt(row, column)).coerceTo(clazz);
-                }
-            }
-        } catch (CoercionException ce) {
-            throw new ArithmeticException("Type coercion failed during matrix multiply: " + ce.getMessage());
-        }
-        return new BasicMatrix<>(temp);
+        throw new ArithmeticException("Multiplier must have a single row");
     }
 
     @Override

@@ -33,7 +33,8 @@ import java.util.EnumSet;
  */
 public enum Axis {
     X_AXIS, Y_AXIS, Z_AXIS;
-    
-    public static final Set<Axis> AXES_2D = (Set<Axis>) Collections.unmodifiableSet(EnumSet.of(X_AXIS, Y_AXIS));
-    public static final Set<Axis> AXES_3D = (Set<Axis>) Collections.unmodifiableSet(EnumSet.of(X_AXIS, Y_AXIS, Z_AXIS));
+
+    // fully qualifying Set to avoid conflict with tungsten.types.Set
+    public static final java.util.Set<Axis> AXES_2D = Collections.unmodifiableSet(EnumSet.of(X_AXIS, Y_AXIS));
+    public static final java.util.Set<Axis> AXES_3D = Collections.unmodifiableSet(EnumSet.of(X_AXIS, Y_AXIS, Z_AXIS));
 }

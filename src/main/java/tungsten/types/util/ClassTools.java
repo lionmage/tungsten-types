@@ -60,7 +60,7 @@ public class ClassTools {
         Map<Type, Type> resolvedTypes = new HashMap<>();
         Type type = childClass;
         // start walking up the inheritance hierarchy until we hit baseClass
-        while (! getClass(type).equals(baseClass)) {
+        while (!Objects.equals(getClass(type), baseClass)) {  // getClass() can return null
             if (type instanceof Class) {
                 // there is no useful information for us in raw types, so just keep going.
                 type = ((Class) type).getGenericSuperclass();

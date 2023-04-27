@@ -183,11 +183,11 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
+        if (rows.isEmpty()) throw new IllegalStateException("Cannot multiply an empty matrix");
         if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) this.valueAt(0L, 0L).getClass();
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
             RowVector<T> rowvec = this.getRow(row);
@@ -211,8 +211,8 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (columnCache.containsKey(column)) {
             return columnCache.get(column);
         }
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        if (rows.isEmpty() || column >= columns()) throw new IndexOutOfBoundsException(column + " is not valid");
+        Class<T> clazz = (Class<T>) valueAt(0L, 0L).getClass();
         T[] temp = (T[]) Array.newInstance(clazz, (int) rows());
         for (int j = 0; j < rows(); j++) {
             temp[j] = valueAt(j, column);

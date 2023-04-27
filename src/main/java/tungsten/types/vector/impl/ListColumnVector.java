@@ -4,6 +4,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 
@@ -24,7 +25,14 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
         elementCount = 0L;
     }
 
+    public ListColumnVector(Class<T> clazz) {
+        super(clazz);
+        elements = new LinkedList<>();
+        elementCount = 0L;
+    }
+
     public ListColumnVector(List<T> source) {
+        super((Class<T>) source.get(0).getClass());
         elements = source;
     }
 
@@ -33,6 +41,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
      * @param source the {@link ColumnVector} to duplicate
      */
     public ListColumnVector(ColumnVector<T> source) {
+        super(source.getElementType());
         if (source.length() < RANDOM_ACCESS_THRESHOLD) {
             elements = new ArrayList<>();
         } else {
@@ -42,6 +51,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     }
 
     public ListColumnVector(Vector<T> source) {
+        super(source.getElementType());
         if (source.length() < RANDOM_ACCESS_THRESHOLD) {
             elements = new ArrayList<>();
         } else {
@@ -87,7 +97,16 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
         Lock lock = rwl.writeLock();
         lock.lock();
         try {
-            if (elements instanceof RandomAccess) {
+            if (position > (long) elements.size()) {
+                final T zero = OptionalOperations.dynamicInstantiate(getElementType(), 0d);
+                int count = (int) position - elements.size();
+                elements.addAll(Collections.nCopies(count, zero));
+                assert position == (long) elements.size();
+            }
+            if (position == (long) elements.size()) {
+                elements.add(element);
+                return;
+            } else if (elements instanceof RandomAccess) {
                 elements.set((int) position, element);
                 return;
             }

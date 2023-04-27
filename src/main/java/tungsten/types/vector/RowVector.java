@@ -33,6 +33,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
+import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ComplexVector;
 import tungsten.types.vector.impl.RealVector;
 
@@ -54,10 +55,16 @@ import java.util.stream.Stream;
  */
 public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<T> {
     private MathContext mctx;
+    protected Class<T> elementType;
 
     protected RowVector() {
         // default constructor
         mctx = MathContext.UNLIMITED;
+    }
+
+    protected RowVector(Class<T> clazz) {
+        this();
+        elementType = clazz;
     }
 
     public void setMathContext(MathContext mctx) {
@@ -178,6 +185,12 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     }
 
     @Override
+    public Class<T> getElementType() {
+        if (elementType != null) return elementType;
+        return Vector.super.getElementType();
+    }
+
+    @Override
     public long columns() {
         return length();
     }
@@ -256,12 +269,20 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
-        if (this.rows() != multiplier.columns()) {
-            throw new ArithmeticException("Multiplier must have a single column");
+        if (multiplier.columns() != 1L) {
+            if (this.columns() != multiplier.rows()) {
+                throw new ArithmeticException("Multiplier must have the same number of rows as this row vector has elements");
+            }
+            final Class<T> clazz = getElementType();
+            T[] values = (T[]) Array.newInstance(clazz, (int) multiplier.columns());
+            for (int k = 0; k < multiplier.columns(); k++) {
+                values[k] = this.dotProduct(multiplier.getColumn(k));
+            }
+            return new ArrayColumnVector<>(values);
         }
 
         // Apparently, the convention here is to compute the dot product of two vectors
-        // and put the result into a 1x1 matrix.
+        // and put the result into a 1×1 matrix.
 
         return new SingletonMatrix<>(this.dotProduct(multiplier.getColumn(0L)));
     }

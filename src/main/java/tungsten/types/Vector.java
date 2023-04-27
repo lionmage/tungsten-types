@@ -27,7 +27,6 @@ package tungsten.types;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,15 +83,17 @@ public interface Vector<T extends Numeric> {
 
     /**
      * Obtain the type of the elements contained by this {@link Vector}.
+     * Implementing classes are strongly encouraged to override this
+     * default implementation, as it does not degrade gracefully.
      * @return the {@link Class} of the vector elements
      */
     default Class<T> getElementType() {
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        if (clazz == null && length() > 0L) {
-            clazz = (Class<T>) elementAt(0L).getClass();
+//        Class<T> clazz = (Class<T>) ClassTools.getTypeArguments(Vector.class, getClass()).get(0);
+        if (length() > 0L) {
+            return (Class<T>) elementAt(0L).getClass();
         }
-        return clazz;
+        // this is not a very good default value, but subclasses should override this behavior
+        return null;
     }
 
     /**

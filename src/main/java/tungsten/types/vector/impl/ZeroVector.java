@@ -39,7 +39,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * An implementation of the zero vector, which has the value of 0
+ * An implementation of the zero vector 0&#x20d7;, which has the value of 0
  * for all of its elements.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
@@ -188,5 +188,10 @@ public class ZeroVector implements Vector<Numeric> {
     @Override
     public int hashCode() {
         return Objects.hash(zero, length, mctx);
+    }
+
+    @Override
+    public String toString() {
+        return "0\u20D7";  // U+20D7 = over-arrow combining character
     }
 }

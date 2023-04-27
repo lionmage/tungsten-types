@@ -214,6 +214,19 @@ public class MathUtils {
     }
 
     /**
+     * Round the values of a {@link Vector<RealType>} to the
+     * precision of the given {@link MathContext}.
+     * @param x   a {@link Vector} with real element values
+     * @param ctx the {@link MathContext} which provides the precision and {@link RoundingMode}
+     * @return a new vector of rounded real values
+     */
+    public static RealVector round(Vector<RealType> x, MathContext ctx) {
+        RealType[] elements = new RealType[(int) x.length()];
+        for (long k = 0L; k < x.length(); k++) elements[(int) k] = round(x.elementAt(k), ctx);
+        return new RealVector(elements, ctx);
+    }
+
+    /**
      * Generates a random real value that fits within the provided range.
      * @param range the {@link Range<RealType>} that specifies the lower and upper
      *              bounds of the value to be generated
@@ -872,6 +885,28 @@ public class MathUtils {
                 break;
         }
         return new BasicMatrix<>(temp);
+    }
+
+    private static final EnumMap<Axis, Long> axisToIndex = new EnumMap<>(Axis.class);
+    static {
+        axisToIndex.put(Axis.X_AXIS, 0L);
+        axisToIndex.put(Axis.Y_AXIS, 1L);
+        axisToIndex.put(Axis.Z_AXIS, 2L);
+    }
+
+    public static boolean isAlignedWith(Vector<RealType> vector, Axis axis) {
+        long idx = axisToIndex.get(axis);
+        boolean match = false;
+        for (int k = 0; k < vector.length(); k++) {
+            if (k == idx) {
+                // we should have a single non-zero element corresponding with the axis
+                match = !Zero.isZero(vector.elementAt(k));
+            } else {
+                // all elements other than those aligned with the given axis should be zero
+                if (!Zero.isZero(vector.elementAt(k))) return false;
+            }
+        }
+        return match;
     }
 
     /**
@@ -1576,8 +1611,9 @@ public class MathUtils {
     public static <T extends Numeric> Vector<T> backSubstitution(Matrix<T> U, Vector<? super T> c) {
         if (U.rows() != c.length()) throw new IllegalArgumentException("Matrix U must have the same number of rows as elements in Vector c");
         if (U.rows() != U.columns() || !U.isUpperTriangular()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) U.getClass()
+        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) U.getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
+        if (clazz == null) clazz = (Class<T>) U.valueAt(0L, 0L).getClass();
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
         Vector<T> x;
         switch (h) {
