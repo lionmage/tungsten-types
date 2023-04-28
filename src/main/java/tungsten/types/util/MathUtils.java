@@ -896,8 +896,8 @@ public class MathUtils {
 
     /**
      * Determine if a vector is aligned with the given axis.
-     * This is calculated to see if the vector has a non-zero
-     * value for one of its dimensions.
+     * This is calculated by checking whether the vector has a non-zero
+     * value for only one of its dimensions.
      * @param vector the vector to test
      * @param axis   the {@link Axis} against which we are testing
      * @return true if the given vector aligns with the given axis
@@ -918,7 +918,7 @@ public class MathUtils {
     }
 
     /**
-     * Determine if a vector aligns with any spatial axes.
+     * Determine if a vector aligns with any spatial axis.
      * @param vector the vector to test
      * @return the {@link Axis} that {@code vector} aligns with, or {@code null}
      *  if the vector does not align fully with any axis.
