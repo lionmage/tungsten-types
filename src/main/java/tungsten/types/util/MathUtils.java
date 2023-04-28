@@ -894,6 +894,14 @@ public class MathUtils {
         axisToIndex.put(Axis.Z_AXIS, 2L);
     }
 
+    /**
+     * Determine if a vector is aligned with the given axis.
+     * This is calculated to see if the vector has a non-zero
+     * value for one of its dimensions.
+     * @param vector the vector to test
+     * @param axis   the {@link Axis} against which we are testing
+     * @return true if the given vector aligns with the given axis
+     */
     public static boolean isAlignedWith(Vector<RealType> vector, Axis axis) {
         long idx = axisToIndex.get(axis);
         boolean match = false;
@@ -907,6 +915,17 @@ public class MathUtils {
             }
         }
         return match;
+    }
+
+    /**
+     * Determine if a vector aligns with any spatial axes.
+     * @param vector the vector to test
+     * @return the {@link Axis} that {@code vector} aligns with, or {@code null}
+     *  if the vector does not align fully with any axis.
+     */
+    public static Axis axisAlignedWith(Vector<RealType> vector) {
+        return Arrays.stream(Axis.values()).filter(x -> isAlignedWith(vector, x))
+                .findFirst().orElse(null);
     }
 
     /**
