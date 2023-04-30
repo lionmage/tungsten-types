@@ -344,16 +344,16 @@ public class FibonacciNumbers implements Set<IntegerType> {
             new RealImpl(BigDecimal.ONE), Range.BoundType.EXCLUSIVE);
 
     /**
-     * Obtain an approximate value for &#x1D6BD; by computing successive values of the Fibonacci sequence
+     * Obtain an approximate value for &#x03D5; by computing successive values of the Fibonacci sequence
      * until the difference in successive approximations is &lt; {@code epsilon}.  If the
      * {@link System#getProperty(String) System property} {@code tungsten.types.set.impl.FibonacciNumbers.epsilonLimit}
-     * is available and is set to a value 0 &lt; &epsilon;<sub>0</sub> &#x226A;, then if
-     * &epsilon; &lt; &epsilon;<sub>0</sub>, this iteration is bypassed and the value of &#x1D6BD;
+     * is available and is set to a value 0 &lt; &epsilon;<sub>0</sub> &#x226A; 1, then if
+     * &epsilon; &lt; &epsilon;<sub>0</sub>, this iteration is bypassed and the value of &#x03D5;
      * is derived directly from {@link Phi}.
      *
-     * @param epsilon the maximum allowable delta in approximations to &#x1D6BD;
-     * @return a rational approximation to &#x1D6BD; with an accuracy determined by epsilon, or a real
-     *  approximation of &#x1D6BD; if enabled by a threshold set by a special {@link #EPSILON_LIMIT System property}
+     * @param epsilon the maximum allowable delta in approximations to &#03D5;
+     * @return a rational approximation to &#x03D5; with an accuracy determined by epsilon, or a real
+     *  approximation of &#x03D5; if enabled by a threshold set by a special {@link #EPSILON_LIMIT System property}
      * @see #EPSILON_LIMIT
      */
     public Numeric getPhi(RealType epsilon) {
