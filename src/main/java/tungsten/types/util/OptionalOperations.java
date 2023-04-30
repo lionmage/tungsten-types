@@ -26,6 +26,7 @@ package tungsten.types.util;
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 
@@ -269,6 +270,16 @@ public class OptionalOperations {
         if (type.isInterface()) accumulator.add(type);
     }
 
+    /**
+     * A convenience method for obtaining a {@link Sign} for any
+     * {@link Numeric} instance that also implements {@link Comparable}.
+     * This is useful for implementations that lack a {@code sign()}
+     * method.
+     * @param value any {@link Numeric} value
+     * @return the sign of {@code value}, if it exists
+     * @throws IllegalArgumentException if the input value is not comparable
+     *  (e.g., any instance of {@link ComplexType})
+     */
     public static Sign sign(Numeric value) {
         try {
             Method m = value.getClass().getMethod("sign");
@@ -311,5 +322,31 @@ public class OptionalOperations {
                     "While attempting to invoke setMathContext() on " + number, e);
             return false;
         }
+    }
+
+    /**
+     * A convenience method for obtaining a {@link BigDecimal} equivalent from
+     * an instance of {@link Numeric}.  Useful since not all implementations
+     * have an {@code asBigDecimal()} method.
+     * @param number the {@link Numeric} instance from which to extract a BigDecimal value
+     * @return the {@link BigDecimal} equivalent of the value
+     */
+    public static BigDecimal asBigDecimal(Numeric number) {
+        Optional<Method> asBigDec = Arrays.stream(number.getClass().getMethods())
+                .filter(m -> BigDecimal.class.isAssignableFrom(m.getReturnType()))
+                .filter(m -> m.getName().equals("asBigDecimal")).findAny();
+        try {
+            if (asBigDec.isPresent()) {
+                return (BigDecimal) asBigDec.get().invoke(number, (Object) null);
+            } else if (number.isCoercibleTo(RealType.class)) {
+                RealType temp = (RealType) number.coerceTo(RealType.class);
+                return temp.asBigDecimal();
+            }
+        } catch (IllegalAccessException | InvocationTargetException | CoercionException fatal) {
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.SEVERE,
+                    "While computing asBigDecimal for " + number, fatal);
+            throw new IllegalStateException("We should not have gotten here", fatal);
+        }
+        throw new IllegalArgumentException(number + " cannot be represented as a BigDecimal");
     }
 }

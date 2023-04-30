@@ -416,7 +416,7 @@ public class IntegerImpl implements IntegerType {
     @Override
     public Numeric inverse() {
         if (val.abs().equals(BigInteger.ONE)) {
-            // 1 and -1 are their own inverse
+            // 1 and -1 are their own inverses
             return this;
         } else if (val.equals(BigInteger.ZERO)) {
             throw new ArithmeticException("Cannot compute inverse of 0");
