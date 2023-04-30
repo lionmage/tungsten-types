@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Constant(name = "phi", representation = "\u03D5")
 public class Phi implements RealType {
-    private MathContext mctx;
-    private BigDecimal value;
+    private final MathContext mctx;
+    private final BigDecimal value;
     private static final Map<MathContext, Phi> instanceMap = new ConcurrentHashMap<>();
 
     protected Phi(MathContext mctx) {
