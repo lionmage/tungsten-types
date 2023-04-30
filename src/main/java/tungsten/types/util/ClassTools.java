@@ -1,10 +1,7 @@
 package tungsten.types.util;
 
 import tungsten.types.Numeric;
-import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.RationalType;
-import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 
 import java.io.BufferedReader;
@@ -122,6 +119,22 @@ public class ClassTools {
             throw new IllegalArgumentException("There is no concrete class for type " + potential.getTypeName());
         }
         return (Class<? extends T>) ourClass;
+    }
+
+    public static <T extends Numeric> Class<? super T> getInterfaceTypeFor(Class<T> concrete) {
+        NumericHierarchy h = NumericHierarchy.forNumericType(concrete);
+        if (h != null) {
+            return (Class<? super T>) h.getNumericType();
+        }
+        return Numeric.class;  // when all else fails...
+    }
+
+    public static <T extends Numeric> Class<T> getBaseTypeFor(Collection<? extends T> source) {
+        Optional<? extends Class<? extends Numeric>> clazz = source.stream().map(Numeric::getClass)
+                .sorted(NumericHierarchy.obtainTypeComparator())
+                .findFirst();
+        if (clazz.isPresent()) return (Class<T>) clazz.get();
+        return (Class<T>) Numeric.class;
     }
 
     public static Collection<Class<?>> findClassesInPackage(String packageName, Class<? extends Annotation> withAnnotation) {

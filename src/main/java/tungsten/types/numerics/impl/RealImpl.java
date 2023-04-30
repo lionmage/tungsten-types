@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.ClassTools;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -226,8 +227,14 @@ public class RealImpl implements RealType {
             RealType that = new RealImpl((IntegerType) addend);
             return this.add(that);
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return addend.add(this);
+            }
+            // if we got here, addend is probably something like ComplexType
             try {
-                return this.coerceTo(addend.getClass()).add(addend);
+                return this.coerceTo((Class<? extends Numeric>) iface).add(addend);
             } catch (CoercionException ex) {
                 Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real add.", ex);
             }
@@ -274,8 +281,14 @@ public class RealImpl implements RealType {
                 return result;
             }
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(multiplier.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return multiplier.multiply(this);
+            }
+            // if we got here, multiplier is probably something like ComplexType
             try {
-                return this.coerceTo(multiplier.getClass()).multiply(multiplier);
+                return this.coerceTo((Class<? extends Numeric>) iface).multiply(multiplier);
             } catch (CoercionException ex) {
                 Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real multiply.", ex);
             }
@@ -310,8 +323,14 @@ public class RealImpl implements RealType {
                 return result;
             }
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(divisor.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return divisor.inverse().multiply(this);
+            }
+            // if we got here, divisor is probably something like ComplexType
             try {
-                return this.coerceTo(divisor.getClass()).divide(divisor);
+                return this.coerceTo((Class<? extends Numeric>) iface).divide(divisor);
             } catch (CoercionException ex) {
                 Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real divide.", ex);
             }
@@ -334,8 +353,7 @@ public class RealImpl implements RealType {
             bdinverse = bdinverse.stripTrailingZeros();
             exactness = fractionalLengthDifference(bdinverse) != 0;
         }
-        final RealImpl inv = new RealImpl(bdinverse, exactness);
-        inv.setMathContext(mctx);
+        final RealImpl inv = new RealImpl(bdinverse, mctx, exactness);
         if (!exactness) inv.setIrrational(this.isIrrational());
         return inv;
     }

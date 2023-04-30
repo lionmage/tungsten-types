@@ -25,9 +25,14 @@ package tungsten.types;
  */
 
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.ClassTools;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.MathContext;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -90,7 +95,14 @@ public interface Vector<T extends Numeric> {
     default Class<T> getElementType() {
 //        Class<T> clazz = (Class<T>) ClassTools.getTypeArguments(Vector.class, getClass()).get(0);
         if (length() > 0L) {
-            return (Class<T>) elementAt(0L).getClass();
+            if (length() == 1L) {
+                return (Class<T>) ClassTools.getInterfaceTypeFor(elementAt(0L).getClass());
+            } else if (length() == 2L) {
+                return (Class<T>) OptionalOperations.findCommonType(elementAt(0L).getClass(), elementAt(1L).getClass());
+            }
+            SortedSet<Class<? extends T>> uniqueTypes = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
+            for (long k = 0; k < length(); k++) uniqueTypes.add((Class<? extends T>) elementAt(k).getClass());
+            return (Class<T>) uniqueTypes.first();
         }
         // this is not a very good default value, but subclasses should override this behavior
         return null;
@@ -102,7 +114,7 @@ public interface Vector<T extends Numeric> {
      * and {@code other.magnitude()} gives the cosine of the angle
      * between the two vectors.
      * @param other the vector with which to compute the dot product
-     * @return the dot product
+     * @return the dot product of {@code this} and {@code other}
      */
     T dotProduct(Vector<T> other);
     /**
@@ -115,7 +127,7 @@ public interface Vector<T extends Numeric> {
      * a dimensional mismatch between the two vectors, should result in
      * an exception being thrown.
      * @param other the vector with which to compute the cross product
-     * @return the cross product
+     * @return the cross product of {@code this} and {@code other}
      */
     Vector<T> crossProduct(Vector<T> other);
     /**

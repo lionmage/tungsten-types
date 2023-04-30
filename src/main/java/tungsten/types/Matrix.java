@@ -30,13 +30,13 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.concurrent.*;
@@ -216,7 +216,7 @@ public interface Matrix<T extends Numeric> {
             throw new IllegalArgumentException("Non-integer exponents are not allowed for this type of matrix");
         }
         if (((IntegerType) n).sign() == Sign.NEGATIVE) {
-            throw new IllegalArgumentException("Exponent must be non-negative");
+            return inverse().pow(n.negate());
         }
         if (rows() != columns()) throw new ArithmeticException("Cannot compute power of non-square matrix");
         BigInteger exponent = ((IntegerType) n).asBigInteger();
@@ -233,12 +233,12 @@ public interface Matrix<T extends Numeric> {
             if (exponent.mod(TWO).equals(BigInteger.ZERO)) {
                 // even case
                 x = x.multiply(x);
-                exponent = exponent.divide(TWO);
+                exponent = exponent.shiftRight(1); // divide(TWO);
             } else {
                 // odd case
                 y = x.multiply(y);
                 x = x.multiply(x);
-                exponent = exponent.subtract(BigInteger.ONE).divide(TWO);
+                exponent = exponent.subtract(BigInteger.ONE).shiftRight(1); // divide(TWO);
             }
         }
         return x.multiply(y);
@@ -254,11 +254,8 @@ public interface Matrix<T extends Numeric> {
         }
     }
     
-    default RowVector<T> getRow(long row)
-    {
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        if (clazz == null) clazz = (Class<T>) valueAt(row, 0L).getClass();
+    default RowVector<T> getRow(long row) {
+        Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(valueAt(row, 0L).getClass());
         T[] temp = (T[]) Array.newInstance(clazz, (int) columns());
         for (int i = 0; i < columns(); i++) {
             temp[i] = valueAt(row, i);
@@ -266,11 +263,8 @@ public interface Matrix<T extends Numeric> {
         return new ArrayRowVector<>(temp);
     }
     
-    default ColumnVector<T> getColumn(long column)
-    {
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        if (clazz == null) clazz = (Class<T>) valueAt(0L, column).getClass();
+    default ColumnVector<T> getColumn(long column) {
+        Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(valueAt(0L, column).getClass());
         T[] temp = (T[]) Array.newInstance(clazz, (int) rows());
         for (int j = 0; j < rows(); j++) {
             temp[j] = valueAt(j, column);

@@ -61,11 +61,17 @@ public enum NumericHierarchy {
         NumericHierarchy retval;
         
         retval = typeMap.get(clazz);
-        if (retval == null) {
+        if (retval == null && clazz != Numeric.class) {
             Class<?>[] interfaces = clazz.getInterfaces();
             for (Class<?> iclass : interfaces) {
                 retval = typeMap.get(iclass);
                 if (retval != null) break;
+            }
+            // if there were no interfaces or we found no matches,
+            // recurse up the class hierarchy
+            if (interfaces.length == 0 || retval == null) {
+                if (clazz.getSuperclass() != null)
+                    retval = forNumericType((Class<? extends Numeric>) clazz.getSuperclass());
             }
         }
         
@@ -78,6 +84,10 @@ public enum NumericHierarchy {
             public int compare(Class<? extends Numeric> o1, Class<? extends Numeric> o2) {
                 NumericHierarchy htype1 = forNumericType(o1);
                 NumericHierarchy htype2 = forNumericType(o2);
+                // if o1 or o2 is Numeric itself, we get a null back, so handle the null case
+                if (htype1 == null && htype2 == null) return 0;
+                else if (htype1 == null) return -1;
+                else if (htype2 == null) return 1;
                 return htype1.compareTo(htype2);
             }
 
