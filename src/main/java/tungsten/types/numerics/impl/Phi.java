@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
  *  <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see tungsten.types.set.impl.FibonacciNumbers
- * @see <a href="https://en.wikipedia.org/wiki/Phi">the Wikipedia article on Phi</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Golden_ratio">the Wikipedia article on Phi</a>
  */
 @Constant(name = "phi", representation = "\u03D5")
 public class Phi implements RealType {
