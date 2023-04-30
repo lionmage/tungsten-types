@@ -117,6 +117,9 @@ public class Phi implements RealType {
             return subtrahend.negate().add(this);
         } else if (Zero.isZero(subtrahend)) {
             return this;
+        } else if (One.isUnity(subtrahend)) {
+            // recurrence relationship: ϕ - 1 = 1/ϕ
+            return inverse();
         }
         BigDecimal other = OptionalOperations.asBigDecimal(subtrahend);
         return new RealImpl(value.subtract(other, mctx), mctx, false);
