@@ -26,6 +26,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.*;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 //import tungsten.types.util.OptionalOperations;
 
@@ -262,8 +263,14 @@ public class RationalImpl implements RationalType {
             boolean exactness = this.isExact() && that.isExact();
             return new RationalImpl(this.numerator.add(scaled), this.denominator, exactness);
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return addend.negate().add(this);
+            }
+            // if we got here, addend is probably something like Real or ComplexType
             try {
-                return this.coerceTo(addend.getClass()).add(addend);
+                return this.coerceTo((Class<? extends Numeric>) iface).add(addend);
             } catch (CoercionException ex) {
                 Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during rational add.", ex);
             }
@@ -286,8 +293,14 @@ public class RationalImpl implements RationalType {
             boolean exactness = this.isExact() && that.isExact();
             return new RationalImpl(this.numerator.subtract(scaled), this.denominator, exactness);
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(subtrahend.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return subtrahend.negate().add(this);
+            }
+            // if we got here, subtrahend is probably something like Real or ComplexType
             try {
-                return this.coerceTo(subtrahend.getClass()).subtract(subtrahend);
+                return this.coerceTo((Class<? extends Numeric>) iface).subtract(subtrahend);
             } catch (CoercionException ex) {
                 Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE,
                         "Failed to coerce type during rational subtract.", ex);
@@ -313,8 +326,14 @@ public class RationalImpl implements RationalType {
             }
             return intermediate;
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(multiplier.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return multiplier.multiply(this);
+            }
+            // if we got here, subtrahend is probably something like Real or ComplexType
             try {
-                return this.coerceTo(multiplier.getClass()).multiply(multiplier);
+                return this.coerceTo((Class<? extends Numeric>) iface).multiply(multiplier);
             } catch (CoercionException ex) {
                 Logger.getLogger(RationalImpl.class.getName()).log(Level.SEVERE,
                         "Failed to coerce type during rational multiply.", ex);

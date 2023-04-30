@@ -29,6 +29,7 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.util.ClassTools;
 
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -307,8 +308,14 @@ public class IntegerImpl implements IntegerType {
             IntegerType that = (IntegerType) addend;
             return new IntegerImpl(this.asBigInteger().add(that.asBigInteger()), exact && that.isExact());
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return addend.add(this);
+            }
+            // if we got here, subtrahend is probably something like Real or ComplexType
             try {
-                return this.coerceTo(addend.getClass()).add(addend);
+                return this.coerceTo((Class<? extends Numeric>) iface).add(addend);
             } catch (CoercionException ex) {
                 Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer add.", ex);
             }
@@ -322,8 +329,14 @@ public class IntegerImpl implements IntegerType {
             IntegerType that = (IntegerType) subtrahend;
             return new IntegerImpl(this.asBigInteger().subtract(that.asBigInteger()), exact && that.isExact());
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(subtrahend.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return subtrahend.negate().add(this);
+            }
+            // if we got here, subtrahend is probably something like Real or ComplexType
             try {
-                return this.coerceTo(subtrahend.getClass()).subtract(subtrahend);
+                return this.coerceTo((Class<? extends Numeric>) iface).subtract(subtrahend);
             } catch (CoercionException ex) {
                 Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer add.", ex);
             }
@@ -349,8 +362,14 @@ public class IntegerImpl implements IntegerType {
                 return new RationalImpl(numResult, denomResult, exactness).reduce();
             }
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(multiplier.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return multiplier.multiply(this);
+            }
+            // if we got here, multiplier is probably something like Real or ComplexType
             try {
-                return this.coerceTo(multiplier.getClass()).multiply(multiplier);
+                return this.coerceTo((Class<? extends Numeric>) iface).multiply(multiplier);
             } catch (CoercionException ex) {
                 Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer multiply.", ex);
             }
@@ -373,8 +392,14 @@ public class IntegerImpl implements IntegerType {
         } else if (divisor instanceof RationalType) {
             return this.multiply(divisor.inverse());
         } else {
+            Class<?> iface = ClassTools.getInterfaceTypeFor(divisor.getClass());
+            if (iface == Numeric.class) {
+                // to avoid infinite recursion
+                return divisor.inverse().multiply(this);
+            }
+            // if we got here, divisor is probably something like Real or ComplexType
             try {
-                return this.coerceTo(divisor.getClass()).divide(divisor);
+                return this.coerceTo((Class<? extends Numeric>) iface).divide(divisor);
             } catch (CoercionException ex) {
                 Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer divide.", ex);
             }

@@ -184,11 +184,6 @@ public class One implements Numeric, Comparable<Numeric> {
         return mctx;
     }
 
-    @Override
-    public Numeric power(Numeric operand) {
-        return this;
-    }
-
     /**
      * Test for equality with a given value.  If the given value is:
      * <ul><li>an implementation of {@link Numeric}</li>
@@ -276,5 +271,8 @@ public class One implements Numeric, Comparable<Numeric> {
     /*
     Groovy methods below.
      */
-
+    @Override
+    public Numeric power(Numeric operand) {
+        return this;
+    }
 }
