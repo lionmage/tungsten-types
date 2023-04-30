@@ -146,7 +146,10 @@ public class Phi implements RealType {
 
     @Override
     public Numeric inverse() {
-        return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
+        // recurrence relationship: 1/ϕ = ϕ - 1
+        // this is cheaper (faster) than using division to compute the inverse
+        // and arguably just as accurate
+        return new RealImpl(value.subtract(BigDecimal.ONE, mctx), mctx, false) {
             @Override
             public boolean isIrrational() {
                 return true;
