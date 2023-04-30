@@ -92,12 +92,12 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     @Override
     public void append(IntegerType element) {
-        throw new UnsupportedOperationException("The set of Fibonacci numbers is immutable.");
+        throw new UnsupportedOperationException("The set of Fibonacci numbers is immutable");
     }
 
     @Override
     public void remove(IntegerType element) {
-        throw new UnsupportedOperationException("The set of Fibonacci numbers is immutable.");
+        throw new UnsupportedOperationException("The set of Fibonacci numbers is immutable");
     }
 
     @Override
@@ -332,7 +332,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
      * @return the n<sup>th</sup> element of the Fibonacci sequence
      */
     public IntegerType getNthFibonacciNumber(long n) {
-        if (n < 0L) throw new IndexOutOfBoundsException("Cannot negatively index into the Fibonacci sequence.");
+        if (n < 0L) throw new IndexOutOfBoundsException("Cannot negatively index into the Fibonacci sequence");
         if (n == 0L) return ONE;
         // a set is a unique set of numbers, but the Fibonacci sequence starts with 1, 1... so we offset
         // our view into the cache by 1
