@@ -15,6 +15,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The Golden Ratio, denoted by &#x03D5; (the Greek letter phi).
+ * Phi is perhaps not as important as Euler's number or &pi;,
+ * but it shows up in a lot of places.
+ * @see tungsten.types.set.impl.FibonacciNumbers
+ * @see <a href="https://en.wikipedia.org/wiki/Phi">the Wikipedia article on Phi</a>
+ */
 @Constant(name = "phi", representation = "\u03D5")
 public class Phi implements RealType {
     private final MathContext mctx;
