@@ -285,7 +285,13 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
-        if (numtype == Numeric.class) return this;
+        if (numtype == Numeric.class) {
+            if (exact) {
+                if (val.equals(BigInteger.ZERO)) return ExactZero.getInstance(getMathContext());
+                if (val.equals(BigInteger.ONE)) return One.getInstance(getMathContext());
+            }
+            return this;
+        }
         NumericHierarchy hval = NumericHierarchy.forNumericType(numtype);
         switch (hval) {
             case INTEGER:

@@ -224,14 +224,23 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
-        if (numtype == Numeric.class) return this;
+        if (numtype == Numeric.class) {
+            if (exact) {
+                // if it's one of two special values, return One or Zero
+                if (numerator.equals(BigInteger.ZERO)) ExactZero.getInstance(mctx);
+                if (denominator.equals(BigInteger.ONE) && numerator.equals(BigInteger.ONE))
+                    return One.getInstance(mctx);
+            }
+
+            return this;
+        }
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
         switch (htype) {
             case INTEGER:
                 if (denominator.equals(BigInteger.ONE)) {
                     return new IntegerImpl(numerator, exact);
                 } else if (numerator.equals(BigInteger.ZERO)) {
-                    return ExactZero.getInstance(mctx);
+                    return new IntegerImpl(BigInteger.ZERO, exact);
                 } else {
                     throw new CoercionException("Cannot convert fraction to integer", this.getClass(), numtype);
                 }
@@ -266,7 +275,7 @@ public class RationalImpl implements RationalType {
             Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
             if (iface == Numeric.class) {
                 // to avoid infinite recursion
-                return addend.negate().add(this);
+                return addend.add(this);
             }
             // if we got here, addend is probably something like Real or ComplexType
             try {
