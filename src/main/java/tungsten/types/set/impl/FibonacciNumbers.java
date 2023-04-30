@@ -1,5 +1,6 @@
 package tungsten.types.set.impl;
 
+import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
@@ -8,6 +9,7 @@ import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.Phi;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.CombiningIterator;
@@ -27,6 +29,7 @@ import java.util.stream.StreamSupport;
  * <br/> The first {@link #MAX_N_TO_CACHE} generated values are cached for performance.
  */
 public class FibonacciNumbers implements Set<IntegerType> {
+    public static final String EPSILON_LIMIT = "tungsten.types.set.impl.FibonacciNumbers.epsilonLimit";
     /**
      * The maximum number of Fibonacci values to cache.
      */
@@ -317,13 +320,25 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     /**
      * Obtain an approximate value for &#x1D6BD; by computing successive values of the Fibonacci sequence
-     * until the difference in successive approximations is &lt; {@code epsilon}.
+     * until the difference in successive approximations is &lt; {@code epsilon}.  If the
+     * {@link System#getProperty(String) System property} {@code tungsten.types.set.impl.FibonacciNumbers.epsilonLimit}
+     * is available and is set to a value 0 &lt; &epsilon;<sub>0</sub> &#x226A;, then if
+     * &epsilon; &lt; &epsilon;<sub>0</sub>, this iteration is bypassed and the value of &#x1D6BD;
+     * is derived directly from {@link Phi}.
      *
      * @param epsilon the maximum allowable delta in approximations to &#x1D6BD;
-     * @return a rational approximation to &#x1D6BD; with an accuracy determined by epsilon
+     * @return a rational approximation to &#x1D6BD; with an accuracy determined by epsilon, or a real
+     *  approximation of &#x1D6BD; if enabled by a threshold set by a special {@link #EPSILON_LIMIT System property}
+     * @see #EPSILON_LIMIT
      */
-    public RationalType getPhi(RealType epsilon) {
+    public Numeric getPhi(RealType epsilon) {
         if (!epsilonRange.contains(epsilon)) throw new IllegalArgumentException("Epsilon must be in range " + epsilonRange);
+        String epsiLimit = System.getProperty(EPSILON_LIMIT);
+        if (epsiLimit != null) {
+            RealType limit = new RealImpl(epsiLimit);
+            if (!epsilonRange.contains(limit)) throw new IllegalStateException("Bad configuration value " + limit + " for " + EPSILON_LIMIT);
+            if (epsilon.compareTo(limit) < 0) return Phi.getInstance(epsilon.getMathContext());
+        }
         RationalType prevPhi = new RationalImpl(ONE, ONE, epsilon.getMathContext());
         IntegerType prevElement = ONE;
 
