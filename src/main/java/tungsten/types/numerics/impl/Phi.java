@@ -3,26 +3,34 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
-import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Constant(name = "phi", representation = "\u03D5")
 public class Phi implements RealType {
     private MathContext mctx;
     private BigDecimal value;
+    private static final Map<MathContext, Phi> instanceMap = new ConcurrentHashMap<>();
 
     protected Phi(MathContext mctx) {
         this.mctx = mctx;
         BigDecimal two = BigDecimal.valueOf(2L);
         BigDecimal five = BigDecimal.valueOf(5L);
         this.value = BigDecimal.ONE.add(five.sqrt(mctx), mctx).divide(two, mctx);
+    }
+
+    @ConstantFactory(returnType = Phi.class)
+    public static Phi getInstance(MathContext mctx) {
+        return instanceMap.computeIfAbsent(mctx, Phi::new);
     }
 
     @Override
@@ -64,28 +72,44 @@ public class Phi implements RealType {
     public Numeric add(Numeric addend) {
         if (addend instanceof ComplexType) {
             return addend.add(this);
+        } else if (Zero.isZero(addend)) {
+            return this;
         }
         BigDecimal other = OptionalOperations.asBigDecimal(addend);
-        return new RealImpl(value.add(other, mctx), false);
+        return new RealImpl(value.add(other, mctx), mctx, false);
     }
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
         if (subtrahend instanceof ComplexType) {
             return subtrahend.negate().add(this);
+        } else if (Zero.isZero(subtrahend)) {
+            return this;
         }
         BigDecimal other = OptionalOperations.asBigDecimal(subtrahend);
-        return new RealImpl(value.subtract(other, mctx), false);
+        return new RealImpl(value.subtract(other, mctx), mctx, false);
     }
 
     @Override
     public Numeric multiply(Numeric multiplier) {
-        return null;
+        if (multiplier instanceof ComplexType) {
+            return multiplier.multiply(this);
+        } else if (One.isUnity(multiplier)) {
+            return this;
+        }
+        BigDecimal other = OptionalOperations.asBigDecimal(multiplier);
+        return new RealImpl(value.multiply(other, mctx), mctx, false);
     }
 
     @Override
     public Numeric divide(Numeric divisor) {
-        return null;
+        if (divisor instanceof ComplexType) {
+            return divisor.inverse().multiply(this);
+        } else if (One.isUnity(divisor)) {
+            return this;
+        }
+        BigDecimal other = OptionalOperations.asBigDecimal(divisor);
+        return new RealImpl(value.divide(other, mctx), mctx, false);
     }
 
     @Override
@@ -99,6 +123,15 @@ public class Phi implements RealType {
             @Override
             public Numeric inverse() {
                 return Phi.this;
+            }
+
+            @Override
+            public Numeric add(Numeric addend) {
+                if (One.isUnity(addend)) {
+                    // recurrence relationship: 1 + 1/ϕ = ϕ
+                    return Phi.this;
+                }
+                return super.add(addend);
             }
 
             @Override
