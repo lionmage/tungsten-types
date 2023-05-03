@@ -25,6 +25,7 @@ package tungsten.types.vector.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RealImpl;
@@ -37,6 +38,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of the zero vector 0&#x20d7;, which has the value of 0
@@ -66,6 +69,12 @@ public class ZeroVector implements Vector<Numeric> {
             if (instance == null) {
                 instance = new ZeroVector(length, ctx);
                 instanceMap.put(key, instance);
+            } else if (instance.length != length || instance.mctx.getPrecision() != ctx.getPrecision()) {
+                // this should realistically never happen, but if it does, log it and return a new instance
+                Logger.getLogger(ZeroVector.class.getName()).log(Level.WARNING,
+                        "ZeroVector cache key collision for length = {0}, MathContext {1}",
+                        new Object[] {length, ctx});
+                return new ZeroVector(length, ctx);
             }
             return instance;
         } finally {
@@ -173,6 +182,80 @@ public class ZeroVector implements Vector<Numeric> {
         }
         // all elements have been matched
         return true;
+    }
+
+    public <T extends Numeric> Vector<T> forType(Class<T> clazz) throws CoercionException {
+        final Vector<Numeric> parent = this;
+        final T coercedZero = (T) zero.coerceTo(clazz);
+        return new Vector<T>() {
+            @Override
+            public long length() {
+                return parent.length();
+            }
+
+            @Override
+            public T elementAt(long position) {
+                if (position < 0 || position >= parent.length()) {
+                    throw new IndexOutOfBoundsException(position + " is out of range [0, " + parent.length() + ")");
+                }
+                return coercedZero;
+            }
+
+            @Override
+            public void setElementAt(T element, long position) {
+                parent.setElementAt(element, position);
+            }
+
+            @Override
+            public void append(T element) {
+                parent.append(element);
+            }
+
+            @Override
+            public Vector<T> add(Vector<T> addend) {
+                return addend;
+            }
+
+            @Override
+            public Vector<T> subtract(Vector<T> subtrahend) {
+                return subtrahend.negate();
+            }
+
+            @Override
+            public Vector<T> negate() {
+                return this;
+            }
+
+            @Override
+            public Vector<T> scale(T factor) {
+                return this;
+            }
+
+            @Override
+            public T dotProduct(Vector<T> other) {
+                return coercedZero;
+            }
+
+            @Override
+            public Vector<T> crossProduct(Vector<T> other) {
+                return this;
+            }
+
+            @Override
+            public Vector<T> normalize() {
+                throw new UnsupportedOperationException("Cannot normalize a zero vector of type " + clazz.getTypeName());
+            }
+
+            @Override
+            public RealType computeAngle(Vector<T> other) {
+                throw new ArithmeticException("No zero vector may form an angle with any other vector");
+            }
+
+            @Override
+            public MathContext getMathContext() {
+                return parent.getMathContext();
+            }
+        };
     }
     
     @Override

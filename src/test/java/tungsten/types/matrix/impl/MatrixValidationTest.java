@@ -24,6 +24,7 @@ public class MatrixValidationTest {
     IntegerType two = new IntegerImpl(BigInteger.valueOf(2L), true);
     Matrix<RealType> antidiagonal;
     Matrix<IntegerType> W;  // Wilson matrix
+    // source: https://en.wikipedia.org/wiki/Wilson_matrix
     String[][] wilsonEntries = {
             {"5", "7", "6", "5"},
             {"7", "10", "8", "7"},
@@ -55,6 +56,10 @@ public class MatrixValidationTest {
         assertEquals(expValue, result);
     }
 
+    /**
+     * Matrix tests related to the Wilson matrix, W.
+     * @see <a href="https://en.wikipedia.org/wiki/Wilson_matrix">Wikipedia's article on the Wilson matrix</a>
+     */
     @Test
     public void wilsonMatrix() {
         IntegerType det = W.determinant();
