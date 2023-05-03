@@ -31,14 +31,13 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -81,8 +80,8 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         final int rows = source.length;
         // normally, I'd use the following trick on source, but since source
         // is an array, I'm not sure if any type info is preserved
-        final Class<T> clazz = (Class<T>) source[0][0].getClass();
-        T[] temp = (T[]) Array.newInstance(clazz, rows);
+        final Class<? extends Numeric> clazz = source[0][0].getClass();
+        T[] temp = (T[]) Array.newInstance(ClassTools.getInterfaceTypeFor(clazz), rows);
         for (int i = 0; i < rows; i++) temp[i] = source[i][column];
         return new ArrayColumnVector<>(temp);
     }
@@ -119,8 +118,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
             return (T) a.multiply(d).subtract(c.multiply(b));  // should not require coercion here
         }
         
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = columns.get(0).getElementType();
         try {
             // do not mess with the short circuit evaluation!
             if (columns() > 4L && isTriangular()) {
@@ -215,7 +213,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
             }
             return result;
         }
-        final Class<T> clazz = (Class<T>) multiplier.valueAt(0L, 0L).getClass();
+        final Class<T> clazz = columns.get(0).getElementType();
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
             RowVector<T> rowvec = this.getRow(row);
@@ -285,7 +283,8 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
                     accum[(int) row] = (R) originalColumn.elementAt(row).coerceTo(clazz);
                 } catch (CoercionException ex) {
                     Logger.getLogger(ColumnarMatrix.class.getName()).log(Level.SEVERE,
-                            "Coercion failed while upconverting matrix element at " + row + ",\u2009" + column + " to " + clazz.getTypeName(), ex);
+                            "Coercion failed while upconverting matrix element at " + row + ",\u2009" + column +
+                                    " to " + clazz.getTypeName(), ex);
                     throw new ArithmeticException(String.format("While converting value %s to %s at %d, %d",
                             valueAt(row, column), clazz.getTypeName(), row, column));
                 }
@@ -355,7 +354,6 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean isUpperTriangular() {
-        final MathContext mctx = valueAt(0L, 0L).getMathContext();
         long skipRows = 1L;
         boolean hasNonZero = false;
         for (ColumnVector<T> column : columns.subList(0, columns.size() - 1)) {
@@ -367,7 +365,6 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean isLowerTriangular() {
-        final MathContext mctx = valueAt(0L, 0L).getMathContext();
         long endRow = 1L;
         boolean hasNonZero = false;
         for (ColumnVector<T> column : columns.subList(1, columns.size())) {

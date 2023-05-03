@@ -38,7 +38,6 @@ import tungsten.types.vector.impl.ArrayRowVector;
 import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,8 +126,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
             return (T) a.multiply(d).subtract(c.multiply(b));  // should not require coercion here
         }
         
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = rows.get(0).getElementType();
         try {
             if (rows() > 4L && isTriangular()) {
                 // the above relies on short-circuit evaluation so that we

@@ -97,7 +97,7 @@ public class ZeroVector implements Vector<Numeric> {
         if (position >= 0L && position < length) {
             return zero;
         }
-        throw new IndexOutOfBoundsException("Specified index is out of range");
+        throw new IndexOutOfBoundsException("Specified index " + position + " is out of range");
     }
 
     @Override

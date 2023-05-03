@@ -26,14 +26,15 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
+import tungsten.types.annotations.Columnar;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
-import tungsten.types.vector.impl.ArrayColumnVector;
-import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.vector.impl.ListColumnVector;
+import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -105,10 +106,10 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
     public boolean isUpperTriangular() {
         utLock.lock();
         try {
-            if (upperTriangular != null) return upperTriangular.booleanValue();
+            if (upperTriangular != null) return upperTriangular;
             // cache this for posterity
             upperTriangular = Matrix.super.isUpperTriangular();
-            return upperTriangular.booleanValue();
+            return upperTriangular;
         } finally {
             utLock.unlock();
         }
@@ -118,9 +119,9 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
     public boolean isLowerTriangular() {
         ltLock.lock();
         try {
-            if (lowerTriangular != null) return lowerTriangular.booleanValue();
+            if (lowerTriangular != null) return lowerTriangular;
             lowerTriangular = Matrix.super.isLowerTriangular();
-            return lowerTriangular.booleanValue();
+            return lowerTriangular;
         } finally {
             ltLock.unlock();
         }
@@ -201,7 +202,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             rowsToBeRemoved = localRemovedRows.stream().filter(x -> x <= intermediateRow.get()).count();
         }
         if (result >= original.rows()) {
-            throw new IndexOutOfBoundsException(String.format("Provided row index %d maps to %d in the underlying matrix, whoch only has %d rows.",
+            throw new IndexOutOfBoundsException(String.format("Provided row index %d maps to %d in the underlying matrix, which only has %d rows",
                     row, result, original.rows()));
         }
         return result;
@@ -218,7 +219,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             columnsToBeRemoved = localRemovedColumns.stream().filter(x -> x <= intermediateColumn.get()).count();
         }
         if (result >= original.columns()) {
-            throw new IndexOutOfBoundsException(String.format("Provided column index %d maps to %d in the underlying matrix, whoch only has %d columns.",
+            throw new IndexOutOfBoundsException(String.format("Provided column index %d maps to %d in the underlying matrix, which only has %d columns",
                     column, result, original.columns()));
         }
         return result;
@@ -226,14 +227,14 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public T valueAt(long row, long column) {
-        if (row < 0L || row >= rows()) throw new IndexOutOfBoundsException("Row parameter is out of range.");
-        if (column < 0L || column >= columns()) throw new IndexOutOfBoundsException("Column parameter is out of range.");
+        if (row < 0L || row >= rows()) throw new IndexOutOfBoundsException("Row parameter is out of range");
+        if (column < 0L || column >= columns()) throw new IndexOutOfBoundsException("Column parameter is out of range");
         return original.valueAt(computeRowIndex(row), computeColumnIndex(column));
     }
 
     @Override
     public T determinant() {
-        if (rows() != columns()) throw new ArithmeticException("Determinant only applies to square matrices.");
+        if (rows() != columns()) throw new ArithmeticException("Determinant only applies to square matrices");
         if (rows() == 2L) {
             T a = valueAt(0L, 0L);
             T b = valueAt(0L, 1L);
@@ -267,7 +268,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<? extends Numeric> inverse() {
         final T det = this.determinant();
-        if (Zero.isZero(det)) throw new ArithmeticException("This submatrix is singular.");
+        if (Zero.isZero(det)) throw new ArithmeticException("This submatrix is singular");
         
         final Numeric scale = det.inverse();
         List<FutureTask<T>> subtasks = new LinkedList<>();
@@ -280,7 +281,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
                 executor.submit(task);
             }
             // copy the results into a row vector
-            RowVector<Numeric> rowVec = new ArrayRowVector<>(subtasks.stream().map(task -> {
+            RowVector<Numeric> rowVec = new ListRowVector<>(subtasks.stream().map(task -> {
                 try {
                     return task.get();
                 } catch (InterruptedException | ExecutionException ex) {
@@ -327,13 +328,13 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
      * may result in slower behavior for smaller matrices, but should improve
      * as matrix dimensions increase due to parallel computation gains.
      * 
-     * @param multiplier
-     * @return 
+     * @param multiplier the {@link Matrix} with which to multiply this matrix
+     * @return the product of {@code this} and {@code multiplier}
      */
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
         if (isDimensionPowerOf2(this.rows()) && isDimensionPowerOf2(multiplier.columns())
                 && this.rows() == multiplier.columns()) {
@@ -343,8 +344,8 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             return commonPool.invoke(task);
         }
 
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = multiplier.getClass().isAnnotationPresent(Columnar.class) ?
+                multiplier.getColumn(0L).getElementType() : multiplier.getRow(0L).getElementType();
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
             RowVector<T> rowvec = this.getRow(row);
@@ -388,7 +389,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             Matrix<T> C10 = iter.next().join().add(iter.next().join());
             Matrix<T> C11 = iter.next().join().add(iter.next().join());
             
-            return new AggregateMatrix<>(new Matrix[][] {{C00, C01}, {C10, C11}});
+            return new AggregateMatrix<>((Matrix<T>[][]) new Matrix[][] {{C00, C01}, {C10, C11}});
         }
         
         private List<MatMultRecursiveTask> createSubTasks() {
@@ -432,8 +433,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         List<T> result = new ArrayList<>();
         original.getRow(computeRowIndex(row)).stream().skip(startColumn).limit(internalColumns()).forEachOrdered(result::add);
         removeFromList(result, removedColumns);
-        // TODO fix this when we have List-based vectors
-        return new ArrayRowVector<>(result);
+        return new ListRowVector<>(result);
     }
 
     @Override
@@ -441,8 +441,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         List<T> result = new ArrayList<>();
         original.getColumn(computeColumnIndex(column)).stream().skip(startRow).limit(internalRows()).forEachOrdered(result::add);
         removeFromList(result, removedRows);
-        // TODO fix this when we have List-based vectors
-        return new ArrayColumnVector<>(result);
+        return new ListColumnVector<>(result);
     }
 
     private void removeFromList(List<T> source, List<Long> indices) {
@@ -485,7 +484,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
                         this.getRemovedRowIndices().equals(other.getRemovedRowIndices()) &&
                         this.getRemovedColumnIndices().equals(other.getRemovedColumnIndices());
             } else {
-                Matrix<? extends Numeric> other = (Matrix<Numeric>) o;
+                Matrix<? extends Numeric> other = (Matrix<? extends Numeric>) o;
                 if (rows() != other.rows()) return false;
                 for (long row = 0L; row < rows(); row++) {
                     if (!getRow(row).equals(other.getRow(row))) return false;

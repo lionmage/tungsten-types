@@ -81,7 +81,7 @@ public class IdentityMatrix implements Matrix<Numeric> {
     @Override
     public Matrix<Numeric> multiply(Matrix<Numeric> multiplier) {
         if (elementCount != multiplier.rows()) {
-            throw new ArithmeticException("The multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("The multiplier must have the same number of rows as this matrix has columns");
         }
         return multiplier;  // IA = A
     }
@@ -111,7 +111,6 @@ public class IdentityMatrix implements Matrix<Numeric> {
         
         BasicMatrix<Numeric> result = new BasicMatrix<>(addend);
         for (long idx = 0L; idx < elementCount; idx++) {
-            // TODO determine which order of addition would be more efficient
             Numeric sum = one.add(addend.valueAt(idx, idx));
             result.setValueAt(sum, idx, idx);
         }

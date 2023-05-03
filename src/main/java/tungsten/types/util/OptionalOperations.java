@@ -23,7 +23,9 @@ package tungsten.types.util;
  * THE SOFTWARE.
  */
 
+import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.annotations.Columnar;
 import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
@@ -76,6 +78,17 @@ public class OptionalOperations {
         switch (h) {
             case INTEGER:
                 return (T) new IntegerImpl(BigInteger.valueOf(quasiPrimitive.longValue()));
+            case RATIONAL:
+                if (quasiPrimitive instanceof Double || quasiPrimitive instanceof Float) {
+                    RealType real = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
+                    try {
+                        return (T) real.coerceTo(RationalType.class);
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException("Cannot rationalize real value obtained from " + quasiPrimitive, e);
+                    }
+                }
+                // otherwise, just assume it's an integer value and return a rational with a denom of 1
+                return (T) new RationalImpl(quasiPrimitive.longValue(), 1L, MathContext.UNLIMITED);
             case REAL:
                 return (T) new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
             case COMPLEX:
@@ -268,6 +281,14 @@ public class OptionalOperations {
             }
         }
         if (type.isInterface()) accumulator.add(type);
+    }
+
+    public static Class<? extends Numeric> findTypeFor(Matrix<? extends Numeric> M) {
+        if (M.getClass().isAnnotationPresent(Columnar.class)) {
+            return M.getColumn(0L).getElementType();
+        } else {
+            return M.getRow(0L).getElementType();
+        }
     }
 
     /**

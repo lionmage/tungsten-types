@@ -100,8 +100,10 @@ public interface Vector<T extends Numeric> {
             } else if (length() == 2L) {
                 return (Class<T>) OptionalOperations.findCommonType(elementAt(0L).getClass(), elementAt(1L).getClass());
             }
-            SortedSet<Class<? extends T>> uniqueTypes = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
-            for (long k = 0; k < length(); k++) uniqueTypes.add((Class<? extends T>) elementAt(k).getClass());
+            SortedSet<Class<? extends Numeric>> uniqueTypes = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
+            for (long k = 0; k < length(); k++) {
+                uniqueTypes.add((Class<? extends Numeric>) ClassTools.getInterfaceTypeFor(elementAt(k).getClass()));
+            }
             return (Class<T>) uniqueTypes.first();
         }
         // this is not a very good default value, but subclasses should override this behavior

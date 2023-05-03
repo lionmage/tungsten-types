@@ -34,6 +34,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.impl.ComplexVector;
@@ -101,6 +102,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         if (row == column) {
             return elements[(int) row];
         }
+        // we can get away with this because coerceTo() will look up the appropriate interface type
         final Class<T> clazz = (Class<T>) elements[0].getClass();
         try {
             return (T) ExactZero.getInstance(elements[0].getMathContext()).coerceTo(clazz);
@@ -153,7 +155,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         if (multiplier instanceof DiagonalMatrix) {
             DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
-            T[] prod = (T[]) Array.newInstance(elements[0].getClass(), elements.length);
+            T[] prod = (T[]) Array.newInstance(ClassTools.getInterfaceTypeFor(elements[0].getClass()), elements.length);
             for (int idx = 0; idx < elements.length; idx++) {
                 prod[idx] = (T) elements[idx].multiply(other.elements[idx]);
             }

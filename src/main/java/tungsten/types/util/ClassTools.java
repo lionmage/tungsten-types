@@ -130,11 +130,8 @@ public class ClassTools {
     }
 
     public static <T extends Numeric> Class<T> getBaseTypeFor(Collection<? extends T> source) {
-        Optional<? extends Class<? extends Numeric>> clazz = source.stream().map(Numeric::getClass)
-                .sorted(NumericHierarchy.obtainTypeComparator())
-                .findFirst();
-        if (clazz.isPresent()) return (Class<T>) clazz.get();
-        return (Class<T>) Numeric.class;
+        Optional<? extends Class<? extends Numeric>> clazz = source.stream().map(Numeric::getClass).min(NumericHierarchy.obtainTypeComparator());
+        return clazz.map(aClass -> (Class<T>) aClass).orElseGet(() -> (Class<T>) Numeric.class);
     }
 
     public static Collection<Class<?>> findClassesInPackage(String packageName, Class<? extends Annotation> withAnnotation) {

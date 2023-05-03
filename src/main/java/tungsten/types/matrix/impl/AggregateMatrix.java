@@ -36,7 +36,6 @@ import tungsten.types.vector.impl.ListColumnVector;
 import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -80,8 +79,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         }
         // if we passed those tests, do the internal bookkeeping and return
         this.subMatrices = subMatrices;
-        this.clazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        this.clazz = subMatrices[0][0].getRow(0L).getElementType();
     }
 
     @Override
@@ -332,7 +330,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     public boolean equals(Object o) {
         if (o instanceof Matrix) {
             if (o instanceof AggregateMatrix) {
-                AggregateMatrix<? extends Numeric> that = (AggregateMatrix<Numeric>) o;
+                AggregateMatrix<? extends Numeric> that = (AggregateMatrix<? extends Numeric>) o;
                 if (subMatrices.length == that.subMatrices.length &&
                         subMatrices[0].length == that.subMatrices[0].length) {
                     for (int tileRow = 0; tileRow < subMatrices.length; tileRow++) {
@@ -345,7 +343,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             }
             
             // else do it the old-fashioned way
-            Matrix<? extends Numeric> that = (Matrix<Numeric>) o;
+            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
             if (rows() != that.rows()) return false;
             if (that.getClass().isAnnotationPresent(Columnar.class)) {
                 for (long column = 0L; column < columns(); column++) {

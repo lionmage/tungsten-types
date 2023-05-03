@@ -64,7 +64,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
 
     @Override
     public void setElementAt(ComplexType element, long position) {
-        if (element.imaginary().equals(ZERO)) {
+        if (Zero.isZero(element.imaginary())) {
             realVector.setElementAt(element.real(), position);
         }
         throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>");
@@ -72,7 +72,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
 
     @Override
     public void append(ComplexType element) {
-        if (element.imaginary().equals(ZERO)) {
+        if (Zero.isZero(element.imaginary())) {
             realVector.append(element.real());
         }
         throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>");
@@ -130,7 +130,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
 
     @Override
     public RealType computeAngle(Vector<ComplexType> other) {
-        // the dot product is not commutative, so we must preserve the order
+        // the dot product (which provides cosine) is not commutative, so we must preserve the order
         return new ComplexVector(realVector).computeAngle(other);
     }
 

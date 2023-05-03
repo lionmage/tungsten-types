@@ -115,7 +115,7 @@ public class One implements Numeric, Comparable<Numeric> {
     }
     
     private RealType obtainRealZero() {
-        return new RealImpl(BigDecimal.ZERO);
+        return new RealImpl(BigDecimal.ZERO, mctx);
     }
 
     @SuppressWarnings("unchecked")

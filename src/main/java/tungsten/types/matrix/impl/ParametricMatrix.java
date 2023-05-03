@@ -29,11 +29,11 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
-import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.RowVector;
+import tungsten.types.vector.impl.ArrayRowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.logging.Level;
@@ -143,8 +143,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
             throw new ArithmeticException("Addend must have the same dimensions as this matrix.");
         }
         
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) addend.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(addend);
         BasicMatrix<T> result = new BasicMatrix<>();
         for (long row = 0L; row < rows; row++) {
             T[] accum = (T[]) Array.newInstance(clazz, (int) columns);
@@ -162,8 +161,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
             throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
         
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(multiplier);
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) rows, (int) multiplier.columns());
         for (long row = 0L; row < rows; row++) {
             RowVector<T> rowvec = getRow(row);  // the default implementation should be performant enough for this
@@ -190,8 +188,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     public <R extends Numeric> Matrix<R> upconvert(Class<R> clazz) {
         // first, check to make sure we can do this -- ensure R is a wider type than T
         NumericHierarchy targetType = NumericHierarchy.forNumericType(clazz);
-        Class<T> currentClazz = (Class<T>) ((Class) ((ParameterizedType) this.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        Class<T> currentClazz = getRow(0L).getElementType();
         if (currentClazz != null) {
             NumericHierarchy currentType = NumericHierarchy.forNumericType(currentClazz);
             // if our elements are already of the requested type, just cast and return
@@ -252,7 +249,8 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
         /**
          * Default constructor lets us wrap any {@link BiFunction} that
          * takes two {@link Long} arguments, the row and column indices.
-         * @param function
+         * @param function a {@link BiFunction} that maps row and column
+         *                indices to values
          */
         public Generator(BiFunction<Long, Long, T> function) {
             internal = function;
@@ -261,7 +259,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
         @Override
         public T apply(Long row, Long column) {
             if (row < 0L || row >= rows || column < 0L || column >= columns) {
-                throw new IndexOutOfBoundsException(String.format("Indices %d, %d out of bounds for Matrix with dimensions %d, %d.",
+                throw new IndexOutOfBoundsException(String.format("Indices %d, %d are out of bounds for Matrix with dimensions %d, %d",
                         row, column, rows, columns));
             }
             return internal.apply(row, column);

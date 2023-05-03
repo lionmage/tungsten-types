@@ -28,6 +28,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -127,9 +128,16 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
                 // synthetic accessor methods
                 return new ListRowVector<>(Collections.nCopies((int) this.columns(), padValue));
             }
-            T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.columns());
+            T[] elements = (T[]) Array.newInstance(ClassTools.getInterfaceTypeFor(padValue.getClass()), (int) this.columns());
             Arrays.fill(elements, padValue);
             return new ArrayRowVector<>(elements);
+        }
+        // we still need to account for rows with index < source.rows() that may have been right-padded
+        // this could actually have been taken care of by super.getRow(), but this is more efficient
+        if (source.columns() < columns()) {
+            ListRowVector<T> aggregate = new ListRowVector<>(source.getRow(row));
+            for (long k = source.columns(); k < columns(); k++) aggregate.append(padValue);
+            return aggregate;
         }
         return super.getRow(row);
     }
@@ -149,9 +157,16 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
                 }
                 return new ListColumnVector<>(Collections.nCopies((int) this.rows(), padValue));
             }
-            T[] elements = (T[]) Array.newInstance(padValue.getClass(), (int) this.rows());
+            T[] elements = (T[]) Array.newInstance(ClassTools.getInterfaceTypeFor(padValue.getClass()), (int) this.rows());
             Arrays.fill(elements, padValue);
             return new ArrayColumnVector<>(elements);
+        }
+        // we still need to account for columns with index < source.columns() that may have been padded
+        // this could actually have been taken care of by super.getColumn(), but this is more efficient
+        if (source.rows() < rows()) {
+            ListColumnVector<T> aggregate = new ListColumnVector<>(source.getColumn(column));
+            for (long k = source.rows(); k < rows(); k++) aggregate.append(padValue);
+            return aggregate;
         }
         return super.getColumn(column);
     }

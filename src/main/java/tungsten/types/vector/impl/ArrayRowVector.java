@@ -4,7 +4,10 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 
@@ -24,12 +27,13 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
         this.elementArray = elements;
         if (elements != null && elements.length > 0) {
             setMathContext(MathUtils.inferMathContext(List.of(elements)));
+            super.elementType = (Class<T>) ClassTools.getInterfaceTypeFor(elements[0].getClass());
         }
     }
 
     public ArrayRowVector(List<T> elementList) {
-        Class<T> elementType = elementList.size() > 0 ? (Class<T>) elementList.get(0).getClass() : getElementType();
-        this.elementArray = (T[]) Array.newInstance(elementType, elementList.size());
+        super((Class<T>) ClassTools.getInterfaceTypeFor(ClassTools.getBaseTypeFor(elementList)));
+        this.elementArray = (T[]) Array.newInstance(getElementType(), elementList.size());
         elementList.toArray(elementArray);
         setMathContext(MathUtils.inferMathContext(elementList));
     }
@@ -38,12 +42,28 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
         if (source.length() > (long) Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Vector is too large to fit into an array");
         }
-        Class<T> elementType = source.length() > 0L ? (Class<T>) source.elementAt(0L).getClass() : getElementType();
+        Class<T> elementType = source.getElementType();
         this.elementArray = (T[]) Array.newInstance(elementType, (int) source.length());
+        super.elementType = elementType;
         for (long index = 0L; index < source.length(); index++) {
             setElementAt(source.elementAt(index), index);
         }
         setMathContext(source.getMathContext());
+    }
+
+    public ArrayRowVector(Class<T> elementType, long size) {
+        super(elementType);
+        if (size > (long) Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Arrays cannot hold " + size + " elements");
+        }
+        this.elementArray = (T[]) Array.newInstance(elementType, (int) size);
+        // initialize to all zeros
+        T zero = OptionalOperations.dynamicInstantiate(elementType, 0L);
+        Arrays.fill(elementArray, zero);
+    }
+
+    public ArrayRowVector(NumericHierarchy type, long size) {
+        this((Class<T>) type.getNumericType(), size);
     }
 
     @Override

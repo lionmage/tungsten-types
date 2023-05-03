@@ -4,6 +4,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
@@ -32,7 +33,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     }
 
     public ListColumnVector(List<T> source) {
-        super((Class<T>) source.get(0).getClass());
+        super((Class<T>) ClassTools.getInterfaceTypeFor(source.get(0).getClass()));
         elements = source;
     }
 
