@@ -354,7 +354,14 @@ public class RationalImpl implements RationalType {
     @Override
     public Numeric divide(Numeric divisor) {
         if (divisor instanceof IntegerType) {
-            return new RationalImpl(numerator(), (IntegerType) denominator().multiply(divisor), mctx);
+            IntegerType num = numerator();
+            BigInteger gcd = numerator.abs().gcd(((IntegerType) divisor).asBigInteger().abs());
+            if (!BigInteger.ZERO.equals(gcd)) {
+                IntegerType common = new IntegerImpl(gcd);
+                num = (IntegerType) num.divide(common);
+                divisor = divisor.divide(common);
+            }
+            return new RationalImpl(num, (IntegerType) denominator().multiply(divisor), mctx);
         }
         return this.multiply(divisor.inverse());
     }
@@ -421,7 +428,11 @@ public class RationalImpl implements RationalType {
         } else if (other instanceof RationalType) {
             final RationalType that = (RationalType) other;
             if (this.isExact() != that.isExact()) return false;
-
+            // the following test is more "correct" but is slower
+            if (RationalType.reduceForEqualityTest()) {
+                return this.reduce().equals(that.reduce());
+            }
+            // ... and this is the faster "good enough" test
             return numerator.equals(that.numerator().asBigInteger()) &&
                     denominator.equals(that.denominator().asBigInteger());
         } else if (other instanceof Numeric) {

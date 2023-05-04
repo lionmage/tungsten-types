@@ -203,6 +203,25 @@ public class MathUtils {
     }
 
     /**
+     * Compute the generalized binomial coefficient, where {@code x} is a value
+     * of any type and {@code k} is an integer.
+     * @param x the generalization of {@code n} found in {@link #nChooseK(IntegerType, IntegerType)}
+     * @param k the number of elements &ldquo;chosen&rdquo; at a time
+     * @return the generalized binomial coefficient
+     * @see <a href="https://math.stackexchange.com/questions/340124/binomial-coefficients-1-2-choose-k">an article
+     *  on Mathematics Stack Exchange</a>
+     */
+    public static Numeric generalizedBinomialCoefficient(Numeric x, IntegerType k) {
+        Numeric accum = x;
+
+        for (long kval = 1L; kval < k.asBigInteger().longValueExact(); kval++) {
+            accum = accum.multiply(x.subtract(new IntegerImpl(BigInteger.valueOf(kval))));
+        }
+
+        return accum.divide(factorial(k));
+    }
+
+    /**
      * Round a value x to the given {@link MathContext}.
      * @param x   the real value to be rounded
      * @param ctx the {@link MathContext} to apply

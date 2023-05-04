@@ -36,6 +36,7 @@ import java.math.BigInteger;
  * @author Robert Poole
  */
 public interface RationalType extends Numeric, Comparable<RationalType> {
+    String REDUCE_FOR_EQUALITY_TEST = "tungsten.types.numerics.RationalType.reduceForEquals";
     /**
      * Returns the magnitude (absolute value) of this rational
      * number in reduced form.
@@ -79,5 +80,9 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
             return this.asBigDecimal();
         }
         return Numeric.super.asType(clazz);
+    }
+
+    static boolean reduceForEqualityTest() {
+        return Boolean.getBoolean(REDUCE_FOR_EQUALITY_TEST);
     }
 }
