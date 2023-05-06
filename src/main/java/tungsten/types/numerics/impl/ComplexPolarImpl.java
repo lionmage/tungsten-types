@@ -32,6 +32,7 @@ import tungsten.types.numerics.*;
 import tungsten.types.set.impl.NumericSet;
 import tungsten.types.util.AngularDegrees;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
 import java.math.BigDecimal;
@@ -124,14 +125,15 @@ public class ComplexPolarImpl implements ComplexType {
 
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
+        if (argument.getMathContext().getPrecision() < mctx.getPrecision())
+            OptionalOperations.setMathContext(argument, mctx);
+        if (modulus.getMathContext().getPrecision() < mctx.getPrecision())
+            OptionalOperations.setMathContext(modulus, mctx);
         this.epsilon = MathUtils.computeIntegerExponent(TEN, 1 - mctx.getPrecision(), mctx);
     }
     
     @Override
     public RealType magnitude() {
-        if (ComplexType.isPromotePrecision() && modulus.getMathContext().getPrecision() < mctx.getPrecision()) {
-            return new RealImpl(modulus.asBigDecimal(), mctx, modulus.isExact());
-        }
         return modulus;
     }
 
@@ -162,9 +164,6 @@ public class ComplexPolarImpl implements ComplexType {
 
     @Override
     public RealType argument() {
-        if (ComplexType.isPromotePrecision() && argument.getMathContext().getPrecision() < mctx.getPrecision()) {
-            return new RealImpl(argument.asBigDecimal(), mctx, argument.isExact());
-        }
         return argument;
     }
 

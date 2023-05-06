@@ -40,13 +40,6 @@ public interface ComplexType extends Numeric {
      * whether extended complex numbers are enabled.
      */
     String ENABLE_EXTENDED_CPLX = "tungsten.types.numerics.ComplexType.extended.enable";
-    /**
-     * String value of the System property which determines
-     * whether accessors like {@link #real()} and {@link #argument()}
-     * return a value with at least the same {@link MathContext#getPrecision() precision}
-     * as the {@link ComplexType} from which it came.
-     */
-    String PROMOTE_COMPONENT_PRECISION = "tungsten.types.numerics.ComplexType.promote.precision";
     @SuppressWarnings("unchecked")
     @Override
     RealType magnitude();
@@ -76,15 +69,6 @@ public interface ComplexType extends Numeric {
      */
     static boolean isExtendedEnabled() {
         return Boolean.getBoolean(ENABLE_EXTENDED_CPLX);
-    }
-
-    /**
-     * Method to determine if promotion of component precision is enabled.
-     * @return true if enabled, false otherwise
-     * @see #PROMOTE_COMPONENT_PRECISION
-     */
-    static boolean isPromotePrecision() {
-        return Boolean.getBoolean(PROMOTE_COMPONENT_PRECISION);
     }
 
     /*

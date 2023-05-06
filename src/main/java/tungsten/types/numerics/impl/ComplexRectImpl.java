@@ -28,6 +28,7 @@ import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -130,6 +131,10 @@ public class ComplexRectImpl implements ComplexType {
         this.mctx = context;
         argLock.lock();
         try {
+            if (real.getMathContext().getPrecision() < context.getPrecision())
+                OptionalOperations.setMathContext(real, context);
+            if (imag.getMathContext().getPrecision() < context.getPrecision())
+                OptionalOperations.setMathContext(imag, context);
             argCache = null;  // this must be regenerated
         } finally {
             argLock.unlock();
@@ -144,13 +149,14 @@ public class ComplexRectImpl implements ComplexType {
     public RealType magnitude() {
         if (!isFastMagnitudeEnabled()) {
             // do it the slower way
-            RealType re_f = real();
-            RealType im_f = imaginary();
-            RealType resq = (RealType) re_f.multiply(re_f);
-            RealType imsq = (RealType) im_f.multiply(im_f);
+            RealType resq = (RealType) real.multiply(real);
+            RealType imsq = (RealType) imag.multiply(imag);
             // this should return an object with correct exact and irrational properties
             try {
-                return (RealType) resq.add(imsq).sqrt().coerceTo(RealType.class);
+                RealType result = (RealType) resq.add(imsq).sqrt().coerceTo(RealType.class);
+                // the MathContext of the magnitude should be the same as that of the overall object
+                OptionalOperations.setMathContext(result, mctx);
+                return result;
             } catch (CoercionException fatal) {
                 throw new IllegalStateException("While computing sqrt() for magnitude", fatal);
             }
@@ -178,21 +184,11 @@ public class ComplexRectImpl implements ComplexType {
 
     @Override
     public RealType real() {
-        if (ComplexType.isPromotePrecision() && real.getMathContext().getPrecision() < mctx.getPrecision()) {
-            RealImpl re_f = new RealImpl(real.asBigDecimal(), mctx, real.isExact());
-            re_f.setIrrational(real.isIrrational());
-            return re_f;
-        }
         return real;
     }
 
     @Override
     public RealType imaginary() {
-        if (ComplexType.isPromotePrecision() && imag.getMathContext().getPrecision() < mctx.getPrecision()) {
-            RealImpl im_f = new RealImpl(imag.asBigDecimal(), mctx, imag.isExact());
-            im_f.setIrrational(imag.isIrrational());
-            return im_f;
-        }
         return imag;
     }
 

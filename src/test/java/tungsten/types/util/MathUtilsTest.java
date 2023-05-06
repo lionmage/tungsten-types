@@ -20,5 +20,12 @@ public class MathUtilsTest {
 
         Numeric result = MathUtils.generalizedBinomialCoefficient(x, k);
         assertEquals(expected, result);
+
+        IntegerType x2 = new IntegerImpl("-4");
+        k = new IntegerImpl("3");
+        IntegerType expected2 = new IntegerImpl("-20");
+
+        result = MathUtils.generalizedBinomialCoefficient(x2, k);
+        assertEquals(expected2, result);
     }
 }

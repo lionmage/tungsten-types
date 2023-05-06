@@ -62,7 +62,6 @@ public class ComplexRectImplTest {
     @AfterEach
     public void tearDown() {
         // reset system properties to their default values
-        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "false");
         System.setProperty(ComplexRectImpl.FAST_MAGNITUDE, "false");
     }
 
@@ -73,7 +72,6 @@ public class ComplexRectImplTest {
     public void testMagnitude() {
         System.out.println("magnitude");
         RealType expResult = (RealType) two.sqrt();
-        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "true");
         RealType result = oneOne.magnitude();
         assertFalse(expResult.isExact());
         assertFalse(result.isExact());
@@ -137,8 +135,6 @@ public class ComplexRectImplTest {
     public void testArgument() {
         System.out.println("argument");
         ComplexRectImpl instance = oneOne;
-        // since oneOne was "badly" created, force the correct behavior
-        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "true");
         RealType four = new RealImpl("4", instance.getMathContext());
         RealType expResult = (RealType) Pi.getInstance(instance.getMathContext()).divide(four);
         RealType result = instance.argument();
@@ -257,14 +253,12 @@ public class ComplexRectImplTest {
         System.out.println("sqrt");
         ComplexRectImpl instance = (ComplexRectImpl) twoTwo.multiply(twoTwo);
         ComplexType expResult = twoTwo;
-//        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "true");
         Numeric result = instance.sqrt();
         assertTrue(result instanceof ComplexType);
         assertTrue(expResult.isExact());
         assertTrue(result.isExact());
         assertEquals(expResult, result);
         assertEquals(two.multiply(two.sqrt()), result.magnitude());
-//        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "false");
 //        System.setProperty(ComplexRectImpl.FAST_MAGNITUDE, "true");
 //        result = instance.sqrt();
 //        assertEquals(expResult.real(), ((ComplexType) result).real());
@@ -327,12 +321,8 @@ public class ComplexRectImplTest {
         MathContext expResult = MathContext.DECIMAL128;
         MathContext result = instance.getMathContext();
         assertEquals(expResult, result);
-        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "false"); // default case
-        assertNotEquals(expResult, instance.real().getMathContext());
-        assertNotEquals(expResult, instance.imaginary().getMathContext());
         // real and imaginary parts should share the same MathContext
         // when complex numbers are configured this way
-        System.setProperty(ComplexType.PROMOTE_COMPONENT_PRECISION, "true");
         assertEquals(expResult, instance.real().getMathContext());
         assertEquals(expResult, instance.imaginary().getMathContext());
     }

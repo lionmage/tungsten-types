@@ -171,6 +171,62 @@ public class MathUtils {
     }
 
     /**
+     * Compute the gamma function, &#x1D6AA;(z) for any value z.
+     * Note that this is a generalization of factorial; for an
+     * integer value z, &#x1D6AA;(z)&nbsp;=&nbsp;(z&thinsp;&minus;&thinsp;1)!
+     * @param z the argument to this function
+     * @return the value of &#x1D6AA;(z)
+     */
+    public static Numeric gamma(Numeric z) {
+        if (z.isCoercibleTo(IntegerType.class)) {
+            try {
+                IntegerType one = (IntegerType) One.getInstance(z.getMathContext()).coerceTo(IntegerType.class);
+                IntegerType n = (IntegerType) z.coerceTo(IntegerType.class);
+                IntegerType nMinus1 = (IntegerType) n.subtract(one);
+                if (nMinus1.sign() != Sign.NEGATIVE) {
+                    return factorial(nMinus1);
+                } else {
+                    // undefined for negative values and zero
+                    throw new ArithmeticException("\uD835\uDEAA(n) is not analytic for integers n \u2264 0; n = " + n);
+                }
+            } catch (CoercionException ce) {
+                throw new IllegalStateException(ce);
+            }
+        }
+
+        final long iterLimit = z.getMathContext().getPrecision() * 2L + 3L;
+        Numeric accum = z.inverse();
+        for (long k = 1L; k < iterLimit; k++) {
+            accum = accum.multiply(gammaTerm(z, k));
+        }
+        return accum;
+    }
+
+    private static Numeric gammaTerm(Numeric z, long n) {
+        assert n > 0L;
+        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
+        RationalType nInv = new RationalImpl(1L, n, compCtx);
+        Numeric z_over_n = nInv.multiply(z);
+        Numeric one = One.getInstance(compCtx);
+        Numeric lhs = one.add(z_over_n).inverse();
+        Numeric rhs;
+        try {
+            RealType base = (RealType) one.add(nInv).coerceTo(RealType.class);
+            if (z instanceof ComplexType) {
+                rhs = generalizedExponent(base, (ComplexType) z, compCtx);  // returns ComplexType (real^cplx -> cplx)
+            } else {
+                rhs = generalizedExponent(base, z, compCtx); // returns RealType (real^int, real^rat, real^real)
+            }
+            return lhs.multiply(rhs);
+        } catch (CoercionException ce) {
+            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                    "Failed to coerce 1 + {0} to real while computing {1}th term for \uD835\uDEAA({2}).",
+                    new Object[]{nInv, n, z});
+            throw new IllegalStateException("While computing \uD835\uDEAA series term " + n, ce);
+        }
+    }
+
+    /**
      * Compute the binomial coefficient.
      * @param n the size of the set from which we are choosing
      * @param k the number of elements we are choosing from the set at a time
@@ -675,6 +731,7 @@ public class MathUtils {
                 RationalType ratexponent = (RationalType) exponent;
                 final long n_num = ratexponent.numerator().asBigInteger().longValueExact();
                 ComplexType intermediate = computeIntegerExponent(base, n_num, mctx);
+                System.out.println("Magnitude ctx = " + intermediate.magnitude().getMathContext());
                 RealType modulus = nthRoot(intermediate.magnitude(), ratexponent.denominator());
                 RealType argument = (RealType) intermediate.argument().divide(ratexponent.denominator());
                 return new ComplexPolarImpl(modulus, argument, false);
