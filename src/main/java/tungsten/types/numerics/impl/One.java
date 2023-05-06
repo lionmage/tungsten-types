@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -82,7 +83,12 @@ public class One implements Numeric, Comparable<Numeric> {
         return true;
     }
 
-    private static final IntegerType INT_UNITY = new IntegerImpl(BigInteger.ONE);
+    private final IntegerType INT_UNITY = new IntegerImpl(BigInteger.ONE) {
+        @Override
+        public MathContext getMathContext() {
+            return mctx;
+        }
+    };
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
@@ -91,8 +97,6 @@ public class One implements Numeric, Comparable<Numeric> {
         Numeric retval;
         switch (htype) {
             case INTEGER:
-                // we can get away with this because IntegerImpl doesn't maintain
-                // a MathContext as state
                 retval = INT_UNITY;
                 break;
             case RATIONAL:
@@ -139,7 +143,7 @@ public class One implements Numeric, Comparable<Numeric> {
             RealType unity = obtainRealUnity();
             return unity.add(addend);
         }
-        return INT_UNITY.add(addend);
+        return addend.add(INT_UNITY);
     }
 
     @Override
@@ -148,7 +152,7 @@ public class One implements Numeric, Comparable<Numeric> {
             RealType unity = obtainRealUnity();
             return unity.subtract(subtrahend);
         }
-        return INT_UNITY.subtract(subtrahend);
+        return subtrahend.negate().add(INT_UNITY);
     }
 
     @Override

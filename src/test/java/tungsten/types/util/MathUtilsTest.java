@@ -4,10 +4,13 @@ import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RationalImpl;
 
 import java.math.BigInteger;
+import java.math.MathContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -27,5 +30,25 @@ public class MathUtilsTest {
 
         result = MathUtils.generalizedBinomialCoefficient(x2, k);
         assertEquals(expected2, result);
+    }
+
+    @Test
+    public void checkGammaFunction() {
+        MathContext roundingCtx = new MathContext(5);  // only checking 5 significant digits
+
+        RationalImpl z = new RationalImpl("1/2");
+        z.setMathContext(MathContext.DECIMAL128);
+        RealType expectedResult = (RealType) Pi.getInstance(MathContext.DECIMAL128).sqrt();
+
+        Numeric result = MathUtils.gamma(z);
+
+        assertEquals(MathUtils.round(expectedResult, roundingCtx), MathUtils.round((RealType) result, roundingCtx),
+                "\uD835\uDEAA(1/2) should equal \u221A\uD835\uDF0B");
+
+        IntegerType three = new IntegerImpl("3");
+        IntegerType expectedResult2 = MathUtils.factorial(new IntegerImpl("2"));
+        result = MathUtils.gamma(three);
+
+        assertEquals(expectedResult2, result);
     }
 }

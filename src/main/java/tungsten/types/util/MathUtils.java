@@ -174,6 +174,10 @@ public class MathUtils {
      * Compute the gamma function, &#x1D6AA;(z) for any value z.
      * Note that this is a generalization of factorial; for an
      * integer value z, &#x1D6AA;(z)&nbsp;=&nbsp;(z&thinsp;&minus;&thinsp;1)!
+     * <br/>Note also that this function converges very slowly for
+     * non-integer values. Currently, given z with {@link MathContext#DECIMAL128}
+     * precision, we obtain about 5 digits of accuracy.  This will be
+     * revisited in the future.
      * @param z the argument to this function
      * @return the value of &#x1D6AA;(z)
      */
@@ -194,10 +198,17 @@ public class MathUtils {
             }
         }
 
-        final long iterLimit = z.getMathContext().getPrecision() * 2L + 3L;
+        long precisionSq = (long) z.getMathContext().getPrecision() * (long) z.getMathContext().getPrecision();
+        final long iterLimit = precisionSq << 1L + 7L;
         Numeric accum = z.inverse();
         for (long k = 1L; k < iterLimit; k++) {
             accum = accum.multiply(gammaTerm(z, k));
+        }
+        // round result if it's real or complex
+        if (accum instanceof RealType) {
+            accum = MathUtils.round((RealType) accum, z.getMathContext());
+        } else if (accum instanceof ComplexType) {
+            accum = MathUtils.round((ComplexType) accum, z.getMathContext());
         }
         return accum;
     }
@@ -731,7 +742,6 @@ public class MathUtils {
                 RationalType ratexponent = (RationalType) exponent;
                 final long n_num = ratexponent.numerator().asBigInteger().longValueExact();
                 ComplexType intermediate = computeIntegerExponent(base, n_num, mctx);
-                System.out.println("Magnitude ctx = " + intermediate.magnitude().getMathContext());
                 RealType modulus = nthRoot(intermediate.magnitude(), ratexponent.denominator());
                 RealType argument = (RealType) intermediate.argument().divide(ratexponent.denominator());
                 return new ComplexPolarImpl(modulus, argument, false);

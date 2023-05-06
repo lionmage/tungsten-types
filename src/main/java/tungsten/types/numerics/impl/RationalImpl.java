@@ -28,6 +28,7 @@ import tungsten.types.numerics.*;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 //import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -259,18 +260,25 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric add(Numeric addend) {
+        final int addendPrecision = addend.getMathContext().getPrecision();
         if (addend instanceof RationalType) {
             RationalType that = (RationalType) addend;
             BigInteger denomnew = this.denominator.multiply(that.denominator().asBigInteger());
             BigInteger numleft = this.numerator.multiply(that.denominator().asBigInteger());
             BigInteger numright = that.numerator().asBigInteger().multiply(this.denominator);
             boolean exactness = this.isExact() && that.isExact();
-            return new RationalImpl(numleft.add(numright), denomnew, exactness).reduce();
+            RationalImpl sum = new RationalImpl(numleft.add(numright), denomnew, exactness);
+            sum.setMathContext(addendPrecision > 0 && addendPrecision < mctx.getPrecision() ?
+                    addend.getMathContext() : mctx);
+            return sum.reduce();
         } else if (addend instanceof IntegerType) {
             IntegerType that = (IntegerType) addend;
             BigInteger scaled = this.denominator.multiply(that.asBigInteger());
             boolean exactness = this.isExact() && that.isExact();
-            return new RationalImpl(this.numerator.add(scaled), this.denominator, exactness);
+            RationalImpl sum = new RationalImpl(this.numerator.add(scaled), this.denominator, exactness);
+            sum.setMathContext(addendPrecision > 0 && addendPrecision < mctx.getPrecision() ?
+                    addend.getMathContext() : mctx);
+            return sum;
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
             if (iface == Numeric.class) {
@@ -289,18 +297,25 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        final int subtrahendPrecision = subtrahend.getMathContext().getPrecision();
         if (subtrahend instanceof RationalType) {
             RationalType that = (RationalType) subtrahend;
             BigInteger denomnew = this.denominator.multiply(that.denominator().asBigInteger());
             BigInteger numleft = this.numerator.multiply(that.denominator().asBigInteger());
             BigInteger numright = that.numerator().asBigInteger().multiply(this.denominator);
             boolean exactness = this.isExact() && that.isExact();
-            return new RationalImpl(numleft.subtract(numright), denomnew, exactness).reduce();
+            RationalImpl diff = new RationalImpl(numleft.subtract(numright), denomnew, exactness);
+            diff.setMathContext(subtrahendPrecision > 0 && subtrahendPrecision < mctx.getPrecision() ?
+                    subtrahend.getMathContext() : mctx);
+            return diff.reduce();
         } else if (subtrahend instanceof IntegerType) {
             IntegerType that = (IntegerType) subtrahend;
             BigInteger scaled = this.denominator.multiply(that.asBigInteger());
             boolean exactness = this.isExact() && that.isExact();
-            return new RationalImpl(this.numerator.subtract(scaled), this.denominator, exactness);
+            RationalImpl diff = new RationalImpl(this.numerator.subtract(scaled), this.denominator, exactness);
+            diff.setMathContext(subtrahendPrecision > 0 && subtrahendPrecision < mctx.getPrecision() ?
+                    subtrahend.getMathContext() : mctx);
+            return diff;
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(subtrahend.getClass());
             if (iface == Numeric.class) {
@@ -322,17 +337,27 @@ public class RationalImpl implements RationalType {
     public Numeric multiply(Numeric multiplier) {
         if (multiplier instanceof RationalType) {
             final RationalType that = (RationalType) multiplier;
-            return new RationalImpl(numerator.multiply(that.numerator().asBigInteger()),
+            RationalImpl result = new RationalImpl(numerator.multiply(that.numerator().asBigInteger()),
                     denominator.multiply(that.denominator().asBigInteger()),
-                    exact && that.isExact()).reduce();
+                    exact && that.isExact());
+            result.setMathContext(mctx);
+            return result.reduce();
         } else if (multiplier instanceof IntegerType) {
             final IntegerType that = (IntegerType) multiplier;
             if (that.equals(denominator())) return numerator();  // small optimization
             final RationalType intermediate = new RationalImpl(numerator.multiply(that.asBigInteger()),
                     denominator, exact && that.isExact()).reduce();
             if (intermediate.isCoercibleTo(IntegerType.class)) {
-                return intermediate.numerator();
+                if (mctx.getPrecision() == 0) return intermediate.numerator();
+                // otherwise, generate an anonymous subclass which preserves the MathContext
+                return new IntegerImpl(intermediate.numerator().asBigInteger(), intermediate.isExact()) {
+                    @Override
+                    public MathContext getMathContext() {
+                        return mctx;
+                    }
+                };
             }
+            OptionalOperations.setMathContext(intermediate, mctx);
             return intermediate;
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(multiplier.getClass());
@@ -353,11 +378,12 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by zero");
         if (divisor instanceof IntegerType) {
             IntegerType num = numerator();
             BigInteger gcd = numerator.abs().gcd(((IntegerType) divisor).asBigInteger().abs());
-            if (!BigInteger.ZERO.equals(gcd)) {
-                IntegerType common = new IntegerImpl(gcd);
+            if (!BigInteger.ONE.equals(gcd)) {
+                IntegerType common = new IntegerImpl(gcd, num.isExact() && divisor.isExact());
                 num = (IntegerType) num.divide(common);
                 divisor = divisor.divide(common);
             }
@@ -368,13 +394,18 @@ public class RationalImpl implements RationalType {
 
     @Override
     public IntegerType modulus() {
-        return new IntegerImpl(numerator.mod(denominator));
+        return new IntegerImpl(numerator.mod(denominator), this.isExact());
     }
 
     @Override
     public Numeric inverse() {
         if (numerator.equals(BigInteger.ONE)) {
-            return new IntegerImpl(denominator);
+            return new IntegerImpl(denominator) {
+                @Override
+                public MathContext getMathContext() {
+                    return mctx;
+                }
+            };
         }
         final RationalImpl inverse = new RationalImpl(denominator, numerator, exact);
         inverse.setMathContext(mctx);
@@ -395,9 +426,7 @@ public class RationalImpl implements RationalType {
         if (reduced.numerator().isPerfectSquare() && reduced.denominator().isPerfectSquare()) {
             IntegerType numroot = reduced.numerator().sqrt();
             IntegerType denomroot = reduced.denominator().sqrt();
-            final RationalImpl root = new RationalImpl(numroot, denomroot);
-            root.setMathContext(mctx);
-            return root;
+            return new RationalImpl(numroot, denomroot, mctx);
         } else {
             if (MathUtils.useBuiltInOperations()) {
                 return new RealImpl(this.asBigDecimal().sqrt(mctx), false);
@@ -405,6 +434,8 @@ public class RationalImpl implements RationalType {
             try {
                 RealType realNum = (RealType) reduced.numerator().coerceTo(RealType.class);
                 RealType realDenom = (RealType) reduced.denominator().coerceTo(RealType.class);
+                OptionalOperations.setMathContext(realNum, mctx);
+                OptionalOperations.setMathContext(realDenom, mctx);
                 return realNum.sqrt().divide(realDenom.sqrt());
             } catch (CoercionException e) {
                 throw new ArithmeticException("Exception thrown while taking sqrt of " + this);
@@ -529,10 +560,14 @@ public class RationalImpl implements RationalType {
             try {
                 IntegerType exponent = (IntegerType) operand.coerceTo(IntegerType.class);
                 final int n = exponent.asBigInteger().intValueExact();
+                RationalImpl result;
                 if (n < 0) {
-                    return new RationalImpl(denominator.pow(-n), numerator.pow(-n), exact);
+                    result = new RationalImpl(denominator.pow(-n), numerator.pow(-n), exact);
+                } else {
+                    result = new RationalImpl(numerator.pow(n), denominator.pow(n), exact);
                 }
-                return new RationalImpl(numerator.pow(n), denominator.pow(n), exact);
+                result.setMathContext(mctx);
+                return result;
             } catch (CoercionException e) {
                 throw new ArithmeticException("Unable to convert " + operand);
             }
