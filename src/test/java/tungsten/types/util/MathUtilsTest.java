@@ -34,7 +34,7 @@ public class MathUtilsTest {
 
     @Test
     public void checkGammaFunction() {
-        MathContext roundingCtx = new MathContext(5);  // only checking 5 significant digits
+        MathContext roundingCtx = new MathContext(6);  // only checking 6 significant digits
 
         RationalImpl z = new RationalImpl("1/2");
         z.setMathContext(MathContext.DECIMAL128);
