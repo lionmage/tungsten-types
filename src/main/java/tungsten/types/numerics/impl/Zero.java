@@ -60,7 +60,12 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         return true;
     }
     
-    private static final IntegerType INT_ZERO = new IntegerImpl(BigInteger.ZERO);
+    private final IntegerType INT_ZERO = new IntegerImpl(BigInteger.ZERO) {
+        @Override
+        public MathContext getMathContext() {
+            return mctx;
+        }
+    };
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
