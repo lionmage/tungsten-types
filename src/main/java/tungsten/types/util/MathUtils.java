@@ -180,6 +180,8 @@ public class MathUtils {
      * revisited in the future.
      * @param z the argument to this function
      * @return the value of &#x1D6AA;(z)
+     * @see <a href="https://mathworld.wolfram.com/GammaFunction.html">a comprehensive article at Wolfram MathWorld</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Gamma_function">the entry at Wikipedia</a>
      */
     public static Numeric gamma(Numeric z) {
         if (z.isCoercibleTo(IntegerType.class)) {
