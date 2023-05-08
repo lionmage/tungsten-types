@@ -47,7 +47,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -201,23 +201,49 @@ public class MathUtils {
         }
 
         long precisionSq = (long) z.getMathContext().getPrecision() * (long) z.getMathContext().getPrecision();
-        final long iterLimit = precisionSq << 1L + 7L;
-        Numeric accum = z.inverse();
-        for (long k = 1L; k < iterLimit; k++) {
-            accum = accum.multiply(gammaTerm(z, k));
+        final long iterLimit = precisionSq << 3L + 9L;
+        // the following commented-out code implements the simple version of
+        // this algorithm, and works fine for the single-threaded stream except
+        // that it's slow for high iterLimit values
+        // the problem is when you add parallel(), the result goes off
+        // the rails, even though multiplication is commutative and
+        // associative, and therefore the order shouldn't matter
+//        Numeric oldresult = LongStream.range(1L, iterLimit) // .parallel()
+//                .mapToObj(k -> gammaTerm(z, k))
+//                .reduce(z.inverse(), Numeric::multiply);
+//        System.out.println("Previous result: " + oldresult);
+        final ExecutorService executor = Executors.newCachedThreadPool();
+        List<Future<Numeric>> segments = new LinkedList<>();
+        final long blockSize = 250L;
+        for (long k = 1L; k < iterLimit; k += blockSize) {
+            final long endstop = Math.min(k + blockSize, iterLimit);
+            final long start = k;
+            Callable<Numeric> part = () -> LongStream.range(start, endstop)
+                    .mapToObj(k1 -> gammaTerm(z, k1))
+                    .reduce(Numeric::multiply).orElseThrow();
+            Future<Numeric> segment = executor.submit(part);
+            segments.add(segment);
         }
+        Numeric result = segments.stream().map(f -> {
+            try {
+                return f.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new ArithmeticException("Execution interrupted while computing gamma: " + e.getMessage());
+            }
+        }).reduce(z.inverse(), Numeric::multiply);
+        executor.shutdown();
         // round result if it's real or complex
-        if (accum instanceof RealType) {
-            accum = MathUtils.round((RealType) accum, z.getMathContext());
-        } else if (accum instanceof ComplexType) {
-            accum = MathUtils.round((ComplexType) accum, z.getMathContext());
+        if (result instanceof RealType) {
+            result = MathUtils.round((RealType) result, z.getMathContext());
+        } else if (result instanceof ComplexType) {
+            result = MathUtils.round((ComplexType) result, z.getMathContext());
         }
-        return accum;
+        return result;
     }
 
     private static Numeric gammaTerm(Numeric z, long n) {
         assert n > 0L;
-        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
+        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 3, z.getMathContext().getRoundingMode());
         RationalType nInv = new RationalImpl(1L, n, compCtx);
         Numeric z_over_n = nInv.multiply(z);
         Numeric one = One.getInstance(compCtx);
