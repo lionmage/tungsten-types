@@ -243,7 +243,7 @@ public class MathUtils {
 
     private static Numeric gammaTerm(Numeric z, long n) {
         assert n > 0L;
-        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 3, z.getMathContext().getRoundingMode());
+        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
         RationalType nInv = new RationalImpl(1L, n, compCtx);
         Numeric z_over_n = nInv.multiply(z);
         Numeric one = One.getInstance(compCtx);
