@@ -214,7 +214,7 @@ public class MathUtils {
 //        System.out.println("Previous result: " + oldresult);
         final ExecutorService executor = Executors.newCachedThreadPool();
         List<Future<Numeric>> segments = new LinkedList<>();
-        final long blockSize = 250L;
+        final long blockSize = 250L;  // chop the infinite product into manageable segments
         for (long k = 1L; k < iterLimit; k += blockSize) {
             final long endstop = Math.min(k + blockSize, iterLimit);
             final long start = k;
@@ -224,6 +224,7 @@ public class MathUtils {
             Future<Numeric> segment = executor.submit(part);
             segments.add(segment);
         }
+        // now reduce the blocks sequentially to avoid rounding error problems
         Numeric result = segments.stream().map(f -> {
             try {
                 return f.get();
@@ -231,7 +232,7 @@ public class MathUtils {
                 throw new ArithmeticException("Execution interrupted while computing gamma: " + e.getMessage());
             }
         }).reduce(z.inverse(), Numeric::multiply);
-        executor.shutdown();
+        executor.shutdown();  // we should have exhausted all outstanding term calculations; shut down regardless
         // round result if it's real or complex
         if (result instanceof RealType) {
             result = MathUtils.round((RealType) result, z.getMathContext());
