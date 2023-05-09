@@ -176,7 +176,7 @@ public class MathUtils {
      * integer value z, &#x1D6AA;(z)&nbsp;=&nbsp;(z&thinsp;&minus;&thinsp;1)!
      * <br/>Note also that this function converges very slowly for
      * non-integer values. Currently, given z with {@link MathContext#DECIMAL128}
-     * precision, we obtain about 5 digits of accuracy.  This will be
+     * precision, we obtain about 8 digits of accuracy.  This will be
      * revisited in the future.
      * @param z the argument to this function
      * @return the value of &#x1D6AA;(z)
