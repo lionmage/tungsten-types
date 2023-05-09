@@ -1992,7 +1992,9 @@ public class MathUtils {
         } else if (val instanceof RealType) {
             intermediate = ((RealType) val).asBigDecimal().toBigInteger();
         } else if (val instanceof RationalType) {
-            intermediate = ((RationalType) val).asBigDecimal().toBigInteger();
+            RationalType that = (RationalType) val;
+            // use integer division instead of BigDecimal -> BigInteger conversion
+            intermediate = that.numerator().asBigInteger().divide(that.denominator().asBigInteger());
         } else {
             throw new IllegalArgumentException("Complex arguments not supported");
         }
