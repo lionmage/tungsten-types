@@ -1976,6 +1976,37 @@ public class MathUtils {
         double intermediate = Math.ceil(Math.log(input) / Math.log(2d));
         return (long) Math.pow(2d, intermediate);
     }
+
+    /**
+     * Efficiently calculate &#x230A;log<sub>2</sub>(x)&#x230B; for any
+     * integer, rational, or real value x.
+     * <br/><strong>Note:</strong> this method does not support zero or
+     * negative arguments.
+     * @param val a {@link Numeric} that is not a complex value
+     * @return the floor of log<sub>2</sub>({@code val})
+     */
+    public static IntegerType log2floor(Numeric val) {
+        BigInteger intermediate;
+        if (val instanceof IntegerType) {
+            intermediate = ((IntegerType) val).asBigInteger();
+        } else if (val instanceof RealType) {
+            intermediate = ((RealType) val).asBigDecimal().toBigInteger();
+        } else if (val instanceof RationalType) {
+            intermediate = ((RationalType) val).asBigDecimal().toBigInteger();
+        } else {
+            throw new IllegalArgumentException("Complex arguments not supported");
+        }
+        if (intermediate.compareTo(BigInteger.ZERO) <= 0) {
+            throw new UnsupportedOperationException("Negative and zero values are not supported");
+        }
+        int highestBit = intermediate.bitLength() - 1;
+        return new IntegerImpl(BigInteger.valueOf(highestBit), intermediate.bitCount() == 1) {
+            @Override
+            public MathContext getMathContext() {
+                return val.getMathContext();
+            }
+        };
+    }
     
     private static final Range<RealType> epsilonRange = new Range<>(new RealImpl("0"), new RealImpl("1"), BoundType.EXCLUSIVE);
     
