@@ -116,7 +116,7 @@ public class OptionalOperations {
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {
-                        return (R) m.invoke(null, (Object) null);
+                        return (R) m.invoke(null);
                     } else if (m.getParameterCount() == 1 && MathContext.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (factoryAnno.argTypes().length > 1) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
@@ -161,7 +161,7 @@ public class OptionalOperations {
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {
-                        return (R) m.invoke(null, (Object) null);
+                        return (R) m.invoke(null);
                     } else if (m.getParameterCount() == 1 && MathContext.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (factoryAnno.argTypes().length > 1) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
@@ -208,7 +208,7 @@ public class OptionalOperations {
                         if (arguments != null && arguments.length > 0) {
                             throw new IllegalArgumentException("Factory method " + m.getName() + " requires no arguments");
                         }
-                        return (R) m.invoke(null, (Object) null);
+                        return (R) m.invoke(null);
                     } else {
                         final int argLen = arguments == null ? 0 : arguments.length;
                         if (m.getParameterCount() != argLen) {
@@ -358,7 +358,7 @@ public class OptionalOperations {
                 .filter(m -> m.getName().equals("asBigDecimal")).findAny();
         try {
             if (asBigDec.isPresent()) {
-                return (BigDecimal) asBigDec.get().invoke(number, (Object) null);
+                return (BigDecimal) asBigDec.get().invoke(number);
             } else if (number.isCoercibleTo(RealType.class)) {
                 RealType temp = (RealType) number.coerceTo(RealType.class);
                 return temp.asBigDecimal();

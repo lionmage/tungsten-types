@@ -30,6 +30,7 @@ import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -80,31 +81,47 @@ public class EulerMascheroni implements RealType {
         }
     }
 
+    // Vacca's method, simple but doesn't converge very fast
     private void calculate() {
-        final long iterLimit = (long) mctx.getPrecision() * 450L + 9L;
-        // using an expansion discovered by who else? Euler
-        Numeric result = LongStream.range(1L, iterLimit).mapToObj(this::computeKthTerm)
-                .reduce(ExactZero.getInstance(mctx), Numeric::add);
-        try {
-            RealType real = (RealType) result.coerceTo(RealType.class);
-            value = real.asBigDecimal().round(mctx);
-        } catch (CoercionException fatal) {
-            Logger.getLogger(EulerMascheroni.class.getName()).log(Level.SEVERE,
-                    "Failed to instantiate \uD835\uDEFE for MathContext " + mctx, fatal);
-            throw new IllegalStateException("Fatal error while instantiating \uD835\uDEFE", fatal);
-        }
+        final long iterLimit = (long) mctx.getPrecision() * 10_000L;
+
+        Numeric result = LongStream.range(1L, iterLimit).parallel()
+                .mapToObj(n -> {
+                    IntegerType N = new IntegerImpl(BigInteger.valueOf(n));
+                    RationalImpl interim = new RationalImpl(MathUtils.log2floor(N), N, mctx);
+                    if (n % 2L == 1L) return interim.negate();
+                    return interim;
+                }).map(Numeric.class::cast).reduce(ExactZero.getInstance(mctx), Numeric::add);
+        value = OptionalOperations.asBigDecimal(result);
     }
 
-    private Numeric computeKthTerm(long k) {
-        MathContext calcCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
-        RationalType kInv = new RationalImpl(1L, k, calcCtx);
-        final Numeric one = One.getInstance(calcCtx);
-        try {
-            return kInv.subtract(MathUtils.ln((RealType) one.add(kInv).coerceTo(RealType.class)));
-        } catch (CoercionException e) {
-            throw new ArithmeticException("While computing term " + k + " of \uD835\uDEFE: " + e.getMessage());
-        }
-    }
+    // Euler's method
+//    private void calculate() {
+//        final long iterLimit = (long) mctx.getPrecision() * 450L + 9L;
+//        // using an expansion discovered by who else? Euler
+//        Numeric result = LongStream.range(1L, iterLimit).mapToObj(this::computeKthTerm)
+//                .reduce(ExactZero.getInstance(mctx), Numeric::add);
+//        try {
+//            RealType real = (RealType) result.coerceTo(RealType.class);
+//            value = real.asBigDecimal().round(mctx);
+//        } catch (CoercionException fatal) {
+//            Logger.getLogger(EulerMascheroni.class.getName()).log(Level.SEVERE,
+//                    "Failed to instantiate \uD835\uDEFE for MathContext " + mctx, fatal);
+//            throw new IllegalStateException("Fatal error while instantiating \uD835\uDEFE", fatal);
+//        }
+//    }
+
+    // used by Euler's method above
+//    private Numeric computeKthTerm(long k) {
+//        MathContext calcCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
+//        RationalType kInv = new RationalImpl(1L, k, calcCtx);
+//        final Numeric one = One.getInstance(calcCtx);
+//        try {
+//            return kInv.subtract(MathUtils.ln((RealType) one.add(kInv).coerceTo(RealType.class)));
+//        } catch (CoercionException e) {
+//            throw new ArithmeticException("While computing term " + k + " of \uD835\uDEFE: " + e.getMessage());
+//        }
+//    }
 
     /**
      * It is not actually known whether this constant is irrational or not.
