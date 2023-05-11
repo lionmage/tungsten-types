@@ -28,7 +28,10 @@ import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.*;
+import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
@@ -39,8 +42,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
 /**
@@ -61,7 +62,7 @@ import java.util.stream.LongStream;
  */
 @Constant(name = "euler-gamma", representation = "\uD835\uDEFE")
 public class EulerMascheroni implements RealType {
-    private MathContext mctx;
+    private final MathContext mctx;
     private BigDecimal value;
     private static final Map<MathContext, EulerMascheroni> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
