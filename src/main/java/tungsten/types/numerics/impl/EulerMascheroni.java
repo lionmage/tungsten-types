@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -97,6 +98,9 @@ public class EulerMascheroni implements RealType {
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
         IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼n gives us the number of terms to compute
 
+        // Note: I tried to make this stream .parallel(), but this generated a
+        // ConcurrentModificationException in ForkJoinTask (used by parallel streams under the covers).
+        // This seems strange and counterintuitive, since this stream does not explicitly modify a collection.
         Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact())
                 .mapToObj(k -> computeTerm(new IntegerImpl(BigInteger.valueOf(k)), n))
                 .map(Numeric.class::cast)
@@ -267,6 +271,19 @@ public class EulerMascheroni implements RealType {
     @Override
     public int compareTo(RealType realType) {
         return value.compareTo(realType.asBigDecimal());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, mctx);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof EulerMascheroni) {
+            return mctx.equals(((EulerMascheroni) obj).getMathContext());
+        }
+        return false;
     }
 
     @Override

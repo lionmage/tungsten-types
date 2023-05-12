@@ -198,6 +198,34 @@ public class MathUtils {
             } catch (CoercionException ce) {
                 throw new IllegalStateException(ce);
             }
+        } else if (z instanceof RationalType) {
+            RationalType zz = ((RationalType) z).reduce();
+            // half-integer arguments have easy-to-compute values
+            if (zz.denominator().asBigInteger().equals(TWO) && zz.numerator().isOdd()) {
+                final RealType two = new RealImpl(BigDecimal.valueOf(2L), z.getMathContext());
+                final RealType sqrtPi = (RealType) Pi.getInstance(z.getMathContext()).sqrt();
+                if (zz.numerator().asBigInteger().equals(BigInteger.ONE)) return sqrtPi; // 𝚪(1/2) = √𝜋
+                final RationalType onehalf = new RationalImpl(1L, 2L, z.getMathContext());
+                try {
+                    IntegerType m = (IntegerType) zz.subtract(onehalf).coerceTo(IntegerType.class);
+                    Sign msign = m.sign();  // calculations need to be done without sign, so save it here
+                    m = m.magnitude();  // and take the absolute value
+                    IntegerType m2 = (IntegerType) new IntegerImpl(BigInteger.valueOf(2L)).multiply(m);
+                    RealType num = (RealType) factorial(m2).coerceTo(RealType.class);
+                    RealType denom = (RealType) computeIntegerExponent(two, m2).multiply(factorial(m));
+                    switch (msign) {
+                        case POSITIVE:
+                            return num.multiply(sqrtPi).divide(denom);
+                        case NEGATIVE:
+                            if (m.isOdd()) denom = denom.negate();
+                            return denom.multiply(sqrtPi).divide(num);
+                        case ZERO:
+                            throw new IllegalStateException("\uD835\uDEAA(0) is not analytic");
+                    }
+                } catch (CoercionException ce) {
+                    throw new IllegalStateException("While computing \uD835\uDEAA(" + zz + ")", ce);
+                }
+            }
         }
 
         long precisionSq = (long) z.getMathContext().getPrecision() * (long) z.getMathContext().getPrecision();

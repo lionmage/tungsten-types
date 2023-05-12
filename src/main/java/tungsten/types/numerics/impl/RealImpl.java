@@ -304,6 +304,8 @@ public class RealImpl implements RealType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
+        if (One.isUnity(divisor)) return this;
         final boolean exactness = exact && divisor.isExact();
         if (divisor instanceof RealType) {
             RealType redivisor = (RealType) divisor;
@@ -316,7 +318,6 @@ public class RealImpl implements RealType {
             result.setIrrational(irrational);
             return result;
         } else if (divisor instanceof IntegerType) {
-            if (One.isUnity(divisor)) return this;
             IntegerType intdivisor = (IntegerType) divisor;
             if (isIntegralValue()) {
                 final RationalImpl rationalValue = new RationalImpl(val.toBigIntegerExact(), intdivisor.asBigInteger(),
