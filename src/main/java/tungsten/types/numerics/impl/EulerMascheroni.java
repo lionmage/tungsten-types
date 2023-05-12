@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
 /**
@@ -85,6 +87,7 @@ public class EulerMascheroni implements RealType {
     private static final RealType TEN = new RealImpl(BigDecimal.TEN);
 
     private void calculate() {
+        // explicit advice from Gourdon and Sebah is that we should calculate with 2d digits of precision to get d digits
         MathContext compCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
         // This is an approximation of alpha.  The value satisfies the relationship
         // 𝛼(ln(𝛼) - 1) = 1
@@ -92,8 +95,7 @@ public class EulerMascheroni implements RealType {
         alpha.setMathContext(compCtx);
         RealType log10 = MathUtils.ln(TEN, compCtx);
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
-        // explicit advice from Gourdon and Sebah is that we should calculate with 2d digits of precision to get d digits
-        IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();
+        IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼n gives us the number of terms to compute
 
         Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact())
                 .mapToObj(k -> computeTerm(new IntegerImpl(BigInteger.valueOf(k)), n))
@@ -108,52 +110,12 @@ public class EulerMascheroni implements RealType {
             RealType intermediate = (RealType) MathUtils.computeIntegerExponent(n, k).divide(denom);
             if (k.isEven()) intermediate = intermediate.negate();  // originally tested for k - 1 isOdd
             return intermediate;
-        } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+        } catch (CoercionException fatal) {
+            Logger.getLogger(EulerMascheroni.class.getName()).log(Level.SEVERE,
+                    "Failed to coerce k\u22C5k! to a real value; k = {0}", k);
+            throw new IllegalStateException("While computing the " + k + "th term of \uD835\uDEFE", fatal);
         }
     }
-
-    // Vacca's method, simple but doesn't converge very fast
-//    private void calculate() {
-//        final long iterLimit = (long) mctx.getPrecision() * 10_000L;
-//
-//        Numeric result = LongStream.range(1L, iterLimit).parallel()
-//                .mapToObj(n -> {
-//                    IntegerType N = new IntegerImpl(BigInteger.valueOf(n));
-//                    RationalImpl interim = new RationalImpl(MathUtils.log2floor(N), N, mctx);
-//                    if (n % 2L == 1L) return interim.negate();
-//                    return interim;
-//                }).map(Numeric.class::cast).reduce(ExactZero.getInstance(mctx), Numeric::add);
-//        value = OptionalOperations.asBigDecimal(result);
-//    }
-
-    // Euler's method
-//    private void calculate() {
-//        final long iterLimit = (long) mctx.getPrecision() * 450L + 9L;
-//        // using an expansion discovered by who else? Euler
-//        Numeric result = LongStream.range(1L, iterLimit).mapToObj(this::computeKthTerm)
-//                .reduce(ExactZero.getInstance(mctx), Numeric::add);
-//        try {
-//            RealType real = (RealType) result.coerceTo(RealType.class);
-//            value = real.asBigDecimal().round(mctx);
-//        } catch (CoercionException fatal) {
-//            Logger.getLogger(EulerMascheroni.class.getName()).log(Level.SEVERE,
-//                    "Failed to instantiate \uD835\uDEFE for MathContext " + mctx, fatal);
-//            throw new IllegalStateException("Fatal error while instantiating \uD835\uDEFE", fatal);
-//        }
-//    }
-
-    // used by Euler's method above
-//    private Numeric computeKthTerm(long k) {
-//        MathContext calcCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
-//        RationalType kInv = new RationalImpl(1L, k, calcCtx);
-//        final Numeric one = One.getInstance(calcCtx);
-//        try {
-//            return kInv.subtract(MathUtils.ln((RealType) one.add(kInv).coerceTo(RealType.class)));
-//        } catch (CoercionException e) {
-//            throw new ArithmeticException("While computing term " + k + " of \uD835\uDEFE: " + e.getMessage());
-//        }
-//    }
 
     /**
      * It is not actually known whether this constant is irrational or not.
@@ -242,6 +204,7 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
         if (divisor instanceof EulerMascheroni) return One.getInstance(mctx);
         if (One.isUnity(divisor)) return this;
         if (divisor instanceof RealType) {
