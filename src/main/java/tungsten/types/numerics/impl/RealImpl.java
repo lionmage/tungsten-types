@@ -110,7 +110,13 @@ public class RealImpl implements RealType {
         irrational = false;
         mctx = init.getMathContext();  // the default for integers is better than MathContext.UNLIMITED
     }
-    
+
+    public RealImpl(IntegerType n, MathContext ctx) {
+        val = new BigDecimal(n.asBigInteger());
+        exact = n.isExact();
+        mctx = ctx;
+    }
+
     public void setIrrational(boolean irrational) {
         if (irrational && this.exact) {
             throw new IllegalStateException("There cannot be an exact representation of an irrational number.");
@@ -310,6 +316,7 @@ public class RealImpl implements RealType {
             result.setIrrational(irrational);
             return result;
         } else if (divisor instanceof IntegerType) {
+            if (One.isUnity(divisor)) return this;
             IntegerType intdivisor = (IntegerType) divisor;
             if (isIntegralValue()) {
                 final RationalImpl rationalValue = new RationalImpl(val.toBigIntegerExact(), intdivisor.asBigInteger(),

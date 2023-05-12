@@ -28,10 +28,7 @@ import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
@@ -47,18 +44,21 @@ import java.util.stream.LongStream;
 /**
  * The Euler-Mascheroni constant, denoted &#x1D6FE; (the lower-case Greek letter gamma).
  * The decimal value is approximately equal to 0.5772&hellip; and is notoriously difficult
- * to calculate compared to the &ldquo;usual&rdquo; constants.  The algorithm currently
- * implemented in this class uses a convergent infinite sum attributed to Euler.
- * Because each term of this sum contains ln(x), the sum is computationally expensive.
- * Using ~&thinsp;450N as the iteration limit where N is the requested precision of the result,
- * for {@link MathContext#DECIMAL128}, we get approximately 4 digits of accuracy.
- * This is poor performance considering the computational cost!  This will hopefully improve
- * very soon.
+ * to calculate compared to the &ldquo;usual&rdquo; constants.  The algorithm as currently
+ * implemented is attributed to Sweeney ca.&nbsp;1963 and described in a paper by
+ * Gourdon and Sebah.  It is very efficient, requiring relatively few iterations to
+ * converge to a desired value, while also avoiding a bunch of esoteric operations.
+ * Note: Gourdon and Sebah also describe a refined version of this series, but this
+ * version is simpler and &ldquo;good enough.&rdquo; Note also that the intermediate
+ * calculations only require twice the precision of the desired result to allow for
+ * correction terms.
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see tungsten.types.util.MathUtils#gamma(Numeric) the Gamma function
  * @see <a href="https://mathworld.wolfram.com/Euler-MascheroniConstant.html">the article at Wolfram MathWorld</a>
  * @see <a href="https://en.wikipedia.org/wiki/Euler%27s_constant">a confusingly-named article at Wikipedia</a>
+ * @see <a href="http://numbers.computation.free.fr/Constants/Gamma/gamma.pdf">a paper by Xavier Gourdon and Pascal Sebah</a>
+ *   that goes into some detail regarding techniques of computing &#x1D6FE;
  */
 @Constant(name = "euler-gamma", representation = "\uD835\uDEFE")
 public class EulerMascheroni implements RealType {
@@ -82,19 +82,50 @@ public class EulerMascheroni implements RealType {
         }
     }
 
-    // Vacca's method, simple but doesn't converge very fast
-    private void calculate() {
-        final long iterLimit = (long) mctx.getPrecision() * 10_000L;
+    private static final RealType TEN = new RealImpl(BigDecimal.TEN);
 
-        Numeric result = LongStream.range(1L, iterLimit).parallel()
-                .mapToObj(n -> {
-                    IntegerType N = new IntegerImpl(BigInteger.valueOf(n));
-                    RationalImpl interim = new RationalImpl(MathUtils.log2floor(N), N, mctx);
-                    if (n % 2L == 1L) return interim.negate();
-                    return interim;
-                }).map(Numeric.class::cast).reduce(ExactZero.getInstance(mctx), Numeric::add);
-        value = OptionalOperations.asBigDecimal(result);
+    private void calculate() {
+        MathContext compCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
+        // This is an approximation of alpha.  The value satisfies the relationship
+        // 𝛼(ln(𝛼) - 1) = 1
+        RealImpl alpha = new RealImpl("3.5911", false);
+        alpha.setMathContext(compCtx);
+        RealType log10 = MathUtils.ln(TEN, compCtx);
+        RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
+        // explicit advice from Gourdon and Sebah is that we should calculate with 2d digits of precision to get d digits
+        IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();
+
+        Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact())
+                .mapToObj(k -> computeTerm(new IntegerImpl(BigInteger.valueOf(k)), n))
+                .map(Numeric.class::cast)
+                .reduce(ExactZero.getInstance(compCtx), Numeric::add);
+        value = OptionalOperations.asBigDecimal(sum.subtract(MathUtils.ln(n, compCtx))).round(mctx);
     }
+
+    private RealType computeTerm(IntegerType k, RealType n) {
+        try {
+            RealType denom = (RealType) MathUtils.factorial(k).multiply(k).coerceTo(RealType.class);
+            RealType intermediate = (RealType) MathUtils.computeIntegerExponent(n, k).divide(denom);
+            if (k.isEven()) intermediate = intermediate.negate();  // originally tested for k - 1 isOdd
+            return intermediate;
+        } catch (CoercionException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    // Vacca's method, simple but doesn't converge very fast
+//    private void calculate() {
+//        final long iterLimit = (long) mctx.getPrecision() * 10_000L;
+//
+//        Numeric result = LongStream.range(1L, iterLimit).parallel()
+//                .mapToObj(n -> {
+//                    IntegerType N = new IntegerImpl(BigInteger.valueOf(n));
+//                    RationalImpl interim = new RationalImpl(MathUtils.log2floor(N), N, mctx);
+//                    if (n % 2L == 1L) return interim.negate();
+//                    return interim;
+//                }).map(Numeric.class::cast).reduce(ExactZero.getInstance(mctx), Numeric::add);
+//        value = OptionalOperations.asBigDecimal(result);
+//    }
 
     // Euler's method
 //    private void calculate() {
@@ -148,21 +179,38 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
-        return false;
+        NumericHierarchy h = NumericHierarchy.forNumericType(numtype);
+        return h.compareTo(NumericHierarchy.REAL) >= 0;
     }
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
-        return RealType.super.coerceTo(numtype);
+        if (RealType.class.isAssignableFrom(numtype)) {
+            return this;
+        } else if (ComplexType.class.isAssignableFrom(numtype)) {
+            return new ComplexRectImpl(this);
+        }
+        throw new CoercionException("Cannot downconvert \uD835\uDEFE", this.getClass(), numtype);
     }
 
     @Override
     public RealType negate() {
-        return new RealImpl(value.negate(mctx),mctx, false);
+        return new RealImpl(value.negate(mctx), mctx, false) {
+            @Override
+            public RealType negate() {
+                return EulerMascheroni.this;
+            }
+
+            @Override
+            public String toString() {
+                return "\u2212\uD835\uDEFE";
+            }
+        };
     }
 
     @Override
     public Numeric add(Numeric addend) {
+        if (Zero.isZero(addend)) return this;
         if (addend instanceof RealType) {
             RealType that = (RealType) addend;
             return new RealImpl(value.add(that.asBigDecimal(), mctx), mctx, false);
@@ -172,6 +220,8 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (subtrahend instanceof EulerMascheroni) return ExactZero.getInstance(mctx);
+        if (Zero.isZero(subtrahend)) return this;
         if (subtrahend instanceof RealType) {
             RealType that = (RealType) subtrahend;
             return new RealImpl(value.subtract(that.asBigDecimal(), mctx), mctx, false);
@@ -181,6 +231,8 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (One.isUnity(multiplier)) return this;
+        if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
         if (multiplier instanceof RealType) {
             RealType that = (RealType) multiplier;
             return new RealImpl(value.multiply(that.asBigDecimal(), mctx), mctx, false);
@@ -190,6 +242,8 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (divisor instanceof EulerMascheroni) return One.getInstance(mctx);
+        if (One.isUnity(divisor)) return this;
         if (divisor instanceof RealType) {
             RealType that = (RealType) divisor;
             return new RealImpl(value.divide(that.asBigDecimal(), mctx), mctx, false);
@@ -199,7 +253,17 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public Numeric inverse() {
-        return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false);
+        return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
+            @Override
+            public Numeric inverse() {
+                return EulerMascheroni.this;
+            }
+
+            @Override
+            public String toString() {
+                return "1/\uD835\uDEFE";
+            }
+        };
     }
 
     @Override
