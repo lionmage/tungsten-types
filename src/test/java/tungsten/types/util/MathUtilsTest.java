@@ -59,7 +59,7 @@ public class MathUtilsTest {
     public void checkGammaFunction() {
         final MathContext roundingCtx = new MathContext(8);  // only checking 8 significant digits
 
-        RationalImpl z = new RationalImpl("1/2");
+        RationalImpl z = new RationalImpl("1/2");  // TODO check this for real value = 0.5
         z.setMathContext(MathContext.DECIMAL128);
         RealType expectedResult = (RealType) Pi.getInstance(MathContext.DECIMAL128).sqrt();
 

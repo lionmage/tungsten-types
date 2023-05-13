@@ -70,6 +70,23 @@ public class MathUtils {
      * are to be preferred during calculation.
      */
     public static final String PREFER_INBUILT = "tungsten.types.numerics.MathUtils.prefer.native";
+    /**
+     * The {@link String} representing the System property that
+     * governs how many terms to compute for &#x1D6AA;(z) using
+     * the Weierstrass method.  This value is multiplied by the requested
+     * precision of the result to provide the total number of terms
+     * (and hence, multiplicative iterations) to compute.<br/>
+     * The default value is 2048.
+     */
+    public static final String GAMMA_TERM_SCALE = "tungsten.types.numerics.MathUtils.Gamma.termScale";
+    /**
+     * The implementation of Weierstrass' method of computing &#x1D6AA;(z) is multi-threaded
+     * for performance, with the complete series of N terms subdivided into blockSize groups
+     * which are computed separately, then multiplied together in-order to produce a result.
+     * The System property that governs this value is represented by this {@link String},
+     * and the default value is 250.
+     */
+    public static final String GAMMA_BLOCK_SIZE = "tungsten.types.numerics.MathUtils.Gamma.blockSize";
     private static final BigInteger TWO = BigInteger.valueOf(2L);
     
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
@@ -233,18 +250,36 @@ public class MathUtils {
         }
 
         // use Weierstrass and compute a valid result for all reals and complex values (no half-plane reflection required)
-        final long iterLimit = z.getMathContext().getPrecision() * 320L + 7L;  // needs tuning
+        final long iterLimit = z.getMathContext().getPrecision() * Long.getLong(GAMMA_TERM_SCALE, 2048L) + 7L;
         final MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
         final EulerMascheroni gamma = EulerMascheroni.getInstance(compCtx);
         final Euler e = Euler.getInstance(compCtx);
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
                 "Computing \uD835\uDEAA({0}) for precision {1} with {2} iterations.",
                 new Object[] { z, compCtx.getPrecision(), iterLimit });
+        final long stepSize = Long.getLong(GAMMA_BLOCK_SIZE, 250L);
         Numeric exponent = gamma.multiply(z).negate();
         Numeric coeff = exponent instanceof ComplexType ? e.exp((ComplexType) exponent).divide(z) :
                 e.exp((RealType) exponent).divide(z);  // exponent should be at least a real since gamma is a real
-        Numeric result = LongStream.range(1L, iterLimit).mapToObj(n -> weierstrassTerm(n, z, compCtx))
-                .reduce(coeff, Numeric::multiply);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        List<Future<Numeric>> segments = new LinkedList<>();
+        for (long k = 1L; k < iterLimit; k += stepSize) {
+            final long kk = k;
+            Callable<Numeric> segment = () -> LongStream.range(kk, Math.min(kk + stepSize, iterLimit))
+                    .mapToObj(n -> weierstrassTerm(n, z, compCtx)).reduce(Numeric::multiply).orElseThrow();
+            segments.add(executor.submit(segment));
+        }
+        Numeric result = segments.stream().map(f -> {
+            try {
+                return f.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                throw new IllegalStateException("Interrupted while computing \uD835\uDEAA(" + z + ")", ex);
+            }
+        }).reduce(coeff, Numeric::multiply);
+        executor.shutdown();  // request a shutdown no matter what
+        if (!executor.isTerminated()) {
+            Logger.getLogger(MathUtils.class.getName()).warning("gamma() executor may not have terminated properly");
+        }
         if (result instanceof ComplexType) {
             return round((ComplexType) result, z.getMathContext());
         } else {

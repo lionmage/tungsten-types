@@ -14,4 +14,6 @@ the Java command line as follows:
 | `tungsten.types.numerics.ComplexRectImpl.fastMagnitude.enable` | Boolean | false         | If true, enables faster computation of the magnitude of complex numbers in rectangular format at the expense of less accurate identification of the result. |
 | `tungsten.types.set.impl.FibonacciNumbers.epsilonLimit`        | Real    | (none)        | If provided, this value is parsed as a threshold limit for epsilon values used to approximate phi.                                                          |
 | `tungsten.types.numerics.RationalType.reduceForEquals`         | Boolean | false         | When true, rational values are first reduced before comparison for equality.                                                                                |
+| `tungsten.types.numerics.MathUtils.Gamma.termScale`            | Integer | 2048          | Determines how many terms of the Weierstrass formula for 𝚪 will be computed. This is multiplied by the precision.                                          |
+| `tungsten.types.numerics.MathUtils.Gamma.blockSize`            | Integer | 250           | Determines how many Weierstrass terms are computed per block, thus governs work-per-thread.                                                                 |
 
