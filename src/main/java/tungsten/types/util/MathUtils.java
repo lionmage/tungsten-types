@@ -233,13 +233,16 @@ public class MathUtils {
         }
 
         // use Weierstrass and compute a valid result for all reals and complex values (no half-plane reflection required)
-        final long iterLimit = z.getMathContext().getPrecision() * 8L + 3L;
-        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
+        final long iterLimit = z.getMathContext().getPrecision() * 320L + 7L;  // needs tuning
+        final MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
         final EulerMascheroni gamma = EulerMascheroni.getInstance(compCtx);
         final Euler e = Euler.getInstance(compCtx);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "Computing \uD835\uDEAA({0}) for precision {1} with {2} iterations.",
+                new Object[] { z, compCtx.getPrecision(), iterLimit });
         Numeric exponent = gamma.multiply(z).negate();
         Numeric coeff = exponent instanceof ComplexType ? e.exp((ComplexType) exponent).divide(z) :
-                e.exp((RealType) exponent).divide(z);
+                e.exp((RealType) exponent).divide(z);  // exponent should be at least a real since gamma is a real
         Numeric result = LongStream.range(1L, iterLimit).mapToObj(n -> weierstrassTerm(n, z, compCtx))
                 .reduce(coeff, Numeric::multiply);
         if (result instanceof ComplexType) {
@@ -255,10 +258,11 @@ public class MathUtils {
 
     private static Numeric weierstrassTerm(long n, Numeric z, MathContext ctx) {
         final Euler e = Euler.getInstance(ctx);
-        final RealType nn = new RealImpl(BigDecimal.valueOf(n), ctx);
         final Numeric one = One.getInstance(ctx);
+        final BigDecimal nn = BigDecimal.valueOf(n);
 
-        Numeric zOverN = z.divide(nn);  // TODO should this be nn.inverse().multiply(z) ?
+        Numeric zOverN = z instanceof ComplexType ? z.divide(new RealImpl(nn, ctx)) : // may need to invert the order for cplx case
+                new RealImpl(OptionalOperations.asBigDecimal(z).divide(nn, ctx), ctx);
         Numeric lhs = one.add(zOverN).inverse();
         Numeric rhs = z instanceof ComplexType ? e.exp((ComplexType) zOverN) :
                 e.exp((RealType) zOverN);
