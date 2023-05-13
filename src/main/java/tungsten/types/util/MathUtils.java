@@ -220,6 +220,10 @@ public class MathUtils {
                             if (m.isOdd()) denom = denom.negate();
                             return denom.multiply(sqrtPi).divide(num);
                         case ZERO:
+                            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                                    "This code should never have been reached.  Corner cases for \uD835\uDEAA(0) and \uD835\uDEAA({0}) " +
+                                            "should have already handled this scenario while computing \uD835\uDEAA({1}).  Condition violated: m \u2260 0",
+                                    new Object[] {onehalf, zz});
                             throw new IllegalStateException("\uD835\uDEAA(0) is not analytic");
                     }
                 } catch (CoercionException ce) {
