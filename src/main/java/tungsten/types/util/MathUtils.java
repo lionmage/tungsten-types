@@ -233,12 +233,13 @@ public class MathUtils {
         }
 
         // use Weierstrass and compute a valid result for all reals and complex values (no half-plane reflection required)
-        final long iterLimit = z.getMathContext().getPrecision() * 10L + 3L;
+        final long iterLimit = z.getMathContext().getPrecision() * 8L + 3L;
         MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
         final EulerMascheroni gamma = EulerMascheroni.getInstance(compCtx);
         final Euler e = Euler.getInstance(compCtx);
-        Numeric coeff = z instanceof ComplexType ? e.exp((ComplexType) z.multiply(gamma).negate()).divide(z) :
-                e.exp((RealType) z.multiply(gamma).negate()).divide(z);
+        Numeric exponent = gamma.multiply(z).negate();
+        Numeric coeff = exponent instanceof ComplexType ? e.exp((ComplexType) exponent).divide(z) :
+                e.exp((RealType) exponent).divide(z);
         Numeric result = LongStream.range(1L, iterLimit).mapToObj(n -> weierstrassTerm(n, z, compCtx))
                 .reduce(coeff, Numeric::multiply);
         if (result instanceof ComplexType) {
@@ -257,7 +258,7 @@ public class MathUtils {
         final RealType nn = new RealImpl(BigDecimal.valueOf(n), ctx);
         final Numeric one = One.getInstance(ctx);
 
-        Numeric zOverN = z.divide(nn);
+        Numeric zOverN = z.divide(nn);  // TODO should this be nn.inverse().multiply(z) ?
         Numeric lhs = one.add(zOverN).inverse();
         Numeric rhs = z instanceof ComplexType ? e.exp((ComplexType) zOverN) :
                 e.exp((RealType) zOverN);
