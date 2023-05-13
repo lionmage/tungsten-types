@@ -224,7 +224,7 @@ public class MathUtils {
                                     "This code should never have been reached.  Corner cases for \uD835\uDEAA(0) and \uD835\uDEAA({0}) " +
                                             "should have already handled this scenario while computing \uD835\uDEAA({1}).  Condition violated: m \u2260 0",
                                     new Object[] {onehalf, zz});
-                            throw new IllegalStateException("\uD835\uDEAA(0) is not analytic");
+                            throw new IllegalStateException("\uD835\uDEAA(" + zz + ") [non-reduced z = " + z + "] failed with condition violated: m \u2260 0");
                     }
                 } catch (CoercionException ce) {
                     throw new IllegalStateException("While computing \uD835\uDEAA(" + zz + ")", ce);
