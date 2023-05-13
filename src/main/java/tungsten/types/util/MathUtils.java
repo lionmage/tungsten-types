@@ -232,70 +232,36 @@ public class MathUtils {
             }
         }
 
-        long precisionSq = (long) z.getMathContext().getPrecision() * (long) z.getMathContext().getPrecision();
-        final long iterLimit = precisionSq << 3L + 9L;
-        // the following commented-out code implements the simple version of
-        // this algorithm, and works fine for the single-threaded stream except
-        // that it's slow for high iterLimit values
-        // the problem is when you add parallel(), the result goes off
-        // the rails, even though multiplication is commutative and
-        // associative, and therefore the order shouldn't matter
-//        Numeric oldresult = LongStream.range(1L, iterLimit) // .parallel()
-//                .mapToObj(k -> gammaTerm(z, k))
-//                .reduce(z.inverse(), Numeric::multiply);
-//        System.out.println("Previous result: " + oldresult);
-        final ExecutorService executor = Executors.newCachedThreadPool();
-        List<Future<Numeric>> segments = new LinkedList<>();
-        final long blockSize = 250L;  // chop the infinite product into manageable segments
-        for (long k = 1L; k < iterLimit; k += blockSize) {
-            final long endstop = Math.min(k + blockSize, iterLimit);
-            final long start = k;
-            Callable<Numeric> part = () -> LongStream.range(start, endstop)
-                    .mapToObj(k1 -> gammaTerm(z, k1))
-                    .reduce(Numeric::multiply).orElseThrow();
-            Future<Numeric> segment = executor.submit(part);
-            segments.add(segment);
-        }
-        // now reduce the blocks sequentially to avoid rounding error problems
-        Numeric result = segments.stream().map(f -> {
+        // use Weierstrass and compute a valid result for all reals and complex values (no half-plane reflection required)
+        final long iterLimit = z.getMathContext().getPrecision() * 10L + 3L;
+        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
+        final EulerMascheroni gamma = EulerMascheroni.getInstance(compCtx);
+        final Euler e = Euler.getInstance(compCtx);
+        Numeric coeff = z instanceof ComplexType ? e.exp((ComplexType) z.multiply(gamma).negate()).divide(z) :
+                e.exp((RealType) z.multiply(gamma).negate()).divide(z);
+        Numeric result = LongStream.range(1L, iterLimit).mapToObj(n -> weierstrassTerm(n, z, compCtx))
+                .reduce(coeff, Numeric::multiply);
+        if (result instanceof ComplexType) {
+            return round((ComplexType) result, z.getMathContext());
+        } else {
             try {
-                return f.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new ArithmeticException("Execution interrupted while computing gamma: " + e.getMessage());
+                return round((RealType) result.coerceTo(RealType.class), z.getMathContext());
+            } catch (CoercionException ex) {
+                throw new IllegalStateException("Cannot convert " + result + " to a real value", ex);
             }
-        }).reduce(z.inverse(), Numeric::multiply);
-        executor.shutdown();  // we should have exhausted all outstanding term calculations; shut down regardless
-        // round result if it's real or complex
-        if (result instanceof RealType) {
-            result = MathUtils.round((RealType) result, z.getMathContext());
-        } else if (result instanceof ComplexType) {
-            result = MathUtils.round((ComplexType) result, z.getMathContext());
         }
-        return result;
     }
 
-    private static Numeric gammaTerm(Numeric z, long n) {
-        assert n > 0L;
-        MathContext compCtx = new MathContext(z.getMathContext().getPrecision() * 2, z.getMathContext().getRoundingMode());
-        RationalType nInv = new RationalImpl(1L, n, compCtx);
-        Numeric z_over_n = nInv.multiply(z);
-        Numeric one = One.getInstance(compCtx);
-        Numeric lhs = one.add(z_over_n).inverse();
-        Numeric rhs;
-        try {
-            RealType base = (RealType) one.add(nInv).coerceTo(RealType.class);
-            if (z instanceof ComplexType) {
-                rhs = generalizedExponent(base, (ComplexType) z, compCtx);  // returns ComplexType (real^cplx -> cplx)
-            } else {
-                rhs = generalizedExponent(base, z, compCtx); // returns RealType (real^int, real^rat, real^real)
-            }
-            return lhs.multiply(rhs);
-        } catch (CoercionException ce) {
-            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                    "Failed to coerce 1 + {0} to real while computing {1}th term for \uD835\uDEAA({2}).",
-                    new Object[]{nInv, n, z});
-            throw new IllegalStateException("While computing \uD835\uDEAA series term " + n, ce);
-        }
+    private static Numeric weierstrassTerm(long n, Numeric z, MathContext ctx) {
+        final Euler e = Euler.getInstance(ctx);
+        final RealType nn = new RealImpl(BigDecimal.valueOf(n), ctx);
+        final Numeric one = One.getInstance(ctx);
+
+        Numeric zOverN = z.divide(nn);
+        Numeric lhs = one.add(zOverN).inverse();
+        Numeric rhs = z instanceof ComplexType ? e.exp((ComplexType) zOverN) :
+                e.exp((RealType) zOverN);
+        return lhs.multiply(rhs);
     }
 
     /**
