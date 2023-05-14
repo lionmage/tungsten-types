@@ -31,6 +31,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RationalImpl;
+import tungsten.types.numerics.impl.RealImpl;
 
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -57,16 +58,21 @@ public class MathUtilsTest {
 
     @Test
     public void checkGammaFunction() {
-        final MathContext roundingCtx = new MathContext(8);  // only checking 8 significant digits
+        final MathContext roundingCtx = new MathContext(6);  // only checking 6 significant digits for now
 
-        RationalImpl z = new RationalImpl("1/2");  // TODO check this for real value = 0.5
+        RationalImpl z = new RationalImpl("1/2");
         z.setMathContext(MathContext.DECIMAL128);
         RealType expectedResult = (RealType) Pi.getInstance(MathContext.DECIMAL128).sqrt();
 
         Numeric result = MathUtils.gamma(z);
 
-        assertEquals(MathUtils.round(expectedResult, roundingCtx), MathUtils.round((RealType) result, roundingCtx),
+        assertEquals(expectedResult, result,
                 "\uD835\uDEAA(1/2) should equal \u221A\uD835\uDF0B");
+
+        RealType z2 = new RealImpl("0.5", MathContext.DECIMAL128);
+        result = MathUtils.gamma(z2);
+        assertEquals(MathUtils.round(expectedResult, roundingCtx), MathUtils.round((RealType) result, roundingCtx),
+                "\uD835\uDEAA(0.5) should equal \u221A\uD835\uDF0B");
 
         IntegerType three = new IntegerImpl("3");
         IntegerType expectedResult2 = MathUtils.factorial(new IntegerImpl("2"));

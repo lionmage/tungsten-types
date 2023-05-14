@@ -192,11 +192,21 @@ public class MathUtils {
      * Note that this is a generalization of factorial; for an
      * integer value z, &#x1D6AA;(z)&nbsp;=&nbsp;(z&thinsp;&minus;&thinsp;1)!
      * <br/>Note also that this function converges very slowly for
-     * non-integer values. Currently, given z with {@link MathContext#DECIMAL128}
-     * precision, we obtain about 8 digits of accuracy.  This will be
-     * revisited in the future.
+     * non-integer and non-half-integer values. Currently, given z with {@link MathContext#DECIMAL128}
+     * precision, we obtain about 6 digits of accuracy with the property {@link #GAMMA_TERM_SCALE} set to
+     * its default value.  This may be revisited in the future.
+     * <br/>Since the implementation of Weierstrass' formula is written to be concurrent,
+     * the user is encouraged to set {@link #GAMMA_TERM_SCALE} to be as large as tolerable,
+     * and to adjust {@link #GAMMA_BLOCK_SIZE} accordingly.
+     * <br/>The <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
+     * was not chosen because it requires special handling (e.g., it only works for values &gt; 1&#x2044;2),
+     * necessitating reflection around the imaginary axis using &#x1D6AA; identities.  Weierstrass
+     * works for the entire complex plane, and concurrency allows us to compute many more terms in
+     * a reasonable amount of time.
      * @param z the argument to this function
      * @return the value of &#x1D6AA;(z)
+     * @see #GAMMA_TERM_SCALE
+     * @see #GAMMA_BLOCK_SIZE
      * @see <a href="https://mathworld.wolfram.com/GammaFunction.html">a comprehensive article at Wolfram MathWorld</a>
      * @see <a href="https://en.wikipedia.org/wiki/Gamma_function">the entry at Wikipedia</a>
      */
@@ -232,8 +242,10 @@ public class MathUtils {
                     RealType denom = (RealType) computeIntegerExponent(two, m2).multiply(factorial(m));
                     switch (msign) {
                         case POSITIVE:
+                            // See https://proofwiki.org/wiki/Gamma_Function_of_Positive_Half-Integer
                             return num.multiply(sqrtPi).divide(denom);
                         case NEGATIVE:
+                            // see https://proofwiki.org/wiki/Gamma_Function_of_Negative_Half-Integer
                             if (m.isOdd()) denom = denom.negate();
                             return denom.multiply(sqrtPi).divide(num);
                         case ZERO:
@@ -269,6 +281,7 @@ public class MathUtils {
                     .mapToObj(n -> weierstrassTerm(n, z, compCtx)).reduce(Numeric::multiply).orElseThrow();
             segments.add(executor.submit(segment));
         }
+        // read the block results out sequentially and take the product
         Numeric result = segments.stream().map(f -> {
             try {
                 return f.get();
@@ -312,7 +325,7 @@ public class MathUtils {
      */
     public static IntegerType nChooseK(IntegerType n, IntegerType k) {
         // factorial() already checks for negative values, so we just need to check that k <= n
-        if (k.compareTo(n) > 0) throw new IllegalArgumentException("k must be \u2265 n");
+        if (k.compareTo(n) > 0) throw new IllegalArgumentException("k must be \u2264 n");
         try {
             return (IntegerType) factorial(n).divide(factorial(k).multiply(factorial((IntegerType) n.subtract(k)))).coerceTo(IntegerType.class);
         } catch (CoercionException e) {
@@ -359,7 +372,7 @@ public class MathUtils {
      * Round a value x to the given {@link MathContext}.
      * @param x   the real value to be rounded
      * @param ctx the {@link MathContext} to apply
-     * @return the value x rounded
+     * @return the value {@code x} rounded
      */
     public static RealType round(RealType x, MathContext ctx) {
         BigDecimal value = x.asBigDecimal().round(ctx);
@@ -546,7 +559,7 @@ public class MathUtils {
     private static final Range<RealType> newtonRange = new Range<>(new RealImpl(BigDecimal.ZERO), new RealImpl(decTWO), BoundType.EXCLUSIVE);
     
     /**
-     * Compute the natural logarithm, ln(x)
+     * Compute the natural logarithm, ln(x).
      * @param x the value for which to obtain the natural logarithm
      * @param mctx the {@link MathContext} to use for this operation
      * @return the natural logarithm of {@code x}
@@ -587,7 +600,7 @@ public class MathUtils {
     }
     
     /**
-     * Compute the natural logarithm, ln(x)
+     * Compute the natural logarithm, ln(x).
      * @param x the value for which to obtain the natural logarithm
      * @return the natural logarithm of {@code x}
      */
@@ -638,7 +651,7 @@ public class MathUtils {
      * Compute the general logarithm, log<sub>b</sub>(x).
      * @param x the number for which we wish to take a logarithm
      * @param base the base of the logarithm
-     * @param mctx the MathContext to use for the 
+     * @param mctx the MathContext to use for computing the logarithm
      * @return the logarithm of {@code x} in {@code base}
      */
     public static RealType log(RealType x, RealType base, MathContext mctx) {
@@ -664,8 +677,8 @@ public class MathUtils {
      */
     public static RealType mantissa(RealType x) {
         BigDecimal mantissa = x.asBigDecimal().scaleByPowerOfTen(x.asBigDecimal().scale() + 1 - x.asBigDecimal().precision());
-        RealImpl result = new RealImpl(mantissa, x.isExact());
-        result.setMathContext(x.getMathContext());
+        RealImpl result = new RealImpl(mantissa, x.getMathContext(), x.isExact());
+        result.setIrrational(x.isIrrational());
         return result;
     }
     
