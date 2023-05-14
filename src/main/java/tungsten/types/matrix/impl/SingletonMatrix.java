@@ -26,6 +26,7 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.MathUtils;
@@ -119,7 +120,13 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
     public SingletonMatrix<? extends Numeric> pow(Numeric n) {
         Numeric result;
         if (element instanceof RealType) {
-            result = MathUtils.generalizedExponent((RealType) element, n, element.getMathContext());
+            if (n instanceof ComplexType) {
+                result = MathUtils.generalizedExponent((RealType) element, (ComplexType) n, element.getMathContext());
+            } else {
+                result = MathUtils.generalizedExponent((RealType) element, n, element.getMathContext());
+            }
+        } else if (element instanceof ComplexType) {
+            result = MathUtils.generalizedExponent((ComplexType) element, n, element.getMathContext());
         } else {
             if (!(n instanceof IntegerType)) {
                 // we can check to see if we got a real that's actually just an integer
@@ -131,7 +138,7 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
                         throw new IllegalStateException("isCoercibleTo() is inconsistent with coerceTo()", e);
                     }
                 } else {
-                    throw new IllegalArgumentException("Currently, non-integer exponents are not supported for non-real types.");
+                    throw new UnsupportedOperationException("Currently, non-integer exponents are not supported for non-real, non-complex types.");
                 }
             }
             result = MathUtils.computeIntegerExponent(element, (IntegerType) n);

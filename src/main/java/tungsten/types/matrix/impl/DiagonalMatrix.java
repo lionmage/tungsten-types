@@ -182,6 +182,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     public Matrix<? extends Numeric> pow(Numeric n) {
         Numeric[] result;
         final Class<T> clazz = (Class<T>) elements[0].getClass();
+        // the following code should work just fine for negative exponents, without calling inverse()
         if (RealType.class.isAssignableFrom(clazz)) {
             if (n instanceof ComplexType) {
                 result = Arrays.stream(elements)
@@ -198,7 +199,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                     .toArray(Numeric[]::new);
         } else {
             if (!n.isCoercibleTo(IntegerType.class)) {
-                throw new IllegalArgumentException("Currently, non-integer exponents are not supported for non-real and non-complex types");
+                throw new UnsupportedOperationException("Currently, non-integer exponents are not supported for non-real and non-complex matrix element types");
             }
 
             try {
