@@ -65,9 +65,14 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
     IntegerType[] divideWithRemainder();
     IntegerType modulus();
 
+    static boolean reduceForEqualityTest() {
+        return Boolean.getBoolean(REDUCE_FOR_EQUALITY_TEST);
+    }
+
     /*
     Methods necessary for Groovy operator overloading follow.
      */
+
     default RationalType positive() {
         return this.magnitude();
     }
@@ -80,9 +85,5 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
             return this.asBigDecimal();
         }
         return Numeric.super.asType(clazz);
-    }
-
-    static boolean reduceForEqualityTest() {
-        return Boolean.getBoolean(REDUCE_FOR_EQUALITY_TEST);
     }
 }
