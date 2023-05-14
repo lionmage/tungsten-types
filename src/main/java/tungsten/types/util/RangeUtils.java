@@ -334,7 +334,7 @@ public class RangeUtils {
 
             @Override
             public String toString() {
-                return "{x in \uD835\uDD74 \u2208\u2009" + range + "\u2009}";
+                return "{x in \u2124 \u2208\u2009" + range + "\u2009}";
             }
         };
     }
@@ -488,7 +488,7 @@ public class RangeUtils {
 
             @Override
             public String toString() {
-                return "{x in \uD835\uDD7D \u2208\u2009" + range + "\u2009}";
+                return "{x in \u211D \u2208\u2009" + range + "\u2009}";
             }
         };
     }
