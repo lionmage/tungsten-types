@@ -74,7 +74,7 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
 
     default Object asType(Class<?> clazz) {
         if (BigInteger.class.isAssignableFrom(clazz)) {
-            if (denominator().asBigInteger().equals(BigInteger.ONE)) return numerator();
+            if (denominator().asBigInteger().equals(BigInteger.ONE)) return numerator().asBigInteger();
             throw new ArithmeticException("Value cannot be reduced to an integer");
         } else if (BigDecimal.class.isAssignableFrom(clazz)) {
             return this.asBigDecimal();
