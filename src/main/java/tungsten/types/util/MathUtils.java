@@ -202,7 +202,10 @@ public class MathUtils {
      * was not chosen because it requires special handling (e.g., it only works for values &gt; 1&#x2044;2),
      * necessitating reflection around the imaginary axis using &#x1D6AA; identities.  Weierstrass
      * works for the entire complex plane, and concurrency allows us to compute many more terms in
-     * a reasonable amount of time.
+     * a reasonable amount of time.  Lanczos also requires choosing two special values (g and n) which are not
+     * entirely arbitrary, and for which no combination can be generated that supports precision beyond
+     * a given point, making it an <a href="https://mrob.com/pub/ries/lanczos-gamma.html">unsuitable algorithm</a>
+     * for arbitrary precision math.
      * @param z the argument to this function
      * @return the value of &#x1D6AA;(z)
      * @see #GAMMA_TERM_SCALE
@@ -773,6 +776,15 @@ public class MathUtils {
         }
     }
 
+    /**
+     * Method for raising a real-valued number to a complex-valued exponent.
+     * This method is relatively efficient since it only needs to handle a very
+     * specific type of exponentiation, and no coercion of {@code base} is required.
+     * @param base     the real-valued base, i.e., the thing to be raised to some power
+     * @param exponent a complex-valued exponent
+     * @param mctx     the {@link MathContext} for the calculation
+     * @return the complex-valued result of base<sup>exponent</sup>
+     */
     public static ComplexType generalizedExponent(RealType base, ComplexType exponent, MathContext mctx) {
         // this logic could not be folded into the generalizedExponent() method above without changing that method's return type
         // this method should be the equivalent of converting base to a ComplexType and calling the generalizedExponent()
@@ -780,6 +792,13 @@ public class MathUtils {
         return new ComplexPolarImpl(generalizedExponent(base, exponent.real(), mctx), (RealType) ln(base, mctx).multiply(exponent.imaginary()));
     }
 
+    /**
+     * Calculates b<sup>x</sup> for any complex value b and any value x.
+     * @param base     b, the complex-valued base
+     * @param exponent x, an exponent of any {@link Numeric} type whatsoever
+     * @param mctx     the {@link MathContext} for the calculation
+     * @return the complex-valued result of base<sup>exponent</sup>
+     */
     public static ComplexType generalizedExponent(ComplexType base, Numeric exponent, MathContext mctx) {
         if (Zero.isZero(exponent)) {
             try {
@@ -842,7 +861,7 @@ public class MathUtils {
      * is inferred from the argument {@code a}.
      * @param a the value for which we want to find a root
      * @param n the degree of the root
-     * @return the {@code n}th root of {@code a}
+     * @return the {@code n}<sup>th</sup> root of {@code a}
      */
     public static RealType nthRoot(RealType a, IntegerType n) {
         return nthRoot(a, n, a.getMathContext());
@@ -1796,9 +1815,7 @@ public class MathUtils {
     public static <T extends Numeric> Vector<T> backSubstitution(Matrix<T> U, Vector<? super T> c) {
         if (U.rows() != c.length()) throw new IllegalArgumentException("Matrix U must have the same number of rows as elements in Vector c");
         if (U.rows() != U.columns() || !U.isUpperTriangular()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
-        Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) U.getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
-        if (clazz == null) clazz = (Class<T>) U.valueAt(0L, 0L).getClass();
+        final Class<T> clazz = U.getRow(0L).getElementType(); // U is upper-triangular, so row 0 should consist of all non-zero elements
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
         Vector<T> x;
         switch (h) {
@@ -2045,12 +2062,12 @@ public class MathUtils {
         } else if (val instanceof RationalType) {
             RationalType that = (RationalType) val;
             // use integer division instead of BigDecimal -> BigInteger conversion
-            intermediate = that.numerator().asBigInteger().divide(that.denominator().asBigInteger());
+            intermediate = that.divideWithRemainder()[0].asBigInteger();
         } else {
             throw new IllegalArgumentException("Complex arguments not supported");
         }
         if (intermediate.compareTo(BigInteger.ZERO) <= 0) {
-            throw new UnsupportedOperationException("Negative and zero values are not supported");
+            throw new ArithmeticException("log\u2082(x) undefined for x \u2264 0");
         }
         int highestBit = intermediate.bitLength() - 1;
         return new IntegerImpl(BigInteger.valueOf(highestBit), intermediate.bitCount() == 1) {
