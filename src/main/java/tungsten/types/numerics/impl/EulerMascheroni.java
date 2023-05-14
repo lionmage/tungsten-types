@@ -89,14 +89,14 @@ public class EulerMascheroni implements RealType {
 
     private void calculate() {
         // explicit advice from Gourdon and Sebah is that we should calculate with 2d digits of precision to get d digits
-        MathContext compCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
+        final MathContext compCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
         // This is an approximation of alpha.  The value satisfies the relationship
         // 𝛼(ln(𝛼) - 1) = 1
-        RealImpl alpha = new RealImpl("3.5911", false);
+        final RealImpl alpha = new RealImpl("3.5911", false);
         alpha.setMathContext(compCtx);
-        RealType log10 = MathUtils.ln(TEN, compCtx);
+        final RealType log10 = MathUtils.ln(TEN, compCtx);
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
-        IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼n gives us the number of terms to compute
+        IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼⋅n gives us the number of terms to compute
 
         // Note: I tried to make this stream .parallel(), but this generated a
         // ConcurrentModificationException in ForkJoinTask (used by parallel streams under the covers).
@@ -110,7 +110,7 @@ public class EulerMascheroni implements RealType {
 
     private RealType computeTerm(IntegerType k, RealType n) {
         try {
-            RealType denom = (RealType) MathUtils.factorial(k).multiply(k).coerceTo(RealType.class);
+            RealType denom = (RealType) MathUtils.factorial(k).multiply(k).coerceTo(RealType.class); // k⋅k!
             RealType intermediate = (RealType) MathUtils.computeIntegerExponent(n, k).divide(denom);
             if (k.isEven()) intermediate = intermediate.negate();  // originally tested for k - 1 isOdd
             return intermediate;
