@@ -1302,6 +1302,37 @@ public class MathUtils {
     }
 
     /**
+     * Given a matrix <strong>A</strong>, compute its square root.  The resulting matrix B
+     * satisfies the relationship <strong>B&sdot;B</strong>&nbsp;=&nbsp;<strong>A</strong>,
+     * or alternately <strong>B</strong><sup>2</sup>&nbsp;=&nbsp;<strong>A</strong>.
+     * This method returns the principal root of {@code A}.
+     * @param A any matrix
+     * @return the matrix which is the square root of {@code A}
+     */
+    public static Matrix<? extends Numeric> sqrt(Matrix<? extends Numeric> A) {
+        if (A instanceof DiagonalMatrix) {
+            Numeric[] elements = LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx))
+                    .map(Numeric::sqrt).toArray(Numeric[]::new);
+            return new DiagonalMatrix<>(elements);
+        }
+        // if it's a 2×2 matrix, we have an exact solution
+        if (A.rows() == 2L && A.columns() == 2L) {
+            final Numeric sqrtDet = A.determinant().sqrt();
+            final RealType two = new RealImpl(decTWO, sqrtDet.getMathContext());
+            Numeric denom = A.trace().add(two.multiply(sqrtDet)).sqrt();
+            // the cast is necessary to make the following expression work, though it boggles the mind that
+            // Java generics can't see that a Matrix<Numeric> is a Matrix<? extends Numeric>
+            return ((Matrix<Numeric>) A).add(new IdentityMatrix(A.rows(), sqrtDet.getMathContext()).scale(denom.inverse()));
+        }
+        // if A is upper triangular and has no more than 1 diagonal element = 0
+        if (A.isUpperTriangular() &&
+                LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx)).filter(Zero::isZero).count() <= 1L) {
+            // TODO figure out recursive formula
+        }
+        throw new UnsupportedOperationException("Currently unable to compute square root of supplied matrix");
+    }
+
+    /**
      * Compute &sigma;<sub>1</sub>(M) of any {@link Matrix} M, which returns the single largest
      * value of M (i.e., the matrix element with the greatest {@link Numeric#magnitude() magnitude}).
      * @param M any {@link Matrix}
