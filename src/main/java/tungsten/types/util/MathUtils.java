@@ -41,7 +41,6 @@ import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.*;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -52,6 +51,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
@@ -1308,12 +1308,17 @@ public class MathUtils {
      * This method returns the principal root of {@code A}.
      * @param A any matrix
      * @return the matrix which is the square root of {@code A}
+     * @see <a href="https://www.sciencedirect.com/science/article/pii/002437958380010X">A Schur Method
+     *   for the Square Root of a Matrix</a> by Åke Björck and Sven Hammarling
      */
     public static Matrix<? extends Numeric> sqrt(Matrix<? extends Numeric> A) {
         if (A instanceof DiagonalMatrix) {
             Numeric[] elements = LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx))
                     .map(Numeric::sqrt).toArray(Numeric[]::new);
             return new DiagonalMatrix<>(elements);
+        }
+        if (A instanceof SingletonMatrix) {
+            return new SingletonMatrix<>(A.valueAt(0L, 0L).sqrt());
         }
         // if it's a 2×2 matrix, we have an exact solution
         if (A.rows() == 2L && A.columns() == 2L) {
@@ -1327,9 +1332,43 @@ public class MathUtils {
         // if A is upper triangular and has no more than 1 diagonal element = 0
         if (A.isUpperTriangular() &&
                 LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx)).filter(Zero::isZero).count() <= 1L) {
-            // TODO figure out recursive formula
+            // see https://www.sciencedirect.com/science/article/pii/002437958380010X?ref=cra_js_challenge&fr=RR-1 section 3
+            return sqrtUpperTriangular(A);
         }
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "The given matrix is in a form for which the square root cannot be taken. Currently, " +
+                        "the square root can only be computed for diagonal matrices, 2\u00D72 matrices, " +
+                        "and upper-triangular matrices.  Consider refactoring the matrix into upper-triangular form.");
         throw new UnsupportedOperationException("Currently unable to compute square root of supplied matrix");
+    }
+
+    private static Matrix<? extends Numeric> sqrtUpperTriangular(Matrix<? extends Numeric> S) {
+        final long n = S.rows();  // S.columns() would work too
+        if (n > (long) Integer.MAX_VALUE) throw new ArithmeticException("Cannot allocate a square matrix of size " + n);
+        final Class<? extends Numeric> clazz = OptionalOperations.findTypeFor(S);
+        final MathContext ctx = S.valueAt(0L, 0L).getMathContext();  // quick and dirty hack
+        final Numeric zero = OptionalOperations.dynamicInstantiate(clazz, "0");
+        OptionalOperations.setMathContext(zero, ctx);
+        Numeric[][] temp = new Numeric[(int) n][(int) n];
+        Arrays.stream(temp, 0, (int) n).forEach(row -> Arrays.fill(row, zero));
+        // compute the main diagonal first
+        for (int k = 0; k < (int) n; k++) {
+            temp[k][k] = S.valueAt(k, k).sqrt();
+        }
+        // now fill in the superdiagonals, moving upward from the main
+        for (int diag = 1; diag < (int) n; diag++) {  // using ints since we're restricting ourselves to arrays here
+            for (int j = diag; j < (int) S.columns(); j++) {
+                final int i = j - 1;
+                Numeric denom = temp[i][i].add(temp[j][j]);
+                final int jIdx = j;
+                Numeric sum = IntStream.rangeClosed(i + 1, j - 1).mapToObj(k -> temp[i][k].multiply(temp[k][jIdx]))
+                        .reduce(ExactZero.getInstance(ctx), Numeric::add);
+                Numeric num = S.valueAt(i, j).subtract(sum);
+                temp[i][j] = num.divide(denom);
+            }
+        }
+        // and return the result
+        return new BasicMatrix<>(temp);
     }
 
     /**
