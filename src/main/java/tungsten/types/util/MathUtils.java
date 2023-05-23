@@ -2153,8 +2153,11 @@ public class MathUtils {
         } else if (val instanceof RationalType) {
             RationalType that = (RationalType) val;
             // use integer division instead of BigDecimal -> BigInteger conversion
-            intermediate = that.divideWithRemainder()[0].asBigInteger();
+            IntegerType[] quotient = that.divideWithRemainder();
+            intermediate = quotient[0].asBigInteger();
+            noFrac = quotient[1].asBigInteger().equals(BigInteger.ZERO);
         } else {
+            // Complex numbers are not comparable, therefore floor() has no meaning for them.
             throw new IllegalArgumentException("Complex arguments not supported");
         }
         if (intermediate.compareTo(BigInteger.ZERO) <= 0) {
