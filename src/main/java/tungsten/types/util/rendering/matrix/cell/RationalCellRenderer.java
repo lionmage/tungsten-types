@@ -108,19 +108,23 @@ public class RationalCellRenderer implements CellRenderingStrategy {
         int valPos   = indexOfSolidus(strVal);
         int alignTo  = slashPos[column];
         int cellWidth = numLen[column] + denomLen[column] + 1;
+        if (maximumCellWidth != -1 && (cellWidth > maximumCellWidth || strVal.length() > maximumCellWidth)) {
+            throw new IllegalStateException("Maximum cell width exceeded");
+        }
+        if (cellWidth < minimumCellWidth) {
+            // easy fix that shouldn't harm anything
+            cellWidth = minimumCellWidth;
+        }
         if (alignTo > valPos) {
             IntStream.range(0, alignTo - valPos).forEach(dummy -> cell.append(' '));
-//            cell.append(strVal);
         } else if (alignTo < valPos) {
             if (strVal.length() == cellWidth)  {
                 return strVal;
-            } else if (strVal.length() < cellWidth) {
-                cell.append(strVal);
-            } else {
+            } else if (strVal.length() > cellWidth) {
                 Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.SEVERE,
                         "Cannot format {0} to fit within a cell {1} characters wide; " +
                                 "solidus is misaligned (position {2} for {0}, {3} for the cell). " +
-                                "Consider inspecting more rows for a better result.",
+                                "Consider inspecting more matrix rows for a better result.",
                         new Object[] {value, cellWidth, valPos, alignTo});
                 throw new IllegalStateException("Cannot format value to fit in cell");
             }
