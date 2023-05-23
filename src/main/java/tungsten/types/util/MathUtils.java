@@ -2143,10 +2143,12 @@ public class MathUtils {
      * @return the floor of log<sub>2</sub>({@code val})
      */
     public static IntegerType log2floor(Numeric val) {
+        boolean noFrac = true;
         BigInteger intermediate;
         if (val instanceof IntegerType) {
             intermediate = ((IntegerType) val).asBigInteger();
         } else if (val instanceof RealType) {
+            noFrac = val.isCoercibleTo(IntegerType.class);
             intermediate = ((RealType) val).asBigDecimal().toBigInteger();
         } else if (val instanceof RationalType) {
             RationalType that = (RationalType) val;
@@ -2159,7 +2161,7 @@ public class MathUtils {
             throw new ArithmeticException("log\u2082(x) undefined for x \u2264 0");
         }
         int highestBit = intermediate.bitLength() - 1;
-        return new IntegerImpl(BigInteger.valueOf(highestBit), intermediate.bitCount() == 1) {
+        return new IntegerImpl(BigInteger.valueOf(highestBit), noFrac && intermediate.bitCount() == 1) {
             @Override
             public MathContext getMathContext() {
                 return val.getMathContext();
