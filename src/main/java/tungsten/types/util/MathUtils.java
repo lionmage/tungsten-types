@@ -481,7 +481,6 @@ public class MathUtils {
                 return (RealType) x.inverse().coerceTo(RealType.class);
             }
 
-            // TODO figure out if we can get away with only 2 extra digits of precision
             MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
             Numeric intermediate = One.getInstance(compctx);
             Numeric factor = new RealImpl(x.magnitude().asBigDecimal(), compctx, x.isExact());
@@ -633,7 +632,7 @@ public class MathUtils {
     }
     
     private static RealType lnSeries(RealType x, MathContext mctx) {
-        MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
+        final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
         BigDecimal xfrac = x.asBigDecimal().subtract(BigDecimal.ONE, compctx).divide(x.asBigDecimal(), compctx);
         BigDecimal sum = BigDecimal.ZERO;
         for (int n = 1; n < mctx.getPrecision() * 17; n++) {
@@ -647,7 +646,7 @@ public class MathUtils {
     
     private static BigDecimal computeNthTerm_ln(BigDecimal frac, int n, MathContext mctx) {
         BigDecimal ninv = BigDecimal.ONE.divide(BigDecimal.valueOf(n), mctx);
-        return ninv.multiply(computeIntegerExponent(new RealImpl(frac), n, mctx).asBigDecimal(), mctx);
+        return ninv.multiply(frac.pow(n, mctx), mctx);
     }
     
     /**
@@ -658,7 +657,10 @@ public class MathUtils {
      * @return the logarithm of {@code x} in {@code base}
      */
     public static RealType log(RealType x, RealType base, MathContext mctx) {
-        return (RealType) ln(x, mctx).divide(ln(base, mctx));
+        final MathContext compCtx = new MathContext(mctx.getPrecision() + 8, mctx.getRoundingMode());
+        // determined that you need at least 8 extra decimal places to get a value that rounds correctly
+        // otherwise, you get things like log₂(1024) = 9.9999... instead of 10.0
+        return round((RealType) ln(x, compCtx).divide(ln(base, compCtx)), mctx);
     }
     
     /**
@@ -1509,6 +1511,23 @@ public class MathUtils {
             if (bits.testBit(k)) result.add((long) k);
         }
         return result;
+    }
+
+    /**
+     * Select one possible permutation of k indices chosen from n.
+     * The selection is pseudo-random and assumes that one sampling
+     * of k indices is just as good as any other.
+     * @param n the total number of indices to select from
+     * @param k the number of indices to select
+     * @return a {@link List<Long>} of {@code k} indices chosen at random
+     */
+    public static List<Long> randomIndexPermutation(long n, long k) {
+        final Random rand = new Random();
+        List<List<Long>> allPermutations = permuteIndices(n, k);
+        int index = rand.nextInt(allPermutations.size());
+        // Note that this will not select from every possible permutation
+        // if the length of allPermutations > Integer.MAX_VALUE
+        return allPermutations.get(index);
     }
 
     /**

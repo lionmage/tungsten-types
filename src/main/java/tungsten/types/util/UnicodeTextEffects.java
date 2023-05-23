@@ -23,15 +23,19 @@
  */
 package tungsten.types.util;
 
+import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.annotations.RendererSupports;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
+import tungsten.types.util.rendering.matrix.cell.CellRenderingStrategy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.stream.LongStream;
 
 /**
  * Utility methods for creating Unicode strings that render with
@@ -60,6 +64,7 @@ public class UnicodeTextEffects {
         radicalMap = new TreeMap<>();
         
         superscriptMap.put('-', "\u207B");
+        superscriptMap.put('\u2212', "\u207B");  // Unicode minus
         superscriptMap.put('+', "\u207A");
         superscriptMap.put('(', "\u207D");
         superscriptMap.put(')', "\u207E");
@@ -68,6 +73,7 @@ public class UnicodeTextEffects {
         superscriptMap.put('=', "\u207C");
         
         subscriptMap.put('-', "\u208B");
+        subscriptMap.put('\u2212', "\u208B");  // Unicode minus
         subscriptMap.put('+', "\u208A");
         subscriptMap.put('(', "\u208D");
         subscriptMap.put(')', "\u208E");
@@ -265,6 +271,66 @@ public class UnicodeTextEffects {
         buf.append(')');
 
         return buf.toString();
+    }
+
+    public static String formatMatrixForDisplay(Matrix<? extends Numeric> M, Numeric superscript, Numeric subscript) {
+        String sup = null;
+        String sub = null;
+        if (superscript instanceof IntegerType) {
+            sup = numericSuperscript(((IntegerType) superscript).asBigInteger().intValueExact());
+        } else if (superscript != null) {
+            sup = convertToSuperscript(superscript.toString());
+        }
+        if (subscript instanceof  IntegerType) {
+            sub = numericSubscript(((IntegerType) subscript).asBigInteger().intValueExact());
+        } else if (subscript != null) {
+            sub = convertToSubscript(subscript.toString());
+        }
+        return formatMatrixForDisplay(M, sup, sub);
+    }
+
+    public static String formatMatrixForDisplay(Matrix<? extends Numeric> M, String superscript, String subscript) {
+        Class<? extends Numeric> elementType = OptionalOperations.findTypeFor(M);
+        NumericHierarchy htype = NumericHierarchy.forNumericType(elementType);
+        if (M.columns() > (long) Integer.MAX_VALUE) throw new UnsupportedOperationException("Column indices > 32 bits are unsupported");
+        CellRenderingStrategy strategy = getStrategyForCellType(htype);
+        // For small matrices, inspect the cells of all rows.
+        // Otherwise, pick a random subset of rows and inspect only those.
+        LongStream indexStream = M.rows() <= 10L ? LongStream.range(0L, M.rows()) :
+                MathUtils.randomIndexPermutation(M.rows(), M.rows() <= 30L ? M.rows() / 2L : M.rows() / 3L).stream().mapToLong(Long::longValue);
+        indexStream.forEach(k -> strategy.inspect(M.getRow(k)));
+        // now assemble the thing
+        StringBuilder buf = new StringBuilder();
+        for (long row = 0L; row < M.rows(); row++) {
+            // append the beginning of the line
+            if (row == 0L) buf.append("\u23A1 ");
+            else if (row == M.rows() - 1L) buf.append("\u23A3 ");
+            else buf.append("\u23A2 ");
+
+            buf.append(strategy.render(M.getRow(row)));
+
+            // append the end
+            if (row == 0L) {
+                buf.append(" \u23A4");
+                if (superscript != null) buf.append(superscript); // may need to insert thinspace here
+            }
+            else if (row == M.rows() - 1L) {
+                buf.append(" \u23A6");
+                if (subscript != null) buf.append(subscript); // may need thinspace here, too
+            }
+            else buf.append(" \u23A5");
+            if (row != M.rows() - 1L) buf.append('\n');  // EOL for all but the last line
+        }
+
+        return buf.toString();
+    }
+
+    private static CellRenderingStrategy getStrategyForCellType(NumericHierarchy type) {
+        ServiceLoader<CellRenderingStrategy> serviceLoader = ServiceLoader.load(CellRenderingStrategy.class);
+        return serviceLoader.stream().filter(p -> p.type().isAnnotationPresent(RendererSupports.class))
+                .filter(p -> p.type().getAnnotation(RendererSupports.class).type() == type)
+                .map(ServiceLoader.Provider::get).findFirst()
+                .orElseThrow(() -> new NoSuchElementException("No strategy found for cells of type " + type));
     }
 
     public enum ShadedBlock {

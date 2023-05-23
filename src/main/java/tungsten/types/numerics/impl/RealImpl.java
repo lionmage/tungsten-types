@@ -479,11 +479,11 @@ public class RealImpl implements RealType {
         final BigInteger trunc = this.asBigDecimal().toBigInteger();
         switch (this.sign()) {
             case POSITIVE:
-                return new IntegerImpl(trunc);
+                return new IntegerImpl(trunc, exact);
             case NEGATIVE:
-                return new IntegerImpl(this.isIntegralValue() ? trunc : trunc.subtract(BigInteger.ONE));
+                return new IntegerImpl(this.isIntegralValue() ? trunc : trunc.subtract(BigInteger.ONE), exact);
             default:
-                return new IntegerImpl(BigInteger.ZERO);
+                return new IntegerImpl(BigInteger.ZERO, exact);
         }
     }
 
@@ -492,11 +492,11 @@ public class RealImpl implements RealType {
         final BigInteger trunc = this.asBigDecimal().toBigInteger();
         switch (this.sign()) {
             case NEGATIVE:
-                return new IntegerImpl(trunc);
+                return new IntegerImpl(trunc, exact);
             case POSITIVE:
-                return new IntegerImpl(this.isIntegralValue() ? trunc : trunc.add(BigInteger.ONE));
+                return new IntegerImpl(this.isIntegralValue() ? trunc : trunc.add(BigInteger.ONE), exact);
             default:
-                return new IntegerImpl(BigInteger.ZERO);
+                return new IntegerImpl(BigInteger.ZERO, exact);
         }
     }
 }

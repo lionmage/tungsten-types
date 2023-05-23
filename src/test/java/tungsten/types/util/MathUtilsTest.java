@@ -33,10 +33,11 @@ import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.RealImpl;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MathUtilsTest {
     @Test
@@ -79,5 +80,33 @@ public class MathUtilsTest {
         result = MathUtils.gamma(three);
 
         assertEquals(expectedResult2, result);
+    }
+
+    @Test
+    public void alternateLogarithms() {
+        RealImpl val = new RealImpl("1025.0", MathContext.DECIMAL128);
+        final RealType base = new RealImpl("2.0");
+
+        RealType result = MathUtils.log(val, base, MathContext.DECIMAL128);
+        assertFalse(result.isExact());  // rounding -> inexact
+
+        IntegerType lgfloor = MathUtils.log2floor(val);
+        assertFalse(lgfloor.isExact());  // this should not be an exact value since val is not a power of 2
+
+        final RealType ten = new RealImpl(BigDecimal.TEN, false);
+
+        assertEquals(lgfloor, result.floor());
+        assertTrue(val.compareTo(ten) > 0, "lg(1025) should be > lg(1024)");
+
+        val = new RealImpl("1024.0", MathContext.DECIMAL128);
+        result = MathUtils.log(val, base, MathContext.DECIMAL128);
+        assertFalse(result.isExact());  // there's rounding involved, so this shouldn't be exact either
+
+        assertEquals(ten, result, "lg(1024) should equal 10 exactly");
+        assertTrue(result.isCoercibleTo(IntegerType.class));
+
+        lgfloor = MathUtils.log2floor(val);
+        assertTrue(lgfloor.isExact());  // this ought to return an exact value since val is a power of 2
+        assertEquals(BigInteger.TEN, lgfloor.asBigInteger());
     }
 }
