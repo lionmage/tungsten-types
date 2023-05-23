@@ -2157,6 +2157,10 @@ public class MathUtils {
             intermediate = quotient[0].asBigInteger();
             noFrac = quotient[1].asBigInteger().equals(BigInteger.ZERO);
         } else {
+            if (!(val instanceof ComplexType)) {
+                if (One.isUnity(val)) return new IntegerImpl(BigInteger.ZERO);
+                throw new ArithmeticException("log\u2082(" + val + ") is undefined");
+            }
             // Complex numbers are not comparable, therefore floor() has no meaning for them.
             throw new IllegalArgumentException("Complex arguments not supported");
         }
