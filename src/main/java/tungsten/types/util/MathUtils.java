@@ -648,7 +648,16 @@ public class MathUtils {
         BigDecimal ninv = BigDecimal.ONE.divide(BigDecimal.valueOf(n), mctx);
         return ninv.multiply(frac.pow(n, mctx), mctx);
     }
-    
+
+    /**
+     * Compute the natural logarithm of a complex value.
+     * @param z the value we want to calculate the natural logarithm of
+     * @return the principal natural logarithm as a {@link ComplexType} value
+     */
+    public static ComplexType ln(ComplexType z) {
+        return new ComplexRectImpl(ln(z.magnitude()), z.argument());
+    }
+
     /**
      * Compute the general logarithm, log<sub>b</sub>(x).
      * @param x the number for which we wish to take a logarithm
@@ -673,7 +682,49 @@ public class MathUtils {
     public static RealType log(RealType x, RealType base) {
         return log(x, base, x.getMathContext());
     }
-    
+
+    /**
+     * Efficiently calculate &#x230A;log<sub>2</sub>(x)&#x230B; for any
+     * integer, rational, or real value x.
+     * <br/><strong>Note:</strong> this method does not support zero or
+     * negative arguments.
+     * @param val a {@link Numeric} that is not a complex value
+     * @return the floor of log<sub>2</sub>({@code val})
+     */
+    public static IntegerType log2floor(Numeric val) {
+        boolean noFrac = true;
+        BigInteger intermediate;
+        if (val instanceof IntegerType) {
+            intermediate = ((IntegerType) val).asBigInteger();
+        } else if (val instanceof RealType) {
+            noFrac = val.isCoercibleTo(IntegerType.class);
+            intermediate = ((RealType) val).asBigDecimal().toBigInteger();
+        } else if (val instanceof RationalType) {
+            RationalType that = (RationalType) val;
+            // use integer division instead of BigDecimal -> BigInteger conversion
+            IntegerType[] quotient = that.divideWithRemainder();
+            intermediate = quotient[0].asBigInteger();
+            noFrac = quotient[1].asBigInteger().equals(BigInteger.ZERO);
+        } else {
+            if (!(val instanceof ComplexType)) {
+                if (One.isUnity(val)) return new IntegerImpl(BigInteger.ZERO);
+                throw new ArithmeticException("log\u2082(" + val + ") is undefined");
+            }
+            // Complex numbers are not comparable, therefore floor() has no meaning for them.
+            throw new IllegalArgumentException("Complex arguments not supported");
+        }
+        if (intermediate.compareTo(BigInteger.ZERO) <= 0) {
+            throw new ArithmeticException("log\u2082(x) undefined for x \u2264 0");
+        }
+        int highestBit = intermediate.bitLength() - 1;
+        return new IntegerImpl(BigInteger.valueOf(highestBit), noFrac && intermediate.bitCount() == 1) {
+            @Override
+            public MathContext getMathContext() {
+                return val.getMathContext();
+            }
+        };
+    }
+
     /**
      * Computes the mantissa of a real value as expressed in scientific
      * notation, mantissa&nbsp;&times;&nbsp;10<sup>exponent</sup>.
@@ -1216,7 +1267,7 @@ public class MathUtils {
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
         Matrix<Numeric> intermediate = new ZeroMatrix(X.rows(), ctx);
         // since this series can converge (very) slowly, this multiplier may need to be increased
-        long sumLimit = 2L * ctx.getPrecision() + 4L; // will get at least 4 terms if precision = 0 (Unlimited)
+        long sumLimit = 3L * ctx.getPrecision() + 5L; // will get at least 5 terms if precision = 0 (Unlimited)
         for (long k = 0L; k < sumLimit; k++) {
             IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
             intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
@@ -1293,7 +1344,7 @@ public class MathUtils {
             // take the iterative approach
             Matrix<ComplexType> intermediate = Mcxp.scale(scale);
             final int iterationLimit = 3 * sigma.getMathContext().getPrecision() + 2;  // Needs tuning!
-            logger.log(Level.INFO, "Computing {3} terms of convergent series A\u2093\u208A\u2081 = 2A\u2093 - A\u2093AA\u2093 for " +
+            logger.log(Level.INFO, "Computing {3} terms of convergent series A\u2093\u208A\u2081 = 2A\u2093 - A\u2093AA\u2093 for a " +
                     "{0}\u00D7{1} matrix A with rank {2}.", new Object[] {M.rows(), M.columns(), rank, iterationLimit});
             int count = 0;
             do {
@@ -2134,48 +2185,6 @@ public class MathUtils {
         return (long) Math.pow(2d, intermediate);
     }
 
-    /**
-     * Efficiently calculate &#x230A;log<sub>2</sub>(x)&#x230B; for any
-     * integer, rational, or real value x.
-     * <br/><strong>Note:</strong> this method does not support zero or
-     * negative arguments.
-     * @param val a {@link Numeric} that is not a complex value
-     * @return the floor of log<sub>2</sub>({@code val})
-     */
-    public static IntegerType log2floor(Numeric val) {
-        boolean noFrac = true;
-        BigInteger intermediate;
-        if (val instanceof IntegerType) {
-            intermediate = ((IntegerType) val).asBigInteger();
-        } else if (val instanceof RealType) {
-            noFrac = val.isCoercibleTo(IntegerType.class);
-            intermediate = ((RealType) val).asBigDecimal().toBigInteger();
-        } else if (val instanceof RationalType) {
-            RationalType that = (RationalType) val;
-            // use integer division instead of BigDecimal -> BigInteger conversion
-            IntegerType[] quotient = that.divideWithRemainder();
-            intermediate = quotient[0].asBigInteger();
-            noFrac = quotient[1].asBigInteger().equals(BigInteger.ZERO);
-        } else {
-            if (!(val instanceof ComplexType)) {
-                if (One.isUnity(val)) return new IntegerImpl(BigInteger.ZERO);
-                throw new ArithmeticException("log\u2082(" + val + ") is undefined");
-            }
-            // Complex numbers are not comparable, therefore floor() has no meaning for them.
-            throw new IllegalArgumentException("Complex arguments not supported");
-        }
-        if (intermediate.compareTo(BigInteger.ZERO) <= 0) {
-            throw new ArithmeticException("log\u2082(x) undefined for x \u2264 0");
-        }
-        int highestBit = intermediate.bitLength() - 1;
-        return new IntegerImpl(BigInteger.valueOf(highestBit), noFrac && intermediate.bitCount() == 1) {
-            @Override
-            public MathContext getMathContext() {
-                return val.getMathContext();
-            }
-        };
-    }
-    
     private static final Range<RealType> epsilonRange = new Range<>(new RealImpl("0"), new RealImpl("1"), BoundType.EXCLUSIVE);
     
     /**
@@ -2213,7 +2222,7 @@ public class MathUtils {
      * @param B the second real-valued vector to test for equality
      * @param epsilon a value between 0 and 1, exclusive, denoting the maximum
      *  difference allowed between any pair of elements for A and B to be
-     *  considered equal.
+     *  considered equal
      * @return true if the supplied vectors are of equal length and all the
      *  elements of A are within &epsilon; of their counterparts in B 
      */
@@ -2273,15 +2282,6 @@ public class MathUtils {
             default:
                 throw new ArithmeticException("Cannot truncate " + val);
         }
-    }
-
-    /**
-     * Compute the natural logarithm of a complex value.
-     * @param z the value we want to calculate the natural logarithm of
-     * @return the natural logarithm as a {@link ComplexType} value
-     */
-    public static ComplexType ln(ComplexType z) {
-        return new ComplexRectImpl(ln(z.magnitude()), z.argument());
     }
 
     public static Numeric arctan(Numeric z) {
