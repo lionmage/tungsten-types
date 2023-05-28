@@ -71,6 +71,7 @@ public class UnicodeTextEffects {
         superscriptMap.put('i', "\u2071");
         superscriptMap.put('n', "\u207F");
         superscriptMap.put('=', "\u207C");
+        superscriptMap.put('\u221E', "\u1AB2"); // infinity superscript is a combining character
         
         subscriptMap.put('-', "\u208B");
         subscriptMap.put('\u2212', "\u208B");  // Unicode minus
@@ -86,6 +87,7 @@ public class UnicodeTextEffects {
         subscriptMap.put('n', "\u2099");
         subscriptMap.put('p', "\u209A");
         subscriptMap.put('t', "\u209C");
+        subscriptMap.put('\u221E', "\u035A"); // infinity subscript appears to be a combining character
         
         radicalMap.put(2, "\u221A");
         radicalMap.put(3, "\u221B");
@@ -131,6 +133,8 @@ public class UnicodeTextEffects {
                 int digit = c - '0';
                 buf.append(superscriptDigits[digit]);
             } else if (superscriptMap.containsKey(c)) {
+                // special case logic
+                if (buf.length() > 0 && mapsToCombiningCharacter(c)) buf.append('\u2009');
                 buf.append(superscriptMap.get(c));
             }
         }
@@ -145,10 +149,18 @@ public class UnicodeTextEffects {
                 int digit = c - '0';
                 buf.append(subscriptDigits[digit]);
             } else if (subscriptMap.containsKey(c)) {
+                // add thinspace before combining characters
+                if (buf.length() > 0 && mapsToCombiningCharacter(c)) buf.append('\u2009');
                 buf.append(subscriptMap.get(c));
             }
         }
         return buf.toString();
+    }
+
+    private static boolean mapsToCombiningCharacter(Character c) {
+        if (c == '\u221E') return true;  // right now, we only have one super/subscript character that does this
+        // there will likely be more case logic here
+        return false;
     }
     
     private static final char COMBINING_OVERLINE = '\u0305';

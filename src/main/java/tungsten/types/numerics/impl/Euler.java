@@ -106,9 +106,21 @@ public class Euler implements RealType {
 
     @Override
     public RealType negate() {
-        RealImpl negative = new RealImpl(value.negate(), mctx, false);
-        negative.setIrrational(true);
-        return negative;
+        return new RealImpl(value.negate(), mctx, false) {
+            {
+                setIrrational(true);
+            }
+
+            @Override
+            public RealType negate() {
+                return Euler.this;
+            }
+
+            @Override
+            public String toString() {
+                return "\u2212\u212F";
+            }
+        };
     }
 
     @Override
@@ -185,10 +197,21 @@ public class Euler implements RealType {
 
     @Override
     public Numeric inverse() {
-        RealImpl inverse = new RealImpl(BigDecimal.ONE.divide(value, mctx), false);
-        inverse.setMathContext(mctx);
-        inverse.setIrrational(true);
-        return inverse;
+        return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
+            {
+                setIrrational(true);
+            }
+
+            @Override
+            public Numeric inverse() {
+                return Euler.this;
+            }
+
+            @Override
+            public String toString() {
+                return "1/\u212F";
+            }
+        };
     }
 
     @Override

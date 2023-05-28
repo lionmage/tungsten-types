@@ -491,7 +491,7 @@ public class MathUtils {
             }
             while (m % 2L == 0L) {
                 factor = factor.multiply(factor);
-                m >>= 1;
+                m >>= 1L;
             }
             for (long k = 0; k < m; k++) intermediate = intermediate.multiply(factor);
             if (n < 0L) intermediate = intermediate.inverse();
@@ -577,7 +577,7 @@ public class MathUtils {
         }
         if (x.asBigDecimal().compareTo(BigDecimal.ZERO) <= 0) {
             if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return RealInfinity.getInstance(Sign.NEGATIVE, mctx);
-            throw new ArithmeticException("ln() is undefined for values < 0");
+            throw new ArithmeticException("ln(x) is undefined for x < 0");
         }
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
         

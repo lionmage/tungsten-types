@@ -107,10 +107,21 @@ public class Pi implements RealType {
 
     @Override
     public RealType negate() {
-        final RealImpl negvalue = new RealImpl(value.negate(), false);
-        negvalue.setIrrational(true);
-        negvalue.setMathContext(mctx);
-        return negvalue;
+        return new RealImpl(value.negate(), mctx, false) {
+            {
+                setIrrational(true);
+            }
+
+            @Override
+            public RealType negate() {
+                return Pi.this;
+            }
+
+            @Override
+            public String toString() {
+                return "\u2212\uD835\uDF0B";
+            }
+        };
     }
 
     @Override
@@ -208,7 +219,21 @@ public class Pi implements RealType {
 
     @Override
     public Numeric inverse() {
-        return this.magnitude().inverse();
+        return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
+            {
+                setIrrational(true);
+            }
+
+            @Override
+            public Numeric inverse() {
+                return Pi.this;
+            }
+
+            @Override
+            public String toString() {
+                return "1/\uD835\uDF0B";
+            }
+        };
     }
 
     @Override
