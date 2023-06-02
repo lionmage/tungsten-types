@@ -93,14 +93,4 @@ public class IntegerCellRenderer implements CellRenderingStrategy {
         buf.append(valStr);
         return buf.toString();
     }
-
-    @Override
-    public String render(RowVector<? extends Numeric> row) {
-        StringBuilder buf = new StringBuilder();
-        for (int col = 0; col < row.columns(); col++) {
-            buf.append(render(row.elementAt(col), col));
-            if (col != row.columns() - 1) buf.append(' ');
-        }
-        return buf.toString();
-    }
 }

@@ -27,6 +27,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.annotations.RendererSupports;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.exceptions.StrategyNotFoundException;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.util.rendering.matrix.cell.CellRenderingStrategy;
@@ -130,7 +131,7 @@ public class UnicodeTextEffects {
         
         for (Character c : source.toCharArray()) {
             if (Character.isDigit(c)) {
-                int digit = c - '0';
+                int digit = Character.digit(c, 10);
                 buf.append(superscriptDigits[digit]);
             } else if (superscriptMap.containsKey(c)) {
                 // special case logic
@@ -146,7 +147,7 @@ public class UnicodeTextEffects {
         
         for (Character c : source.toCharArray()) {
             if (Character.isDigit(c)) {
-                int digit = c - '0';
+                int digit = Character.digit(c, 10);
                 buf.append(subscriptDigits[digit]);
             } else if (subscriptMap.containsKey(c)) {
                 // add thinspace before combining characters
@@ -342,7 +343,7 @@ public class UnicodeTextEffects {
         return serviceLoader.stream().filter(p -> p.type().isAnnotationPresent(RendererSupports.class))
                 .filter(p -> p.type().getAnnotation(RendererSupports.class).type() == type)
                 .map(ServiceLoader.Provider::get).findFirst()
-                .orElseThrow(() -> new NoSuchElementException("No strategy found for cells of type " + type));
+                .orElseThrow(() -> new StrategyNotFoundException("No strategy found for cells of type " + type));
     }
 
     public enum ShadedBlock {
