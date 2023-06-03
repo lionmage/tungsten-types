@@ -167,6 +167,24 @@ public class UnicodeTextEffects {
     private static final char COMBINING_OVERLINE = '\u0305';
     private static final char NEGATIVE_SIGN = '\u2212';
 
+    /**
+     * Given a {@link String}, generate a new {@link String}
+     * containing the characters of the input with each
+     * character followed by a combining
+     * <a href="https://en.wikipedia.org/wiki/Overline">overline</a>,
+     * overbar, or vinculum. Note that according to the Unicode standard for
+     * <a href="https://en.wikipedia.org/wiki/Combining_character">combining characters</a>,
+     * the overline character should follow the character it is modifying.
+     * For some fonts and for some rendering systems, this may not render correctly;
+     * it is not uncommon to see the overbar offset to the right. On such
+     * systems, a common hack is to put the overline character first.
+     * One example of such an environment is Groovy console in IntelliJ&nbsp;IDEA.
+     * Such hacks are non-portable (i.e., do not render properly in other
+     * applications, terminals, text consoles, shells, etc.) and will not be used.
+     * @param source the original {@link String} to decorate
+     * @return a transformed {@link String} which renders as the original text
+     *   entirely covered by an overline
+     */
     public static String overline(String source) {
         StringBuilder buf = new StringBuilder();
         
@@ -175,7 +193,23 @@ public class UnicodeTextEffects {
         }
         return buf.toString();
     }
-    
+
+    /**
+     * Render an integer value as a {@link String} with an
+     * <a href="https://en.wikipedia.org/wiki/Overline">overline</a>,
+     * overbar, or vinculum covering all digits. Note that according to
+     * the Unicode standard for
+     * <a href="https://en.wikipedia.org/wiki/Combining_character">combining characters</a>,
+     * the overline character should follow the character it is modifying.
+     * For some fonts and for some rendering systems, this may not render correctly;
+     * it is not uncommon to see the overbar offset to the right. On such
+     * systems, a common hack is to put the overline character first.
+     * One example of such an environment is Groovy console in IntelliJ&nbsp;IDEA.
+     * Such hacks are non-portable (i.e., do not render properly in other
+     * applications, terminals, text consoles, shells, etc.) and will not be used.
+     * @param n the integer whose value will be rendered as a string
+     * @return a string representation of {@code n}
+     */
     public static String overline(int n) {
         StringBuilder buf = new StringBuilder();
         int digit;
@@ -213,6 +247,9 @@ public class UnicodeTextEffects {
         if (radicand instanceof ComplexType || OptionalOperations.sign(radicand) == Sign.NEGATIVE) {
             buf.append('(').append(radicand).append(')');
         } else {
+            // Note: attempted to render this with overline, but the results were not very good
+            // Issues with combining overline being used as a vinculum not lining up with the
+            // characters below, not connecting to or lining up with the radical sign, etc.
             buf.append(radicand);
         }
         return buf.toString();
