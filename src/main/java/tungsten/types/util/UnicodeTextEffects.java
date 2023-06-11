@@ -34,6 +34,7 @@ import tungsten.types.util.rendering.matrix.cell.CellRenderingStrategy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.stream.LongStream;
@@ -259,6 +260,70 @@ public class UnicodeTextEffects {
         String expanded = Normalizer.isNormalized(source, Normalizer.Form.NFKD) ? source :
                 Normalizer.normalize(source, Normalizer.Form.NFKD);
         return expanded.replaceAll("\\p{M}", "");
+    }
+
+    /**
+     * Compute the width of a {@link CharSequence} or subsequence, measured in displayed characters.
+     * This method assumes a monospaced font.<br/>
+     * This method will properly handle surrogate pairs and most combining characters
+     * (e.g., vinculum, arrow).
+     * @param source         a Unicode character sequence
+     * @param startInclusive the starting character position of the region for this calculation
+     * @param endExclusive   the end limit character position (exclusive)
+     * @return the calculated character width of the specified substring
+     */
+    public static int computeCharacterWidth(CharSequence source, int startInclusive, int endExclusive) {
+        if (endExclusive < startInclusive) {
+            throw new IndexOutOfBoundsException("Start index must be < end index");
+        } else if (endExclusive == startInclusive) {
+            return 0;  // avoids a potential exception for a corner case, and executes fast
+        }
+        int width = Character.codePointCount(source, startInclusive, endExclusive);
+        // subtract off any combining characters that don't add to a character's width
+        width -= source.subSequence(startInclusive, endExclusive).chars()
+                .filter(cp -> Character.getType(cp) == Character.NON_SPACING_MARK)
+                .count();
+        return width;
+    }
+
+    public static int computeCharacterWidth(CharSequence source) {
+        return computeCharacterWidth(source, 0, source.length());
+    }
+
+    public static int computeCharacterWidth(CharSequence source, int start) {
+        return computeCharacterWidth(source, start, source.length());
+    }
+
+    public static void trimToNFractionDigits(StringBuilder buffer, int decPointIndex, int N) {
+        if (buffer.length() < decPointIndex) {
+            throw new IllegalArgumentException("Decimal point index must >= buffer length");
+        }
+        if (buffer.length() == decPointIndex) return;  // no changes required
+        int index = decPointIndex + 1;
+        int digitCount = 0;
+        while (index < buffer.length() && digitCount < N) {
+            if (Character.isDigit(buffer.codePointAt(index))) {
+                index = Character.offsetByCodePoints(buffer, index, 1);
+                digitCount++;
+            }
+            // skip over any combining characters; we assume all combining characters fit into a single char
+            if (index < buffer.length() && Character.getType(buffer.charAt(index)) == Character.NON_SPACING_MARK) {
+                index++;
+            }
+        }
+        if (digitCount == N && index < buffer.length()) {
+            buffer.setLength(index);
+        }
+    }
+
+    public static String trimToNFractionDigits(String original, int N) {
+        final char DEC_POINT = DecimalFormatSymbols.getInstance().getDecimalSeparator();
+        int decPointIdx = original.indexOf(DEC_POINT);
+        if (decPointIdx < 0) return original;
+        // one of the few times this constructor is warranted, since this will never grow bigger
+        StringBuilder buf = new StringBuilder(original);
+        trimToNFractionDigits(buf, decPointIdx, N);
+        return buf.toString();
     }
 
     private static final RationalType ONE = new RationalImpl(BigInteger.ONE, BigInteger.ONE);

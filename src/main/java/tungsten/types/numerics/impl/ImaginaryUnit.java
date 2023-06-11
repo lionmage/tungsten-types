@@ -92,7 +92,31 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public ComplexType negate() {
-        return new ComplexRectImpl(real().negate(), imaginary().negate());
+        return new ComplexRectImpl(real().negate(), imaginary().negate()) {
+            @Override
+            public RealType argument() {
+                return ImaginaryUnit.this.argument().negate();
+            }
+
+            @Override
+            public ComplexType negate() {
+                return ImaginaryUnit.this;
+            }
+
+            @Override
+            public Numeric multiply(Numeric multiplier) {
+                if (multiplier instanceof ImaginaryUnit) {
+                    // -i * i = 1
+                    return One.getInstance(mctx);
+                }
+                return super.multiply(multiplier);
+            }
+
+            @Override
+            public String toString() {
+                return "\u2212\u2148";
+            }
+        };
     }
 
     @Override
@@ -213,7 +237,7 @@ public class ImaginaryUnit implements ComplexType {
     @Override
     public ComplexType inverse() {
         // 1/i = -i
-        return this.conjugate();
+        return this.negate();
     }
 
     @Override

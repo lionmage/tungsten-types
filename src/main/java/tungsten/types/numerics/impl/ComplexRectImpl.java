@@ -78,7 +78,7 @@ public class ComplexRectImpl implements ComplexType {
       character, but only 1 optional whitespace character is allowed before
       the terminal i.
     */
-    private static final Pattern cplxPat = Pattern.compile("([+-]?\\d+\\.?\\d*)\\s*([+-])\\s*(\\d+\\.?\\d*)\\s?i");
+    private static final Pattern cplxPat = Pattern.compile("([+-]?\\d+\\.?\\d*)\\s*([+-\u2212])\\s*(\\d+\\.?\\d*)\\s?[i\u2148]");
     
     /**
      * Convenience constructor that will give us a complex value for any
@@ -106,7 +106,7 @@ public class ComplexRectImpl implements ComplexType {
             assert m.groupCount() == 3;
             // group 0 is the entire matched pattern, so skip that
             real = new RealImpl(m.group(1));
-            boolean imNeg = m.group(2).equals("-");
+            boolean imNeg = m.group(2).equals("-") || m.group(2).equals("\u2212");
             RealImpl temp = new RealImpl(m.group(3));
             imag = imNeg ? temp.negate() : temp;
             mctx = MathUtils.inferMathContext(List.of(real, imag));

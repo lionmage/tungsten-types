@@ -659,6 +659,30 @@ public class MathUtils {
     }
 
     /**
+     * A fast way to compute the natural logarithm for integer values; it is more
+     * accurate for large values of {@code N}.<br/>
+     * This method takes advantage of the observation that the series<br/>
+     * 1 + 1&#x2044;2 + 1&#x2044;3 + 1&#x2044;4 + 1&#x2044;5 + &#x22EF; + 1&#x2044;N &cong; ln(N)&nbsp;+&nbsp;&#x1D6FE;
+     * <br/> where &#x1D6FE; is the {@link EulerMascheroni Euler-Mascheroni constant}.  Thus, to compute an
+     * approximation of ln(N) where N is an integer value, one merely has to compute the series of 1/n for
+     * n in [1, N], then subtract &#x1D6FE;.  Note that the calculation of &#x1D6FE; can be expensive, but the
+     * value is cached on a per-{@link MathContext} basis &mdash; thus, the expected average case cost for
+     * this method is merely O(N), the cost of computing a rational sum.
+     * @param N    an integer value
+     * @param mctx the {@link MathContext} for computing this approximation
+     * @return an approximation of ln(N)
+     */
+    public static RealType ln(IntegerType N, MathContext mctx) {
+        final long nInt = N.asBigInteger().longValueExact();
+        final RealType gamma = EulerMascheroni.getInstance(mctx);
+        RationalType sum = LongStream.rangeClosed(1L, nInt).mapToObj(denom -> new RationalImpl(1L, denom, mctx))
+                .map(RationalType.class::cast).reduce((A, B) -> (RationalType) A.add(B))
+                .orElseThrow(() -> new ArithmeticException("Unable to compute sum of 1/n for n in 0.." + N));
+        OptionalOperations.setMathContext(sum, mctx);
+        return (RealType) sum.subtract(gamma);
+    }
+
+    /**
      * Compute the general logarithm, log<sub>b</sub>(x).
      * @param x the number for which we wish to take a logarithm
      * @param base the base of the logarithm
