@@ -680,7 +680,7 @@ public class MathUtils {
         final RealType gamma = EulerMascheroni.getInstance(mctx);
         RationalType sum = LongStream.rangeClosed(1L, nInt).mapToObj(denom -> new RationalImpl(1L, denom, mctx))
                 .map(RationalType.class::cast).reduce((A, B) -> (RationalType) A.add(B))
-                .orElseThrow(() -> new ArithmeticException("Unable to compute sum of 1/n for n in 0.." + N));
+                .orElseThrow(() -> new ArithmeticException("Unable to compute sum of 1/n for n in 1.." + N));
         return (RealType) sum.subtract(gamma);
     }
 
