@@ -681,7 +681,6 @@ public class MathUtils {
         RationalType sum = LongStream.rangeClosed(1L, nInt).mapToObj(denom -> new RationalImpl(1L, denom, mctx))
                 .map(RationalType.class::cast).reduce((A, B) -> (RationalType) A.add(B))
                 .orElseThrow(() -> new ArithmeticException("Unable to compute sum of 1/n for n in 0.." + N));
-        OptionalOperations.setMathContext(sum, mctx);
         return (RealType) sum.subtract(gamma);
     }
 
