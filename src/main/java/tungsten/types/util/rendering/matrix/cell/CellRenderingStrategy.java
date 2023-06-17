@@ -26,6 +26,12 @@ package tungsten.types.util.rendering.matrix.cell;
 import tungsten.types.Numeric;
 import tungsten.types.vector.RowVector;
 
+/**
+ * Service interface for strategies that render the cells
+ * of matrices.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ */
 public interface CellRenderingStrategy {
     /**
      * Set the minimum character width of any cell,

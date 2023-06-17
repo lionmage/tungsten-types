@@ -38,7 +38,8 @@ import java.util.stream.IntStream;
  * A renderer for matrix elements of type {@link IntegerType}.
  * This renderer right-justifies integer values, so that their
  * least-significant digits line up.
- * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 @RendererSupports(name = "integer-cell", type = NumericHierarchy.INTEGER)
 public class IntegerCellRenderer implements CellRenderingStrategy {

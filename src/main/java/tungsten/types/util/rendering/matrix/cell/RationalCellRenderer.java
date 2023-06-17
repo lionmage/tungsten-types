@@ -37,6 +37,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+/**
+ * A matrix cell renderer for {@link RationalType rational} values.
+ * This renderer will attempt to align fractional values in a column
+ * to the solidus (slash or &ldquo;/&rdquo;).
+ * <strong>Note:</strong> This renderer recognizes both the plain forward-slash
+ * character present on most keyboards as well as U+2044, which has special
+ * meaning for the rendering of fractions.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ */
 @RendererSupports(name = "rational-cell", type = NumericHierarchy.RATIONAL)
 public class RationalCellRenderer implements CellRenderingStrategy {
     private int minimumCellWidth = 3; // 1 digit + 1 solidus + 1 digit minimum

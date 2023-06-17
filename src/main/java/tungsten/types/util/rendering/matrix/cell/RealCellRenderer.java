@@ -59,6 +59,10 @@ import java.util.regex.Pattern;
  * have not.
  * This behavior can be changed via another {@link #USE_ELLIPSES_PROPERTY system property}; setting
  * this property to {@code false} will force rounding all values to the given number of decimal places.
+ * <strong>Note:</strong> The current implementation may truncate instead of rounding in the absence
+ * of an ellipsis.  This is still a work in progress.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 @RendererSupports(name = "real-cell", type = NumericHierarchy.REAL)
 public class RealCellRenderer implements CellRenderingStrategy {
