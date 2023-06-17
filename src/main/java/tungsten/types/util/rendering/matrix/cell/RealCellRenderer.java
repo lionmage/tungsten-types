@@ -136,11 +136,16 @@ public class RealCellRenderer implements CellRenderingStrategy {
                 decPoint = strRep.indexOf('/');  // solidus
                 if (decPoint < 0) decPoint = strRep.length();  // virtual decimal point
             }
+            // if this value will need indentation when being rendered, account for that with this variable
+            int lengthOffset = 0;
             if (isPseudoConstant(value)) {
+                final int codePoints = strRep.codePointCount(0, decPoint);
+
                 // decPoint either points to a '/' or to the position just past the end of the string
-                if (maximumCellWidth != -1 && strRep.codePointCount(0, decPoint) > maximumCellWidth) {
+                if (maximumCellWidth != -1 && codePoints > maximumCellWidth) {
                     throw new NumericRenderingException("Pseudo-constant is too big to render", value);
                 }
+                if (decPos[col] > codePoints) lengthOffset = decPos[col] - codePoints;
             } else {
                 IntegerType wholePart = MathUtils.trunc(value);
                 int wholeChars = (int) wholePart.numberOfDigits();
@@ -148,20 +153,23 @@ public class RealCellRenderer implements CellRenderingStrategy {
                 if (maximumCellWidth != -1 && wholeChars > maximumCellWidth) {
                     throw new NumericRenderingException("Whole portion of " + strRep + " is too big to render", value);
                 }
+
+                if (decPos[col] > wholeChars) lengthOffset = decPos[col] - wholeChars;
             }
             final int fracPartSize = decPoint < strRep.length() ? UnicodeTextEffects.computeCharacterWidth(strRep, decPoint + 1) : 0;
             if (fracPartSize > maxFractionDigits) {
                 if (isPseudoConstant(value)) {
                     throw new NumericRenderingException("Pseudo-fraction part of " + strRep + " is too long", value);
                 }
-                strRep = strRep.substring(0, decPoint + maxFractionDigits);
+                strRep = UnicodeTextEffects.trimToNFractionDigits(strRep, maxFractionDigits);
                 if (useEllipses()) strRep += HORIZONTAL_ELLIPSIS;
             }
-            int actualLength = UnicodeTextEffects.computeCharacterWidth(strRep);
+            int actualLength = UnicodeTextEffects.computeCharacterWidth(strRep) + lengthOffset;
             if (maximumCellWidth != -1 && actualLength > maximumCellWidth) {
                 throw  new NumericRenderingException(strRep + " is too long to render in a cell of width " + maximumCellWidth, value);
             }
-            if (decPoint > decPos[col]) decPos[col] = decPoint;
+            int actualPos = UnicodeTextEffects.computeActualDecimalPointCharPosition(strRep, decPoint);
+            if (actualPos > decPos[col]) decPos[col] = actualPos;
             if (actualLength > colWidth[col]) colWidth[col] = actualLength;
         }
     }
@@ -184,41 +192,29 @@ public class RealCellRenderer implements CellRenderingStrategy {
     @Override
     public String render(Numeric value, int column) {
         String strRep = value.toString();
-        System.out.println("Original: `" + strRep + "`");
         Matcher m = precisionPat.matcher(strRep);
         if (m.find()) {
             if (m.end() == strRep.length()) strRep = strRep.substring(0, m.start());
             else strRep = strRep.substring(0, m.start()) + strRep.substring(m.end());
         }
-        System.out.println("After precision removal: `" + strRep + "`");
         int decPoint = strRep.indexOf(DEC_POINT);
         if (decPoint < 0) {
             decPoint = strRep.indexOf('/');  // solidus
             if (decPoint < 0) decPoint = strRep.length();  // virtual decimal point
         }
-        System.out.println("`" + strRep + "` : decPoint = " + decPoint);
         final int fracPartSize = decPoint < strRep.length() ? UnicodeTextEffects.computeCharacterWidth(strRep, decPoint + 1) : 0;
-        System.out.println("`" + strRep + "` : fracPartSize = " + fracPartSize);
         StringBuilder buf = new StringBuilder().append(strRep);
-        System.out.println("decPos[" + column + "] = " + decPos[column]);
-        while (decPoint < decPos[column]) {
+        while (UnicodeTextEffects.computeActualDecimalPointCharPosition(buf, decPoint) < decPos[column]) {
             buf.insert(0, ' ');
-            decPoint++;
+            decPoint++;  // we're inserting spaces of unit width, so we can get away with incrementing directly here
         }
         if (fracPartSize > maxFractionDigits) {
-            int endstop = decPoint + maxFractionDigits;
-            while (UnicodeTextEffects.computeCharacterWidth(buf.toString(), decPoint + 1, endstop) < maxFractionDigits) {
-                endstop++;
-                if (endstop == buf.length()) break;
-                if (Character.isSurrogate(buf.charAt(endstop))) endstop++;
-            }
-            buf.setLength(decPoint + maxFractionDigits);
+            UnicodeTextEffects.trimToNFractionDigits(buf, decPoint, maxFractionDigits);
             if (useEllipses()) buf.append(HORIZONTAL_ELLIPSIS);
         }
-        int curWidth = UnicodeTextEffects.computeCharacterWidth(buf.toString());
-        while (curWidth < colWidth[column]) {
+        int curWidth = UnicodeTextEffects.computeCharacterWidth(buf);
+        while (curWidth++ < colWidth[column]) {
             buf.append(' ');
-            curWidth++;
         }
         return buf.toString();
     }

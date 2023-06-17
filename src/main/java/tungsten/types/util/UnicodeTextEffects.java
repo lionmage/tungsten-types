@@ -296,7 +296,7 @@ public class UnicodeTextEffects {
 
     public static void trimToNFractionDigits(StringBuilder buffer, int decPointIndex, int N) {
         if (buffer.length() < decPointIndex) {
-            throw new IllegalArgumentException("Decimal point index must >= buffer length");
+            throw new IllegalArgumentException("Decimal point index must be \u2264 buffer length");
         }
         if (buffer.length() == decPointIndex) return;  // no changes required
         int index = decPointIndex + 1;
@@ -324,6 +324,17 @@ public class UnicodeTextEffects {
         StringBuilder buf = new StringBuilder(original);
         trimToNFractionDigits(buf, decPointIdx, N);
         return buf.toString();
+    }
+
+    public static int computeActualDecimalPointCharPosition(CharSequence original, int decPos) {
+        return computeCharacterWidth(original, 0, decPos);
+    }
+
+    public static int computeActualDecimalPointCharPosition(String original) {
+        final char DEC_POINT = DecimalFormatSymbols.getInstance().getDecimalSeparator();
+        int decPointIdx = original.indexOf(DEC_POINT);
+        if (decPointIdx < 0) return computeCharacterWidth(original);
+        return computeActualDecimalPointCharPosition(original, decPointIdx);
     }
 
     private static final RationalType ONE = new RationalImpl(BigInteger.ONE, BigInteger.ONE);
