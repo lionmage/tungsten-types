@@ -23,8 +23,11 @@
  */
 package tungsten.types.numerics.impl;
 
+import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.util.UnicodeTextEffects;
 
@@ -154,7 +157,26 @@ public class RepeatingDecimal extends RationalImpl {
             return new DecimalFormat();
         }
     }
-    
+
+    @Override
+    public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
+        if (RealType.class.isAssignableFrom(numtype)) {
+            // give back a real value that will render as the repeating decimal does
+            return new RealImpl(asBigDecimal(), getMathContext(), isExact()) {
+                {
+                    // probably unnecessary, but our intention is at least clear
+                    setIrrational(false);
+                }
+
+                @Override
+                public String toString() {
+                    return RepeatingDecimal.this.toString();
+                }
+            };
+        }
+        return super.coerceTo(numtype);
+    }
+
     @Override
     public String toString() {
         final int digitsToShow = getMathContext().getPrecision();
