@@ -34,8 +34,7 @@ import tungsten.types.util.UnicodeTextEffects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +51,7 @@ public class RepeatingDecimal extends RationalImpl {
     private static final BigInteger TWO  = BigInteger.valueOf(2L);
     private static final BigInteger FIVE = BigInteger.valueOf(5L);
     private static final String HORIZONTAL_ELLIPSIS = "\u2026";
-    private static final char DECIMAL_POINT_REPRESENTATION = obtainDecimalFormat().getDecimalFormatSymbols().getDecimalSeparator();
+    private static final char DECIMAL_POINT_REPRESENTATION = DecimalFormatSymbols.getInstance().getDecimalSeparator();
     
     private BigInteger position;  // the position after the decimal point where repetition begins
     private BigInteger decimalPeriod;  // the length of the repetition
@@ -146,18 +145,6 @@ public class RepeatingDecimal extends RationalImpl {
         return Optional.empty();
     }
     
-    private static DecimalFormat obtainDecimalFormat() {
-        NumberFormat format = DecimalFormat.getInstance();
-        if (format instanceof DecimalFormat) {
-            return (DecimalFormat) format;
-        } else {
-            Logger.getLogger(RepeatingDecimal.class.getName()).log(Level.WARNING,
-                    "Tried to obtain a {0} instance, but received {1} instead.",
-                    new Object[] {DecimalFormat.class.getTypeName(), format.getClass().getTypeName()});
-            return new DecimalFormat();
-        }
-    }
-
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (RealType.class.isAssignableFrom(numtype)) {
