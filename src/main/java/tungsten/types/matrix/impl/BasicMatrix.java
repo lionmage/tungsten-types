@@ -31,6 +31,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -185,7 +186,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (this.columns() != multiplier.rows()) {
             throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
-        final Class<T> clazz = (Class<T>) this.valueAt(0L, 0L).getClass();
+        final Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(this.valueAt(0L, 0L).getClass());
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
             RowVector<T> rowvec = this.getRow(row);
@@ -209,8 +210,8 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (columnCache.containsKey(column)) {
             return columnCache.get(column);
         }
-        if (rows.isEmpty() || column >= columns()) throw new IndexOutOfBoundsException(column + " is not valid");
-        Class<T> clazz = (Class<T>) valueAt(0L, 0L).getClass();
+        if (rows.isEmpty() || column >= columns()) throw new IndexOutOfBoundsException(column + " is not a valid column index");
+        Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(valueAt(0L, column).getClass());
         T[] temp = (T[]) Array.newInstance(clazz, (int) rows());
         for (int j = 0; j < rows(); j++) {
             temp[j] = valueAt(j, column);

@@ -135,7 +135,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         
         BasicMatrix<T> result = new BasicMatrix<>(addend);
-        final Class<T> clazz = (Class<T>) elements[0].getClass();
+        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(addend); // was elements[0].getClass();
 
         try {
             for (long idx = 0L; idx < this.rows(); idx++) {

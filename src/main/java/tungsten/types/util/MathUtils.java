@@ -1292,9 +1292,11 @@ public class MathUtils {
         }
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "Computing exp of matrix with MathContext = {0}", ctx);
         Matrix<Numeric> intermediate = new ZeroMatrix(X.rows(), ctx);
         // since this series can converge (very) slowly, this multiplier may need to be increased
-        long sumLimit = 3L * ctx.getPrecision() + 5L; // will get at least 5 terms if precision = 0 (Unlimited)
+        long sumLimit = 32L * ctx.getPrecision() + 5L; // will get at least 5 terms if precision = 0 (Unlimited)
         for (long k = 0L; k < sumLimit; k++) {
             IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
             intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
@@ -1304,7 +1306,7 @@ public class MathUtils {
         return new BasicMatrix<>(intermediate) {
             @Override
             public Numeric determinant() {
-                Euler e = Euler.getInstance(ctx);
+                final Euler e = Euler.getInstance(ctx);
                 Numeric tr = X.trace();
                 if (tr instanceof ComplexType) {
                     return e.exp((ComplexType) tr);
