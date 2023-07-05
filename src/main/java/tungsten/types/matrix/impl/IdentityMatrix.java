@@ -25,14 +25,19 @@ package tungsten.types.matrix.impl;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An Identity matrix (&#x1D7D9;) representation.
@@ -88,12 +93,24 @@ public class IdentityMatrix implements Matrix<Numeric> {
 
     @Override
     public Matrix<Numeric> scale(Numeric scaleFactor) {
+        if (Zero.isZero(scaleFactor)) return new ZeroMatrix(elementCount, mctx);
+        if (One.isUnity(scaleFactor)) return this;
         if (elementCount > MathUtils.MAX_CLONE_DEPTH) {
-            return new ParametricMatrix<>(elementCount, elementCount, (row, column) -> {
-               if (row.longValue() == column.longValue()) return scaleFactor;
-               return ExactZero.getInstance(mctx);
-            });
+            final Class<? extends Numeric> clazz = (Class<? extends Numeric>) ClassTools.getInterfaceTypeFor(scaleFactor.getClass());
+            try {
+                // ensure that zero is the same type as scaleFactor
+                final Numeric zero = ExactZero.getInstance(mctx).coerceTo(clazz);
+                return new ParametricMatrix<>(elementCount, elementCount, (row, column) -> {
+                   if (row.longValue() == column.longValue()) return scaleFactor;
+                   return zero;
+                });
+            } catch (CoercionException e) {
+                throw new IllegalStateException("Error coercing nullity", e);
+            }
         }
+        Logger.getLogger(IdentityMatrix.class.getName()).log(Level.FINE,
+                "Scaling identity matrix by {0} with MathContext = {1}",
+                new Object[] { scaleFactor, scaleFactor.getMathContext() });
         Numeric[] elements = new Numeric[(int) elementCount];
         for (int idx = 0; idx < (int) elementCount; idx++) {
             elements[idx] = scaleFactor;

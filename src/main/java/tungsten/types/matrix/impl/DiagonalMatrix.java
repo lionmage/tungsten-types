@@ -33,6 +33,7 @@ import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
@@ -135,11 +136,12 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         
         BasicMatrix<T> result = new BasicMatrix<>(addend);
-        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(addend); // was elements[0].getClass();
+        final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType(elements[0].getClass(), OptionalOperations.findTypeFor(addend));
 
         try {
             for (long idx = 0L; idx < this.rows(); idx++) {
-                T sum = (T) addend.valueAt(idx, idx).add(elements[(int) idx]).coerceTo(clazz);
+                T element = elements[(int) idx];
+                T sum = (T) addend.valueAt(idx, idx).add(element).coerceTo(clazz);
                 result.setValueAt(sum, idx, idx);
             }
         } catch (CoercionException ce) {
@@ -155,7 +157,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         if (multiplier instanceof DiagonalMatrix) {
             DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
-            T[] prod = (T[]) Array.newInstance(ClassTools.getInterfaceTypeFor(elements[0].getClass()), elements.length);
+            final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType(elements[0].getClass(), OptionalOperations.findTypeFor(other));
+            T[] prod = (T[]) Array.newInstance(clazz, elements.length);
             for (int idx = 0; idx < elements.length; idx++) {
                 prod[idx] = (T) elements[idx].multiply(other.elements[idx]);
             }
@@ -251,7 +254,9 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     @Override
     public DiagonalMatrix<T> scale(T scaleFactor) {
-        final Class<T> clazz = (Class<T>) elements[0].getClass();
+        if (One.isUnity(scaleFactor)) return this;
+        final Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(elements[0].getClass());
+        assert clazz.isAssignableFrom(scaleFactor.getClass());
         T[] scaled = Arrays.stream(elements).map(element -> element.multiply(scaleFactor))
                 .map(clazz::cast).toArray(size -> (T[]) Array.newInstance(clazz, size));
         return new DiagonalMatrix<>(scaled);
@@ -260,8 +265,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     /**
      * This is the <em>diag</em> operator, intended to convert a diagonal matrix into a vector.
      * It is the effective inverse of {@link DiagonalMatrix#DiagonalMatrix(Vector)}.<br/>
-     * For a diagonal matrix <strong>D</strong>,
-     * diag(<strong>D</strong>)&nbsp;=&nbsp;[a<sub>0</sub>,&thinsp;&hellip;,&thinsp;a<sub>n - 1</sub>]<sup>T</sup>
+     * For a diagonal matrix <strong>D</strong> with diagonal elements d<sub>0</sub>, d<sub>1</sub>, &hellip;, d<sub>n - 1</sub>,
+     * diag(<strong>D</strong>)&nbsp;=&nbsp;[d<sub>0</sub>,&thinsp;&hellip;,&thinsp;d<sub>n - 1</sub>]<sup>T</sup>
      *
      * @return a vector containing the diagonal elements of this matrix
      */
@@ -315,7 +320,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                                 T r = x.magnitude();
                                 return r.multiply(r);
                             }).reduce(Numeric::add).map(Numeric::sqrt)
-                            .orElseThrow().coerceTo(RealType.class);
+                            .orElseThrow(() -> new ArithmeticException("Error computing magnitude of vector " + Arrays.toString(elements)))
+                            .coerceTo(RealType.class);
                 } catch (CoercionException e) {
                     // this should never happen
                     throw new IllegalStateException(e);
@@ -383,7 +389,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
             @Override
             public MathContext getMathContext() {
-                return elements[0].getMathContext();
+                return MathUtils.inferMathContext(Arrays.asList(elements));  // was:  elements[0].getMathContext()
             }
         };
     }

@@ -86,7 +86,7 @@ public class One implements Numeric, Comparable<Numeric> {
     private final IntegerType INT_UNITY = new IntegerImpl(BigInteger.ONE) {
         @Override
         public MathContext getMathContext() {
-            return mctx;
+            return One.this.mctx;
         }
     };
 
@@ -101,6 +101,7 @@ public class One implements Numeric, Comparable<Numeric> {
                 break;
             case RATIONAL:
                 retval = new RationalImpl(INT_UNITY);
+                OptionalOperations.setMathContext(retval, mctx); // just to be sure
                 break;
             case REAL:
                 retval = obtainRealUnity();

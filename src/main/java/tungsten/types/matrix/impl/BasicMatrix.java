@@ -30,6 +30,7 @@ import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.vector.ColumnVector;
@@ -440,6 +441,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public Matrix<T> scale(T scaleFactor) {
+        if (One.isUnity(scaleFactor)) return this;
         BasicMatrix<T> scaled = new BasicMatrix<>();
         
         rows.stream().map(rowVec -> rowVec.scale(scaleFactor)).forEach(scaled::append);

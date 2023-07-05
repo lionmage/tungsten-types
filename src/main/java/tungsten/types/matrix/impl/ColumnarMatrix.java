@@ -30,6 +30,7 @@ import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.vector.ColumnVector;
@@ -78,8 +79,6 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     
     private ColumnVector<T> extractColumn(T[][] source, int column) {
         final int rows = source.length;
-        // normally, I'd use the following trick on source, but since source
-        // is an array, I'm not sure if any type info is preserved
         final Class<? extends Numeric> clazz = source[0][0].getClass();
         T[] temp = (T[]) Array.newInstance(ClassTools.getInterfaceTypeFor(clazz), rows);
         for (int i = 0; i < rows; i++) temp[i] = source[i][column];
@@ -376,6 +375,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public Matrix<T> scale(T scaleFactor) {
+        if (One.isUnity(scaleFactor)) return this;
         ColumnarMatrix<T> scaled = new ColumnarMatrix<>();
         columns.stream().map(colVec -> colVec.scale(scaleFactor)).forEach(scaled::append);
         return scaled;

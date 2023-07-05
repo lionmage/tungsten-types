@@ -63,7 +63,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     private final IntegerType INT_ZERO = new IntegerImpl(BigInteger.ZERO) {
         @Override
         public MathContext getMathContext() {
-            return mctx;
+            return Zero.this.mctx;
         }
     };
 
@@ -79,7 +79,8 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
                 retval = INT_ZERO;
                 break;
             case RATIONAL:
-                retval = new RationalImpl(INT_ZERO);
+                retval = new RationalImpl(BigInteger.ZERO, BigInteger.ONE, isExact());
+                OptionalOperations.setMathContext(retval, mctx);
                 break;
             case REAL:
                 retval = obtainRealZero();
@@ -94,7 +95,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     }
     
     protected RealType obtainRealZero() {
-        return new RealImpl(BigDecimal.ZERO, mctx);
+        return new RealImpl(BigDecimal.ZERO, mctx, isExact());
     }
 
     @SuppressWarnings("unchecked")

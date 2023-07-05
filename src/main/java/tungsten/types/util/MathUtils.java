@@ -122,9 +122,19 @@ public class MathUtils {
     public static IntegerType factorial(IntegerType n) {
         if (n.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Factorial undefined for " + n);
         if (n.asBigInteger().equals(BigInteger.ZERO) || n.asBigInteger().equals(BigInteger.ONE)) {
-            return new IntegerImpl(BigInteger.ONE);
+            return new IntegerImpl(BigInteger.ONE) {
+                @Override
+                public MathContext getMathContext() {
+                    return n.getMathContext(); // preserve MathContext
+                }
+            };
         } else if (getCacheFor(n) != null) {
-            return new IntegerImpl(getCacheFor(n));
+            return new IntegerImpl(getCacheFor(n)) {
+                @Override
+                public MathContext getMathContext() {
+                    return n.getMathContext();
+                }
+            };
         }
         
         Long m = findMaxKeyUnder(n);
@@ -137,7 +147,12 @@ public class MathUtils {
             intermediate = intermediate.subtract(BigInteger.ONE);
         }
         cacheFact(n, accum);
-        return new IntegerImpl(accum);
+        return new IntegerImpl(accum) {
+            @Override
+            public MathContext getMathContext() {
+                return n.getMathContext();  // preserve MathContext
+            }
+        };
     }
 
     /**
@@ -693,6 +708,9 @@ public class MathUtils {
      * @return the logarithm of {@code x} in {@code base}
      */
     public static RealType log(RealType x, RealType base, MathContext mctx) {
+        final RealType one = new RealImpl(BigDecimal.ONE, mctx);
+        if (base.compareTo(one) <= 0) throw new ArithmeticException("Cannot compute log with base " + base);
+        if (x.equals(base)) return one;
         final MathContext compCtx = new MathContext(mctx.getPrecision() + 8, mctx.getRoundingMode());
         // determined that you need at least 8 extra decimal places to get a value that rounds correctly
         // otherwise, you get things like log₂(1024) = 9.9999... instead of 10.0
@@ -1298,7 +1316,12 @@ public class MathUtils {
         // since this series can converge (very) slowly, this multiplier may need to be increased
         long sumLimit = 32L * ctx.getPrecision() + 5L; // will get at least 5 terms if precision = 0 (Unlimited)
         for (long k = 0L; k < sumLimit; k++) {
-            IntegerType kval = new IntegerImpl(BigInteger.valueOf(k));
+            IntegerType kval = new IntegerImpl(BigInteger.valueOf(k)) {
+                @Override
+                public MathContext getMathContext() {
+                    return ctx;
+                }
+            };
             intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
         }
         // return a special anonymous subclass of BasicMatrix which computes the
