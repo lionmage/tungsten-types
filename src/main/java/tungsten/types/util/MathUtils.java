@@ -1310,6 +1310,26 @@ public class MathUtils {
         }
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
+        if (ZeroMatrix.isZeroMatrix(X)) return new IdentityMatrix(X.rows(), ctx);
+        if (X.rows() > 4L && X.isUpperTriangular()) {
+            Logger.getLogger(MathUtils.class.getName()).info("Attempting the Parlett method for computing exp");
+            final Euler e = Euler.getInstance(X.valueAt(0L, 0L).getMathContext());
+            NumericHierarchy h = NumericHierarchy.forNumericType(OptionalOperations.findTypeFor(X));
+            switch (h) {
+                case REAL:
+                    return parlett(x -> e.exp((RealType) x), X);
+                case COMPLEX:
+                    return parlett(z -> e.exp((ComplexType) z), X);
+                // Note: The rest of these are faster but less safe than using coerceTo()
+                case RATIONAL:
+                    return parlett(x -> e.exp(new RealImpl((RationalType) x)), X);
+                case INTEGER:
+                    return parlett(x -> e.exp(new RealImpl((IntegerType) x)), X);
+                default:
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                            "No mapping function available for exp() with argument type {0}.", h);
+            }
+        }
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
                 "Computing exp of matrix with MathContext = {0}", ctx);
         Matrix<Numeric> intermediate = new ZeroMatrix(X.rows(), ctx);
@@ -1322,7 +1342,9 @@ public class MathUtils {
                     return ctx;
                 }
             };
-            intermediate = intermediate.add(((Matrix<Numeric>) X.pow(kval)).scale(factorial(kval).inverse()));
+            Matrix<Numeric> mtxPower = (Matrix<Numeric>) X.pow(kval);
+            if (ZeroMatrix.isZeroMatrix(mtxPower)) break; // nilpotent matrix check
+            intermediate = intermediate.add(mtxPower.scale(factorial(kval).inverse()));
         }
         // return a special anonymous subclass of BasicMatrix which computes the
         // determinant based on the trace of X, which is much cheaper than the default calculation
@@ -1438,7 +1460,7 @@ public class MathUtils {
         if (A.isUpperTriangular() &&
                 LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx)).filter(Zero::isZero).count() <= 1L) {
             // see https://www.sciencedirect.com/science/article/pii/002437958380010X?ref=cra_js_challenge&fr=RR-1 section 3
-            return sqrtUpperTriangular(A);
+            return parlett(Numeric::sqrt, A);
         }
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
                 "The given matrix is in a form for which the square root cannot be taken. Currently, " +
@@ -1447,18 +1469,26 @@ public class MathUtils {
         throw new UnsupportedOperationException("Currently unable to compute square root of supplied matrix");
     }
 
-    private static Matrix<? extends Numeric> sqrtUpperTriangular(Matrix<? extends Numeric> S) {
+    /**
+     * This is an implementation of Parlett's method for applying a function &fnof; to
+     * an upper-triangular matrix <strong>S</strong> by using recurrence relationships
+     * to compute the superdiagonals.
+     * @param func a function &fnof; that takes a {@link Numeric} instance and computes a result
+     * @param S    an upper-triangular matrix upon which to compute some function &fnof;
+     * @return an upper-triangular matrix, the result of computing &fnof;(<strong>S</strong>)
+     */
+    private static Matrix<? extends Numeric> parlett(Function<Numeric, ? extends Numeric> func, Matrix<? extends Numeric> S) {
         final long n = S.rows();  // S.columns() would work too
         if (n > (long) Integer.MAX_VALUE) throw new ArithmeticException("Cannot allocate a square matrix of size " + n);
         final Class<? extends Numeric> clazz = OptionalOperations.findTypeFor(S);
         final MathContext ctx = S.valueAt(0L, 0L).getMathContext();  // quick and dirty hack
-        final Numeric zero = OptionalOperations.dynamicInstantiate(clazz, "0");
+        final Numeric zero = OptionalOperations.dynamicInstantiate(clazz, 0d);
         OptionalOperations.setMathContext(zero, ctx);
         Numeric[][] temp = new Numeric[(int) n][(int) n];
-        Arrays.stream(temp, 0, (int) n).forEach(row -> Arrays.fill(row, zero));
+        Arrays.stream(temp, 1, (int) n).forEach(row -> Arrays.fill(row, zero)); // row 0 will be taken care of
         // compute the main diagonal first
         for (int k = 0; k < (int) n; k++) {
-            temp[k][k] = S.valueAt(k, k).sqrt();
+            temp[k][k] = func.apply(S.valueAt(k, k));
         }
         // now fill in the superdiagonals, moving upward from the main
         for (int diag = 1; diag < (int) n; diag++) {  // using ints since we're restricting ourselves to arrays here
