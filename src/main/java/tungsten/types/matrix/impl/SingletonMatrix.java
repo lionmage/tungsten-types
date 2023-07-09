@@ -100,7 +100,7 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
-        if (multiplier.rows() != rows() || multiplier.columns() != columns()) throw new ArithmeticException("Addend must be a 1\u00D71 matrix.");
+        if (multiplier.rows() != rows() || multiplier.columns() != columns()) throw new ArithmeticException("Addend must be a 1\u00D71 matrix");
         try {
             T sum = (T) element.multiply(multiplier.valueAt(0L, 0L)).coerceTo(element.getClass());
             return new SingletonMatrix<>(sum);
@@ -114,6 +114,16 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public SingletonMatrix<T> scale(T scaleFactor) {
         return new SingletonMatrix<>((T) element.multiply(scaleFactor));
+    }
+
+    @Override
+    public RealType norm() {
+        try {
+            // max norm and Frobenius are the same for a singleton matrix
+            return (RealType) element.magnitude().coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While computing the norm of a singleton matrix with element " + element, e);
+        }
     }
     
     @Override
@@ -138,7 +148,7 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
                         throw new IllegalStateException("isCoercibleTo() is inconsistent with coerceTo()", e);
                     }
                 } else {
-                    throw new UnsupportedOperationException("Currently, non-integer exponents are not supported for non-real, non-complex types.");
+                    throw new UnsupportedOperationException("Currently, non-integer exponents are not supported for non-real, non-complex types");
                 }
             }
             result = MathUtils.computeIntegerExponent(element, (IntegerType) n);

@@ -26,6 +26,7 @@ package tungsten.types.matrix.impl;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
@@ -169,5 +170,10 @@ public class PaddedMatrix<T extends Numeric> extends ParametricMatrix<T> {
             return aggregate;
         }
         return super.getColumn(column);
+    }
+
+    @Override
+    public RealType norm() {
+        return source.norm();
     }
 }

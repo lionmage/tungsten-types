@@ -1327,7 +1327,10 @@ public class MathUtils {
                     return parlett(x -> e.exp(new RealImpl((IntegerType) x)), X);
                 default:
                     Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
-                            "No mapping function available for exp() with argument type {0}.", h);
+                            "No mapping function available for exp() with argument type {0}.",
+                            OptionalOperations.findTypeFor(X).getTypeName());
+                    // if we got here, we're going to fall through to the series calculation below
+                    break;
             }
         }
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,

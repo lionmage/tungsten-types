@@ -25,12 +25,15 @@ package tungsten.types.matrix.impl;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.*;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 
 /**
@@ -88,6 +91,12 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
     public Numeric trace() {
         if (columns() != rows()) throw new ArithmeticException("Cannot compute trace of a non-square matrix");
         return ExactZero.getInstance(mctx);
+    }
+
+    @Override
+    public RealType norm() {
+        // norm is the same for both max and Frobenius in this case
+        return new RealImpl(BigDecimal.ZERO, mctx);
     }
 
     public static boolean isZeroMatrix(Matrix<? extends Numeric> matrix) {

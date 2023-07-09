@@ -393,7 +393,23 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             }
         };
     }
-    
+
+    @Override
+    public RealType norm() {
+        if (useFrobeniusNorm()) {
+            return diag().magnitude();
+        } else {
+            Numeric maxValue = Arrays.stream(elements)
+                    .map(Numeric::magnitude).map(Numeric.class::cast)
+                    .max(MathUtils.obtainGenericComparator()).orElseThrow();
+            try {
+                return (RealType) maxValue.coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While computing the matrix norm", e);
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Matrix) {

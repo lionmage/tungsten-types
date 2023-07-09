@@ -26,13 +26,12 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.impl.ExactZero;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.One;
-import tungsten.types.numerics.impl.Zero;
+import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.impl.*;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Objects;
@@ -116,6 +115,15 @@ public class IdentityMatrix implements Matrix<Numeric> {
             elements[idx] = scaleFactor;
         }
         return new DiagonalMatrix<>(elements);
+    }
+
+    @Override
+    public RealType norm() {
+        if (useFrobeniusNorm()) {
+            return (RealType) new RealImpl(BigDecimal.valueOf(elementCount)).sqrt();
+        } else {
+            return new RealImpl(BigDecimal.ONE, mctx);
+        }
     }
 
     @Override

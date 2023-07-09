@@ -153,7 +153,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
                 return (T) accum.coerceTo(clazz);
             }
         } catch (CoercionException ex) {
-            Logger.getLogger(BasicMatrix.class.getName()).log(Level.SEVERE, "Coercion failed computing determinant.", ex);
+            Logger.getLogger(BasicMatrix.class.getName()).log(Level.SEVERE, "Coercion failed while computing determinant.", ex);
             throw new ArithmeticException("While computing determinant: " + ex.getMessage());
         }
     }
@@ -201,7 +201,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public RowVector<T> getRow(long row) {
         if (row < 0L || row >= rows()) {
-            throw new IndexOutOfBoundsException("Row index is out of range.");
+            throw new IndexOutOfBoundsException("Row index is out of range 0\u2013" + rows());
         }
         return rows.get((int) row);
     }

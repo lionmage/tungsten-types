@@ -29,10 +29,12 @@ import tungsten.types.Vector;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.MathUtils;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -45,6 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * A {@link Matrix} implementation that stores its internal values in
@@ -390,6 +393,30 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         }
         return new ArrayRowVector<>(result);
     }
+
+    @Override
+    public RealType norm() {
+        final Stream<Numeric> allValues = columns.stream().flatMap(ColumnVector::stream)
+                .map(Numeric::magnitude).map(Numeric.class::cast);
+        if (useFrobeniusNorm()) {
+            Numeric sumOfSquares = allValues.map(x -> x.multiply(x)).reduce(Numeric::add).map(Numeric::sqrt)
+                    .orElseThrow(() -> new ArithmeticException("No result while computing Frobenius norm"));
+            try {
+                return (RealType) sumOfSquares.coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While computing the Frobenius norm", e);
+            }
+        } else {
+            Numeric maxValue = allValues
+                    .max(MathUtils.obtainGenericComparator()).orElseThrow();
+            try {
+                return (RealType) maxValue.coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While computing the matrix norm", e);
+            }
+        }
+    }
+
 
     @Override
     public boolean equals(Object o) {

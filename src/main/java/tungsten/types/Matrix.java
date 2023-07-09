@@ -27,10 +27,12 @@ package tungsten.types;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.IdentityMatrix;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.MathUtils;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -42,6 +44,8 @@ import java.math.MathContext;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 /**
  * The root type for matrices.
@@ -50,6 +54,13 @@ import java.util.logging.Logger;
  * @param <T> the {@link Numeric} type of the elements of this matrix 
  */
 public interface Matrix<T extends Numeric> {
+    /**
+     * Environment variable determining whether to use the more
+     * computationally expensive Frobenius norm instead of the
+     * max norm.
+     */
+    String USE_FROBENIUS_NORM = "tungsten.types.Matrix.useFrobenius";
+
     long columns();
     long rows();
     T valueAt(long row, long column);
@@ -210,6 +221,53 @@ public interface Matrix<T extends Numeric> {
     Matrix<T> add(Matrix<T> addend);
     Matrix<T> multiply(Matrix<T> multiplier);
     Matrix<T> scale(T scaleFactor);
+
+    /**
+     * Convenience method to determine whether to use the
+     * max norm or the Frobenius norm.
+     * @return true if Frobenius should be used, false otherwise
+     */
+    default boolean useFrobeniusNorm() {
+        return Boolean.getBoolean(USE_FROBENIUS_NORM);
+    }
+
+    /**
+     * Compute the norm for this matrix.  The norm is analogous to
+     * magnitude, and in practice there are many ways to compute the
+     * norm for a matrix.  By default, this method computes the
+     * max norm and returns it as a positive {@link RealType real}
+     * value.  If the environment variable {@link #USE_FROBENIUS_NORM}
+     * is set to {@code true}, the Frobenius norm is computed instead.
+     * <br/>Any classes implementing this interface which override
+     * this default implementation <strong>must</strong> handle computing both types
+     * of norm; it is recommended that implementing classes use {@link #useFrobeniusNorm()}
+     * to make this determination rather than rolling their own.
+     * @return the norm for this matrix
+     * @see #USE_FROBENIUS_NORM
+     * @see <a href="https://en.wikipedia.org/wiki/Matrix_norm">the Wikipedia article on matrix norms</a>
+     */
+    default RealType norm() {
+        final Stream<Numeric> allValues = LongStream.range(0L, rows())
+                .mapToObj(this::getRow).flatMap(RowVector::stream)
+                .map(Numeric::magnitude).map(Numeric.class::cast);
+        if (useFrobeniusNorm()) {
+            Numeric sumOfSquares = allValues.map(x -> x.multiply(x)).reduce(Numeric::add).map(Numeric::sqrt)
+                    .orElseThrow(() -> new ArithmeticException("No result while computing Frobenius norm"));
+            try {
+                return (RealType) sumOfSquares.coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While computing the Frobenius norm", e);
+            }
+        } else {
+            Numeric maxValue = allValues
+                    .max(MathUtils.obtainGenericComparator()).orElseThrow();
+            try {
+                return (RealType) maxValue.coerceTo(RealType.class);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While computing the matrix norm", e);
+            }
+        }
+    }
     
     default Matrix<? extends Numeric> pow(Numeric n) {
         if (!(n instanceof IntegerType)) {
