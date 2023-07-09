@@ -18,4 +18,5 @@ the Java command line as follows:
 | `tungsten.types.numerics.MathUtils.Gamma.blockSize`                            | Integer | 250           | Determines how many Weierstrass terms are computed per block, thus governs work-per-thread.                                                                 |
 | `tungsten.types.util.rendering.matrix.cell.RealCellRenderer.maxFractionDigits` | Integer | 4             | Determines the maximum number of digits to render after the decimal point.                                                                                  |
 | `tungsten.types.util.rendering.matrix.cell.RealCellRenderer.useEllipses`       | Boolean | true          | If true, appends ellipses to values to be truncated, otherwise rounds.                                                                                      |
+| `tungsten.types.Matrix.useFrobenius`                                           | Boolean | false         | If true, use the Frobenius norm instead of the max norm for matrices.                                                                                       |
 
