@@ -1465,11 +1465,57 @@ public class MathUtils {
             // see https://www.sciencedirect.com/science/article/pii/002437958380010X?ref=cra_js_challenge&fr=RR-1 section 3
             return parlett(Numeric::sqrt, A);
         }
-        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
-                "The given matrix is in a form for which the square root cannot be taken. Currently, " +
-                        "the square root can only be computed for diagonal matrices, 2\u00D72 matrices, " +
-                        "and upper-triangular matrices.  Consider refactoring the matrix into upper-triangular form.");
-        throw new UnsupportedOperationException("Currently unable to compute square root of supplied matrix");
+        return denmanBeavers(A);
+//        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+//                "The given matrix is in a form for which the square root cannot be taken. Currently, " +
+//                        "the square root can only be computed for diagonal matrices, 2\u00D72 matrices, " +
+//                        "and upper-triangular matrices.  Consider refactoring the matrix into upper-triangular form.");
+//        throw new UnsupportedOperationException("Currently unable to compute square root of supplied matrix");
+    }
+
+    /**
+     * Implementation of the Denman-Beavers iteration for computing the
+     * square root of matrix {@code A}.  This method is not guaranteed to
+     * converge.
+     * @param A the source matrix for which we wish to compute the square root
+     * @return the square root, if the iteration converges
+     * @throws ArithmeticException if the iteration does not converge
+     * @see <a href="https://en.wikipedia.org/wiki/Square_root_of_a_matrix#By_Denman%E2%80%93Beavers_iteration">the Wikipedia article</a>
+     */
+    private static Matrix<? extends Numeric> denmanBeavers(Matrix<? extends Numeric> A) {
+        final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
+        final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
+        OptionalOperations.setMathContext(onehalf, ctx);
+        Matrix<Numeric>  Y = (Matrix<Numeric>) A;
+        Matrix<Numeric>  Z = new IdentityMatrix(A.rows(), ctx);
+
+        final RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
+        final int bailout = ctx.getPrecision() * 2 + 5;
+        int itercount = 0;
+
+        while (itercount++ < bailout) {
+            Matrix<Numeric> Y1 = Y.add((Matrix<Numeric>) Z.inverse()).scale(onehalf);
+            Matrix<Numeric> Z1 = Z.add((Matrix<Numeric>) Y.inverse()).scale(onehalf);
+            // copy values back for the next iteration
+            Y = Y1;
+            Z = Z1;
+            // check how far off we are and bail if we're < epsilon
+            if (Y.multiply(Y).subtract((Matrix<Numeric>) A).norm().compareTo(epsilon) <= 0) break;
+        }
+        // if we don't escape before hitting the bailout, we haven't converged
+        if (itercount >= bailout) {
+            throw new ArithmeticException("Denman-Beavers iteration does not converge to within " + epsilon +
+                    " after " + bailout + " steps");
+        }
+
+        // Z converges to the inverse of Y, so let's not waste this result
+        final Matrix<? extends Numeric> Yinv = Z;
+        return new BasicMatrix<>(Y) {
+            @Override
+            public Matrix<? extends Numeric> inverse() {
+                return Yinv;
+            }
+        };
     }
 
     /**
