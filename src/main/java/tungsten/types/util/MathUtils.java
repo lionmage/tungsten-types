@@ -1442,6 +1442,7 @@ public class MathUtils {
      *   for the Square Root of a Matrix</a> by Åke Björck and Sven Hammarling
      */
     public static Matrix<? extends Numeric> sqrt(Matrix<? extends Numeric> A) {
+        if (A instanceof IdentityMatrix) return A;
         if (A instanceof DiagonalMatrix) {
             Numeric[] elements = LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx))
                     .map(Numeric::sqrt).toArray(Numeric[]::new);
@@ -1466,11 +1467,39 @@ public class MathUtils {
             return parlett(Numeric::sqrt, A);
         }
         return denmanBeavers(A);
-//        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
-//                "The given matrix is in a form for which the square root cannot be taken. Currently, " +
-//                        "the square root can only be computed for diagonal matrices, 2\u00D72 matrices, " +
-//                        "and upper-triangular matrices.  Consider refactoring the matrix into upper-triangular form.");
-//        throw new UnsupportedOperationException("Currently unable to compute square root of supplied matrix");
+    }
+
+    /**
+     * Experimental code to compute the square root of a matrix using a power series.
+     * This may be impractical due to the use of {@link #generalizedBinomialCoefficient(Numeric, IntegerType)},
+     * but testing will reveal all.
+     * @param A the matrix for which we need to find the square root
+     * @return the square root of {@code A}
+     */
+    private static Matrix<? extends Numeric> sqrtPowerSeries(Matrix<? extends Numeric> A) {
+        final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
+        final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
+        OptionalOperations.setMathContext(onehalf, ctx);
+        Matrix<Numeric> result = new ZeroMatrix(A.rows(), ctx);
+        final Matrix<Numeric> IminA = new IdentityMatrix(A.rows(), ctx).subtract((Matrix<Numeric>) A);  // I - A only needs to be computed once
+
+        long bailout = 2L * ctx.getPrecision() + 3L;
+        for (long n = 0; n < bailout; n++) {
+            IntegerType nn = new IntegerImpl(BigInteger.valueOf(n)) {
+                @Override
+                public MathContext getMathContext() {
+                    return ctx;
+                }
+            };
+            Matrix<Numeric> intermediate = ((Matrix<Numeric>) IminA.pow(nn)).scale(generalizedBinomialCoefficient(onehalf, nn));
+            if (nn.isOdd()) {
+                result = result.subtract(intermediate);
+            } else {
+                result = result.add(intermediate);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -1489,7 +1518,7 @@ public class MathUtils {
         Matrix<Numeric>  Y = (Matrix<Numeric>) A;
         Matrix<Numeric>  Z = new IdentityMatrix(A.rows(), ctx);
 
-        final RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
+        final RealType epsilon = computeIntegerExponent(TEN, 3L - ctx.getPrecision(), ctx);
         final int bailout = ctx.getPrecision() * 2 + 5;
         int itercount = 0;
 
