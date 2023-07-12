@@ -1475,6 +1475,7 @@ public class MathUtils {
      * but testing will reveal all.
      * @param A the matrix for which we need to find the square root
      * @return the square root of {@code A}
+     * @see <a href="https://en.wikipedia.org/wiki/Square_root_of_a_matrix#Power_series">the Wikipedia article</a>
      */
     private static Matrix<? extends Numeric> sqrtPowerSeries(Matrix<? extends Numeric> A) {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
@@ -1484,7 +1485,7 @@ public class MathUtils {
         final Matrix<Numeric> IminA = new IdentityMatrix(A.rows(), ctx).subtract((Matrix<Numeric>) A);  // I - A only needs to be computed once
 
         long bailout = 2L * ctx.getPrecision() + 3L;
-        for (long n = 0; n < bailout; n++) {
+        for (long n = 0L; n < bailout; n++) {
             IntegerType nn = new IntegerImpl(BigInteger.valueOf(n)) {
                 @Override
                 public MathContext getMathContext() {
@@ -1510,6 +1511,7 @@ public class MathUtils {
      * @return the square root, if the iteration converges
      * @throws ArithmeticException if the iteration does not converge
      * @see <a href="https://en.wikipedia.org/wiki/Square_root_of_a_matrix#By_Denman%E2%80%93Beavers_iteration">the Wikipedia article</a>
+     * @see <a href="https://arxiv.org/pdf/1804.11000.pdf">Zolotarev Iterations for the Matrix Square Root</a>
      */
     private static Matrix<? extends Numeric> denmanBeavers(Matrix<? extends Numeric> A) {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
@@ -1528,7 +1530,7 @@ public class MathUtils {
             // copy values back for the next iteration
             Y = Y1;
             Z = Z1;
-            // check how far off we are and bail if we're < epsilon
+            // check how far off we are and bail if we're ≤ epsilon
             if (Y.multiply(Y).subtract((Matrix<Numeric>) A).norm().compareTo(epsilon) <= 0) break;
         }
         // if we don't escape before hitting the bailout, we haven't converged
