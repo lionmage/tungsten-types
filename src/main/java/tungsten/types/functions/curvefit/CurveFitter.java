@@ -24,7 +24,7 @@ package tungsten.types.functions.curvefit;
  */
 
 import tungsten.types.Numeric;
-import tungsten.types.annotations.StrategySupports;
+import tungsten.annotations.StrategySupports;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.exceptions.StrategyNotFoundException;
 import tungsten.types.functions.NumericFunction;

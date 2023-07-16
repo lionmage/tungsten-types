@@ -23,11 +23,12 @@
  */
 package tungsten.types.util;
 
+import tungsten.annotations.Experimental;
 import tungsten.types.Set;
 import tungsten.types.Vector;
 import tungsten.types.*;
-import tungsten.types.annotations.Columnar;
-import tungsten.types.annotations.Polar;
+import tungsten.annotations.Columnar;
+import tungsten.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.impl.Exp;
@@ -1473,11 +1474,17 @@ public class MathUtils {
      * Experimental code to compute the square root of a matrix using a power series.
      * This may be impractical due to the use of {@link #generalizedBinomialCoefficient(Numeric, IntegerType)},
      * but testing will reveal all.
+     * <br/>Note that this method converges slowly (slower than {@link #denmanBeavers(Matrix) Denman-Beavers})
+     * and appears to require that all matrix eigenvalues are at a distance &le; 1 from the
+     * point z&nbsp;=&nbsp;1, which would require computing the eigenvalues of the input matrix to check
+     * whether this method would even work.  That's a lot of up-front work to do, and there are methods
+     * of computing the square root of a matrix directly from its eigenvalues.
      * @param A the matrix for which we need to find the square root
      * @return the square root of {@code A}
      * @see <a href="https://en.wikipedia.org/wiki/Square_root_of_a_matrix#Power_series">the Wikipedia article</a>
      */
-    private static Matrix<? extends Numeric> sqrtPowerSeries(Matrix<? extends Numeric> A) {
+    @Experimental
+    public static Matrix<? extends Numeric> sqrtPowerSeries(Matrix<? extends Numeric> A) {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
         final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
         OptionalOperations.setMathContext(onehalf, ctx);
@@ -2267,6 +2274,7 @@ public class MathUtils {
      * @return the product of {@code lhs} and {@code rhs}
      * @see <a href="https://en.wikipedia.org/wiki/Strassen_algorithm">the Wikipedia article on Strassen's algorithm</a>
      */
+    @Experimental
     public static Matrix<RealType> efficientMatrixMultiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
         if (lhs.rows() == rhs.rows() && lhs.columns() == rhs.columns() && lhs.rows() == lhs.columns()) {
             // we have two square matrices of equal dimension

@@ -26,7 +26,7 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
-import tungsten.types.annotations.Columnar;
+import tungsten.annotations.Columnar;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RationalImpl;
@@ -37,7 +37,6 @@ import tungsten.types.vector.impl.ListColumnVector;
 import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.*;

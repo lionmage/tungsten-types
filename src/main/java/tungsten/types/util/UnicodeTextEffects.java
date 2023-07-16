@@ -25,7 +25,7 @@ package tungsten.types.util;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
-import tungsten.types.annotations.RendererSupports;
+import tungsten.annotations.RendererSupports;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.exceptions.StrategyNotFoundException;
 import tungsten.types.numerics.*;

@@ -1,8 +1,7 @@
-package tungsten.types.annotations;
 /*
  * The MIT License
  *
- * Copyright © 2023 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2019 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +21,22 @@ package tungsten.types.annotations;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package tungsten.annotations;
 
-import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.Matrix;
 
 import java.lang.annotation.*;
 
 /**
- * An annotation to indicate what kind of data type
- * a renderer supports.  This may be expanded in the
- * future to support multiple types.
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * Annotation to denote certain {@link Matrix} implementations
+ * as columnar stores (i.e., the data is stored as a set of columns
+ * instead of a set of rows). 
+ *
+ * @author Robert Poole
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface RendererSupports {
-    /**
-     * This should be a short, human-readable name
-     * sufficient to identify this renderer.
-     * @return the name
-     */
-    String name();
-
-    /**
-     * This represents the type of element
-     * we can render.
-     * @return one of the enumeration values
-     */
-    NumericHierarchy type();
+public @interface Columnar {
+    // There are currently no values associated with this annotation.
 }

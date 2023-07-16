@@ -21,22 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tungsten.types.annotations;
+package tungsten.annotations;
 
-import tungsten.types.Matrix;
+import tungsten.types.Numeric;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Annotation to denote certain {@link Matrix} implementations
- * as columnar stores (i.e., the data is stored as a set of columns
- * instead of a set of rows). 
+ * Annotation to denote certain {@link Numeric} implementations as
+ * constants.
  *
- * @author Robert Poole
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Columnar {
-    // There are currently no values associated with this annotation.
+public @interface Constant {
+    String name();
+    String representation();
 }

@@ -26,7 +26,7 @@ package tungsten.types.vector;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
-import tungsten.types.annotations.Columnar;
+import tungsten.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.SingletonMatrix;
 import tungsten.types.numerics.ComplexType;

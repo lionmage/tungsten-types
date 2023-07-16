@@ -25,9 +25,9 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.Set;
-import tungsten.types.annotations.Constant;
-import tungsten.types.annotations.ConstantFactory;
-import tungsten.types.annotations.Polar;
+import tungsten.annotations.Constant;
+import tungsten.annotations.ConstantFactory;
+import tungsten.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;

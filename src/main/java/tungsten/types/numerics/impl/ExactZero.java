@@ -1,7 +1,7 @@
 package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
-import tungsten.types.annotations.ConstantFactory;
+import tungsten.annotations.ConstantFactory;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 

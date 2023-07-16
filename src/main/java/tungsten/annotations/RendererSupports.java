@@ -1,4 +1,4 @@
-package tungsten.types.annotations;
+package tungsten.annotations;
 /*
  * The MIT License
  *
@@ -23,29 +23,31 @@ package tungsten.types.annotations;
  * THE SOFTWARE.
  */
 
-import tungsten.types.functions.curvefit.CurveType;
+import tungsten.types.numerics.NumericHierarchy;
 
 import java.lang.annotation.*;
 
 /**
- * An annotation which indicates which type of data a curve fitting strategy supports.
+ * An annotation to indicate what kind of data type
+ * a renderer supports.  This may be expanded in the
+ * future to support multiple types.
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface StrategySupports {
+public @interface RendererSupports {
     /**
      * This should be a short, human-readable name
-     * sufficient to identify this strategy.
+     * sufficient to identify this renderer.
      * @return the name
      */
     String name();
 
     /**
-     * This represents the type of data we should
-     * be fitting to a curve.
+     * This represents the type of element
+     * we can render.
      * @return one of the enumeration values
      */
-    CurveType type();
+    NumericHierarchy type();
 }

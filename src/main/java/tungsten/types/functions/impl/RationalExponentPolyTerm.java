@@ -1,7 +1,7 @@
 package tungsten.types.functions.impl;
 
 import tungsten.types.Numeric;
-import tungsten.types.annotations.Differentiable;
+import tungsten.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.Term;
