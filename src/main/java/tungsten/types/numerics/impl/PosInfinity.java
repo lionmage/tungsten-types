@@ -24,7 +24,7 @@
 package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
-import tungsten.annotations.Constant;
+import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;

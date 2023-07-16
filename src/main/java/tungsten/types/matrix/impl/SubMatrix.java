@@ -26,7 +26,7 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
-import tungsten.annotations.Columnar;
+import tungsten.types.annotations.Columnar;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RationalImpl;

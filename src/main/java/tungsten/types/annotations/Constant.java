@@ -1,8 +1,7 @@
-package tungsten.annotations;
 /*
  * The MIT License
  *
- * Copyright © 2023 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2019 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +21,24 @@ package tungsten.annotations;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package tungsten.types.annotations;
 
-import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.Numeric;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * An annotation to indicate what kind of data type
- * a renderer supports.  This may be expanded in the
- * future to support multiple types.
+ * Annotation to denote certain {@link Numeric} implementations as
+ * constants.
+ *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface RendererSupports {
-    /**
-     * This should be a short, human-readable name
-     * sufficient to identify this renderer.
-     * @return the name
-     */
+public @interface Constant {
     String name();
-
-    /**
-     * This represents the type of element
-     * we can render.
-     * @return one of the enumeration values
-     */
-    NumericHierarchy type();
+    String representation();
 }

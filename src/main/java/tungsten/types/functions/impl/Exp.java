@@ -24,7 +24,7 @@ package tungsten.types.functions.impl;
  */
 
 import tungsten.types.Range;
-import tungsten.annotations.Differentiable;
+import tungsten.types.annotations.Differentiable;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;

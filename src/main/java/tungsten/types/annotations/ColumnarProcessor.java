@@ -1,8 +1,7 @@
-package tungsten.annotations;
 /*
  * The MIT License
  *
- * Copyright © 2023 Robert Poole <Tarquin.AZ@gmail.com>.
+ * Copyright © 2019 Robert Poole <Tarquin.AZ@gmail.com>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +21,9 @@ package tungsten.annotations;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package tungsten.types.annotations;
 
-import tungsten.types.functions.curvefit.CurveFittingStrategy;
+import tungsten.types.Matrix;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
@@ -36,50 +36,44 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Annotation processor to ensure that {@code @StrategySupprts} annotations are
- * only applied to classes implementing {@link CurveFittingStrategy}. This
- * processor also checks the integrity of the annotation's parameters and will
- * raise errors or warnings as appropriate.
+ * Annotation processor to ensure that {@code @Columnar} annotations are
+ * only applied to classes implementing {@link Matrix}.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-public class StrategySupportsProcessor extends AbstractProcessor {
+public class ColumnarProcessor extends AbstractProcessor {
+    
+    public ColumnarProcessor() {
+        super();
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
         final Messager messager = processingEnv.getMessager();
         for (TypeElement typeElement : annotations) {
             for (Element element : env.getElementsAnnotatedWith(typeElement)) {
-                StrategySupports annotation = element.getAnnotation(StrategySupports.class);
-                if (annotation != null) {
-                    if (annotation.name() != null && annotation.name().length() < 2) {
-                        messager.printMessage(Diagnostic.Kind.WARNING,
-                                "The name specified is too short for meaningful filtering.", element);
-                    }
-                    if (annotation.type() == null) {
-                        messager.printMessage(Diagnostic.Kind.ERROR,
-                                "A CurveType must be specified for this strategy to be discoverable.", element);
-                    }
-                }
+                // if Columnar ever gets any values, they can be extracted and validated here
+//                Columnar annotation = element.getAnnotation(Columnar.class);
                 TypeMirror typeMirror = element.asType();
-
-                if (!isSubclassOfCurveFittingStrategy(typeMirror)) {
+                
+                if (!isSubclassOfMatrix(typeMirror)) {
                     messager.printMessage(Diagnostic.Kind.ERROR,
-                            "Any type annotated with @StrategySupports must implement the CurveFittingStrategy interface.", element);
+                            "Any type annotated with @Columnar must implement the Matrix interface.", element);
                 }
             }
         }
         return false;
     }
-
-    private static final String CFS = CurveFittingStrategy.class.getName();
-
-    private boolean isSubclassOfCurveFittingStrategy(TypeMirror t) {
-        if (processingEnv.getTypeUtils().directSupertypes(t).stream().map(TypeMirror::toString).anyMatch(CFS::equals)) return true;
-        return processingEnv.getTypeUtils().directSupertypes(t).stream().anyMatch(this::isSubclassOfCurveFittingStrategy);
+    
+    private static final String MATRIX = Matrix.class.getName();
+    
+    private boolean isSubclassOfMatrix(TypeMirror t) {
+        if (processingEnv.getTypeUtils().directSupertypes(t).stream().map(TypeMirror::toString).anyMatch(MATRIX::equals)) return true;
+        return processingEnv.getTypeUtils().directSupertypes(t).stream().anyMatch(this::isSubclassOfMatrix);
     }
-
+    
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return Collections.singleton(StrategySupports.class.getName());
+        return Collections.singleton(Columnar.class.getName());
     }
 }

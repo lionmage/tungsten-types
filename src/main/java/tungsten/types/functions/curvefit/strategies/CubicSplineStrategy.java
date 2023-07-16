@@ -24,7 +24,7 @@ package tungsten.types.functions.curvefit.strategies;
  */
 
 import tungsten.types.Range;
-import tungsten.annotations.StrategySupports;
+import tungsten.types.annotations.StrategySupports;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.curvefit.CurveFittingStrategy;
 import tungsten.types.functions.curvefit.CurveType;

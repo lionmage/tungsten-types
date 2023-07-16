@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package tungsten.annotations;
+package tungsten.types.annotations;
 
 import tungsten.types.Numeric;
 

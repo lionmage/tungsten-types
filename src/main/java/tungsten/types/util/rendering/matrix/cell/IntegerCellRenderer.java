@@ -24,7 +24,7 @@ package tungsten.types.util.rendering.matrix.cell;
  */
 
 import tungsten.types.Numeric;
-import tungsten.annotations.RendererSupports;
+import tungsten.types.annotations.RendererSupports;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.vector.RowVector;

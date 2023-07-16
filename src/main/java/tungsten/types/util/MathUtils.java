@@ -23,12 +23,12 @@
  */
 package tungsten.types.util;
 
-import tungsten.annotations.Experimental;
+import tungsten.types.annotations.Experimental;
 import tungsten.types.Set;
 import tungsten.types.Vector;
 import tungsten.types.*;
-import tungsten.annotations.Columnar;
-import tungsten.annotations.Polar;
+import tungsten.types.annotations.Columnar;
+import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.impl.Exp;

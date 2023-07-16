@@ -25,9 +25,9 @@ package tungsten.types.util;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
-import tungsten.annotations.Columnar;
-import tungsten.annotations.Constant;
-import tungsten.annotations.ConstantFactory;
+import tungsten.types.annotations.Columnar;
+import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;

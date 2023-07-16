@@ -1,4 +1,4 @@
-package tungsten.annotations;
+package tungsten.types.annotations;
 
 import tungsten.types.numerics.ComplexType;
 
