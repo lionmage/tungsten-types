@@ -1,3 +1,4 @@
 tungsten.types.annotations.ColumnarProcessor
 tungsten.types.annotations.PolarProcessor
 tungsten.types.annotations.StrategySupportsProcessor
+tungsten.types.annotations.ExperimentalProcessor
