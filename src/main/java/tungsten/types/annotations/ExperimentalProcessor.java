@@ -36,12 +36,11 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.tools.Diagnostic;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ExperimentalProcessor extends AbstractProcessor implements TaskListener {
     private Trees trees;
+    private final Set<Name> funcNames = new HashSet<>();
 
     public ExperimentalProcessor() { super(); }
 
@@ -83,6 +82,7 @@ public class ExperimentalProcessor extends AbstractProcessor implements TaskList
                                         element);
                             }
                             if (member.getKind() == ElementKind.METHOD) {
+                                funcNames.add(member.getSimpleName());
                                 messager.printMessage(Diagnostic.Kind.NOTE,
                                         "Method " + member.getSimpleName() +
                                         " is marked as experimental, and its signature may " +
@@ -120,11 +120,14 @@ public class ExperimentalProcessor extends AbstractProcessor implements TaskList
                     switch (methodSelect.getKind()) {
                         case IDENTIFIER:
                             IdentifierTree identifier = (IdentifierTree) methodSelect;
-                            trees.printMessage(Diagnostic.Kind.WARNING,
-                                    "Call to an experimental API: " + identifier.getName() +
-                                    " [API is subject to change or removal]",
-                                    methodSelect,
-                                    event.getCompilationUnit());
+                            // an extra check to ensure we're only printing warnings for experimental methods
+                            if (funcNames.contains(identifier.getName())) {
+                                trees.printMessage(Diagnostic.Kind.WARNING,
+                                        "Call to an experimental API: " + identifier.getName() +
+                                                " [API is subject to change or removal]",
+                                        methodSelect,
+                                        event.getCompilationUnit());
+                            }
                             break;
                         case COMPILATION_UNIT:
                             CompilationUnitTree compilationUnit = (CompilationUnitTree) methodSelect;
