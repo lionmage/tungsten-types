@@ -86,7 +86,7 @@ public class ExperimentalProcessor extends AbstractProcessor implements TaskList
                                 messager.printMessage(Diagnostic.Kind.NOTE,
                                         "Method " + member.getSimpleName() +
                                         " is marked as experimental, and its signature may " +
-                                        "change in the future, or the method may be removed entirely.", element);
+                                        "change in the future, or it may be removed entirely.", element);
                                 // flag any private experimental APIs as suspicious
                                 if (member.getModifiers().contains(Modifier.PRIVATE)) {
                                     messager.printMessage(Diagnostic.Kind.WARNING,
