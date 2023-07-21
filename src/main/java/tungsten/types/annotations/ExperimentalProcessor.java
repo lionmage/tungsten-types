@@ -106,11 +106,6 @@ public class ExperimentalProcessor extends AbstractProcessor implements TaskList
     }
 
     @Override
-    public void started(TaskEvent e) {
-        // deliberately leaving this empty
-    }
-
-    @Override
     public void finished(TaskEvent event) {
         if (event.getKind() == TaskEvent.Kind.ANALYZE) {
             event.getCompilationUnit().accept(new TreeScanner<Void, Void>() {
