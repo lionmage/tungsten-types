@@ -38,6 +38,16 @@ import javax.lang.model.element.*;
 import javax.tools.Diagnostic;
 import java.util.*;
 
+/**
+ * An annotation processor for the {@code @Experimental} annotation.
+ * This processor ensures that {@code @Experimental} is only applied to
+ * classes or methods, and will generate compiler warnings if any such
+ * annotated methods are called.  It will also warn if an annotated
+ * method is {@code private}, since non-public APIs generally
+ * do not require a warning for public consumers.
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ */
 public class ExperimentalProcessor extends AbstractProcessor implements TaskListener {
     private Trees trees;
     private final Set<Name> funcNames = new HashSet<>();
