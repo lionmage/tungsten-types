@@ -25,6 +25,7 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.OptionalOperations;
@@ -200,6 +201,9 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         if (val instanceof Zero) return true;
         if (val != null) {
             NumericHierarchy htype = NumericHierarchy.forNumericType(val.getClass());
+            // if htype is null, we are dealing with some other direct subtype of Numeric
+            // that is not zero
+            if (htype == null) return false;
             switch (htype) {
                 case INTEGER:
                     return ((IntegerType) val).asBigInteger().equals(BigInteger.ZERO);
@@ -209,6 +213,9 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
                     return ((RealType) val).asBigDecimal().compareTo(BigDecimal.ZERO) == 0;
                 case COMPLEX:
                     final ComplexType that = (ComplexType) val;
+                    if (that.getClass().isAnnotationPresent(Polar.class)) {
+                        return isZero(that.magnitude());
+                    }
                     return isZero(that.real()) && isZero(that.imaginary());
             }
         }

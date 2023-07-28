@@ -79,7 +79,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
      */
     public BasicMatrix(Matrix<T> source) {
         for (long row = 0L; row < source.rows(); row++) {
-            append(source.getRow(row));
+            append(source.getRow(row).copy());
         }
     }
 

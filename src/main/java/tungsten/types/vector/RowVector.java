@@ -237,6 +237,17 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     public abstract ColumnVector<T> transpose();
 
     public abstract Stream<T> stream();
+
+    /**
+     * Like {@link Object#clone()}, but more type safe
+     * (and doesn't throw any checked exceptions).
+     * This method should return an exact copy of this
+     * row vector; since the elements are effectively
+     * value beans, a deep copy is not required, only
+     * a copy of the implementation's data store.
+     * @return a copy of this row vector
+     */
+    public abstract RowVector<T> copy();
     
     @Override
     public boolean equals(Object o) {

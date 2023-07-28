@@ -230,6 +230,7 @@ public class One implements Numeric, Comparable<Numeric> {
         if (val instanceof One) return true;
         if (val != null) {
             NumericHierarchy htype = NumericHierarchy.forNumericType(val.getClass());
+            if (htype == null) return false;
             switch (htype) {
                 case INTEGER:
                     return ((IntegerType) val).asBigInteger().equals(BigInteger.ONE);

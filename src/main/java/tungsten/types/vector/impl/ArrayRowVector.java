@@ -159,6 +159,12 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     }
 
     @Override
+    public RowVector<T> copy() {
+        T[] arrayCopy = Arrays.copyOf(elementArray, elementArray.length);
+        return new ArrayRowVector<>(arrayCopy);
+    }
+
+    @Override
     public Matrix<T> add(Matrix<T> addend) {
         if (addend.rows() != rows() || addend.columns() != columns()) {
             throw new ArithmeticException("Dimension mismatch for single-row matrix");

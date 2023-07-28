@@ -219,6 +219,17 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     }
 
     @Override
+    public ColumnVector<T> copy() {
+        final List<T> elementsCopy;
+        if (elements instanceof RandomAccess) {
+            elementsCopy = new ArrayList<>(elements);
+        } else {
+            elementsCopy = new LinkedList<>(elements);
+        }
+        return new ListColumnVector<>(elementsCopy);
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(elements, rwl, getMathContext());
     }

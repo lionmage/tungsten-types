@@ -183,6 +183,12 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
     }
 
     @Override
+    public ColumnVector<T> copy() {
+        T[] arrayCopy = Arrays.copyOf(elementArray, elementArray.length);
+        return new ArrayColumnVector<>(arrayCopy);
+    }
+
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 53 * hash + Arrays.deepHashCode(this.elementArray);

@@ -211,6 +211,17 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
     }
 
     @Override
+    public RowVector<T> copy() {
+        final List<T> elementsCopy;
+        if (elements instanceof RandomAccess) {
+            elementsCopy = new ArrayList<>(elements);
+        } else {
+            elementsCopy = new LinkedList<>(elements);
+        }
+        return new ListRowVector<>(elementsCopy);
+    }
+
+    @Override
     public Matrix<T> add(Matrix<T> addend) {
         if (addend.rows() != 1L || addend.columns() != length()) {
             throw new IllegalArgumentException("Matrices must have equal dimensions");

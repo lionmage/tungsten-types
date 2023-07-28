@@ -7,7 +7,9 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.MathUtils;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayRowVector;
 
@@ -17,6 +19,7 @@ import java.math.MathContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static tungsten.types.util.UnicodeTextEffects.formatMatrixForDisplay;
 
 public class MatrixValidationTest {
     RealType zero = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
@@ -85,5 +88,35 @@ public class MatrixValidationTest {
         assertEquals(testRow2, Winv.getRow(2L));
         // check the factorization
         assertEquals(W, Z.transpose().multiply(Z));
+    }
+
+    @Test
+    public void matrixExponential() {
+        System.out.println("Testing exp() for matrices");
+        Pi pi = Pi.getInstance(MathContext.DECIMAL128);
+        RealType[][] sample = {
+                {zero, pi.negate()},
+                {pi, zero}
+        };
+
+        Matrix<RealType> P = new BasicMatrix<>(sample);
+
+        System.out.println("Initial matrix:");
+        System.out.println(formatMatrixForDisplay(P, (String) null, (String) null));
+
+        Matrix<? extends Numeric> R = MathUtils.exp(P);
+
+        System.out.println("exp of matrix:");
+        System.out.println(formatMatrixForDisplay(R, (String) null, (String) null));
+
+        // ensure that P was not altered in any way
+        Matrix<RealType> copP = new BasicMatrix<>(sample);
+        assertEquals(copP, P, "Initial matrix argument should not be altered");
+
+        Matrix<? extends Numeric> expValue = new IdentityMatrix(2L, MathContext.DECIMAL128).scale(one.negate());
+        RealType epsilon = new RealImpl("0.00000001", MathContext.DECIMAL128);
+
+        assertTrue(MathUtils.areEqualToWithin((Matrix<RealType>) expValue, (Matrix<RealType>) R, epsilon),
+                "Matrix elements must be within \uD835\uDF00 of their expected value");
     }
 }

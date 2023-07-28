@@ -65,7 +65,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     
     public ColumnarMatrix(Matrix<T> source) {
         for (long column = 0L; column < source.columns(); column++) {
-            columns.add(source.getColumn(column));
+            columns.add(source.getColumn(column).copy());
         }
     }
     
