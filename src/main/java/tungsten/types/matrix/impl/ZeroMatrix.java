@@ -26,12 +26,16 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
-import tungsten.types.vector.impl.*;
+import tungsten.types.vector.impl.ListColumnVector;
+import tungsten.types.vector.impl.ListRowVector;
+import tungsten.types.vector.impl.ZeroVector;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -117,7 +121,27 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
         }
         return true;
     }
-    
+
+    private static final String INVERSE_ERROR = "Cannot take the inverse of the zero matrix";
+
+    @Override
+    public Matrix<? extends Numeric> pow(Numeric n) {
+        if (rows() != columns()) {
+            throw new ArithmeticException("Cannot raise a non-square matrix to a power");
+        }
+        if (OptionalOperations.sign(n) == Sign.NEGATIVE) {
+            throw new ArithmeticException(INVERSE_ERROR);
+        }
+        if (Zero.isZero(n)) return new IdentityMatrix(rows(), mctx);
+        return this; // Zⁿ = Z for n != 0
+    }
+
+    @Override
+    public Matrix<? extends Numeric> inverse() {
+        // the zero matrix is never invertible
+        throw new ArithmeticException(INVERSE_ERROR);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof ZeroMatrix) {
