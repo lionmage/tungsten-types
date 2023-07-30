@@ -26,8 +26,12 @@ package tungsten.types.vector.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.numerics.RealType;
+import tungsten.types.vector.ColumnVector;
+import tungsten.types.vector.RowVector;
 
 import java.math.MathContext;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 /**
  * A simple wrapper class for vectors which provides a read-only view
@@ -120,5 +124,32 @@ public class ImmutableVector<T extends Numeric> implements Vector<T> {
     @Override
     public MathContext getMathContext() {
         return wrapped.getMathContext();
+    }
+
+    @Override
+    public int hashCode() {
+        return wrapped.hashCode() * 7 + 3;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ImmutableVector) {
+            // unwrap the wrapped vector argument
+            ImmutableVector<T> that = (ImmutableVector<T>) obj;
+            return wrapped.equals(that.wrapped);
+        }
+        return wrapped.equals(obj);
+    }
+
+    public Stream<T> stream() {
+        if (wrapped instanceof RowVector) {
+            RowVector<T> rvec = (RowVector<T>) wrapped;
+            return rvec.stream();
+        } else if (wrapped instanceof ColumnVector) {
+            ColumnVector<T> cvec = (ColumnVector<T>) wrapped;
+            return cvec.stream();
+        }
+        // if all else fails, we can generate a stream (albeit not a very performant one)
+        return LongStream.range(0L, length()).mapToObj(wrapped::elementAt);
     }
 }
