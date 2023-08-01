@@ -75,6 +75,7 @@ public class MatrixValidationTest {
      */
     @Test
     public void wilsonMatrix() {
+        System.out.println("Using Wilson matrix:\n" + formatMatrixForDisplay(W, (String) null, (String) null));
         IntegerType det = W.determinant();
         assertTrue(One.isUnity(det), "The determinant of Wilson's matrix should be 1");
         // first row
@@ -84,6 +85,7 @@ public class MatrixValidationTest {
         RowVector<IntegerType> testRow2 = new ArrayRowVector<>(new IntegerImpl("-17"),
                 new IntegerImpl("10"), new IntegerImpl("5"), new IntegerImpl("-3"));
         Matrix<? extends Numeric> Winv = W.inverse();
+        System.out.println("Wilson inverse is:\n" + formatMatrixForDisplay(Winv, (String) null, (String) null));
         assertEquals(testRow, Winv.getRow(0L));
         assertEquals(testRow2, Winv.getRow(2L));
         // check the factorization

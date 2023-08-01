@@ -27,6 +27,8 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.RendererSupports;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.numerics.Sign;
+import tungsten.types.util.UnicodeTextEffects;
 import tungsten.types.vector.RowVector;
 
 import java.util.Arrays;
@@ -73,16 +75,23 @@ public class IntegerCellRenderer implements CellRenderingStrategy {
         }
         for (int col = 0; col < row.columns(); col++) {
             IntegerType cellVal = (IntegerType) row.elementAt(col);
-            if (cellWidths[col] < cellVal.numberOfDigits()) {
-                cellWidths[col] = maximumCellWidth == -1 ? cellVal.toString().length() :
-                        Math.min(cellVal.toString().length(), maximumCellWidth);
+            if (cellWidths[col] < computeWidth(cellVal)) {
+                int cwidth = UnicodeTextEffects.computeCharacterWidth(cellVal.toString());
+                cellWidths[col] = maximumCellWidth == -1 ? cwidth :
+                        Math.min(cwidth, maximumCellWidth);
             }
-            if (maximumCellWidth != -1 && cellVal.numberOfDigits() > maximumCellWidth) {
+            if (maximumCellWidth != -1 && computeWidth(cellVal) > maximumCellWidth) {
                 Logger.getLogger(IntegerCellRenderer.class.getName()).log(Level.WARNING,
                         "Column {0} value {1} exceeds maximum column width of {2}.",
                         new Object[] {col, cellVal, maximumCellWidth});
             }
         }
+    }
+
+    private int computeWidth(IntegerType cellValue) {
+        int basis = (int) cellValue.numberOfDigits();
+        if (cellValue.sign() == Sign.NEGATIVE) basis++;
+        return basis;
     }
 
     @Override

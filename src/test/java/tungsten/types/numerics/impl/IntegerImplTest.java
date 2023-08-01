@@ -210,6 +210,7 @@ public class IntegerImplTest {
             // should not reach the following statement
             fail("Expected exception to be thrown, but none was");
         } catch (Exception e) {
+            System.err.println("Expected exception (don't panic)");
             e.printStackTrace();
             assertTrue(e instanceof IndexOutOfBoundsException);
         }

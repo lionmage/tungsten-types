@@ -48,8 +48,16 @@ of magnitude larger than it should be. Far different from previously computed re
 same ballpark as the expected result.  𝚪(1/2) should evaluate to √π, and I can compute √π directly to an accuracy within
 1 or 2 ulps of the requested precision!
 
-So, what's happening here?  Completely unpredictable order of operations means that small correction terms may be applied
-to large values first, causing severe rounding error.  It seems that some ordering is necessary here.
+So, what's happening here?  My initial thought was that completely unpredictable order of operations means that small
+correction terms may be applied to large values first, causing severe rounding error. It turns out that something
+else may be going on, and it has to do with the [Riemann Series Theorem](https://en.wikipedia.org/wiki/Riemann_series_theorem),
+also known as the [Riemann Rearrangement Theorem](https://sites.math.washington.edu/~morrow/335_16/history%20of%20rearrangements.pdf).
+Put simply, if you rearrange the terms of an infinite sum that converges conditionally, you can obtain literally any
+real value you like — or you can cause the series to diverge.  You will typically see
+this behavior with series that have alternating sign.  Since the Euler limit form is a product, not a sum,
+and since its terms don't appear to have any negatives, the Riemann Series Theorem may not apply — but the general
+idea that reordering can alter a sum (or a product) of an _infinite_ series still applies.
+Regardless, it seems that some ordering is necessary here.
 
 Consider this alternate concurrent implementation:
 
@@ -90,4 +98,18 @@ fork-join code before (see my FFT implementation), but usually that sort of stuf
 This code isn't recursive, just highly parallelizable.
 
 A more efficient algorithm is in order here.  I might try the Weierstrass form next, or I might jump straight to
-Lanczos.
+Lanczos.  However, I am disinclined to implement Lanczos for a few reasons:
+
+* The Lanczos approximation only works for the positive-real half of the complex plane. (This can be remedied through the use of a reflection formula.)
+* Lanczos requires using constants that are themselves derived/computed values, and which must be carefully chosen for a given precision.
+* Due to the above, Lanczos is undesirable for applications where arbitrary precision arithmetic is used, such as this project.
+* Choosing a set of constants for a given precision may not be possible, forcing a choice between lesser precision or wasted computation of extra digits.
+* The calculation of these magic constants is not trivial, and involves searching a solution space exhaustively for "values that work."
+* Most implementations of Lanczos therefore use pre-determined constants to compute 𝚪(z) for a particular floating point type's size (float, double).
+
+## Addendum
+I have since settled on Weierstrass, which seems to have reasonable performance and generates results on
+par with previous best attempts.  This was made possible in part by implementing a
+very efficient algorithm for calculating the Euler-Mascheroni constant that produces as many digits of precision
+as we could possibly want.  There are tuning parameters available to increase accuracy and/or concurrency,
+available as system properties that can be supplied at runtime.
