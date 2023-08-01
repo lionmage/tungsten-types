@@ -99,7 +99,10 @@ public class IntegerCellRenderer implements CellRenderingStrategy {
         int cellWidth = cellWidths[column];
         StringBuilder buf = new StringBuilder();
         String valStr = value.toString();
-        IntStream.range(0, cellWidth - valStr.length()).forEach(dummy -> buf.append(' '));
+        // we could probably just get away with using valStr.length(), but for consistency and
+        // future-proofness, let's use standardized utility methods
+        int chWidth = UnicodeTextEffects.computeCharacterWidth(valStr);
+        IntStream.range(0, cellWidth - chWidth).forEach(dummy -> buf.append(' '));
         buf.append(valStr);
         return buf.toString();
     }
