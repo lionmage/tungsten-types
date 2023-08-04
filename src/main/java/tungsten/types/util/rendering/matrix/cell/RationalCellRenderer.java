@@ -28,6 +28,8 @@ import tungsten.types.annotations.RendererSupports;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RationalType;
+import tungsten.types.numerics.impl.One;
+import tungsten.types.util.UnicodeTextEffects;
 import tungsten.types.vector.RowVector;
 
 import java.util.Arrays;
@@ -88,7 +90,7 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             int slashIdx = indexOfSolidus(strRep);
             if (ratVal.denominator().numberOfDigits() > denomLen[col]) {
                 denomLen[col] = (int) ratVal.denominator().numberOfDigits();
-                slashPos[col] = slashIdx;
+                if (slashIdx > slashPos[col]) slashPos[col] = slashIdx;
             }
             String numRep = strRep.substring(0, slashIdx);
             if (numRep.length() > numLen[col]) {
@@ -100,6 +102,8 @@ public class RationalCellRenderer implements CellRenderingStrategy {
 
     private static final String SOLIDUS_REGEX = "[/\u2044]";
     private static final Pattern solidusPattern = Pattern.compile(SOLIDUS_REGEX);
+    private static final String ONE_DENOM = SOLIDUS_REGEX + "1$";
+    private static final Pattern oneDenomPattern = Pattern.compile(ONE_DENOM);
 
     private int indexOfSolidus(String val) {
         Matcher m = solidusPattern.matcher(val);
@@ -107,7 +111,7 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             return m.start();
         }
         Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.INFO,
-                val + " does not appear to be an actual rational value.");
+                "{0} does not appear to be an actual rational value.", val);
         return -1;
     }
 
@@ -126,11 +130,13 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             cellWidth = minimumCellWidth;
         }
         if (alignTo > valPos) {
+            // leading space
             IntStream.range(0, alignTo - valPos).forEach(dummy -> cell.append(' '));
         } else if (alignTo < valPos) {
-            if (strVal.length() == cellWidth)  {
+            int chWidth = UnicodeTextEffects.computeCharacterWidth(strVal);
+            if (chWidth == cellWidth)  {
                 return strVal;
-            } else if (strVal.length() > cellWidth) {
+            } else if (chWidth > cellWidth) {
                 Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.SEVERE,
                         "Cannot format {0} to fit within a cell {1} characters wide; " +
                                 "solidus is misaligned (position {2} for {0}, {3} for the cell). " +
@@ -139,8 +145,24 @@ public class RationalCellRenderer implements CellRenderingStrategy {
                 throw new IllegalStateException("Cannot format value to fit in cell");
             }
         }
-        cell.append(strVal);
-        IntStream.range(0, cellWidth - cell.length()).forEach(dummy -> cell.append(' '));
+        final RationalType ratValue = (RationalType) value;
+        if (One.isUnity(ratValue.denominator())) {
+            // remove the /1 from the end of the string, as it is superfluous
+            oneDenomPattern.matcher(strVal).appendReplacement(cell, "");
+        } else if (One.isUnity(ratValue)) {
+            // if our denominator is not 1 but we are unity anyway, complain and clean up
+            Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.WARNING,
+                    "Encountered rational value {0} with equal numerator and " +
+                    "denominator. This should have been reduced to 1/1.", ratValue);
+            // this is really just unity (1), so substitute a 1 here
+            IntStream.range(0, valPos - 1).forEach(dummy -> cell.append(' '));
+            cell.append('1');
+        } else {
+            cell.append(strVal);
+        }
+        // trailing space
+        int remaining = cellWidth - UnicodeTextEffects.computeCharacterWidth(cell);
+        IntStream.range(0, remaining).forEach(dummy -> cell.append(' '));
 
         return cell.toString();
     }
