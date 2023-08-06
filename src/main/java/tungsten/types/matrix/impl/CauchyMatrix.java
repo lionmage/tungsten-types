@@ -119,7 +119,7 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
         if (X.length() != Y.length()) {
             throw new ArithmeticException("Inverse only applies to square matrices");
         }
-        MathContext ctx = new MathContext(Math.min(X.getMathContext().getPrecision(), Y.getMathContext().getPrecision()));
+        final MathContext ctx = new MathContext(Math.min(X.getMathContext().getPrecision(), Y.getMathContext().getPrecision()));
         return new ParametricMatrix<>(Y.length(), X.length(),
                 (row, column) -> {
                     Numeric p1 = LongStream.range(0L, X.length())
