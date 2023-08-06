@@ -23,6 +23,7 @@
  */
 package tungsten.types.util;
 
+import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.Experimental;
 import tungsten.types.Set;
 import tungsten.types.Vector;
@@ -394,6 +395,10 @@ public class MathUtils {
      * @return the value {@code x} rounded
      */
     public static RealType round(RealType x, MathContext ctx) {
+        if (x.getClass().isAnnotationPresent(Constant.class)) {
+            String constantName = x.getClass().getAnnotation(Constant.class).name();
+            return OptionalOperations.instantiateConstant(constantName, ctx);
+        }
         BigDecimal value = x.asBigDecimal().round(ctx);
         return new RealImpl(value, ctx, false);
     }
@@ -436,6 +441,10 @@ public class MathUtils {
      * @return the complex value z rounded
      */
     public static ComplexType round(ComplexType z, MathContext ctx) {
+        if (z.getClass().isAnnotationPresent(Constant.class)) {
+            String constantName = z.getClass().getAnnotation(Constant.class).name();
+            return OptionalOperations.instantiateConstant(constantName, ctx);
+        }
         if (z.getClass().isAnnotationPresent(Polar.class)) {
             return new ComplexPolarImpl(round(z.magnitude(), ctx), round(z.argument(), ctx), false);
         }
@@ -489,6 +498,8 @@ public class MathUtils {
         // if n falls within a certain integer range, delegate to BigDecimal.pow()
         if (useBuiltInOperations() && Math.abs(n) < MAX_INT_FOR_EXPONENT) {
             RealImpl real = new RealImpl(x.asBigDecimal().pow((int) n, mctx), mctx, x.isExact());
+            // TODO tighten up the condition under which we set irrational = true
+            // x could be irrational, say, √2, and yet x² = 2, not an irrational number
             real.setIrrational(x.isIrrational());
             return real;
         }

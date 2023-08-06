@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
+ * Implementation of a complex-valued vector.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
@@ -295,5 +296,13 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public MathContext getMathContext() {
         return mctx;
+    }
+
+    @Override
+    public String toString() {
+        final MathContext displayCtx = new MathContext(3);
+        return elements.stream().map(x -> MathUtils.round(x, displayCtx)).map(Object::toString)
+                .collect(Collectors.joining(",\u2009", "\u27E8", "\u27E9"));
+
     }
 }
