@@ -57,7 +57,8 @@ import java.util.stream.Collectors;
  * @param <T> the numeric type of the elements of this matrix
  */
 public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
-    final private T[] elements;
+    private static final String DIAG_RO_ERROR = "diag vector is a read-only view";
+    private final T[] elements;
     
     @SafeVarargs
     public DiagonalMatrix(T... elements) {
@@ -225,6 +226,13 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                 .toArray(Numeric[]::new);
         return new DiagonalMatrix<>(result);
     }
+
+    public Matrix<? extends Numeric> ln() {
+        Numeric[] result = Arrays.stream(elements)
+                .map(element -> element instanceof ComplexType ? MathUtils.ln((ComplexType) element) : MathUtils.ln(limitedUpconvert(element)))
+                .toArray(Numeric[]::new);
+        return new DiagonalMatrix<>(result);
+    }
     
     @Override
     public boolean isUpperTriangular() { return true; }
@@ -247,9 +255,9 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     
     @Override
     public String toString() {
-        // 202F = non-breaking narrow space
+        // 202F = non-breaking narrow space, 2009 = thin space
         return Arrays.stream(elements).map(Object::toString)
-                .collect(Collectors.joining(", ", "diag(\u202F", "\u202F)"));
+                .collect(Collectors.joining(",\u2009", "diag(\u202F", "\u202F)"));
     }
 
     @Override
@@ -284,12 +292,12 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
             @Override
             public void setElementAt(T element, long position) {
-                throw new UnsupportedOperationException("diag vector is a read-only view");
+                throw new UnsupportedOperationException(DIAG_RO_ERROR);
             }
 
             @Override
             public void append(T element) {
-                throw new UnsupportedOperationException("diag vector is a read-only view");
+                throw new UnsupportedOperationException(DIAG_RO_ERROR);
             }
 
             @Override
@@ -401,7 +409,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         } else {
             Numeric maxValue = Arrays.stream(elements)
                     .map(Numeric::magnitude).map(Numeric.class::cast)
-                    .max(MathUtils.obtainGenericComparator()).orElseThrow();
+                    .max(MathUtils.obtainGenericComparator()).orElseThrow(() -> new ArithmeticException("Unable to compute max norm"));
             try {
                 return (RealType) maxValue.coerceTo(RealType.class);
             } catch (CoercionException e) {

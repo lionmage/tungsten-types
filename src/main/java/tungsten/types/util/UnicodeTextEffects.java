@@ -187,11 +187,9 @@ public class UnicodeTextEffects {
      *   entirely covered by an overline
      */
     public static String overline(String source) {
-        StringBuilder buf = new StringBuilder();
-        
-        for (Character c : source.toCharArray()) {
-            buf.append(c).append(COMBINING_OVERLINE);
-        }
+        final StringBuilder buf = new StringBuilder();
+
+        source.codePoints().forEach(cp -> buf.appendCodePoint(cp).append(COMBINING_OVERLINE));
         return buf.toString();
     }
 
