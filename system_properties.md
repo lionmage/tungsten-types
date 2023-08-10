@@ -19,4 +19,4 @@ the Java command line as follows:
 | `tungsten.types.util.rendering.matrix.cell.RealCellRenderer.maxFractionDigits` | Integer | 4             | Determines the maximum number of digits to render after the decimal point.                                                                                  |
 | `tungsten.types.util.rendering.matrix.cell.RealCellRenderer.useEllipses`       | Boolean | true          | If true, appends ellipses to values to be truncated, otherwise rounds.                                                                                      |
 | `tungsten.types.Matrix.useFrobenius`                                           | Boolean | false         | If true, use the Frobenius norm instead of the max norm for matrices.                                                                                       |
-
+| `tungsten.types.numerics.MathUtils.ln.rational.threshold`                      | Integer | 250           | When computing ln(x) for a rational value x, determines whether to use the integer approximation for ln().                                                  |

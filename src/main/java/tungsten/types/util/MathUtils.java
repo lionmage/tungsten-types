@@ -713,6 +713,28 @@ public class MathUtils {
     }
 
     /**
+     * System property governing when the natural log of a rational value should be computed using
+     * {@link #ln(IntegerType, MathContext) an integer approximation} or by first converting to a
+     * real value.  If <em>both</em> the numerator and the denominator of a rational number are below this
+     * threshold, the rational is converted into a real before computing the natural log.  The default
+     * value is 250.
+     */
+    public static final String LN_RATIONAL_THRESHOLD = "tungsten.types.numerics.MathUtils.ln.rational.threshold";
+    private static final IntegerType lnRationalCutoff = new IntegerImpl(System.getProperty(LN_RATIONAL_THRESHOLD, "250"));
+
+    public static RealType ln(RationalType x) {
+        final MathContext ctx = x.getMathContext();
+        if (x.numerator().compareTo(lnRationalCutoff) < 0 && x.denominator().compareTo(lnRationalCutoff) < 0) {
+            try {
+                return ln((RealType) x.coerceTo(RealType.class), ctx);
+            } catch (CoercionException fatal) {
+                throw new IllegalStateException("While computing ln(" + x + ")", fatal);
+            }
+        }
+        return (RealType) ln(x.numerator(), ctx).subtract(ln(x.denominator(), ctx));
+    }
+
+    /**
      * Compute the general logarithm, log<sub>b</sub>(x).
      * @param x the number for which we wish to take a logarithm
      * @param base the base of the logarithm
@@ -1325,7 +1347,7 @@ public class MathUtils {
         if (ZeroMatrix.isZeroMatrix(X)) return new IdentityMatrix(X.rows(), ctx);
         if (X.rows() > 4L && X.isUpperTriangular()) {
             Logger.getLogger(MathUtils.class.getName()).info("Attempting the Parlett method for computing exp");
-            final Euler e = Euler.getInstance(X.valueAt(0L, 0L).getMathContext());
+            final Euler e = Euler.getInstance(ctx);
             NumericHierarchy h = NumericHierarchy.forNumericType(OptionalOperations.findTypeFor(X));
             switch (h) {
                 case REAL:
@@ -1379,6 +1401,98 @@ public class MathUtils {
                 }
             }
         };
+    }
+
+    public static Matrix<? extends Numeric> ln(Matrix<? extends Numeric> X) {
+        if (X instanceof DiagonalMatrix) return ((DiagonalMatrix<? extends Numeric>) X).ln();
+        if (X instanceof SingletonMatrix || (X.columns() == 1L && X.rows() == 1L)) {
+            final Numeric value = X.valueAt(0L, 0L);
+            try {
+                return new SingletonMatrix<>(value instanceof ComplexType ? ln((ComplexType) value) :
+                        ln((RealType) value.coerceTo(RealType.class)));
+            } catch (CoercionException ex) {
+                throw new ArithmeticException("Cannot compute ln(X): " + ex.getMessage());
+            }
+        }
+        if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute ln for a non-square matrix");
+        final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
+        final Matrix<Numeric> I = new IdentityMatrix(X.rows(), ctx);
+        if (I.equals(X)) return new ZeroMatrix(X.rows(), ctx);  // ln(I) = 0
+        if (X.isUpperTriangular()) {
+            Logger.getLogger(MathUtils.class.getName()).info("Attempting the Parlett method for computing ln");
+            NumericHierarchy h = NumericHierarchy.forNumericType(OptionalOperations.findTypeFor(X));
+            switch (h) {
+                case REAL:
+                    return parlett(x -> ln((RealType) x), X);
+                case COMPLEX:
+                    return parlett(z -> ln((ComplexType) z), X);
+                // Note: The rest of these are faster but less safe than using coerceTo()
+                case RATIONAL:
+                    return parlett(x -> ln(new RealImpl((RationalType) x)), X);
+                case INTEGER:
+                    return parlett(x -> ln(new RealImpl((IntegerType) x)), X);
+                default:
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                            "No mapping function available for ln() with argument type {0}.",
+                            OptionalOperations.findTypeFor(X).getTypeName());
+                    // if we got here, we're going to fall through to the calculations below
+                    break;
+            }
+        }
+        if (X.rows() == 2L && RationalType.class.isAssignableFrom(OptionalOperations.findTypeFor(X))) {
+            Logger.getLogger(MathUtils.class.getName()).fine("Checking for a special type of 2\u00D72 rational matrix");
+            Matrix<RationalType> source = (Matrix<RationalType>) X;
+            if (source.valueAt(0L, 0L).equals(source.valueAt(1L, 1L)) &&
+                    source.valueAt(0L, 1L).equals(source.valueAt(1L, 0L))) {
+                RationalType roq = source.valueAt(0L, 0L);
+                RationalType poq = source.valueAt(0L, 1L);
+                if (roq.denominator().equals(poq.denominator())) {
+                    IntegerType q = roq.denominator();
+                    IntegerType p = poq.numerator();
+                    IntegerType r = roq.numerator();
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                            "Found a rational matrix with p={0}, r={1}, and denominator q={2}; computing logarithm.",
+                            new Object[] {p, r, q});
+                    RealType a = (RealType) ln((IntegerType) p.add(r), ctx).subtract(ln(q, ctx));
+                    RealType zero = new RealImpl(BigDecimal.ZERO, ctx);
+                    RealType[][] result = new RealType[][]{{zero, a}, {a, zero}};
+                    return new BasicMatrix<>(result);
+                }
+            }
+        }
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        if (((Matrix<Numeric>) X).subtract(I).norm().compareTo(one) < 0) {
+            Logger.getLogger(MathUtils.class.getName()).fine("X - I norm is < 1, computing ln() using series.");
+            return lnSeries(X);
+        }
+        throw new ArithmeticException("Unable to compute ln() for the given matrix");
+    }
+
+    /**
+     * Compute ln(<strong>B</strong>) for matrix <strong>B</strong> using a
+     * series.  Note that this will only converge if ||<strong>B</strong>||&nbsp;&lt;&nbsp;1
+     * @param B the matrix for which to compute the natural logarithm
+     * @return a matrix A such that e<sup>A</sup>=&thinsp;B
+     */
+    private static Matrix<? extends Numeric> lnSeries(Matrix<? extends Numeric> B) {
+        final MathContext ctx = B.valueAt(0L, 0L).getMathContext();
+        final Matrix<Numeric> I = new IdentityMatrix(B.rows(), ctx);
+        final Matrix<? extends Numeric> M = ((Matrix<Numeric>) B).subtract(I);
+        final long sumlimit = 32L * ctx.getPrecision() + 5L;
+        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                "Computing ln() of a {0}\u00D7{1} matrix with {2} series terms.",
+                new Object[] { B.rows(), B.columns(), sumlimit });
+
+        Matrix<Numeric> intermediate = new ZeroMatrix(B.rows(), ctx);
+        for (long k = 1L; k < sumlimit; k++) {
+            // (-1)ⁿ⁺¹ is computed for the numerator
+            RationalType factor = new RationalImpl(k % 2L == 1L ? 1L : -1L, k, ctx);
+            IntegerType n = new IntegerImpl(BigInteger.valueOf(k));
+            Matrix<Numeric> mtxpow = (Matrix<Numeric>) M.pow(n);
+            if (ZeroMatrix.isZeroMatrix(mtxpow)) break; // nilpotency check
+            intermediate = intermediate.add(mtxpow.scale(factor));
+        }
+        return intermediate;
     }
 
     /**
