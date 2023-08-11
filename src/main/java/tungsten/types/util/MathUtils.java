@@ -1462,7 +1462,7 @@ public class MathUtils {
         }
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         if (((Matrix<Numeric>) X).subtract(I).norm().compareTo(one) < 0) {
-            Logger.getLogger(MathUtils.class.getName()).fine("X - I norm is < 1, computing ln() using series.");
+            Logger.getLogger(MathUtils.class.getName()).fine("||X - I|| < 1, computing ln() using series.");
             return lnSeries(X);
         }
         throw new ArithmeticException("Unable to compute ln() for the given matrix");
