@@ -1537,12 +1537,13 @@ public class MathUtils {
             return Mcxp.multiply((Matrix<ComplexType>) prod.inverse());
         } else {
             final ComplexType sigma = sigma_1(Mcplx);
+            final RealType two = new RealImpl(decTWO, sigma.getMathContext());
             ComplexType sigSquared = (ComplexType) sigma.multiply(sigma.conjugate());  // this should actually be a real (i.e., zero imaginary part)
-            ComplexType maxAlpha = (ComplexType) new RealImpl(decTWO).divide(sigSquared);  // should work without coercion
+            ComplexType maxAlpha = (ComplexType) two.divide(sigSquared);  // should work without coercion
             final RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
             Range<RealType> alphaRange = new Range<>(zero, maxAlpha.real(), BoundType.EXCLUSIVE);
             final ComplexType scale = new ComplexRectImpl(random(alphaRange));
-            ComplexType cplxTwo = new ComplexRectImpl(new RealImpl(decTWO, sigma.getMathContext()), zero, true);
+            ComplexType cplxTwo = new ComplexRectImpl(two, zero, true);
 
             // take the iterative approach
             Matrix<ComplexType> intermediate = Mcxp.scale(scale);
