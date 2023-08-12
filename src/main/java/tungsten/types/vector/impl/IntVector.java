@@ -105,12 +105,32 @@ public class IntVector implements Vector<IntegerType> {
 
     @Override
     public Vector<IntegerType> add(Vector<IntegerType> addend) {
-        return null;
+        if (addend.length() != this.length()) {
+            throw new ArithmeticException("Addend must have the same dimension as this vector");
+        }
+        BigInteger[] sum = new BigInteger[elements.length];
+        for (int k = 0; k < addend.length(); k++) {
+            sum[k] = elements[k].add(addend.elementAt(k).asBigInteger());
+        }
+        final MathContext ctx = mctx.getPrecision() == 0 ? addend.getMathContext() : mctx;
+        IntVector result = new IntVector(sum);
+        result.setMathContext(ctx);
+        return result;
     }
 
     @Override
     public Vector<IntegerType> subtract(Vector<IntegerType> subtrahend) {
-        return null;
+        if (subtrahend.length() != this.length()) {
+            throw new ArithmeticException("Subtrahend must have the same dimension as this vector");
+        }
+        BigInteger[] sum = new BigInteger[elements.length];
+        for (int k = 0; k < subtrahend.length(); k++) {
+            sum[k] = elements[k].subtract(subtrahend.elementAt(k).asBigInteger());
+        }
+        final MathContext ctx = mctx.getPrecision() == 0 ? subtrahend.getMathContext() : mctx;
+        IntVector result = new IntVector(sum);
+        result.setMathContext(ctx);
+        return result;
     }
 
     @Override
@@ -126,8 +146,9 @@ public class IntVector implements Vector<IntegerType> {
     public Vector<IntegerType> scale(IntegerType factor) {
         BigInteger[] scaled = Arrays.stream(elements).map(x -> x.multiply(factor.asBigInteger()))
                 .toArray(BigInteger[]::new);
+        final MathContext ctx = mctx.getPrecision() == 0 ? factor.getMathContext() : mctx;
         IntVector result = new IntVector(scaled);
-        result.setMathContext(mctx);
+        result.setMathContext(ctx);
         return result;
     }
 
@@ -192,7 +213,7 @@ public class IntVector implements Vector<IntegerType> {
                     .coerceTo(RealType.class);
             return (RealType) MathUtils.arccos(cosine).coerceTo(RealType.class);
         } catch (CoercionException e) {
-            throw new ArithmeticException("Unable to compute angle between vectors");
+            throw new ArithmeticException("Unable to compute angle between vectors " + this + " and " + other);
         }
     }
 
