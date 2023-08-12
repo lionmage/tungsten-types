@@ -31,6 +31,7 @@ import tungsten.types.numerics.impl.One;
 import tungsten.types.vector.impl.ImmutableVector;
 
 import java.math.MathContext;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
@@ -82,6 +83,18 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
                 }
             }
         }
+        // now check each vector for repeated entries
+        if (hasDuplicates(X) || hasDuplicates(Y)) {
+            throw new IllegalStateException("A vector argument has duplicate entries, which is not allowed");
+        }
+    }
+
+    private boolean hasDuplicates(Vector<E> vec) {
+        HashSet<E> uniques = new HashSet<>((int) vec.length());
+        for (long k = 0L; k < vec.length(); k++) {
+            uniques.add(vec.elementAt(k));
+        }
+        return vec.length() > (long) uniques.size();
     }
 
     @Override
