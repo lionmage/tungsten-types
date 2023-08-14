@@ -1444,12 +1444,13 @@ public class MathUtils {
                 throw new ArithmeticException("Cannot compute ln(X): " + ex.getMessage());
             }
         }
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute ln for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
         final Matrix<Numeric> I = new IdentityMatrix(X.rows(), ctx);
         if (I.equals(X)) return new ZeroMatrix(X.rows(), ctx);  // ln(I) = 0
         if (X.isUpperTriangular()) {
-            Logger.getLogger(MathUtils.class.getName()).info("Attempting the Parlett method for computing ln");
+            logger.info("Attempting the Parlett method for computing ln");
             NumericHierarchy h = NumericHierarchy.forNumericType(OptionalOperations.findTypeFor(X));
             switch (h) {
                 case REAL:
@@ -1462,7 +1463,7 @@ public class MathUtils {
                 case INTEGER:
                     return parlett(x -> ln(new RealImpl((IntegerType) x)), X);
                 default:
-                    Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                    logger.log(Level.FINE,
                             "No mapping function available for ln() with argument type {0}.",
                             OptionalOperations.findTypeFor(X).getTypeName());
                     // if we got here, we're going to fall through to the calculations below
@@ -1470,7 +1471,7 @@ public class MathUtils {
             }
         }
         if (X.rows() == 2L && RationalType.class.isAssignableFrom(OptionalOperations.findTypeFor(X))) {
-            Logger.getLogger(MathUtils.class.getName()).fine("Checking for a special type of 2\u00D72 rational matrix");
+            logger.fine("Checking for a special type of 2\u00D72 rational matrix");
             Matrix<RationalType> source = (Matrix<RationalType>) X;
             if (source.valueAt(0L, 0L).equals(source.valueAt(1L, 1L)) &&
                     source.valueAt(0L, 1L).equals(source.valueAt(1L, 0L))) {
@@ -1480,7 +1481,7 @@ public class MathUtils {
                     IntegerType q = roq.denominator();
                     IntegerType p = poq.numerator();
                     IntegerType r = roq.numerator();
-                    Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                    logger.log(Level.INFO,
                             "Found a rational matrix with p={0}, r={1}, and denominator q={2}; computing logarithm.",
                             new Object[] {p, r, q});
                     RealType a = (RealType) ln((IntegerType) p.add(r), ctx).subtract(ln(q, ctx));
@@ -1492,11 +1493,12 @@ public class MathUtils {
         }
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         if (((Matrix<Numeric>) X).subtract(I).norm().compareTo(one) < 0) {
-            Logger.getLogger(MathUtils.class.getName()).fine("||X - I|| < 1, computing ln() using series.");
+            logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
         // per Cheng et. al., we can approximate the logarithm recursively using
         // a square root identity and the Denman-Beavers iteration
+        logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
         // log A = 2 log Yk − log YkZk
         Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X);
         Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
@@ -1558,7 +1560,7 @@ public class MathUtils {
                         M.valueAt(row, column), row, column), ce);
             }
         });
-        Logger logger = Logger.getLogger(MathUtils.class.getName());
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         if (rank == M.columns()) {
             // full column rank
             logger.log(Level.FINE, "Computing A\u20F0A");
@@ -1704,6 +1706,9 @@ public class MathUtils {
             Z = Z1;
             RealType errAbsolute = Y.multiply(Y).subtract((Matrix<Numeric>) A).norm();
             RealType errRelative = Y.multiply(Z).subtract(I).norm();
+            Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                    "After {0} D-B iterations, absolute error = {1}, relative error = {2}",
+                    new Object[] {itercount, errAbsolute, errRelative});
             // check how far off we are and bail if we're ≤ epsilon
             if (min(errRelative, errAbsolute).compareTo(epsilon) <= 0) break;
         }
