@@ -416,6 +416,26 @@ public class MathUtils {
         return new RealVector(elements, ctx);
     }
 
+    public static RealType min(RealType a, RealType b) {
+        if (a.compareTo(b) < 0) return a;
+        return b;
+    }
+
+    public static RationalType min(RationalType a, RationalType b) {
+        if (a.compareTo(b) <= 0) return a;
+        return b;
+    }
+
+    public static RealType max(RealType a, RealType b) {
+        if (a.compareTo(b) > 0) return a;
+        return b;
+    }
+
+    public static RationalType max(RationalType a, RationalType b) {
+        if (a.compareTo(b) >= 0) return a;
+        return b;
+    }
+
     /**
      * Generates a random real value that fits within the provided range.
      * @param range the {@link Range<RealType>} that specifies the lower and upper
@@ -1668,8 +1688,9 @@ public class MathUtils {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
         final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
         OptionalOperations.setMathContext(onehalf, ctx);
+        final Matrix<Numeric>  I = new IdentityMatrix(A.rows(), ctx);
         Matrix<Numeric>  Y = (Matrix<Numeric>) A;
-        Matrix<Numeric>  Z = new IdentityMatrix(A.rows(), ctx);
+        Matrix<Numeric>  Z = I;
 
         final RealType epsilon = computeIntegerExponent(TEN, 3L - ctx.getPrecision(), ctx);
         final int bailout = ctx.getPrecision() * 2 + 5;
@@ -1681,8 +1702,10 @@ public class MathUtils {
             // copy values back for the next iteration
             Y = Y1;
             Z = Z1;
+            RealType errAbsolute = Y.multiply(Y).subtract((Matrix<Numeric>) A).norm();
+            RealType errRelative = Y.multiply(Z).subtract(I).norm();
             // check how far off we are and bail if we're ≤ epsilon
-            if (Y.multiply(Y).subtract((Matrix<Numeric>) A).norm().compareTo(epsilon) <= 0) break;
+            if (min(errRelative, errAbsolute).compareTo(epsilon) <= 0) break;
         }
         // if we don't escape before hitting the bailout, we haven't converged
         if (itercount >= bailout) {
