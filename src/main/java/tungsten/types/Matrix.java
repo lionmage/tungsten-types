@@ -27,12 +27,14 @@ package tungsten.types;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.IdentityMatrix;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
@@ -270,10 +272,25 @@ public interface Matrix<T extends Numeric> {
     }
     
     default Matrix<? extends Numeric> pow(Numeric n) {
-        if (!(n instanceof IntegerType)) {
-            throw new IllegalArgumentException("Non-integer exponents are not allowed for this type of matrix");
+        if (n instanceof RationalType) {
+            RationalType exponent = (RationalType) n;
+            if (exponent.denominator().isPowerOf2()) {
+                Matrix<Numeric> intermediate = (Matrix<Numeric>) pow(exponent.numerator());
+                long denom = exponent.denominator().asBigInteger().longValueExact();
+                while (denom > 1L) {
+                    intermediate = (Matrix<Numeric>) MathUtils.sqrt(intermediate);
+                    denom >>= 1L;
+                }
+                return intermediate;
+            }
+            // TODO handle rational exponents with denominators that are not powers of 2
+            throw new ArithmeticException("Rational exponents must be of the form m/2\u207F, but received " + exponent);
         }
-        if (((IntegerType) n).sign() == Sign.NEGATIVE) {
+        // if we didn't get special handling above, n must be an integer
+        if (!(n instanceof IntegerType)) {
+            throw new IllegalArgumentException("Non-integer exponents other than of the form m/2\u207F are not allowed for this type of matrix");
+        }
+        if (OptionalOperations.sign(n) == Sign.NEGATIVE) {
             return inverse().pow(n.negate());
         }
         if (rows() != columns()) throw new ArithmeticException("Cannot compute power of non-square matrix");
