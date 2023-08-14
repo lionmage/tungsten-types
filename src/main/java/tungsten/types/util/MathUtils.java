@@ -1403,6 +1403,16 @@ public class MathUtils {
         };
     }
 
+    /**
+     * Compute the natural logarithm of a {@link Matrix} <strong>X</strong>.
+     * This method will attempt several different ways to compute the natural
+     * logarithm.
+     * @param X the matrix for which we wish to compute the natural logarithm
+     * @return a matrix representing ln(<strong>X</strong>) which satisfies &#x212F;<sup>ln(X)</sup>=&thinsp;X
+     * @see <a href="https://eprints.maths.manchester.ac.uk/318/1/36401.pdf">Approximating the logarithm of a matrix to
+     *   specified accuracy</a> by Cheng et. al.
+     * @see <a href="https://en.wikipedia.org/wiki/Logarithm_of_a_matrix">the Wikipedia article on matrix logarithms</a>
+     */
     public static Matrix<? extends Numeric> ln(Matrix<? extends Numeric> X) {
         if (X instanceof DiagonalMatrix) return ((DiagonalMatrix<? extends Numeric>) X).ln();
         if (X instanceof SingletonMatrix || (X.columns() == 1L && X.rows() == 1L)) {
@@ -1465,14 +1475,20 @@ public class MathUtils {
             Logger.getLogger(MathUtils.class.getName()).fine("||X - I|| < 1, computing ln() using series.");
             return lnSeries(X);
         }
-        throw new ArithmeticException("Unable to compute ln() for the given matrix");
+        // per Cheng et. al., we can approximate the logarithm recursively using
+        // a square root identity and the Denman-Beavers iteration
+        // log A = 2 log Yk − log YkZk
+        Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X);
+        Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
+        final Numeric two = new RealImpl(decTWO, ctx);
+        return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
     }
 
     /**
      * Compute ln(<strong>B</strong>) for matrix <strong>B</strong> using a
-     * series.  Note that this will only converge if ||<strong>B</strong>||&nbsp;&lt;&nbsp;1
+     * series.  Note that this will only converge if ||<strong>B</strong>&nbsp;&minus;&nbsp;&#x1D7D9;||&nbsp;&lt;&nbsp;1
      * @param B the matrix for which to compute the natural logarithm
-     * @return a matrix A such that e<sup>A</sup>=&thinsp;B
+     * @return a matrix A such that &#x212F;<sup>A</sup>=&thinsp;B
      */
     private static Matrix<? extends Numeric> lnSeries(Matrix<? extends Numeric> B) {
         final MathContext ctx = B.valueAt(0L, 0L).getMathContext();
@@ -1644,7 +1660,9 @@ public class MathUtils {
      * @return the square root, if the iteration converges
      * @throws ArithmeticException if the iteration does not converge
      * @see <a href="https://en.wikipedia.org/wiki/Square_root_of_a_matrix#By_Denman%E2%80%93Beavers_iteration">the Wikipedia article</a>
-     * @see <a href="https://arxiv.org/pdf/1804.11000.pdf">Zolotarev Iterations for the Matrix Square Root</a>
+     * @see <a href="https://arxiv.org/pdf/1804.11000.pdf">Zolotarev Iterations for the Matrix Square Root</a> by Evan S. Gawlik
+     * @apiNote This implementation computes both the square root and its inverse; a reference to the inverse is
+     *   included in the returned {@link Matrix} and is accessible using the {@link Matrix#inverse()} method.
      */
     private static Matrix<? extends Numeric> denmanBeavers(Matrix<? extends Numeric> A) {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
