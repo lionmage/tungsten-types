@@ -295,7 +295,7 @@ public interface Matrix<T extends Numeric> {
         }
         if (rows() != columns()) throw new ArithmeticException("Cannot compute power of non-square matrix");
         BigInteger exponent = ((IntegerType) n).asBigInteger();
-        MathContext mctx = valueAt(0L, 0L).getMathContext();
+        final MathContext mctx = valueAt(0L, 0L).getMathContext();
         if (exponent.equals(BigInteger.ZERO)) return new IdentityMatrix(rows(), mctx);
         if (exponent.equals(BigInteger.ONE)) return this;
         
