@@ -301,11 +301,10 @@ public interface Matrix<T extends Numeric> {
         
         // Otherwise, iteratively compute this matrix raised to the n power
         // using exponentiation by squares, which is more efficient.
-        final BigInteger TWO = BigInteger.valueOf(2L);
         Matrix<Numeric> x = (Matrix<Numeric>) this;
         Matrix<Numeric> y = new IdentityMatrix(rows(), mctx);
         while (exponent.compareTo(BigInteger.ONE) > 0) {
-            if (exponent.mod(TWO).equals(BigInteger.ZERO)) {
+            if (exponent.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
                 // even case
                 x = x.multiply(x);
                 exponent = exponent.shiftRight(1); // divide(TWO);
