@@ -1430,7 +1430,7 @@ public class MathUtils {
      * @param X the matrix for which we wish to compute the natural logarithm
      * @return a matrix representing ln(<strong>X</strong>) which satisfies &#x212F;<sup>ln(X)</sup>=&thinsp;X
      * @see <a href="https://eprints.maths.manchester.ac.uk/318/1/36401.pdf">Approximating the logarithm of a matrix to
-     *   specified accuracy</a> by Cheng et. al.
+     *   specified accuracy</a> by Cheng et al.
      * @see <a href="https://en.wikipedia.org/wiki/Logarithm_of_a_matrix">the Wikipedia article on matrix logarithms</a>
      */
     public static Matrix<? extends Numeric> ln(Matrix<? extends Numeric> X) {
@@ -1496,7 +1496,7 @@ public class MathUtils {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
-        // per Cheng et. al., we can approximate the logarithm recursively using
+        // per Cheng et al., we can approximate the logarithm recursively using
         // a square root identity and the Denman-Beavers iteration
         logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
         // log A = 2 log Yk − log YkZk
