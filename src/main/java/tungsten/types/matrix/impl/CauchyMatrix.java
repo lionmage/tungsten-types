@@ -104,7 +104,7 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
         }
         MathContext ctx = new MathContext(Math.min(X.getMathContext().getPrecision(), Y.getMathContext().getPrecision()));
         Numeric p1 = One.getInstance(ctx);
-        for (long j = 0L; j < Y.length(); j++) {
+        for (long j = 1L; j < Y.length(); j++) {
             for (long i = 0L; i < j; i++) {
                 p1 = p1.multiply(X.elementAt(j).subtract(X.elementAt(i))
                         .multiply(Y.elementAt(j).subtract(Y.elementAt(i))));
