@@ -104,9 +104,9 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
         }
         MathContext ctx = new MathContext(Math.min(X.getMathContext().getPrecision(), Y.getMathContext().getPrecision()));
         Numeric p1 = One.getInstance(ctx);
-        for (long i = 1L; i < X.length(); i++) {
-            for (long j = 0L; j < i - 1L; j++) {
-                p1 = p1.multiply(X.elementAt(i).subtract(X.elementAt(j))
+        for (long j = 0L; j < Y.length(); j++) {
+            for (long i = 0L; i < j; i++) {
+                p1 = p1.multiply(X.elementAt(j).subtract(X.elementAt(i))
                         .multiply(Y.elementAt(j).subtract(Y.elementAt(i))));
             }
         }
@@ -146,7 +146,12 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
                             .mapToObj(k -> Y.elementAt(row).subtract(Y.elementAt(k)))
                             .reduce(One.getInstance(ctx), Numeric::multiply);
                     return p1.divide(dscale.multiply(p2).multiply(p3));
-                });
+                }) {
+            @Override
+            public Matrix<? extends Numeric> inverse() {
+                return CauchyMatrix.this;
+            }
+        };
     }
 
     public Vector<E> getX() {

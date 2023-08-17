@@ -152,4 +152,9 @@ public class ImmutableVector<T extends Numeric> implements Vector<T> {
         // if all else fails, we can generate a stream (albeit not a very performant one)
         return LongStream.range(0L, length()).mapToObj(wrapped::elementAt);
     }
+
+    @Override
+    public String toString() {
+        return "wrapped vector:\u2009" + wrapped;
+    }
 }

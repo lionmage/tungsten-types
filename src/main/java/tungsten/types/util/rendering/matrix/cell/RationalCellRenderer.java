@@ -25,6 +25,8 @@ package tungsten.types.util.rendering.matrix.cell;
 
 import tungsten.types.Numeric;
 import tungsten.types.annotations.RendererSupports;
+import tungsten.types.exceptions.CoercionException;
+import tungsten.types.exceptions.NumericRenderingException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RationalType;
@@ -85,8 +87,17 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             Arrays.fill(denomLen, 1);
         }
         for (int col = 0; col < columns; col++) {
-            RationalType ratVal = (RationalType) row.elementAt(col);
-            String strRep = ratVal.toString();
+            Numeric cval = row.elementAt(col);
+            String strRep = cval.toString();
+            if (cval instanceof IntegerType) {
+                // sometimes, integer values get mixed in, so let's cope with it
+                if (strRep.length() > numLen[col]) {
+                    numLen[col] = strRep.length();
+                    if (strRep.length() > slashPos[col]) slashPos[col] = strRep.length();
+                }
+                continue;
+            }
+            RationalType ratVal = (RationalType) cval;
             int slashIdx = indexOfSolidus(strRep);
             if (ratVal.denominator().numberOfDigits() > denomLen[col]) {
                 denomLen[col] = (int) ratVal.denominator().numberOfDigits();
@@ -110,7 +121,7 @@ public class RationalCellRenderer implements CellRenderingStrategy {
         if (m.find()) {
             return m.start();
         }
-        Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.INFO,
+        Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.FINE,
                 "{0} does not appear to be an actual rational value.", val);
         return -1;
     }
@@ -129,6 +140,7 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             // easy fix that shouldn't harm anything
             cellWidth = minimumCellWidth;
         }
+        if (valPos == -1) valPos = strVal.length();
         if (alignTo > valPos) {
             // leading space
             IntStream.range(0, alignTo - valPos).forEach(dummy -> cell.append(' '));
@@ -145,10 +157,26 @@ public class RationalCellRenderer implements CellRenderingStrategy {
                 throw new IllegalStateException("Cannot format value to fit in cell");
             }
         }
+        if (!(value instanceof RationalType)) {
+            Logger logger = Logger.getLogger(RationalCellRenderer.class.getName());
+            logger.log(Level.WARNING, "Expected a rational matrix element, but got a {0}: {1}",
+                    new Object[] { value.getClass().getTypeName(), value });
+            try {
+                value = value.coerceTo(RationalType.class);
+                strVal = value.toString();
+            } catch (CoercionException fatal) {
+                logger.log(Level.SEVERE, "Matrix element is inconvertible to a rational.", fatal);
+                throw new NumericRenderingException("Unable to render as a rational", value);
+            }
+        }
         final RationalType ratValue = (RationalType) value;
         if (One.isUnity(ratValue.denominator())) {
             // remove the /1 from the end of the string, as it is superfluous
-            oneDenomPattern.matcher(strVal).appendReplacement(cell, "");
+            Matcher m = oneDenomPattern.matcher(strVal);
+            if (!m.find()) {
+                throw new NumericRenderingException("Failed to detect unity denominator in " + strVal, ratValue);
+            }
+            m.appendReplacement(cell, ""); // no need to appendTail() here since we're cutting off the end anyway
         } else if (One.isUnity(ratValue)) {
             // if our denominator is not 1 but we are unity anyway, complain and clean up
             Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.WARNING,
