@@ -162,8 +162,9 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             logger.log(Level.WARNING, "Expected a rational matrix element, but got a {0}: {1}",
                     new Object[] { value.getClass().getTypeName(), value });
             try {
-                value = value.coerceTo(RationalType.class);
+                value  = value.coerceTo(RationalType.class);
                 strVal = value.toString();
+                valPos = indexOfSolidus(strVal);
             } catch (CoercionException fatal) {
                 logger.log(Level.SEVERE, "Matrix element is inconvertible to a rational.", fatal);
                 throw new NumericRenderingException("Unable to render as a rational", value);
