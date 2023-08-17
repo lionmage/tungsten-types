@@ -132,8 +132,8 @@ public class MatrixValidationTest {
         IntVector b = new IntVector(1L, 5L, 6L);
         b.setMathContext(MathContext.DECIMAL64);
 
-        System.out.println("a = " + a);
-        System.out.println("b = " + b);
+        System.out.println("a\u20D7 = " + a); // U+20D7 is the combining over-arrow
+        System.out.println("b\u20D7 = " + b);
 
         CauchyMatrix<RationalType, IntegerType> cm = new CauchyMatrix<>(a, b, RationalType.class);
 
