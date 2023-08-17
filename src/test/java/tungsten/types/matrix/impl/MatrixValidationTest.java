@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
@@ -12,6 +13,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.MathUtils;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.vector.impl.IntVector;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -120,5 +122,37 @@ public class MatrixValidationTest {
 
         assertTrue(MathUtils.areEqualToWithin((Matrix<RealType>) expValue, (Matrix<RealType>) R, epsilon),
                 "Matrix elements must be within \uD835\uDF00 of their expected value");
+    }
+
+    @Test
+    public void cauchyMatrix() {
+        System.out.println("Checking Cauchy matrix implementation");
+        IntVector a = new IntVector(1L, 2L, 3L);
+        a.setMathContext(MathContext.DECIMAL64);
+        IntVector b = new IntVector(1L, 5L, 6L);
+        b.setMathContext(MathContext.DECIMAL64);
+
+        System.out.println("a = " + a);
+        System.out.println("b = " + b);
+
+        CauchyMatrix<RationalType, IntegerType> cm = new CauchyMatrix<>(a, b, RationalType.class);
+
+        System.out.println("Cauchy Matrix:\n" + formatMatrixForDisplay(cm, (String) null, (String) null));
+
+        BasicMatrix<RationalType> cm2 = new BasicMatrix<>(cm);
+
+        RationalType det1 = cm.determinant();
+        RationalType det2 = cm2.determinant();
+
+        System.out.println("cm determinant is " + det1);
+        assertEquals(det2, det1, "Cauchy determinant should equal regular matrix determinant");
+//        System.out.println "cm2 determinant is " + det2
+
+        Matrix<? extends Numeric> inv1 = cm.inverse();
+        Matrix<? extends Numeric> inv2 = cm2.inverse();
+
+        System.out.println("cm inverse is:\n" + formatMatrixForDisplay(inv1, (String) null, (String) null));
+//        System.out.println "cm2 inverse is:\n" + formatMatrixForDisplay(inv2, null, null)
+        assertEquals(inv2, inv1, "Cauchy inverse should equal regular matrix inverse");
     }
 }
