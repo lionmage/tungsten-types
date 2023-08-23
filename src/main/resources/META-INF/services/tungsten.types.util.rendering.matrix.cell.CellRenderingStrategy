@@ -2,3 +2,4 @@
 tungsten.types.util.rendering.matrix.cell.IntegerCellRenderer
 tungsten.types.util.rendering.matrix.cell.RationalCellRenderer
 tungsten.types.util.rendering.matrix.cell.RealCellRenderer
+tungsten.types.util.rendering.matrix.cell.ComplexCellRenderer
