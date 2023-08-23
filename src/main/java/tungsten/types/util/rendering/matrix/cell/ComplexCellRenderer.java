@@ -26,6 +26,7 @@ package tungsten.types.util.rendering.matrix.cell;
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.RendererSupports;
+import tungsten.types.exceptions.NumericRenderingException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
@@ -108,6 +109,9 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
         }
 
         for (int col = 0; col < row.columns(); col++) {
+            // ignore non-complex elements for now
+            if (!(row.elementAt(col) instanceof ComplexType)) continue;
+
             ComplexType value = (ComplexType) row.elementAt(col);
             int width;
             // real portion
@@ -156,11 +160,33 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
     public String render(Numeric value, int column) {
         StringBuilder buf = new StringBuilder();
 
+        if (!(value instanceof ComplexType)) {
+            if (value instanceof RealType) {
+                buf.append(trimDecimalPlaces(value.toString()));
+            } else {
+                buf.append(value);
+            }
+            if (UnicodeTextEffects.computeCharacterWidth(buf) <= separatorPos[column] - 2) {
+                while (UnicodeTextEffects.computeCharacterWidth(buf) < separatorPos[column] - 2) {
+                    buf.insert(0, ' ');
+                }
+            } else {
+                while (UnicodeTextEffects.computeCharacterWidth(buf) < colWidth[column]) {
+                    buf.insert(0, ' ');
+                }
+            }
+            // and if value winds up being too wide for the column, throw an exception
+            if (UnicodeTextEffects.computeCharacterWidth(buf) > colWidth[column]) {
+                throw new NumericRenderingException("Value is too wide for column " + column, value);
+            }
+            return buf.toString();
+        }
+
         ComplexType cpVal = (ComplexType) value;
         // real portion
         RealType reVal = cpVal.real();
         if (reVal.getClass().isAnnotationPresent(Constant.class)) {
-            precisionPat.matcher(reVal.toString()).appendReplacement(buf, "");
+            precisionPat.matcher(reVal.toString()).appendReplacement(buf, "").appendTail(buf);
         } else {
             buf.append(trimDecimalPlaces(reVal.toString()));
         }
@@ -178,7 +204,7 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
             buf.append("+\u00A0");
         }
         if (imVal.getClass().isAnnotationPresent(Constant.class)) {
-            precisionPat.matcher(imVal.toString()).appendReplacement(buf, "");
+            precisionPat.matcher(imVal.toString()).appendReplacement(buf, "").appendTail(buf);
         } else {
             buf.append(trimDecimalPlaces(imVal.toString()));
         }
