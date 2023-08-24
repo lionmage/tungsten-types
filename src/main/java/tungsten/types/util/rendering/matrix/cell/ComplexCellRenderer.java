@@ -140,8 +140,8 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
                 width += UnicodeTextEffects.computeCharacterWidth(buf);
             } else {
                 width += UnicodeTextEffects.computeCharacterWidth(trimDecimalPlaces(imag.toString()));
-                width++;  // imaginary unit symbol
             }
+            width++;  // imaginary unit symbol
             if (width > colWidth[col]) colWidth[col] = width;
         }
     }
@@ -209,8 +209,9 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
         if (imVal.getClass().isAnnotationPresent(Constant.class)) {
             precisionPat.matcher(imVal.toString()).appendReplacement(buf, "").appendTail(buf);
         } else {
-            buf.append(trimDecimalPlaces(imVal.toString())).append(IMAG_UNIT);
+            buf.append(trimDecimalPlaces(imVal.toString()));
         }
+        buf.append(IMAG_UNIT);
         while (UnicodeTextEffects.computeCharacterWidth(buf) < colWidth[column]) {
             buf.append(' ');
         }
