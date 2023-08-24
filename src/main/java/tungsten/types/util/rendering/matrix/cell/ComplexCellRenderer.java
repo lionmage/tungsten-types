@@ -31,6 +31,7 @@ import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.impl.ImaginaryUnit;
 import tungsten.types.util.UnicodeTextEffects;
 import tungsten.types.vector.RowVector;
 
@@ -95,6 +96,7 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
     private static final DecimalFormatSymbols dfSymbols = DecimalFormatSymbols.getInstance();
     private static final char DEC_POINT = dfSymbols.getDecimalSeparator();
     private static final Pattern precisionPat = Pattern.compile("\\s*\\[\\d+\\]\\s*");
+    private static final String IMAG_UNIT = ImaginaryUnit.class.getAnnotation(Constant.class).representation();
 
     private int[] colWidth;
     private int[] separatorPos;
@@ -138,6 +140,7 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
                 width += UnicodeTextEffects.computeCharacterWidth(buf);
             } else {
                 width += UnicodeTextEffects.computeCharacterWidth(trimDecimalPlaces(imag.toString()));
+                width++;  // imaginary unit symbol
             }
             if (width > colWidth[col]) colWidth[col] = width;
         }
@@ -206,7 +209,7 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
         if (imVal.getClass().isAnnotationPresent(Constant.class)) {
             precisionPat.matcher(imVal.toString()).appendReplacement(buf, "").appendTail(buf);
         } else {
-            buf.append(trimDecimalPlaces(imVal.toString()));
+            buf.append(trimDecimalPlaces(imVal.toString())).append(IMAG_UNIT);
         }
         while (UnicodeTextEffects.computeCharacterWidth(buf) < colWidth[column]) {
             buf.append(' ');
