@@ -1,9 +1,14 @@
 plugins {
-    id 'java'
+    id 'java-library'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 group 'tungsten'
-version '1.0-SNAPSHOT'
+version '0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -23,6 +28,13 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.testng:testng:7.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
 }
 
 test {
