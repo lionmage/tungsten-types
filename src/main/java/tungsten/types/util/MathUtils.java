@@ -2896,6 +2896,41 @@ public class MathUtils {
         return (ComplexType) e.exp(iz).subtract(e.exp(iz.negate())).divide(new RealImpl(decTWO, z.getMathContext()).multiply(i));
     }
 
+    /**
+     * The complex version of the hyperbolic tangent function.
+     *
+     * @param z a complex-valued argument
+     * @return the result of computing tanh(z)
+     */
+    public static ComplexType tanh(ComplexType z) {
+        final RealType one = new RealImpl(BigDecimal.ONE, z.getMathContext());
+        final RealType two = new RealImpl(decTWO, z.getMathContext());
+        ComplexType scaledArg = (ComplexType) z.multiply(two);
+        final Euler e = Euler.getInstance(z.getMathContext());
+        return (ComplexType) e.exp(scaledArg).subtract(one)
+                .divide(e.exp(scaledArg).add(one));
+    }
+
+    /**
+     * Compute the hyperbolic tangent function, tanh(x).
+     * This makes an excellent thresholding function for
+     * applications where the sigmoid function is inappropriate
+     * or not performant.  The output of this function smoothly
+     * varies from &minus;1 to 1 over all reals, with a
+     * transition centered on the origin.
+     *
+     * @param x the real-valued argument
+     * @return the result of computing tanh(x)
+     */
+    public static RealType tanh(RealType x) {
+        final RealType one = new RealImpl(BigDecimal.ONE, x.getMathContext());
+        final RealType two = new RealImpl(decTWO, x.getMathContext());
+        RealType scaledArg = (RealType) x.multiply(two);
+        final Euler e = Euler.getInstance(x.getMathContext());
+        return (RealType) e.exp(scaledArg).subtract(one)
+                .divide(e.exp(scaledArg).add(one));
+    }
+
     public static Comparator<Numeric> obtainGenericComparator() {
         return new Comparator<>() {
             @Override
