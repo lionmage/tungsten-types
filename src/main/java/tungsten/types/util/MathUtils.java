@@ -1998,6 +1998,15 @@ public class MathUtils {
         }
     }
 
+    /**
+     * Determine if a {@link Matrix} has elements of a given type.
+     * This method will inspect as many elements of the matrix as
+     * is necessary to ensure that all elements are of the specified type.
+     * @param matrix any matrix
+     * @param clazz  the {@link Class} to be used for testing elements of {@code matrix}
+     * @return true if all elements of {@code matrix} are of type {@code clazz}
+     *   or one of its subtypes
+     */
     public static boolean isOfType(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {
         if (matrix instanceof SingletonMatrix || (matrix.rows() == 1L && matrix.columns() == 1L)) {
             return clazz.isAssignableFrom(matrix.valueAt(0L, 0L).getClass());
