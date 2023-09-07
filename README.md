@@ -40,7 +40,7 @@ Several reasons:
 * Who wants to shell out from within an application just to perform some calculations?
     * Shelling out is costly.
     * Avoiding the context switch by using native math capabilities of the target language is preferable.
-* If my goal is to write a Java application, therefore, I should be writing these libraries in Java.
+* If my goal is to write a Java application, then I should be writing these libraries in Java.
 * My understanding is that most implementations of bc don't handle complex numbers natively.
 * There are multiple implementations of bc, most of which adhere to a POSIX standard, but all of which have different features.
 
