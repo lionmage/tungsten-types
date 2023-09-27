@@ -50,6 +50,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -89,8 +90,7 @@ public class MathUtils {
      * and the default value is 250.
      */
     public static final String GAMMA_BLOCK_SIZE = "tungsten.types.numerics.MathUtils.Gamma.blockSize";
-    private static final BigInteger TWO = BigInteger.valueOf(2L);
-    
+
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
 
     /**
@@ -143,7 +143,7 @@ public class MathUtils {
         
         BigInteger accum = m != null ? factorialCache.get(m) : BigInteger.ONE;
         BigInteger intermediate = n.asBigInteger();
-        BigInteger bailout = m != null ? BigInteger.valueOf(m + 1L) : TWO;
+        BigInteger bailout = m != null ? BigInteger.valueOf(m + 1L) : BigInteger.TWO;
         while (intermediate.compareTo(bailout) >= 0) {
             accum = accum.multiply(intermediate);
             intermediate = intermediate.subtract(BigInteger.ONE);
@@ -180,7 +180,7 @@ public class MathUtils {
     private static void cacheFact(BigInteger n, BigInteger value) {
         // these bounds should prevent an ArithmeticException from being thrown
         // if not, we want to fail fast to catch the problem
-        if (n.compareTo(TWO) >= 0 && n.compareTo(MAX_LONG) < 0) {
+        if (n.compareTo(BigInteger.TWO) >= 0 && n.compareTo(MAX_LONG) < 0) {
             Long key = n.longValueExact();
             
             if (!factorialCache.containsKey(key)) factorialCache.put(key, value);
@@ -248,7 +248,7 @@ public class MathUtils {
         } else if (z instanceof RationalType) {
             RationalType zz = ((RationalType) z).reduce();
             // half-integer arguments have easy-to-compute values
-            if (zz.denominator().asBigInteger().equals(TWO) && zz.numerator().isOdd()) {
+            if (zz.denominator().asBigInteger().equals(BigInteger.TWO) && zz.numerator().isOdd()) {
                 final RealType two = new RealImpl(BigDecimal.valueOf(2L), z.getMathContext());
                 final RealType sqrtPi = (RealType) Pi.getInstance(z.getMathContext()).sqrt();
                 if (zz.numerator().asBigInteger().equals(BigInteger.ONE)) return sqrtPi; // 𝚪(1/2) = √𝜋
@@ -443,13 +443,161 @@ public class MathUtils {
      * @return a random number in the specified {@code range}
      */
     public static RealType random(Range<RealType> range) {
-        MathContext ctx = inferMathContext(List.of(range.getLowerBound(), range.getUpperBound()));
+        final MathContext ctx = inferMathContext(List.of(range.getLowerBound(), range.getUpperBound()));
+        final Random rand = new Random();
+        if (range.getLowerBound() instanceof RealInfinity) {
+            if (range.getLowerBound().sign() != Sign.NEGATIVE) {
+                throw new IllegalArgumentException("Lower bound may not be +\u221E");
+            }
+            if (range.getUpperBound() instanceof RealInfinity) {
+                if (range.getUpperBound().sign() == Sign.NEGATIVE) {
+                    throw new IllegalArgumentException("Upper bound must not be \u2212\u221E if lower bound is " + range.getLowerBound());
+                }
+                // we have a full range from -∞ to +∞
+                return new RealImpl(nextBigDecimal(rand, ctx.getPrecision() + 2, false), ctx, false);
+            }
+            // generate a value between -∞ and upper bound
+            BigDecimal offset = nextBigDecimal(rand, ctx.getPrecision() + 1, true);
+            return new RealImpl(range.getUpperBound().asBigDecimal().subtract(offset, ctx), ctx, false);
+        } else if (range.getUpperBound() instanceof RealInfinity) {
+            if (range.getUpperBound().sign() != Sign.POSITIVE) {
+                throw new IllegalArgumentException("Upper bound may not be \u2212\u221E");
+            }
+            // generate a value between lower bound and +∞
+            BigDecimal offset = nextBigDecimal(rand, ctx.getPrecision() + 1, true);
+            return new RealImpl(range.getLowerBound().asBigDecimal().add(offset, ctx), ctx, false);
+        }
         RealType span = (RealType) range.getUpperBound().subtract(range.getLowerBound());
         RealType randVal;
         do {
-            randVal = new RealImpl(BigDecimal.valueOf(Math.random()), ctx, false);
+            randVal = random(ctx, rand);
         } while (!range.isLowerClosed() && Zero.isZero(randVal));  // exclude values from lower limit if needed
         return (RealType) range.getLowerBound().add(span.multiply(randVal));
+    }
+
+    /**
+     * Generates a random value in the interval [0,&nbsp;1) to a specified precision; values
+     * are guaranteed to be roughly equally distributed across this interval.
+     * This method is directly analogous to {@link Math#random()} and can practically
+     * generate any number of digits that can be expressed in a {@link BigDecimal}.
+     * @param ctx    a valid {@link MathContext} other than {@link MathContext#UNLIMITED}
+     * @param random a source of randomness
+     * @return a randomly generated value x such that 0 &le; x &lt; 1
+     * @see <a href="https://stackoverflow.com/a/71743540/7491719">Ben McKenneby's StackOverflow answer</a>
+     */
+    public static RealType random(MathContext ctx, Random random) {
+        if (ctx.getPrecision() == 0) throw new ArithmeticException("Cannot generate a random value with unbounded precision");
+        final double log2 = Math.log10(2.0d); // this is adequate resolution since we're casting to an int
+        int digitCount = ctx.getPrecision();
+        int bitCount = (int) (digitCount / log2);
+        BigDecimal value = new BigDecimal(new BigInteger(bitCount, random)).movePointLeft(digitCount);
+        return new RealImpl(value.round(ctx), ctx, false);
+    }
+
+    /**
+     * Randomly generate a {@link BigDecimal} value that is evenly distributed
+     * across the entire range of possible {@link BigDecimal} values. If
+     * {@code positiveOnly} is {@code true}, then the output is limited to
+     * positive values only.
+     * @param rand         a source of randomness
+     * @param maxBytes     the maximum number of bytes used to generate the unscaled value
+     * @param positiveOnly if true, only output positive values
+     * @return a randomly generated value
+     */
+    private static BigDecimal nextBigDecimal(Random rand, int maxBytes, boolean positiveOnly) {
+        if (maxBytes < 1) throw new IllegalArgumentException("Maximum number of bytes must be at least 1");
+        int length = rand.nextInt(maxBytes) + 1;
+        byte[] bytes = new byte[length];
+        rand.nextBytes(bytes);
+        BigInteger unscaled = new BigInteger(bytes);
+        if (positiveOnly && unscaled.signum() == -1) unscaled = unscaled.negate();
+        return new BigDecimal(unscaled, rand.nextInt());
+    }
+
+    /**
+     * Create a source of Gaussian noise, given the mean {@code mu} (&mu;)
+     * and the standard deviation {@code sigma} (&sigma;).  The math context
+     * of the resulting values is inferred from the arguments.  This method
+     * returns a {@link Supplier<RealType>} which includes its own source
+     * of randomness, independent of any used elsewhere.
+     * <br/>This method is roughly analogous to {@link Random#nextGaussian()}
+     * except that it returns a theoretically unending source of values
+     * rather than a single value.  The algorithm used in that method is
+     * virtually identical to the one used here, except that more Gaussian noise
+     * values are cached in this version.
+     * <br/>Best efforts have been made to make the resulting {@link Supplier}
+     * thread-safe, should it be needed for e.g. a parallel
+     * {@link java.util.stream.Stream stream}.
+     * @param mu    the mean of the distribution
+     * @param sigma the standard deviation of the distribution
+     * @return a {@link Supplier} of real values conforming to a Gaussian distribution
+     * @see <a href="https://en.wikipedia.org/wiki/Marsaglia_polar_method">the Wikipedia article
+     *   for this algorithm</a>
+     */
+    public static Supplier<RealType> gaussianNoise(RealType mu, RealType sigma) {
+        final int qsize = 8;  // this can be set dynamically
+        final MathContext ctx = inferMathContext(List.of(mu, sigma));
+        final Random randSrc = new Random();
+
+        return new Supplier<>() {
+            private final Logger logger = Logger.getLogger(this.getClass().getName());
+            private final BlockingQueue<RealType> fifo = new LinkedBlockingQueue<>(qsize);
+
+            @Override
+            public RealType get() {
+                // this needs to be synchronized to avoid a deadlock
+                // without atomicity, we could have 2 threads A and B
+                // both requesting a noise value with a queue of size = 1
+                // if A calls isEmpty() and then B calls isEmpty(), both returning false,
+                // B could snipe the last remaining entry in the queue and leave
+                // A expecting there to be something in the queue but blocking on take()
+                synchronized (fifo) {
+                    if (fifo.isEmpty()) generateValues(qsize);
+                    try {
+                        return fifo.take();
+                    } catch (InterruptedException e) {
+                        logger.log(Level.SEVERE,
+                                "While obtaining a Gaussian noise value", e);
+                        throw new NoSuchElementException("No element found while waiting for FIFO to fill");
+                    }
+                }
+            }
+
+            private final RealType negtwo = new RealImpl("-2.0", ctx);
+            private final RealType two = new RealImpl(decTWO, ctx);
+            private final One one = (One) One.getInstance(ctx);
+            private final ExecutorService exec = Executors.newSingleThreadExecutor();
+
+            private void generateValues(int n) {
+                final int limit = n % 2 == 0 ? n / 2 : (n + 1) / 2;
+                for (int k = 0; k < limit; k++) {
+                    exec.submit(this::generatePair);
+                }
+                logger.log(Level.INFO, "Submitted {0} requests to generate Gaussian noise pairs.", limit);
+            }
+
+            private void generatePair() {
+                RealType u, v, s;
+                do {
+                    u = (RealType) random(ctx, randSrc).multiply(two).subtract(one);
+                    v = (RealType) random(ctx, randSrc).multiply(two).subtract(one);
+                    s = (RealType) u.multiply(u).add(v.multiply(v));
+                } while (Zero.isZero(s) || one.compareTo(s) <= 0);
+                s = (RealType) ln(s).multiply(negtwo).divide(s).sqrt();
+                try {
+                    fifo.put((RealType) mu.add(sigma.multiply(u).multiply(s)));
+                    fifo.put((RealType) mu.add(sigma.multiply(v).multiply(s)));
+                } catch (InterruptedException e) {
+                    logger.log(Level.SEVERE,
+                            "While generating Gaussian noise value", e);
+                    if (fifo.isEmpty()) {
+                        throw new IllegalStateException("No Gaussian noise values have been generated", e);
+                    } else {
+                        logger.log(Level.WARNING, "Only generated {0} total Gaussian noise values.", fifo.size());
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -1084,7 +1232,7 @@ public class MathUtils {
      */
     public static Set<ComplexType> rootsOfUnity(long n, MathContext mctx) {
         if (n < 1L) throw new IllegalArgumentException("Degree of roots must be \u2265 1");
-        final RealImpl decTwo = new RealImpl(new BigDecimal(TWO), mctx);
+        final RealImpl decTwo = new RealImpl(new BigDecimal(BigInteger.TWO), mctx);
         decTwo.setMathContext(mctx);
         final RealImpl decOne = new RealImpl(BigDecimal.ONE, mctx);
         decOne.setMathContext(mctx);
@@ -2368,7 +2516,7 @@ public class MathUtils {
         Numeric term2 = diagDiff.multiply(diagDiff)
                 .add(four.multiply(matrix.valueAt(0L, 1L)).multiply(matrix.valueAt(1L, 0L)))
                 .sqrt();
-        final IntegerType two = new IntegerImpl(TWO);
+        final IntegerType two = new IntegerImpl(BigInteger.TWO);
         return Set.of(diagSum.add(term2).divide(two), diagSum.subtract(term2).divide(two));
     }
 
