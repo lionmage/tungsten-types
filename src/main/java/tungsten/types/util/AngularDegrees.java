@@ -23,18 +23,21 @@ package tungsten.types.util;
  * THE SOFTWARE.
  */
 
+import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -170,6 +173,49 @@ public class AngularDegrees {
         return (RealType) decDegrees.multiply(pi).divide(halfCircleDegrees);
     }
 
+    public AngularDegrees add(AngularDegrees addend) {
+        final MathContext ctx = MathUtils.inferMathContext(List.of(this.getSeconds(), addend.getSeconds()));
+        final RealType reSixty = new RealImpl(SIXTY, ctx);
+        final Numeric one = One.getInstance(ctx);
+        RealType seconds = (RealType) this.seconds.add(addend.seconds);
+        IntegerType minutes = (IntegerType) this.minutes.add(addend.minutes);
+        IntegerType degrees = (IntegerType) this.degrees.add(addend.degrees);
+        while (seconds.compareTo(reSixty) >= 0) {
+            seconds = (RealType) seconds.subtract(reSixty);
+            minutes = (IntegerType) minutes.add(one);
+        }
+        if (minutes.compareTo(SIXTY) >= 0) {
+            degrees = (IntegerType) degrees.add(minutes.divide(SIXTY));
+            minutes = minutes.modulus(SIXTY);
+        }
+
+        return new AngularDegrees(degrees, minutes, seconds);
+    }
+
+    private static final IntegerType fullCircle = new IntegerImpl("360");
+
+    public AngularDegrees subtract(AngularDegrees subtrahend) {
+        final MathContext ctx = MathUtils.inferMathContext(List.of(this.getSeconds(), subtrahend.getSeconds()));
+        final RealType reSixty = new RealImpl(SIXTY, ctx);
+        final Numeric one = One.getInstance(ctx);
+        RealType seconds = (RealType) this.seconds.subtract(subtrahend.seconds);
+        IntegerType minutes = (IntegerType) this.minutes.subtract(subtrahend.minutes);
+        IntegerType degrees = (IntegerType) this.degrees.subtract(subtrahend.degrees);
+        while (seconds.sign() == Sign.NEGATIVE) {
+            seconds = (RealType) seconds.add(reSixty);
+            minutes = (IntegerType) minutes.subtract(one);
+        }
+        while (minutes.sign() == Sign.NEGATIVE) {
+            degrees = (IntegerType) degrees.subtract(one);
+            minutes = (IntegerType) minutes.add(SIXTY);
+        }
+        while (degrees.sign() == Sign.NEGATIVE) {
+            degrees = (IntegerType) degrees.add(fullCircle);
+        }
+
+        return new AngularDegrees(degrees, minutes, seconds);
+    }
+
     public void normalizeRange() {
         final IntegerType fullCircle = new IntegerImpl(BigInteger.valueOf(360L));
         if (degrees.sign() == Sign.NEGATIVE) {
@@ -256,5 +302,23 @@ public class AngularDegrees {
         }
 
         return buf.toString();
+    }
+
+    /*
+    Methods necessary for Groovy operator overloading follow.
+     */
+    AngularDegrees plus(AngularDegrees operand) {
+        return this.add(operand);
+    }
+    AngularDegrees minus(AngularDegrees operand) {
+        return this.subtract(operand);
+    }
+    AngularDegrees plus(RealType operand) {
+        AngularDegrees that = new AngularDegrees(operand);
+        return this.add(that);
+    }
+    AngularDegrees minus(RealType operand) {
+        AngularDegrees that = new AngularDegrees(operand);
+        return this.subtract(that);
     }
 }
