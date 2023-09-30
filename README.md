@@ -24,6 +24,8 @@ numeric types:
   * Basic functional building-blocks are provided with full composition possible
   * Symbolic and numeric differentiation are supported (currently, full support for unary functions only)
 * There is preliminary support for data reduction and curve fitting.
+* The generated JAR file has no transitive dependencies whatsoever! Feel free to drop it into your project's lib folder as-is.
+* Javadoc and source JARs are generated as part of the build; at minimum, the Javadoc JAR is recommended for your IDE.
 
 Systems like Sage leverage a lot of small Unix-like apps to do the work,
 which adheres to the Unix philosophy that each application should only do

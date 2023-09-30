@@ -2039,7 +2039,7 @@ public class MathUtils {
     }
 
     private static List<List<Long>> permuteIndices(long n, long k) {
-        if (k < 0 || k > n) throw new IllegalArgumentException("Bad parameters");
+        if (k < 0L || k > n) throw new IllegalArgumentException("Bad parameters");
         final long limit = 1L << n;  // 2^n
         return LongStream.range(1L, limit).mapToObj(BigInteger::valueOf).filter(b -> b.bitCount() == k)
                 .map(MathUtils::expandIndices).collect(Collectors.toList());
