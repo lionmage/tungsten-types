@@ -179,7 +179,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
             final Class<? extends Numeric> clazz = that.getClass();
             try {
                 Numeric temp = this.coerceTo(clazz);
-                return temp.equals(o);
+                return temp.equals(that);
             } catch (CoercionException ex) {
                 Logger.getLogger(Zero.class.getName()).log(Level.SEVERE, "Exception during test for equality with " + o, ex);
             }
