@@ -231,6 +231,26 @@ public class MathUtils {
      * @see <a href="https://en.wikipedia.org/wiki/Gamma_function">the entry at Wikipedia</a>
      */
     public static Numeric gamma(Numeric z) {
+        // special case for small values of z: Γ(z) ∼ 1/z − γ, z → 0
+        // first, handle the special values of zero
+        if (z instanceof Zero) {
+            Zero input = (Zero) z;
+            switch (input.sign()) {
+                case ZERO:
+                    throw new ArithmeticException("\uD835\uDEAA(n) is not analytic at 0");
+                case POSITIVE:
+                    return PosInfinity.getInstance(input.getMathContext());
+                case NEGATIVE:
+                    return NegInfinity.getInstance(input.getMathContext());
+            }
+        }
+        // next, check if we're within some neighborhood of 0
+        final RealType neighborhood = new RealImpl("0.01", z.getMathContext());
+        Comparator<Numeric> comp = obtainGenericComparator();
+        if (comp.compare(z.magnitude(), neighborhood) < 0 && !Zero.isZero(z)) {
+            // compute an approximation and return it
+            return gammaNearZero(z);
+        }
         if (z.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType one = (IntegerType) One.getInstance(z.getMathContext()).coerceTo(IntegerType.class);
@@ -335,6 +355,35 @@ public class MathUtils {
         Numeric rhs = z instanceof ComplexType ? e.exp((ComplexType) zOverN) :
                 e.exp((RealType) zOverN);
         return lhs.multiply(rhs);
+    }
+
+    /**
+     * This computes an approximation of the Gamma function &#x1D6AA;(z)
+     * for values of z where |z| is close to 0.
+     * A basic approximation is &#x1D6AA;(z) &sim; 1/z &minus; &#x1D6FE; for z&nbsp;&#x2192;&nbsp;0
+     * <br/>A better approximation is given by
+     * &#x1D6AA;(z) &#x2245; (1/z)&sdot;(1 + (π² - 6γ²)z/12γ)/(1 + (π² + 6γ²)z/12γ)
+     * @param z a value that is close to 0
+     * @return an approximation of the Gamma function at z
+     * @see <a href="https://math.stackexchange.com/a/3928423">this expansion of &#x1D6AA;(z) for values near 0</a> by Claude Leibovici
+     */
+    private static Numeric gammaNearZero(Numeric z) {
+        final MathContext ctx = z.getMathContext();
+        RealType piSquared = computeIntegerExponent(Pi.getInstance(ctx), 2L);
+        RealType gamma = EulerMascheroni.getInstance(ctx);  // γ from the Javadoc
+        RealType gammaSquared = (RealType) gamma.multiply(gamma);  // γ² from the Javadoc
+        RealType six = new RealImpl(BigDecimal.valueOf(6L), ctx);
+        RealType twelve = new RealImpl(BigDecimal.valueOf(12L), ctx);
+        Numeric one = One.getInstance(ctx);
+
+        // derived values
+        RealType gamma12 = (RealType) gamma.multiply(twelve);
+        RealType gamma6sq = (RealType) gammaSquared.multiply(six);
+        Numeric zDivG12 = z.divide(gamma12); // z divided by 12γ
+
+        Numeric numerator = piSquared.subtract(gamma6sq).multiply(zDivG12).add(one);
+        Numeric denominator = piSquared.add(gamma6sq).multiply(zDivG12).add(one);
+        return z.inverse().multiply(numerator).divide(denominator);
     }
 
     /**
