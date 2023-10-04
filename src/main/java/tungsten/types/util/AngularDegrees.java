@@ -25,6 +25,7 @@ package tungsten.types.util;
 
 import tungsten.types.Numeric;
 import tungsten.types.Range;
+import tungsten.types.annotations.Experimental;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
@@ -194,6 +195,7 @@ public class AngularDegrees {
 
     private static final IntegerType fullCircle = new IntegerImpl("360");
 
+    @Experimental
     public AngularDegrees subtract(AngularDegrees subtrahend) {
         final MathContext ctx = MathUtils.inferMathContext(List.of(this.getSeconds(), subtrahend.getSeconds()));
         final RealType reSixty = new RealImpl(SIXTY, ctx);
