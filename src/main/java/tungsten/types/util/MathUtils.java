@@ -90,6 +90,13 @@ public class MathUtils {
      * and the default value is 250.
      */
     public static final String GAMMA_BLOCK_SIZE = "tungsten.types.numerics.MathUtils.Gamma.blockSize";
+    /**
+     * The Gamma function &#x1D6AA;(z) can be approximated near zero much more quickly
+     * than computing a series.  Any value |z|&nbsp;&lt;&epsilon; would be considered
+     * close enough to 0 to use the approximation.  The System property that governs this
+     * &epsilon; value is represented by this {@link String}, and the default value is 0.01.
+     */
+    public static final String GAMMA_NEIGHBORHOOD_OF_ZERO = "tungsten.types.numerics.MathUtils.Gamma.zeroNeighborhood";
 
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
 
@@ -245,9 +252,8 @@ public class MathUtils {
             }
         }
         // next, check if we're within some neighborhood of 0
-        final RealType neighborhood = new RealImpl("0.01", z.getMathContext());
-        Comparator<Numeric> comp = obtainGenericComparator();
-        if (comp.compare(z.magnitude(), neighborhood) < 0 && !Zero.isZero(z)) {
+        final Comparator<Numeric> comp = obtainGenericComparator();
+        if (comp.compare(z.magnitude(), gammaNeighborhoodOfZero(z.getMathContext())) < 0 && !Zero.isZero(z)) {
             // compute an approximation and return it
             return gammaNearZero(z);
         }
@@ -385,6 +391,12 @@ public class MathUtils {
         Numeric numerator = piSquared.subtract(gamma6sq).multiply(zDivG12).add(one);
         Numeric denominator = piSquared.add(gamma6sq).multiply(zDivG12).add(one);
         return z.inverse().multiply(numerator).divide(denominator);
+    }
+
+    private static RealType gammaNeighborhoodOfZero(MathContext ctx) {
+        if (ctx.getPrecision() < 2) ctx = new MathContext(2, ctx.getRoundingMode());  // this will also fix UNLIMITED precision
+        final String value = System.getProperty(GAMMA_NEIGHBORHOOD_OF_ZERO, "0.01");
+        return new RealImpl(value, ctx);
     }
 
     /**

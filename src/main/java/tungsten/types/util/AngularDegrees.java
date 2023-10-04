@@ -211,6 +211,7 @@ public class AngularDegrees {
             degrees = (IntegerType) degrees.subtract(one);
             minutes = (IntegerType) minutes.add(SIXTY);
         }
+        // TODO do we really want to normalize negative values here?
         while (degrees.sign() == Sign.NEGATIVE) {
             degrees = (IntegerType) degrees.add(fullCircle);
         }
