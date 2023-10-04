@@ -362,7 +362,8 @@ public class MathUtils {
      * for values of z where |z| is close to 0.
      * A basic approximation is &#x1D6AA;(z) &sim; 1/z &minus; &#x1D6FE; for z&nbsp;&#x2192;&nbsp;0
      * <br/>A better approximation is given by
-     * &#x1D6AA;(z) &#x2245; (1/z)&sdot;(1 + (π² - 6γ²)z/12γ)/(1 + (π² + 6γ²)z/12γ)
+     * &#x1D6AA;(z) &#x2245; (1/z)&sdot;(1 + (π² &minus; 6γ²)z/12γ)/(1 + (π² + 6γ²)z/12γ)
+     * and is the one used in this method.
      * @param z a value that is close to 0
      * @return an approximation of the Gamma function at z
      * @see <a href="https://math.stackexchange.com/a/3928423">this expansion of &#x1D6AA;(z) for values near 0</a> by Claude Leibovici
@@ -374,7 +375,7 @@ public class MathUtils {
         RealType gammaSquared = (RealType) gamma.multiply(gamma);  // γ² from the Javadoc
         RealType six = new RealImpl(BigDecimal.valueOf(6L), ctx);
         RealType twelve = new RealImpl(BigDecimal.valueOf(12L), ctx);
-        Numeric one = One.getInstance(ctx);
+        final Numeric one = One.getInstance(ctx);
 
         // derived values
         RealType gamma12 = (RealType) gamma.multiply(twelve);
