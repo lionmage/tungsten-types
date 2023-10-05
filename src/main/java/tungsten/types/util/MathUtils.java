@@ -283,7 +283,7 @@ public class MathUtils {
                     IntegerType m = (IntegerType) zz.subtract(onehalf).coerceTo(IntegerType.class);
                     Sign msign = m.sign();  // calculations need to be done without sign, so save it here
                     m = m.magnitude();  // and take the absolute value
-                    IntegerType m2 = (IntegerType) new IntegerImpl(BigInteger.valueOf(2L)).multiply(m);
+                    IntegerType m2 = (IntegerType) new IntegerImpl(BigInteger.TWO).multiply(m);
                     RealType num = (RealType) factorial(m2).coerceTo(RealType.class);
                     RealType denom = (RealType) computeIntegerExponent(two, m2).multiply(factorial(m));
                     switch (msign) {
