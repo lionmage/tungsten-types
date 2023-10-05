@@ -97,7 +97,21 @@ public class Phi implements RealType {
 
     @Override
     public RealType negate() {
-        return new RealImpl(value.negate(), mctx);
+        return new RealImpl(value.negate(), mctx, false) {
+            {
+                setIrrational(true);
+            }
+
+            @Override
+            public RealType negate() {
+                return Phi.this;
+            }
+
+            @Override
+            public String toString() {
+                return "\u2212\u03D5";
+            }
+        };
     }
 
     @Override
@@ -208,7 +222,7 @@ public class Phi implements RealType {
 
     @Override
     public IntegerType ceil() {
-        return new IntegerImpl(BigInteger.valueOf(2L));
+        return new IntegerImpl(BigInteger.TWO);
     }
 
     @Override
