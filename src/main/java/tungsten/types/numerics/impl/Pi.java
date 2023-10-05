@@ -99,9 +99,8 @@ public class Pi implements RealType {
 
     @Override
     public RealType magnitude() {
-        final RealImpl proxy = new RealImpl(value, false);
+        final RealImpl proxy = new RealImpl(value, mctx, false);
         proxy.setIrrational(true);
-        proxy.setMathContext(mctx);
         return proxy;
     }
 
