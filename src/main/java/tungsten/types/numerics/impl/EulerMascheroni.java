@@ -235,7 +235,11 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public Numeric sqrt() {
-        return new RealImpl(value.sqrt(mctx), mctx, false);
+        return new RealImpl(value.sqrt(mctx), mctx, false) {
+            {
+                setIrrational(true);
+            }
+        };
     }
 
     @Override
