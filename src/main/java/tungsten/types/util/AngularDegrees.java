@@ -193,8 +193,6 @@ public class AngularDegrees {
         return new AngularDegrees(degrees, minutes, seconds);
     }
 
-    private static final IntegerType fullCircle = new IntegerImpl("360");
-
     @Experimental
     public AngularDegrees subtract(AngularDegrees subtrahend) {
         final MathContext ctx = MathUtils.inferMathContext(List.of(this.getSeconds(), subtrahend.getSeconds()));
@@ -210,10 +208,6 @@ public class AngularDegrees {
         while (minutes.sign() == Sign.NEGATIVE) {
             degrees = (IntegerType) degrees.subtract(one);
             minutes = (IntegerType) minutes.add(SIXTY);
-        }
-        // TODO do we really want to normalize negative values here?
-        while (degrees.sign() == Sign.NEGATIVE) {
-            degrees = (IntegerType) degrees.add(fullCircle);
         }
 
         return new AngularDegrees(degrees, minutes, seconds);
