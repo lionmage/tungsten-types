@@ -72,7 +72,7 @@ public class AngularDegrees {
      * There is no substitute for the degree symbool &deg; since it is unambiguous and available on most
      * keyboards through various input schemes.
      */
-    private static final Pattern DMSpattern = Pattern.compile("([+-]?\\d+)\\u00B0\\s?(\\d+)['′]\\s?(\\d+\\.?\\d*)[\"″]");
+    private static final Pattern DMSpattern = Pattern.compile("([+-]?\\d+)\\u00B0\\s?(\\d+)['\u2032]\\s?(\\d+\\.?\\d*)[\"\u2033]");
 
     private IntegerType degrees;
     private IntegerType minutes;
