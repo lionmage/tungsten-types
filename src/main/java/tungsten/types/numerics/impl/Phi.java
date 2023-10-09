@@ -237,7 +237,7 @@ public class Phi implements RealType {
 
     @Override
     public String toString() {
-        return "\u03D5";
+        return "\u03D5[" + mctx.getPrecision() + "]";
     }
 
     @Override
