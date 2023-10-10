@@ -163,6 +163,11 @@ public class EulerMascheroni implements RealType {
     public RealType negate() {
         return new RealImpl(value.negate(mctx), mctx, false) {
             @Override
+            public boolean isIrrational() {
+                return EulerMascheroni.this.isIrrational();
+            }
+
+            @Override
             public RealType negate() {
                 return EulerMascheroni.this;
             }
@@ -221,6 +226,11 @@ public class EulerMascheroni implements RealType {
     @Override
     public Numeric inverse() {
         return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
+            @Override
+            public boolean isIrrational() {
+                return EulerMascheroni.this.isIrrational();
+            }
+
             @Override
             public Numeric inverse() {
                 return EulerMascheroni.this;
