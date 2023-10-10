@@ -107,8 +107,9 @@ public class Pi implements RealType {
     @Override
     public RealType negate() {
         return new RealImpl(value.negate(), mctx, false) {
-            {
-                setIrrational(true);
+            @Override
+            public boolean isIrrational() {
+                return true;
             }
 
             @Override
@@ -219,8 +220,9 @@ public class Pi implements RealType {
     @Override
     public Numeric inverse() {
         return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
-            {
-                setIrrational(true);
+            @Override
+            public boolean isIrrational() {
+                return true;
             }
 
             @Override

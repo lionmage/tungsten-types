@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An implementation of {@link RealType}.
+ * An implementation of {@link RealType}, representing real numbers.
  *
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
@@ -119,14 +119,14 @@ public class RealImpl implements RealType {
 
     public void setIrrational(boolean irrational) {
         if (irrational && this.exact) {
-            throw new IllegalStateException("There cannot be an exact representation of an irrational number.");
+            throw new IllegalStateException("There cannot be an exact representation of an irrational number");
         }
         this.irrational = irrational;
     }
     
     public final void setMathContext(MathContext mctx) {
         if (mctx == null) {
-            throw new IllegalArgumentException("MathContext must not be null.");
+            throw new IllegalArgumentException("MathContext must not be null");
         }
         this.mctx = mctx;
     }

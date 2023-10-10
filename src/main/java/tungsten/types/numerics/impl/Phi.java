@@ -98,8 +98,9 @@ public class Phi implements RealType {
     @Override
     public RealType negate() {
         return new RealImpl(value.negate(), mctx, false) {
-            {
-                setIrrational(true);
+            @Override
+            public boolean isIrrational() {
+                return true;
             }
 
             @Override
