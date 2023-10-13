@@ -122,14 +122,13 @@ public class BernoulliNumbers {
             if (exponent % 2L == 0L) {
                 // even case
                 x *= x;
-                exponent >>= 1L;
             } else {
                 // odd case
                 y *= x;  // IntelliJ flags this as a possible problem, but this is really intentional
                 x *= x;
                 exponent--;
-                exponent >>= 1L;
             }
+            exponent >>= 1L;
         }
         return x * y;
     }
