@@ -99,6 +99,13 @@ public class BernoulliNumbers {
         }
     }
 
+    /**
+     * {@link Math#pow(double, double)} only deals with double values, and we want to
+     * quickly exponentiate longs.
+     * @param base     the value to exponentiate
+     * @param exponent the exponent, a non-negative integer value
+     * @return the result of calculating base<sup>exponent</sup>
+     */
     private long pow(long base, long exponent) {
         if (exponent < 0) {
             throw new IllegalArgumentException("Cannot handle negative exponent for long");
@@ -106,11 +113,22 @@ public class BernoulliNumbers {
         if (exponent == 0L) return 1L;
         if (base == 0L) return 0L;
         if (exponent == 1L) return base;
-        long accum = base;
-        for (long k = 1L; k < exponent; k++) {
-            accum *= base;
+        long x = base;
+        long y = 1L;
+        while (exponent > 1L) {
+            if (exponent % 2L == 0L) {
+                // even case
+                x *= x;
+                exponent >>= 1L;
+            } else {
+                // odd case
+                y *= x;  // IntelliJ flags this as a possible problem, but this is really intentional
+                x *= x;
+                exponent--;
+                exponent >>= 1L;
+            }
         }
-        return accum;
+        return x * y;
     }
 
     /**
@@ -130,6 +148,6 @@ public class BernoulliNumbers {
         return (RationalType) LongStream.range(0L, n)
                 .mapToObj(k -> MathUtils.nChooseK(n + 1L, k).multiply(getB(k)))
                 .reduce(Numeric::add).map(x -> x.multiply(coeff))
-                .orElseThrow(() -> new IllegalStateException("Error computing B for n = " + n));
+                .orElseThrow(() -> new IllegalStateException("Error computing B" + UnicodeTextEffects.numericSubscript((int) n)));
     }
 }
