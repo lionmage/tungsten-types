@@ -58,6 +58,9 @@ public class BernoulliNumbers {
         if (N == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Cannot allocate N+1 elements");
         }
+        if (N < 2) {
+            throw new IllegalArgumentException("N must be \u2265 2");
+        }
         B = new RationalType[N + 1];
         B[0] = new RationalImpl(BigInteger.ONE, BigInteger.ONE);
         B[1] = new RationalImpl(BigInteger.ONE.negate(), BigInteger.TWO);
