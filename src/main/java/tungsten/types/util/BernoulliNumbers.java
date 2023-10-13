@@ -31,7 +31,9 @@ import tungsten.types.numerics.impl.RationalImpl;
 
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Arrays;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 /**
  * A utility class for obtaining and working with Bernoulli numbers.
@@ -110,7 +112,7 @@ public class BernoulliNumbers {
      * @return the result of calculating base<sup>exponent</sup>
      */
     private long pow(long base, long exponent) {
-        if (exponent < 0) {
+        if (exponent < 0L) {
             throw new IllegalArgumentException("Cannot handle negative exponent for long");
         }
         if (exponent == 0L) return 1L;
@@ -155,5 +157,13 @@ public class BernoulliNumbers {
                 .mapToObj(k -> MathUtils.nChooseK(n + 1L, k).multiply(getB(k)))
                 .reduce(Numeric::add).map(x -> x.multiply(coeff))
                 .orElseThrow(() -> new IllegalStateException("Error computing B" + UnicodeTextEffects.numericSubscript((int) n)));
+    }
+
+    public Stream<RationalType> stream() {
+        // the use of LongStream.range() is a kludge, and we could just as easily
+        // have used rangeClosed() -- in any event, getB(k) will probably misbehave
+        // long before k gets anywhere close to Long.MAX_VALUE
+        return Stream.concat(Arrays.stream(B),
+                LongStream.range(B.length, Long.MAX_VALUE).mapToObj(this::getB));
     }
 }
