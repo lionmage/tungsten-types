@@ -153,7 +153,7 @@ public class BernoulliNumbers {
         }
         // otherwise, use the recurrence relationship
         final RationalType coeff = new RationalImpl(-1L, n + 1L, mctx);
-        return (RationalType) LongStream.range(0L, n).parallel()
+        return (RationalType) LongStream.range(0L, n) // .parallel()
                 .mapToObj(k -> MathUtils.nChooseK(n + 1L, k).multiply(getB(k)))
                 .reduce(Numeric::add).map(x -> x.multiply(coeff))
                 .orElseThrow(() -> new IllegalStateException("Error computing B" + UnicodeTextEffects.numericSubscript((int) n)));
