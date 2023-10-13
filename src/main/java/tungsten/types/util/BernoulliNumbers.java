@@ -160,9 +160,9 @@ public class BernoulliNumbers {
     }
 
     public Stream<RationalType> stream() {
-        // the use of LongStream.range() is a kludge, and we could just as easily
-        // have used rangeClosed() -- in any event, getB(k) will probably misbehave
+        // the use of LongStream.range() is a kludge -- in any event, getB(k) will probably misbehave
         // long before k gets anywhere close to Long.MAX_VALUE
+        // not using rangeClosed() because getB(n) calculates n + 1
         return Stream.concat(Arrays.stream(B),
                 LongStream.range(B.length, Long.MAX_VALUE).mapToObj(this::getB));
     }
