@@ -90,7 +90,7 @@ public class BernoulliNumbers {
             for (long k = 0; k <= m; k++) {
                 for (long v = 0; v <= k; v++) {
                     // binomial(k,v) * v^(m) / (k+1)
-                    IntegerType vm = new IntegerImpl(BigInteger.valueOf(pow(v, m)));
+                    IntegerType vm = new IntegerImpl(pow(v, m));
                     RationalType term = new RationalImpl((IntegerType) MathUtils.nChooseK(k, v).multiply(vm),
                             new IntegerImpl(BigInteger.valueOf(k + 1L)));
                     if (B[m] == null) B[m] = term;
@@ -111,13 +111,16 @@ public class BernoulliNumbers {
      * @param exponent the exponent, a non-negative integer value
      * @return the result of calculating base<sup>exponent</sup>
      */
-    private long pow(long base, long exponent) {
+    private BigInteger pow(long base, long exponent) {
         if (exponent < 0L) {
             throw new IllegalArgumentException("Cannot handle negative exponent for long");
         }
-        if (exponent == 0L) return 1L;
-        if (base == 0L) return 0L;
-        if (exponent == 1L) return base;
+        if (exponent == 0L || base == 1L) return BigInteger.ONE;
+        if (base == 0L) return BigInteger.ZERO;
+        if (exponent == 1L) return BigInteger.valueOf(base);
+        if (exponent <= (long) Integer.MAX_VALUE) {  // since exponent is currently an int in precalculate(), we should always execute here
+            return BigInteger.valueOf(base).pow((int) exponent);
+        }
         long x = base;
         long y = 1L;
         while (exponent > 1L) {
@@ -132,7 +135,7 @@ public class BernoulliNumbers {
             }
             exponent >>= 1L;
         }
-        return x * y;
+        return BigInteger.valueOf(x).multiply(BigInteger.valueOf(y)); // avoid overflow from x * y
     }
 
     /**
