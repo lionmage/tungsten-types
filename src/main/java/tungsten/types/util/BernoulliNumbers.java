@@ -93,14 +93,14 @@ public class BernoulliNumbers {
 
     private void precalculate(int n) {
         for (int m = 2; m <= n; m++) {
-            for (long k = 0; k <= m; k++) {
-                for (long v = 0; v <= k; v++) {
+            for (long k = 0L; k <= m; k++) {
+                for (long v = 0L; v <= k; v++) {
                     // binomial(k,v) * v^(m) / (k+1)
                     IntegerType vm = new IntegerImpl(pow(v, m));
                     RationalType term = new RationalImpl((IntegerType) MathUtils.nChooseK(k, v).multiply(vm),
                             new IntegerImpl(BigInteger.valueOf(k + 1L)));
                     if (B[m] == null) B[m] = term;
-                    else if (v % 2 == 0) {
+                    else if (v % 2L == 0L) {
                         B[m] = (RationalType) B[m].add(term);
                     } else {
                         B[m] = (RationalType) B[m].subtract(term);
