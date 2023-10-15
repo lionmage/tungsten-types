@@ -50,6 +50,7 @@ import java.util.stream.Stream;
 public class BernoulliNumbers {
     private final RationalType[] B;
     private MathContext mctx = MathContext.UNLIMITED;
+    private final LRUCache<Long, RationalType> cache;
 
     /**
      * Initialize this class with the first N&nbsp;+&nbsp;1 Bernoulli
@@ -67,6 +68,8 @@ public class BernoulliNumbers {
         B[0] = new RationalImpl(BigInteger.ONE, BigInteger.ONE);
         B[1] = new RationalImpl(BigInteger.ONE.negate(), BigInteger.TWO);
         precalculate(N);
+        // and preallocate a sensible cache, say 2/3 of N
+        cache = new LRUCache<>(2 * N / 3);
     }
 
     /**
@@ -83,6 +86,9 @@ public class BernoulliNumbers {
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
         for (RationalType Bk : B) OptionalOperations.setMathContext(Bk, mctx);
+        if (!cache.isEmpty()) {
+            for (RationalType Bk : cache.values()) OptionalOperations.setMathContext(Bk, mctx);
+        }
     }
 
     private void precalculate(int n) {
@@ -111,31 +117,15 @@ public class BernoulliNumbers {
      * @param exponent the exponent, a non-negative integer value
      * @return the result of calculating base<sup>exponent</sup>
      */
-    private BigInteger pow(long base, long exponent) {
-        if (exponent < 0L) {
+    private BigInteger pow(long base, int exponent) {
+        if (exponent < 0) {
             throw new IllegalArgumentException("Cannot handle negative exponent for long");
         }
-        if (exponent == 0L || base == 1L) return BigInteger.ONE;
+        if (exponent == 0 || base == 1L) return BigInteger.ONE;
         if (base == 0L) return BigInteger.ZERO;
-        if (exponent == 1L) return BigInteger.valueOf(base);
-        if (exponent <= (long) Integer.MAX_VALUE) {  // since exponent is currently an int in precalculate(), we should always execute here
-            return BigInteger.valueOf(base).pow((int) exponent);
-        }
-        long x = base;
-        long y = 1L;
-        while (exponent > 1L) {
-            if (exponent % 2L == 0L) {
-                // even case
-                x *= x;
-            } else {
-                // odd case
-                y *= x;  // IntelliJ flags this as a possible problem, but this is really intentional
-                x *= x;
-                exponent--;
-            }
-            exponent >>= 1L;
-        }
-        return BigInteger.valueOf(x).multiply(BigInteger.valueOf(y)); // avoid overflow from x * y
+        if (exponent == 1) return BigInteger.valueOf(base);
+        // since exponent is currently an int in precalculate(), no need for fancy long power logic here
+        return BigInteger.valueOf(base).pow(exponent);
     }
 
     /**
@@ -154,12 +144,16 @@ public class BernoulliNumbers {
         if (n % 2L == 1L) {
             return new RationalImpl(0L, 1L, mctx);
         }
+        // if it's in the cache, we're done
+        if (cache.containsKey(n)) return cache.get(n);
         // otherwise, use the recurrence relationship
         final RationalType coeff = new RationalImpl(-1L, n + 1L, mctx);
-        return (RationalType) LongStream.range(0L, n) // .parallel()
+        RationalType calculated = (RationalType) LongStream.range(0L, n) // .parallel()
                 .mapToObj(k -> MathUtils.nChooseK(n + 1L, k).multiply(getB(k)))
                 .reduce(Numeric::add).map(x -> x.multiply(coeff))
                 .orElseThrow(() -> new IllegalStateException("Error computing B" + UnicodeTextEffects.numericSubscript((int) n)));
+        cache.put(n, calculated); // slower than the array, but more efficient since we only store non-zero values
+        return calculated;
     }
 
     public Stream<RationalType> stream() {
