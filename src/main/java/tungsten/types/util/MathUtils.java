@@ -400,6 +400,95 @@ public class MathUtils {
     }
 
     /**
+     * Computes the Riemann zeta function &#x1D701;(s), where s can be any
+     * {@link Numeric} value (including {@link ComplexType}).
+     * @param s the argument to the zeta function
+     * @return the calculated value of &#x1D701;(s)
+     */
+    public static Numeric zeta(Numeric s) {
+        if (One.isUnity(s)) {
+            // there is a pole at s = 1
+            return PosInfinity.getInstance(s.getMathContext());
+        }
+        if (isInfinity(s, Sign.POSITIVE)) {
+            return One.getInstance(s.getMathContext());  // 𝜁(+∞) = 1
+        }
+        if (ComplexType.isExtendedEnabled() && s instanceof PointAtInfinity) {
+            throw new ArithmeticException("\uD835\uDF01(s) is singular at s=\u221E");
+        }
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), s.getMathContext());
+        if (s.isCoercibleTo(IntegerType.class)) {
+            try {
+                long n = ((IntegerType) s.coerceTo(IntegerType.class)).asBigInteger().longValueExact();
+                BernoulliNumbers bn = new BernoulliNumbers(n > 1000L ? 1024 : (int) (Math.abs(n) + 2L), s.getMathContext());
+
+                if (n <= 0L) {
+                    long posN = Math.abs(n);
+                    Numeric result = bn.getB(posN).divide(new IntegerImpl(BigInteger.valueOf(posN + 1L)));
+                    if (posN % 2L == 1L) result = result.negate();
+                    return result;
+                } else {
+                    if (n % 2L == 0L) {
+                        // even positive integers
+                        RealType factor = (RealType) Pi.getInstance(s.getMathContext()).multiply(two);
+                        Numeric result = computeIntegerExponent(factor, 2L).multiply(bn.getB(n))
+                                .divide(two.multiply(factorial(new IntegerImpl(BigInteger.valueOf(n)))));
+                        if ((n/2L + 1L) % 2L == 1L) result = result.negate();
+                        return result;
+                    } // there is really no good pattern for even positive integers, so we'll fall through to the logic below
+                }
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While computing \uD835\uDF01(" + s + ") as an integer");
+            }
+        }
+        // use the globally convergent series to compute 𝜁(s)
+        final Numeric one = One.getInstance(s.getMathContext());
+        Numeric powS = s instanceof ComplexType ? generalizedExponent(two, (ComplexType) one.subtract(s), s.getMathContext()) :
+                generalizedExponent(two, one.subtract(s), s.getMathContext());
+        final Numeric coeff = one.subtract(powS).inverse();
+        final long iterLimit = 2L * s.getMathContext().getPrecision() + 4L;
+
+        return LongStream.range(0L, iterLimit).mapToObj(n -> innerZetaSum(n, s))
+                .reduce(Numeric::add).map(coeff::multiply)
+                .orElseThrow(() -> new ArithmeticException("Unable to compute series for \uD835\uDF01(" + s + ")"));
+    }
+
+    private static Numeric innerZetaSum(long n, Numeric s) {
+        final RationalType coeff = new RationalImpl(BigInteger.ONE, BigInteger.TWO.pow((int) (n + 1L)));
+        OptionalOperations.setMathContext(coeff, s.getMathContext());
+
+        return LongStream.rangeClosed(0L, n).parallel()
+                .mapToObj(k -> zetaTerm(n, k, s)).reduce(Numeric::add)
+                .map(coeff::multiply)
+                .orElseThrow(() -> new ArithmeticException("While computing " + n + "th term of \uD835\uDF01(" + s + ")"));
+    }
+
+    private static Numeric zetaTerm(long n, long k, Numeric s) {
+        final RealType kPlus1 = new RealImpl(BigDecimal.valueOf(k + 1L));
+        Numeric result = s instanceof ComplexType ? nChooseK(n, k).multiply(generalizedExponent(kPlus1, (ComplexType) s.negate(), s.getMathContext())) :
+                nChooseK(n, k).multiply(generalizedExponent(kPlus1, s.negate(), s.getMathContext()));
+        if (k % 2L == 1L) result = result.negate();
+        return result;
+    }
+
+    /**
+     * Determine if a given value is an infinity with the given sign.
+     * Note that for {@link PointAtInfinity}, this will always return false
+     * since complex infinity has no sign.
+     * @param value        the value to test
+     * @param infinitySign the sign of the infinity for which we're checking
+     * @return true if {@code value} is an infinity of the given sign, false otherwise
+     */
+    public static boolean isInfinity(Numeric value, Sign infinitySign) {
+        if (value instanceof PosInfinity && infinitySign == Sign.POSITIVE) return true;
+        if (value instanceof NegInfinity && infinitySign == Sign.NEGATIVE) return true;
+        if (value instanceof RealInfinity) {
+            return ((RealType) value).sign() == infinitySign;
+        }
+        return false;
+    }
+
+    /**
      * Compute the binomial coefficient.
      * @param n the size of the set from which we are choosing
      * @param k the number of elements we are choosing from the set at a time

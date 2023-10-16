@@ -150,7 +150,7 @@ public class BernoulliNumbers {
         final RationalType coeff = new RationalImpl(-1L, n + 1L, mctx);
         RationalType calculated = (RationalType) LongStream.range(0L, n) // .parallel()
                 .mapToObj(k -> MathUtils.nChooseK(n + 1L, k).multiply(getB(k)))
-                .reduce(Numeric::add).map(x -> x.multiply(coeff))
+                .reduce(Numeric::add).map(coeff::multiply)
                 .orElseThrow(() -> new IllegalStateException("Error computing B" + UnicodeTextEffects.numericSubscript((int) n)));
         cache.put(n, calculated); // slower than the array, but more efficient since we only store non-zero values
         return calculated;
