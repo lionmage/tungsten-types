@@ -24,7 +24,7 @@ numeric types:
   * Basic functional building-blocks are provided with full composition possible
   * Symbolic and numeric differentiation are supported (currently, full support for unary functions only)
 * A fairly complete set of (static method) functions are provided in MathUtils:
-  * An implementation of trig functions such as sin, cos, and a highly optimized atan.
+  * Implementations of trig functions such as sin, cos, and a highly optimized atan.
   * Specialized functions that show up a lot, such as 𝚪(z) and 𝜁(s).
   * Multiple ways to compute exponents for all Numeric data types.
   * Methods for computing factorials, binomial coefficients, etc.
