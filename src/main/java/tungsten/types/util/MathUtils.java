@@ -401,7 +401,10 @@ public class MathUtils {
 
     /**
      * Computes the Riemann zeta function &#x1D701;(s), where s can be any
-     * {@link Numeric} value (including {@link ComplexType}).
+     * {@link Numeric} value (including {@link ComplexType}). The logic is
+     * optimized for certain specific arguments (e.g., even positive integers),
+     * and the main algorithm is globally convergent everywhere except
+     * where Re(s)&nbsp;=&nbsp;1.
      * @param s the argument to the zeta function
      * @return the calculated value of &#x1D701;(s)
      */
@@ -459,7 +462,7 @@ public class MathUtils {
         return LongStream.rangeClosed(0L, n).parallel()
                 .mapToObj(k -> zetaTerm(n, k, s)).reduce(Numeric::add)
                 .map(coeff::multiply)
-                .orElseThrow(() -> new ArithmeticException("While computing " + n + "th term of \uD835\uDF01(" + s + ")"));
+                .orElseThrow(() -> new ArithmeticException("While computing the " + n + "th term of \uD835\uDF01(" + s + ")"));
     }
 
     private static Numeric zetaTerm(long n, long k, Numeric s) {
