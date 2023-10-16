@@ -407,6 +407,9 @@ public class MathUtils {
      * where Re(s)&nbsp;=&nbsp;1.
      * @param s the argument to the zeta function
      * @return the calculated value of &#x1D701;(s)
+     * @see <a href="https://en.wikipedia.org/wiki/Riemann_zeta_function">the Wikipedia article</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Particular_values_of_the_Riemann_zeta_function">special values of Riemann zeta</a>
+     * @see <a href="https://mathworld.wolfram.com/RiemannZetaFunction.html">the Wolfram Mathworld article</a>
      */
     public static Numeric zeta(Numeric s) {
         if (One.isUnity(s)) {
