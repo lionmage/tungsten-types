@@ -419,7 +419,8 @@ public class MathUtils {
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), s.getMathContext());
         if (s.isCoercibleTo(IntegerType.class)) {
             try {
-                long n = ((IntegerType) s.coerceTo(IntegerType.class)).asBigInteger().longValueExact();
+                IntegerType intArg = (IntegerType) s.coerceTo(IntegerType.class);
+                long n = intArg.asBigInteger().longValueExact();
                 BernoulliNumbers bn = new BernoulliNumbers(n > 1000L ? 1024 : (int) (Math.abs(n) + 2L), s.getMathContext());
 
                 if (n <= 0L) {
@@ -427,16 +428,14 @@ public class MathUtils {
                     Numeric result = bn.getB(posN).divide(new IntegerImpl(BigInteger.valueOf(posN + 1L)));
                     if (posN % 2L == 1L) result = result.negate();
                     return result;
-                } else {
-                    if (n % 2L == 0L) {
-                        // even positive integers
-                        RealType factor = (RealType) Pi.getInstance(s.getMathContext()).multiply(two);
-                        Numeric result = computeIntegerExponent(factor, 2L).multiply(bn.getB(n))
-                                .divide(two.multiply(factorial(new IntegerImpl(BigInteger.valueOf(n)))));
-                        if ((n/2L + 1L) % 2L == 1L) result = result.negate();
-                        return result;
-                    } // there is really no good pattern for even positive integers, so we'll fall through to the logic below
-                }
+                } else if (n % 2L == 0L) {
+                    // even positive integers
+                    RealType factor = (RealType) Pi.getInstance(s.getMathContext()).multiply(two);
+                    Numeric result = computeIntegerExponent(factor, 2L).multiply(bn.getB(n))
+                            .divide(two.multiply(factorial(intArg)));
+                    if ((n/2L + 1L) % 2L == 1L) result = result.negate();
+                    return result;
+                } // there is really no good pattern for odd positive integers, so we'll fall through to the logic below
             } catch (CoercionException e) {
                 throw new ArithmeticException("While computing \uD835\uDF01(" + s + ") as an integer");
             }
