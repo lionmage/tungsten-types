@@ -399,6 +399,21 @@ public class MathUtils {
         return new RealImpl(value, ctx);
     }
 
+    public static RealType Re(Numeric z) {
+        if (z instanceof ComplexType) return ((ComplexType) z).real();
+        try {
+            return (RealType) z.coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Unable to extract real part of " + z);
+        }
+    }
+
+    public static RealType Im(Numeric z) {
+        if (z instanceof ComplexType) return ((ComplexType) z).imaginary();
+        // anything else has a zero imaginary component
+        return new RealImpl(BigDecimal.ZERO, z.getMathContext());
+    }
+
     /**
      * Computes the Riemann zeta function &#x1D701;(s), where s can be any
      * {@link Numeric} value (including {@link ComplexType}). The logic is
@@ -446,34 +461,96 @@ public class MathUtils {
                 throw new ArithmeticException("While computing \uD835\uDF01(" + s + ") as an integer");
             }
         }
-        // use the globally convergent series to compute 𝜁(s)
+        // use the 1930-era algorithm to compute 𝜁(s)
+        long n = 10L;
+        long m = 10L;
+        BernoulliNumbers numbers = new BernoulliNumbers((int) (n * m) + 2, s.getMathContext());
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "\uD835\uDF01({0}) error term = {1}", new Object[] {s, zetaE_mn(n, m, s, numbers)});
+
+        Numeric finalTerm = LongStream.rangeClosed(1L, m).parallel()
+                .mapToObj(k -> zetaT_kn(n, k, s, numbers))
+                .reduce(ExactZero.getInstance(s.getMathContext()), Numeric::add);
+        return zetaNterms(n, s).add(finalTerm);
+    }
+
+    private static Numeric zetaNterms(long n, Numeric s) {
+        final MathContext ctx = s.getMathContext();
+        final Numeric one = One.getInstance(ctx);
+        final Numeric negS = s.negate();
+        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                "Computing {0} terms of j^({1})",
+                new Object[] {n, negS});
+        Numeric jsum = LongStream.range(1L, n).parallel() // 1..n-1
+                .mapToObj(BigDecimal::valueOf)
+                .map(j -> new RealImpl(j, ctx))
+                .map(j -> {
+                    if (s instanceof ComplexType) return generalizedExponent(j, (ComplexType) negS, ctx);
+                    return generalizedExponent(j, negS, ctx);
+                }).reduce(ExactZero.getInstance(ctx), Numeric::add);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                "Finished computing {0} terms of j^({1})",
+                new Object[] {n, negS});
+        final RealType reN = new RealImpl(BigDecimal.valueOf(n), ctx);
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), ctx);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                "Computing {0}^({1})",
+                new Object[] {reN, negS});
+        Numeric midTerm = (s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) negS, ctx) :
+                generalizedExponent(reN, negS, ctx)).divide(two);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                "Computing {0}^({1}) / {2}",
+                new Object[] {reN, one.subtract(s), s.subtract(one)});
+        Numeric endTerm = ((s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) one.subtract(s), ctx) :
+                generalizedExponent(reN, one.subtract(s), ctx))).divide(s.subtract(one));
+        return jsum.add(midTerm).add(endTerm);
+    }
+
+    /**
+     * Computes the T<sub>k,n</sub>(s) term of the Riemann zeta function &#x1D701;(s).
+     * @param n  a parameter determining accuracy
+     * @param k  the index of this term
+     * @param s  the parameter of &#x1D701;(s)
+     * @param bn a generator for Bernoulli numbers, initialized to contain a sufficient number of precalculated values
+     * @return the computed value of the k<sub>th</sub> term
+     */
+    private static Numeric zetaT_kn(long n, long k, Numeric s, BernoulliNumbers bn) {
+        final IntegerType twoK = new IntegerImpl(BigInteger.valueOf(2L * k), true) {
+            @Override
+            public MathContext getMathContext() {
+                return s.getMathContext();
+            }
+        };
         final Numeric one = One.getInstance(s.getMathContext());
-        Numeric powS = s instanceof ComplexType ? generalizedExponent(two, (ComplexType) one.subtract(s), s.getMathContext()) :
-                generalizedExponent(two, one.subtract(s), s.getMathContext());
-        final Numeric coeff = one.subtract(powS).inverse();
-        final long iterLimit = 2L * s.getMathContext().getPrecision() + 4L;
-
-        return LongStream.range(0L, iterLimit).mapToObj(n -> innerZetaSum(n, s))
-                .reduce(Numeric::add).map(coeff::multiply)
-                .orElseThrow(() -> new ArithmeticException("Unable to compute series for \uD835\uDF01(" + s + ")"));
+        // n^(1 - s - 2k)
+        Numeric npow;
+        if (s instanceof ComplexType) {
+            // 1 - s - 2k is going to be complex here, so use the special version of generalizedExponent()
+            npow = generalizedExponent(new RealImpl(BigDecimal.valueOf(n), s.getMathContext()),
+                    (ComplexType) one.subtract(s).subtract(twoK), s.getMathContext());
+        } else {
+            npow = generalizedExponent(new RealImpl(BigDecimal.valueOf(n), s.getMathContext()),
+                    one.subtract(s).subtract(twoK), s.getMathContext());
+        }
+        Numeric coeff = bn.getB(2L * k).multiply(npow).divide(factorial(twoK));
+        return LongStream.rangeClosed(0L, 2L * k - 2L)
+                .mapToObj(j -> s.add(new RealImpl(BigDecimal.valueOf(j), s.getMathContext())))
+                .reduce(coeff, Numeric::multiply);
     }
 
-    private static Numeric innerZetaSum(long n, Numeric s) {
-        final RationalType coeff = new RationalImpl(BigInteger.ONE, BigInteger.TWO.pow((int) (n + 1L)));
-        OptionalOperations.setMathContext(coeff, s.getMathContext());
-
-        return LongStream.rangeClosed(0L, n).parallel()
-                .mapToObj(k -> zetaTerm(n, k, s)).reduce(Numeric::add)
-                .map(coeff::multiply)
-                .orElseThrow(() -> new ArithmeticException("While computing the " + n + "th term of \uD835\uDF01(" + s + ")"));
-    }
-
-    private static Numeric zetaTerm(long n, long k, Numeric s) {
-        final RealType kPlus1 = new RealImpl(BigDecimal.valueOf(k + 1L));
-        Numeric result = s instanceof ComplexType ? nChooseK(n, k).multiply(generalizedExponent(kPlus1, (ComplexType) s.negate(), s.getMathContext())) :
-                nChooseK(n, k).multiply(generalizedExponent(kPlus1, s.negate(), s.getMathContext()));
-        if (k % 2L == 1L) result = result.negate();
-        return result;
+    /**
+     * Computes the error term E<sub>m,n</sub>(s) for the Riemann zeta function &#x1D701;(s)
+     * where m and n are integer values (see above).
+     * @param n  a parameter determining accuracy
+     * @param m  a parameter determining accuracy
+     * @param s  the parameter of &#x1D701;(s)
+     * @param bn a generator for Bernoulli numbers, initialized to contain a sufficient number of precalculated values
+     * @return the magnitude of the error term, expressed as a real
+     */
+    private static RealType zetaE_mn(long n, long m, Numeric s, BernoulliNumbers bn) {
+        final RealType twoMplus1 = new RealImpl(new BigDecimal(2L * m + 1L), s.getMathContext(), true);
+        final RealType sigma = Re(s);
+        return s.add(twoMplus1).multiply(zetaT_kn(n, m + 1L, s, bn)).divide(sigma.add(twoMplus1)).magnitude();
     }
 
     /**
@@ -1363,6 +1440,8 @@ public class MathUtils {
         do {
             x0 = x1;
             x1 = nminus1.multiply(x0, mctx).add(A.divide(x0.pow(nint - 1, mctx), mctx), mctx).divide(ncalc, mctx);
+            BigDecimal delta = x0.subtract(x1, mctx).abs();
+            if (delta.compareTo(x0.ulp()) <= 0) break;  // to ensure we are not stuck in an infinite loop
         } while (x0.compareTo(x1) != 0);
         x1 = x1.stripTrailingZeros();
         boolean irrational = classifyIfIrrational(x1, mctx);

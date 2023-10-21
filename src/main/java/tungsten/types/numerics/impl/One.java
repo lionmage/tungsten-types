@@ -131,7 +131,17 @@ public class One implements Numeric, Comparable<Numeric> {
 
     @Override
     public Numeric negate() {
-        return INT_UNITY.negate();
+        return new IntegerImpl(BigInteger.ONE.negate()) {
+            @Override
+            public IntegerType negate() {
+                return INT_UNITY;
+            }
+
+            @Override
+            public MathContext getMathContext() {
+                return One.this.mctx;
+            }
+        }; // was: INT_UNITY.negate();
     }
     
     private boolean isArgumentRealOrCplx(Numeric argument) {
@@ -141,6 +151,11 @@ public class One implements Numeric, Comparable<Numeric> {
     @Override
     public Numeric add(Numeric addend) {
         if (isArgumentRealOrCplx(addend)) {
+            if (addend instanceof RealType) {
+                // small optimization
+                RealType that = (RealType) addend;
+                return new RealImpl(BigDecimal.ONE.add(that.asBigDecimal(), mctx), mctx, that.isExact());
+            }
             RealType unity = obtainRealUnity();
             return unity.add(addend);
         }
@@ -150,6 +165,11 @@ public class One implements Numeric, Comparable<Numeric> {
     @Override
     public Numeric subtract(Numeric subtrahend) {
         if (isArgumentRealOrCplx(subtrahend)) {
+            if (subtrahend instanceof RealType) {
+                // small optimization
+                RealType that = (RealType) subtrahend;
+                return new RealImpl(BigDecimal.ONE.subtract(that.asBigDecimal(), mctx), mctx, that.isExact());
+            }
             RealType unity = obtainRealUnity();
             return unity.subtract(subtrahend);
         }
@@ -171,6 +191,7 @@ public class One implements Numeric, Comparable<Numeric> {
                 return PointAtInfinity.getInstance();
             }
         }
+        if (isUnity(divisor)) return this;
         return divisor.inverse();
     }
 
