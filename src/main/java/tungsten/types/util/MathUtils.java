@@ -461,7 +461,7 @@ public class MathUtils {
                 throw new ArithmeticException("While computing \uD835\uDF01(" + s + ") as an integer");
             }
         }
-        // use the 1930-era algorithm to compute 𝜁(s)
+        // use the 1930-era Euler-Maclaurin algorithm to compute 𝜁(s)
         long n = 10L;
         long m = 10L;
         BernoulliNumbers numbers = new BernoulliNumbers((int) (n * m) + 2, s.getMathContext());
@@ -475,12 +475,13 @@ public class MathUtils {
     }
 
     private static Numeric zetaNterms(long n, Numeric s) {
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         final MathContext ctx = s.getMathContext();
         final Numeric one = One.getInstance(ctx);
         final Numeric negS = s.negate();
-        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+        logger.log(Level.FINE,
                 "Computing {0} terms of j^({1})",
-                new Object[] {n, negS});
+                new Object[] {n - 1L, negS});
         Numeric jsum = LongStream.range(1L, n).parallel() // 1..n-1
                 .mapToObj(BigDecimal::valueOf)
                 .map(j -> new RealImpl(j, ctx))
@@ -488,17 +489,17 @@ public class MathUtils {
                     if (s instanceof ComplexType) return generalizedExponent(j, (ComplexType) negS, ctx);
                     return generalizedExponent(j, negS, ctx);
                 }).reduce(ExactZero.getInstance(ctx), Numeric::add);
-        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+        logger.log(Level.FINE,
                 "Finished computing {0} terms of j^({1})",
                 new Object[] {n, negS});
         final RealType reN = new RealImpl(BigDecimal.valueOf(n), ctx);
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), ctx);
-        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+        logger.log(Level.FINE,
                 "Computing {0}^({1})",
                 new Object[] {reN, negS});
         Numeric midTerm = (s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) negS, ctx) :
                 generalizedExponent(reN, negS, ctx)).divide(two);
-        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+        logger.log(Level.FINE,
                 "Computing {0}^({1}) / {2}",
                 new Object[] {reN, one.subtract(s), s.subtract(one)});
         Numeric endTerm = ((s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) one.subtract(s), ctx) :
