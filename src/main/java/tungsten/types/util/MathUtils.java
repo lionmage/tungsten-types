@@ -275,7 +275,7 @@ public class MathUtils {
             RationalType zz = ((RationalType) z).reduce();
             // half-integer arguments have easy-to-compute values
             if (zz.denominator().asBigInteger().equals(BigInteger.TWO) && zz.numerator().isOdd()) {
-                final RealType two = new RealImpl(BigDecimal.valueOf(2L), z.getMathContext());
+                final RealType two = new RealImpl(decTWO, z.getMathContext());
                 final RealType sqrtPi = (RealType) Pi.getInstance(z.getMathContext()).sqrt();
                 if (zz.numerator().asBigInteger().equals(BigInteger.ONE)) return sqrtPi; // 𝚪(1/2) = √𝜋
                 final RationalType onehalf = new RationalImpl(1L, 2L, z.getMathContext());
@@ -437,7 +437,7 @@ public class MathUtils {
         if (ComplexType.isExtendedEnabled() && s instanceof PointAtInfinity) {
             throw new ArithmeticException("\uD835\uDF01(s) is singular at s=\u221E");
         }
-        final RealType two = new RealImpl(BigDecimal.valueOf(2L), s.getMathContext());
+        final RealType two = new RealImpl(decTWO, s.getMathContext());
         if (s.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType intArg = (IntegerType) s.coerceTo(IntegerType.class);
@@ -493,7 +493,7 @@ public class MathUtils {
                 "Finished computing {0} terms of j^({1})",
                 new Object[] {n, negS});
         final RealType reN = new RealImpl(BigDecimal.valueOf(n), ctx);
-        final RealType two = new RealImpl(BigDecimal.valueOf(2L), ctx);
+        final RealType two = new RealImpl(decTWO, ctx);
         logger.log(Level.FINE,
                 "Computing {0}^({1})",
                 new Object[] {reN, negS});
@@ -3199,7 +3199,7 @@ public class MathUtils {
         if (optimumTermCounts.containsKey(key)) return optimumTermCounts.get(key);
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for MathContext {0}; calculating optimum number of power series terms.", ctx);
         final MathContext calcContext = new MathContext(ctx.getPrecision() * 2, ctx.getRoundingMode());
-        final RealType realTwo = new RealImpl(BigDecimal.valueOf(2L), calcContext);
+        final RealType realTwo = new RealImpl(decTWO, calcContext);
         final RealType maxError = (RealType) computeIntegerExponent(TEN, 1 - ctx.getPrecision(), calcContext).divide(realTwo);
         final Pi pi = Pi.getInstance(calcContext);
         int k = 2;
