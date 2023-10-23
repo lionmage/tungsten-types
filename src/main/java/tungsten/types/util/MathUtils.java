@@ -494,7 +494,7 @@ public class MathUtils {
                 }).reduce(ExactZero.getInstance(ctx), Numeric::add);
         logger.log(Level.FINE,
                 "Finished computing {0} terms of j^({1})",
-                new Object[] {n, negS});
+                new Object[] {n - 1L, negS});
         final RealType reN = new RealImpl(BigDecimal.valueOf(n), ctx);
         final RealType two = new RealImpl(decTWO, ctx);
         logger.log(Level.FINE,
