@@ -462,8 +462,11 @@ public class MathUtils {
             }
         }
         // use the 1930-era Euler-Maclaurin algorithm to compute 𝜁(s)
-        long n = 10L;
-        long m = 10L;
+        long n = Math.max(5L, s.getMathContext().getPrecision() / 3L); // was 10L; DECIMAL64 -> 5, DECIMAL128 -> 11
+        long m = Math.max(7L, s.getMathContext().getPrecision() / 2L); // was 10L; DECIMAL64 -> 8, DECIMAL128 -> 17
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "Computing \uD835\uDF01(s) using Euler-Maclaurin formula with n={0}, m={1}.",
+                new Object[] {n, m});
         BernoulliNumbers numbers = new BernoulliNumbers((int) (n * m) + 2, s.getMathContext());
         Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
                 "\uD835\uDF01({0}) error term = {1}", new Object[] {s, zetaE_mn(n, m, s, numbers)});
