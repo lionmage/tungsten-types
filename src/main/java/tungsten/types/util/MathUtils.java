@@ -2180,6 +2180,23 @@ public class MathUtils {
     }
 
     public static Matrix<RealType> reify(Matrix<ComplexType> C) {
+        if (C.getClass().isAnnotationPresent(Columnar.class)) {
+            // for more efficient handling of column-based matrices
+            ColumnarMatrix<RealType> cresult = new ColumnarMatrix<>();
+            for (long column = 0L; column < C.columns(); column++) {
+                ColumnVector<ComplexType> orig = C.getColumn(column);
+                if (orig.stream().parallel().anyMatch(c -> !c.isCoercibleTo(RealType.class))) {
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                            "Column {0} of source matrix contains elements that cannot be converted to RealType: {1}",
+                            new Object[] {column, orig});
+                    throw new ArithmeticException("Source matrix cannot be converted to real, column = " + column);
+                }
+                ColumnVector<RealType> converted = new ListColumnVector<>();
+                orig.stream().map(ComplexType::real).forEachOrdered(converted::append);
+                cresult.append(converted);
+            }
+            return cresult;
+        }
         BasicMatrix<RealType> result = new BasicMatrix<>();
         for (long row = 0L; row < C.rows(); row++) {
             RowVector<ComplexType> orig = C.getRow(row);
