@@ -581,6 +581,13 @@ public class MathUtils {
      * @return the binomial coefficient
      */
     public static IntegerType nChooseK(IntegerType n, IntegerType k) {
+        // negative n gets special handling
+        if (n.sign() == Sign.NEGATIVE) {
+            final IntegerType one = new IntegerImpl(BigInteger.ONE);
+            IntegerType result = nChooseK((IntegerType) k.subtract(n).subtract(one), k);
+            if (k.isOdd()) result = result.negate();
+            return result;
+        }
         // factorial() already checks for negative values, so we just need to check that k <= n
         if (k.compareTo(n) > 0) throw new IllegalArgumentException("k must be \u2264 n");
         try {
