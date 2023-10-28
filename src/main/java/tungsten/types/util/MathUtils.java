@@ -657,12 +657,50 @@ public class MathUtils {
      * Round the values of a {@link Vector<RealType>} to the
      * precision of the given {@link MathContext}.
      * @param x   a {@link Vector} with real element values
-     * @param ctx the {@link MathContext} which provides the precision and {@link RoundingMode}
+     * @param ctx the {@link MathContext}, which provides the precision and {@link RoundingMode}
      * @return a new vector of rounded real values
      */
     public static RealVector round(Vector<RealType> x, MathContext ctx) {
         RealVector result = new RealVector(x.length());
         LongStream.range(0L, x.length()).mapToObj(x::elementAt).map(v -> round(v, ctx))
+                .forEachOrdered(result::append);
+        result.setMathContext(ctx);
+        return result;
+    }
+
+    /**
+     * Round a value z to the given {@link MathContext}. This operation
+     * is equivalent to performing a rounding operation on each of the
+     * components of the complex value z.
+     * @param z   the complex value to be rounded
+     * @param ctx the {@link MathContext} to apply
+     * @return the complex value z rounded
+     */
+    public static ComplexType round(ComplexType z, MathContext ctx) {
+        if (z.getClass().isAnnotationPresent(Constant.class)) {
+            String constantName = z.getClass().getAnnotation(Constant.class).name();
+            return OptionalOperations.instantiateConstant(constantName, ctx);
+        }
+        if (z.getClass().isAnnotationPresent(Polar.class)) {
+            return new ComplexPolarImpl(round(z.magnitude(), ctx), round(z.argument(), ctx), false);
+        }
+        return new ComplexRectImpl(round(z.real(), ctx), round(z.imaginary(), ctx), false);
+    }
+
+    /**
+     * Round the values of a {@link Vector<ComplexType>} to the
+     * precision of the given {@link MathContext}.
+     * @param z   a {@link Vector} with complex element values
+     * @param ctx the {@link MathContext}, which provides the precision and {@link RoundingMode}
+     * @return a new vector of rounded complex values
+     * @apiNote This method <em>should</em> be named {@code round} for consistency with the other
+     *   rounding methods, and because overloading makes sense here.  Unfortunately, the first
+     *   argument is a {@code Vector<ComplexType>}, which conflicts with {@link #round(Vector, MathContext) round(Vector&lt;RealType&gt;, ...)}.
+     *   This is due to limitations of Java generics and type erasure.  This method may be renamed in the future.
+     */
+    public static ComplexVector roundCV(Vector<ComplexType> z, MathContext ctx) {
+        ComplexVector result = new ComplexVector(z.length());
+        LongStream.range(0L, z.length()).mapToObj(z::elementAt).map(v -> round(v, ctx))
                 .forEachOrdered(result::append);
         result.setMathContext(ctx);
         return result;
@@ -852,25 +890,6 @@ public class MathUtils {
         };
     }
 
-    /**
-     * Round a value z to the given {@link MathContext}. This operation
-     * is equivalent to performing a rounding operation on each of the
-     * components of the complex value z.
-     * @param z   the complex value to be rounded
-     * @param ctx the {@link MathContext} to apply
-     * @return the complex value z rounded
-     */
-    public static ComplexType round(ComplexType z, MathContext ctx) {
-        if (z.getClass().isAnnotationPresent(Constant.class)) {
-            String constantName = z.getClass().getAnnotation(Constant.class).name();
-            return OptionalOperations.instantiateConstant(constantName, ctx);
-        }
-        if (z.getClass().isAnnotationPresent(Polar.class)) {
-            return new ComplexPolarImpl(round(z.magnitude(), ctx), round(z.argument(), ctx), false);
-        }
-        return new ComplexRectImpl(round(z.real(), ctx), round(z.imaginary(), ctx), false);
-    }
-    
     public static RealType computeIntegerExponent(Numeric x, IntegerType n) {
         final RealType result;
         final BigInteger exponent = n.asBigInteger();
