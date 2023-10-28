@@ -661,9 +661,11 @@ public class MathUtils {
      * @return a new vector of rounded real values
      */
     public static RealVector round(Vector<RealType> x, MathContext ctx) {
-        RealType[] elements = new RealType[(int) x.length()];
-        for (long k = 0L; k < x.length(); k++) elements[(int) k] = round(x.elementAt(k), ctx);
-        return new RealVector(elements, ctx);
+        RealVector result = new RealVector(x.length());
+        LongStream.range(0L, x.length()).mapToObj(x::elementAt).map(v -> round(v, ctx))
+                .forEachOrdered(result::append);
+        result.setMathContext(ctx);
+        return result;
     }
 
     public static RealType min(RealType a, RealType b) {
