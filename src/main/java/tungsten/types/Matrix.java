@@ -50,7 +50,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 /**
- * The root type for matrices.
+ * The root type for <a href="https://en.wikipedia.org/wiki/Matrix_(mathematics)">matrices</a>.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} type of the elements of this matrix 

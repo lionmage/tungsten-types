@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Base interface for all <a href="https://en.wikipedia.org/wiki/Vector_(mathematics_and_physics)">vector</a> objects.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the numeric type of this vector
