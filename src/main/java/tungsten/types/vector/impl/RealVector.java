@@ -105,7 +105,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public RealType elementAt(long position) {
         if (position > (long) Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("Index exceeds what this Vector implementation supports.");
+            throw new IndexOutOfBoundsException(INDEX_TOO_HIGH);
         }
         return elements.get((int) position);
     }
@@ -113,7 +113,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public void setElementAt(RealType element, long position) {
         if (position > (long) Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("Index exceeds what this Vector implementation supports");
+            throw new IndexOutOfBoundsException(INDEX_TOO_HIGH);
         }
         if (position > (long) elements.size()) {
             final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);

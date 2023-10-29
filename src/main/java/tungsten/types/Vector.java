@@ -42,6 +42,8 @@ import java.util.logging.Logger;
  * @param <T> the numeric type of this vector
  */
 public interface Vector<T extends Numeric> {
+    String INDEX_TOO_HIGH = "Index exceeds what this Vector implementation supports";
+
     /**
      * Calculates the number of elements in this vector.
      * This is the dimensionality of this vector.

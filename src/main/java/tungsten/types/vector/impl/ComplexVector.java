@@ -112,7 +112,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public ComplexType elementAt(long position) {
         if (position > (long) Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("Index exceeds what this vector implementation supports");
+            throw new IndexOutOfBoundsException(INDEX_TOO_HIGH);
         }
         return elements.get((int) position);
     }
@@ -120,7 +120,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public void setElementAt(ComplexType element, long position) {
         if (position > (long) Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("Index exceeds what this vector implementation supports");
+            throw new IndexOutOfBoundsException(INDEX_TOO_HIGH);
         }
         if (position > (long) elements.size()) {
             final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
