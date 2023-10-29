@@ -695,7 +695,8 @@ public class MathUtils {
      * @return a new vector of rounded complex values
      * @apiNote This method <em>should</em> be named {@code round} for consistency with the other
      *   rounding methods, and because overloading makes sense here.  Unfortunately, the first
-     *   argument is a {@code Vector<ComplexType>}, which conflicts with {@link #round(Vector, MathContext) round(Vector&lt;RealType&gt;, ...)}.
+     *   argument is a {@code Vector<ComplexType>}, which conflicts with
+     *   {@link #round(Vector, MathContext) round(Vector&lt;RealType&gt;,&thinsp;&hellip;)}.
      *   This is due to limitations of Java generics and type erasure.  This method may be renamed in the future.
      */
     public static ComplexVector roundCV(Vector<ComplexType> z, MathContext ctx) {
