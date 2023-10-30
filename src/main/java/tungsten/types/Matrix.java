@@ -127,7 +127,7 @@ public interface Matrix<T extends Numeric> {
     
     default T trace() {
         if (this.columns() != this.rows()) {
-            throw new ArithmeticException("Trace is only defined for square matrices.");
+            throw new ArithmeticException("Trace is only defined for square matrices");
         }
         Numeric accum = valueAt(0L, 0L);
         final Class<T> clazz = (Class<T>) accum.getClass();
@@ -274,8 +274,8 @@ public interface Matrix<T extends Numeric> {
     default Matrix<? extends Numeric> pow(Numeric n) {
         if (n instanceof RationalType) {
             RationalType exponent = (RationalType) n;
+            Matrix<Numeric> intermediate = (Matrix<Numeric>) pow(exponent.numerator());
             if (exponent.denominator().isPowerOf2()) {
-                Matrix<Numeric> intermediate = (Matrix<Numeric>) pow(exponent.numerator());
                 long denom = exponent.denominator().asBigInteger().longValueExact();
                 while (denom > 1L) {
                     intermediate = (Matrix<Numeric>) MathUtils.sqrt(intermediate);
@@ -283,7 +283,11 @@ public interface Matrix<T extends Numeric> {
                 }
                 return intermediate;
             }
-            // TODO handle rational exponents with denominators that are not powers of 2
+            if (this.isUpperTriangular()) {
+                // let's try the Parlett method -- an upper triangular matrix raised to a power is upper triangular
+                return MathUtils.nthRoot(intermediate, exponent.denominator());
+            }
+            // TODO handle rational exponents with denominators that are not powers of 2 for non-real base types
             throw new ArithmeticException("Rational exponents must be of the form m/2\u207F, but received " + exponent);
         }
         // if we didn't get special handling above, n must be an integer

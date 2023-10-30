@@ -2150,6 +2150,30 @@ public class MathUtils {
         };
     }
 
+    public static Matrix<? extends Numeric> nthRoot(Matrix<Numeric> A, IntegerType root) {
+        if (A instanceof DiagonalMatrix) {
+            DiagonalMatrix<Numeric> D = (DiagonalMatrix<Numeric>) A;
+            RealType[] elements = new RealType[(int) A.columns()];
+            try {
+                for (long k = 0L; k < A.columns(); k++) {
+                    elements[(int) k] = nthRoot((RealType) D.valueAt(k, k).coerceTo(RealType.class), root);
+                }
+            } catch (CoercionException e) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                        "While computing nth root of a diagonal matrix", e);
+                throw new ArithmeticException("Error computing " + root + "th root of a diagonal matrix");
+            }
+            return new DiagonalMatrix<>(elements);
+        }
+        if (A.isUpperTriangular() && RealType.class.isAssignableFrom(OptionalOperations.findTypeFor(A)) &&
+                LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx)).filter(Zero::isZero).count() <= 1L) {
+            final Function<Numeric, ? extends Numeric> f =
+                    x -> nthRoot((RealType) x, root);
+            return parlett(f, A);
+        }
+        throw new UnsupportedOperationException("Cannot compute " + root + "th root of matrix");
+    }
+
     /**
      * This is an implementation of Parlett's method for applying a function &fnof; to
      * an upper-triangular matrix <strong>S</strong> by using recurrence relationships
