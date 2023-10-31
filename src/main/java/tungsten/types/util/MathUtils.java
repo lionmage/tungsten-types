@@ -2151,6 +2151,7 @@ public class MathUtils {
     }
 
     public static Matrix<? extends Numeric> nthRoot(Matrix<Numeric> A, IntegerType root) {
+        if (root.asBigInteger().equals(BigInteger.TWO)) return sqrt(A);
         if (A instanceof DiagonalMatrix) {
             DiagonalMatrix<Numeric> D = (DiagonalMatrix<Numeric>) A;
             RealType[] elements = new RealType[(int) A.columns()];
