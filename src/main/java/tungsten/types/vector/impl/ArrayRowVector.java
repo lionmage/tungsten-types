@@ -183,6 +183,13 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     }
 
     @Override
+    public RowVector<T> trimTo(long columns) {
+        if (columns >= this.columns()) return this;
+        T[] trimmed = Arrays.copyOf(elementArray, (int) columns);
+        return new ArrayRowVector<>(trimmed);
+    }
+
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 53 * hash + Arrays.deepHashCode(this.elementArray);

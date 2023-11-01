@@ -278,6 +278,17 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     @Override
     public abstract Matrix<T> add(Matrix<T> addend);
 
+    /**
+     * Trim this row vector to contain at most {@code columns} values.
+     * If {@code columns > this.columns()}, return this vector itself.
+     * This method can only be used to obtain a subset of a row vector,
+     * not to create a longer vector.  The entries retained are those
+     * with an index 0 &le; k &lt; columns.
+     * @param columns the desired number of columns of the resulting row vector
+     * @return a row vector containing at most {@code columns} entries
+     */
+    public abstract RowVector<T> trimTo(long columns);
+
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (multiplier.columns() != 1L) {

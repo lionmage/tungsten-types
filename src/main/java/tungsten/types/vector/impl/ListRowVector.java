@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ListRowVector<T extends Numeric> extends RowVector<T> {
@@ -219,6 +220,15 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
             elementsCopy = new LinkedList<>(elements);
         }
         return new ListRowVector<>(elementsCopy);
+    }
+
+    @Override
+    public RowVector<T> trimTo(long columns) {
+        if (columns >= this.columns()) return this;
+        if (elements instanceof RandomAccess) {
+            return new ListRowVector<>(elements.subList(0, (int) columns));
+        }
+        return new ListRowVector<>((List<T>) elements.stream().limit(columns).collect(Collectors.toCollection(LinkedList::new)));
     }
 
     @Override

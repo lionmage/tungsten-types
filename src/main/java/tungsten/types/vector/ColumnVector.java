@@ -251,6 +251,17 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
     @Override
     public abstract Matrix<T> add(Matrix<T> addend);
 
+    /**
+     * Trim this column vector to contain at most {@code rows} values.
+     * If {@code rows > this.rows()}, return this vector itself.
+     * This method can only be used to obtain a subset of a column vector,
+     * not to create a longer vector.  The entries retained are those
+     * with an index 0 &le; k &lt; rows.
+     * @param rows the desired number of rows of the resulting column vector
+     * @return a column vector containing at most {@code rows} entries
+     */
+    public abstract ColumnVector<T> trimTo(long rows);
+
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (multiplier.rows() == 1L) {

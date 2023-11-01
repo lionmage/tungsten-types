@@ -2150,6 +2150,15 @@ public class MathUtils {
         };
     }
 
+    /**
+     * Compute the n<sup>th</sup> root of a given matrix.  There may be many roots for
+     * a matrix (even for square roots).  This method currently has logic to compute
+     * the n<sup>th</sup> root for diagonal and upper-triangular matrices; in the latter
+     * case, this method delegates to {@link #parlett(Function, Matrix) Parlett's method}.
+     * @param A    the matrix for which to compute the n<sup>th</sup> root
+     * @param root an integer value of the order of the root
+     * @return the matrix result, A<sup>1/root</sup>
+     */
     public static Matrix<? extends Numeric> nthRoot(Matrix<Numeric> A, IntegerType root) {
         if (root.asBigInteger().equals(BigInteger.TWO)) return sqrt(A);
         if (A instanceof DiagonalMatrix) {
@@ -2322,6 +2331,11 @@ public class MathUtils {
         return MM;
     }
 
+    /**
+     * Determine if a {@link List} contains linearly independent vectors.
+     * @param vectors a list of {@link Vector} objects, which are assumed to be of the same dimension
+     * @return true if all vectors are linearly independent, false otherwise
+     */
     public static boolean areLinearlyIndependent(List<Vector<? extends Numeric>> vectors) {
         final long veclen = vectors.get(0).length();
         final long numVec = vectors.parallelStream().count();
@@ -2907,6 +2921,59 @@ public class MathUtils {
         }
         Matrix<T> R = isOfType(A, ComplexType.class) ? (Matrix<T>) conjugateTranspose(Q).multiply((Matrix<ComplexType>) A) : Q.transpose().multiply(A);
         return List.of(Q, R);
+    }
+
+    /**
+     * Decompose a matrix A into a lower-triangular matrix L
+     * and an upper-triangular matrix U such that A&nbsp;=&nbsp;LU
+     * via the process of compact elimination.  No pivots are
+     * used in this algorithm, and there are no checks for singularity.
+     * @param A the matrix to decompose
+     * @return a {@link List} containing L and U, in that order
+     * @param <T> the type of the elements of A
+     * @see <a href="https://www.sciencedirect.com/book/9780125535601/theory-and-applications-of-numerical-analysis">Theory
+     *   and Applications of Numerical Analysis</a>
+     */
+    public static <T extends Numeric> List<Matrix<T>> compactLUdecomposition(Matrix<T> A) {
+        if (A.rows() != A.columns()) throw new IllegalArgumentException("Matrix must be square");
+        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
+        final long n = A.rows();
+        final T one, zero;
+        try {
+            MathContext ctx = A.getRow(0L).getMathContext();
+            one = (T) One.getInstance(ctx).coerceTo(clazz);
+            zero = (T) ExactZero.getInstance(ctx).coerceTo(clazz);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Could not obtain unity or zero for " + clazz.getTypeName(), e);
+        }
+        BasicMatrix<T> U = new BasicMatrix<>();
+        U.append(A.getRow(0L));
+        ColumnarMatrix<T> L = new ColumnarMatrix<>();
+        L.append(A.getColumn(0L).scale((T) U.valueAt(0L, 0L).inverse()));
+        for (long i = 1L; i < n; i++) {
+            RowVector<T> row = new ArrayRowVector<>(clazz, n);
+            // initialize the row vector to 0
+            for (long j = 0L; j < n; j++) row.setElementAt(zero, j);
+            for (long k = i; k < n; k++) {
+                RowVector<T> reducedL = L.getRow(i).trimTo(i - 1L);
+                ColumnVector<T> reducedU = U.getColumn(k).trimTo(i - 1L);
+                row.setElementAt((T) A.valueAt(i, k).subtract(reducedL.dotProduct(reducedU)), k);
+            }
+            U.append(row);
+            ColumnVector<T> col = new ArrayColumnVector<>(clazz, n);
+            // initialize the column vector to 0 except for the ith element
+            for (long j = 0L; j < n; j++) col.setElementAt(j == i ? one : zero, j);
+            if (i + 1L  < n) {
+                for (long k = i + 1L; i < n; i++) {
+                    RowVector<T> reducedL = L.getRow(k).trimTo(i - 1L);
+                    ColumnVector<T> reducedU = U.getColumn(i).trimTo(i - 1L);
+                    col.setElementAt((T) A.valueAt(k, i).subtract(reducedL.dotProduct(reducedU)).divide(U.valueAt(i, i)), k);
+                }
+            }
+            L.append(col);
+        }
+
+        return List.of(L, U);
     }
 
     /**
