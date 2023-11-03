@@ -139,7 +139,7 @@ public interface Set<T> extends Iterable<T> {
     static <T> Set<T> of(T... elements) {
         if (elements.length == 0) return EmptySet.getInstance();
         if (hasDuplicates(elements)) throw new IllegalArgumentException("Cannot construct a Set with duplicate elements.");
-        final Class<T> elementType = (Class<T>) elements[0].getClass();
+        final Class<T> elementType = (Class<T>) elements.getClass().getComponentType();
 
         return new Set<>() {
             @Override

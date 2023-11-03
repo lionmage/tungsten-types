@@ -27,7 +27,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
         this.elementArray = elements;
         if (elements != null && elements.length > 0) {
             setMathContext(MathUtils.inferMathContext(List.of(elements)));
-            super.elementType = (Class<T>) ClassTools.getInterfaceTypeFor(elements[0].getClass());
+            super.elementType = (Class<T>) ClassTools.getInterfaceTypeFor((Class<? extends Numeric>) elements.getClass().getComponentType());
         }
     }
 

@@ -105,7 +105,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             return elements[(int) row];
         }
         // we can get away with this because coerceTo() will look up the appropriate interface type
-        final Class<T> clazz = (Class<T>) elements[0].getClass();
+        final Class<T> clazz = (Class<T>) elements.getClass().getComponentType();
         try {
             return (T) ExactZero.getInstance(elements[0].getMathContext()).coerceTo(clazz);
         } catch (CoercionException ex) {
@@ -137,7 +137,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         
         BasicMatrix<T> result = new BasicMatrix<>(addend);
-        final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType(elements[0].getClass(), OptionalOperations.findTypeFor(addend));
+        final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType((Class<? extends Numeric>) elements.getClass().getComponentType(),
+                OptionalOperations.findTypeFor(addend));
 
         try {
             for (long idx = 0L; idx < this.rows(); idx++) {
@@ -158,7 +159,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         }
         if (multiplier instanceof DiagonalMatrix) {
             DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
-            final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType(elements[0].getClass(), OptionalOperations.findTypeFor(other));
+            final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType((Class<? extends Numeric>) elements.getClass().getComponentType(),
+                    OptionalOperations.findTypeFor(other));
             T[] prod = (T[]) Array.newInstance(clazz, elements.length);
             for (int idx = 0; idx < elements.length; idx++) {
                 prod[idx] = (T) elements[idx].multiply(other.elements[idx]);
@@ -185,7 +187,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     @Override
     public Matrix<? extends Numeric> pow(Numeric n) {
         Numeric[] result;
-        final Class<T> clazz = (Class<T>) elements[0].getClass();
+        final Class<T> clazz = (Class<T>) elements.getClass().getComponentType();
         // the following code should work just fine for negative exponents, without calling inverse()
         if (RealType.class.isAssignableFrom(clazz)) {
             if (n instanceof ComplexType) {
@@ -263,7 +265,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     @Override
     public DiagonalMatrix<T> scale(T scaleFactor) {
         if (One.isUnity(scaleFactor)) return this;
-        final Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(elements[0].getClass());
+        final Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor((Class<? extends Numeric>) elements.getClass().getComponentType());
         assert clazz.isAssignableFrom(scaleFactor.getClass());
         T[] scaled = Arrays.stream(elements).map(element -> element.multiply(scaleFactor))
                 .map(clazz::cast).toArray(size -> (T[]) Array.newInstance(clazz, size));
