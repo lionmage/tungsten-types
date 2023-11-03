@@ -120,7 +120,7 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public Vector<T> crossProduct(Vector<T> other) {
-        if (other.length() != this.length()) throw new ArithmeticException("Cannot compute cross product for vectors of different dimension.");
+        if (other.length() != this.length()) throw new ArithmeticException("Cannot compute cross product for vectors of different dimension");
         final Class<T> clazz = other.getElementType();
         final Class<T> myclass = getElementType();
         if (OptionalOperations.findCommonType(clazz, myclass) == Numeric.class) {

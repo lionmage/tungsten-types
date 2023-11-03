@@ -120,7 +120,7 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
 
     @Override
     public Vector<T> crossProduct(Vector<T> other) {
-        if (other.length() != this.length()) throw new ArithmeticException("Cannot compute cross product for vectors of different dimension.");
+        if (other.length() != this.length()) throw new ArithmeticException("Cannot compute cross product for vectors of different dimension");
         final Class<? extends Numeric> clazz = other.getElementType();
         final Class<? extends Numeric> myclass = getElementType();
         if (OptionalOperations.findCommonType(clazz, myclass) == Numeric.class) {
