@@ -245,7 +245,7 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
     public String toString() {
         // 202F = Narrow No-Break Space; small superscript T indicates this is a column vector,
         // i.e. the transpose of a row vector.
-        return stream().map(Object::toString).collect(Collectors.joining(", ", "[\u202F", "\u202F]ᵀ"));
+        return stream().map(Object::toString).collect(Collectors.joining(",\u205F", "[\u202F", "\u202F]ᵀ"));
     }
 
     @Override

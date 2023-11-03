@@ -271,8 +271,8 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
 
     @Override
     public String toString() {
-        // 202F = Narrow No-Break Space
-        return stream().map(Object::toString).collect(Collectors.joining(", ", "[\u202F", "\u202F]"));
+        // 202F = Narrow No-Break Space, 205F = Medium Mathematical Space
+        return stream().map(Object::toString).collect(Collectors.joining(",\u205F", "[\u202F", "\u202F]"));
     }
 
     @Override
