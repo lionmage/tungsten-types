@@ -214,10 +214,16 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
     @Override
     public RowVector<T> copy() {
         final List<T> elementsCopy;
-        if (elements instanceof RandomAccess) {
-            elementsCopy = new ArrayList<>(elements);
-        } else {
-            elementsCopy = new LinkedList<>(elements);
+        final Lock lock = rwl.readLock();
+        lock.lock();
+        try {
+            if (elements instanceof RandomAccess) {
+                elementsCopy = new ArrayList<>(elements);
+            } else {
+                elementsCopy = new LinkedList<>(elements);
+            }
+        } finally {
+            lock.unlock();
         }
         return new ListRowVector<>(elementsCopy);
     }
@@ -225,10 +231,16 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
     @Override
     public RowVector<T> trimTo(long columns) {
         if (columns >= this.columns()) return this;
-        if (elements instanceof RandomAccess) {
-            return new ListRowVector<>(elements.subList(0, (int) columns));
+        final Lock lock = rwl.readLock();
+        lock.lock();
+        try {
+            if (elements instanceof RandomAccess) {
+                return new ListRowVector<>(elements.subList(0, (int) columns));
+            }
+            return new ListRowVector<>((List<T>) elements.stream().limit(columns).collect(Collectors.toCollection(LinkedList::new)));
+        } finally {
+            lock.unlock();
         }
-        return new ListRowVector<>((List<T>) elements.stream().limit(columns).collect(Collectors.toCollection(LinkedList::new)));
     }
 
     @Override
