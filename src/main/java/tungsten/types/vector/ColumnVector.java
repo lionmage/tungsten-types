@@ -128,25 +128,23 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
                     clazz.getTypeName() + " and " + myclass.getTypeName());
         }
         if (RealType.class.isAssignableFrom(clazz)) {
-            RealType[] elementArray = (RealType[]) Array.newInstance(RealType.class, (int) length());
-            this.stream().map(x -> {
+            RealType[] elementArray = this.stream().map(x -> {
                 try {
-                    return x.coerceTo(RealType.class);
+                    return (RealType) x.coerceTo(RealType.class);
                 } catch (CoercionException e) {
                     throw new IllegalStateException(e);
                 }
-            }).toArray(size -> elementArray);
+            }).toArray(RealType[]::new);
             RealVector realvec = new RealVector(elementArray, mctx);
             return (Vector<T>) realvec.crossProduct((Vector<RealType>) other);
         } else if (ComplexType.class.isAssignableFrom(clazz)) {
-            ComplexType[] elementArray = (ComplexType[]) Array.newInstance(ComplexType.class, (int) length());
-            this.stream().map(x -> {
+            ComplexType[] elementArray = this.stream().map(x -> {
                 try {
-                    return x.coerceTo(ComplexType.class);
+                    return (ComplexType) x.coerceTo(ComplexType.class);
                 } catch (CoercionException e) {
                     throw new IllegalStateException(e);
                 }
-            }).toArray(size -> elementArray);
+            }).toArray(ComplexType[]::new);
             ComplexVector cplxvec = new ComplexVector(elementArray, mctx);
             return (Vector<T>) cplxvec.crossProduct((Vector<ComplexType>) other);
         }
