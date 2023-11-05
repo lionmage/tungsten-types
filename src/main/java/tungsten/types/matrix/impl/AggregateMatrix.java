@@ -30,6 +30,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ListColumnVector;
@@ -301,6 +302,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         final long rowIndex = getSubRowIndex(tileRow, row);
         RowVector<T> result = new ListRowVector<>();
         Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream()).forEachOrdered(result::append);
+        result.setMathContext(subMatrices[tileRow][0].getRow(0L).getMathContext());
         return result;
     }
 
@@ -312,6 +314,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         for (Matrix<T>[] subMatrix : subMatrices) {
             subMatrix[tileColumn].getColumn(columnIndex).stream().forEachOrdered(result::append);
         }
+        result.setMathContext(subMatrices[0][tileColumn].getColumn(0L).getMathContext());
         return result;
     }
 
