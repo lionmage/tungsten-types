@@ -302,7 +302,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         final long rowIndex = getSubRowIndex(tileRow, row);
         RowVector<T> result = new ListRowVector<>();
         Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream()).forEachOrdered(result::append);
-        result.setMathContext(subMatrices[tileRow][0].getRow(0L).getMathContext());
+        result.setMathContext(subMatrices[tileRow][0].getRow(rowIndex).getMathContext());
         return result;
     }
 
@@ -314,7 +314,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         for (Matrix<T>[] subMatrix : subMatrices) {
             subMatrix[tileColumn].getColumn(columnIndex).stream().forEachOrdered(result::append);
         }
-        result.setMathContext(subMatrices[0][tileColumn].getColumn(0L).getMathContext());
+        result.setMathContext(subMatrices[0][tileColumn].getColumn(columnIndex).getMathContext());
         return result;
     }
 
