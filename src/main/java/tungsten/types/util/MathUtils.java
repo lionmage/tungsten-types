@@ -2977,6 +2977,40 @@ public class MathUtils {
     }
 
     /**
+     * Perform a LDU decomposition of a 2&times;2 block matrix.  This method will compute
+     * the decomposition and return it in a {@link List<Matrix>}.  Note that to obtain a
+     * conventional LU decomposition, it is necessary to multiply the D and U factors, giving
+     * [L, DU].
+     * @param blockMatrix a block matrix consisting of 2&times;2 submatrices (currently the only supported
+     *                    configuration)
+     * @return a {@link List} of block matrices consisting of a lower-triangular (L), block diagonal (D),
+     *   and upper-triangular (U) matrix, in that order
+     * @param <T> the numeric type of the elements of {@code blockMatrix}
+     * @see <a href="https://www.math.ucdavis.edu/~linear/old/notes11.pdf">linear algebra notes from UC Davis</a>
+     */
+    public static <T extends Numeric> List<Matrix<? super T>> blockLDUdecomposition(AggregateMatrix<T> blockMatrix) {
+        if (blockMatrix.subMatrixRows() != 2 || blockMatrix.subMatrixColumns() != 2) {
+            throw new ArithmeticException("LDU decomposition cannot be performed for non-2\u00D72 block matrices");
+        }
+        final MathContext ctx = blockMatrix.getRow(0L).getMathContext();
+        Matrix<T> X = blockMatrix.getSubMatrix(0, 0);
+        Matrix<Numeric> Y = (Matrix<Numeric>) blockMatrix.getSubMatrix(0, 1);
+        Matrix<Numeric> Z = (Matrix<Numeric>) blockMatrix.getSubMatrix(1, 0);
+        Matrix<Numeric> W = (Matrix<Numeric>) blockMatrix.getSubMatrix(1, 1);
+        IdentityMatrix  I = new IdentityMatrix(X.rows(), ctx);
+        ZeroMatrix     z0 = new ZeroMatrix(X.rows(), ctx);
+        Matrix<Numeric>[][] ll = new Matrix[][] { {I, z0}, {Z.multiply((Matrix<Numeric>) X.inverse()), I} };
+        AggregateMatrix<Numeric> L = new AggregateMatrix<>(ll);
+        Matrix<Numeric> XinvY  = ((Matrix<Numeric>) X.inverse()).multiply(Y);
+        Matrix<Numeric>[][] uu = new Matrix[][] { {I, XinvY}, {z0, I} };
+        AggregateMatrix<Numeric> U = new AggregateMatrix<>(uu);
+        Matrix<Numeric>[][] dd = new Matrix[][] { {X, z0}, {z0, W.subtract(Z.multiply(XinvY))} };
+        AggregateMatrix<Numeric> D = new AggregateMatrix<>(dd);  // block diagonal matrix D of LDU
+
+        return List.of(L, D, U);
+    }
+
+    /**
      * Multiply two matrices using the Strassen/Winograd algorithm.
      * This algorithm uses 7 multiplications instead of the usual 8
      * at each stage of recursion.
