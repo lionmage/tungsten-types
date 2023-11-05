@@ -2999,9 +2999,10 @@ public class MathUtils {
         Matrix<Numeric> W = (Matrix<Numeric>) blockMatrix.getSubMatrix(1, 1);
         IdentityMatrix  I = new IdentityMatrix(X.rows(), ctx);
         ZeroMatrix     z0 = new ZeroMatrix(X.rows(), ctx);
-        Matrix<Numeric>[][] ll = new Matrix[][] { {I, z0}, {Z.multiply((Matrix<Numeric>) X.inverse()), I} };
+        Matrix<Numeric> Xinv   = (Matrix<Numeric>) X.inverse();
+        Matrix<Numeric>[][] ll = new Matrix[][] { {I, z0}, {Z.multiply(Xinv), I} };
         AggregateMatrix<Numeric> L = new AggregateMatrix<>(ll);
-        Matrix<Numeric> XinvY  = ((Matrix<Numeric>) X.inverse()).multiply(Y);
+        Matrix<Numeric> XinvY  = Xinv.multiply(Y);
         Matrix<Numeric>[][] uu = new Matrix[][] { {I, XinvY}, {z0, I} };
         AggregateMatrix<Numeric> U = new AggregateMatrix<>(uu);
         Matrix<Numeric>[][] dd = new Matrix[][] { {X, z0}, {z0, W.subtract(Z.multiply(XinvY))} };
