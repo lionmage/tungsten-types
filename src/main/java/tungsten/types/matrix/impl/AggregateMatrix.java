@@ -32,7 +32,6 @@ import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RealImpl;
-import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ListColumnVector;
@@ -86,6 +85,17 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         this.clazz = subMatrices[0][0].getRow(0L).getElementType();
     }
 
+    /**
+     * Create a block diagonal matrix. The diagonal elements of the
+     * resulting matrix are square, though the other blocks are not required to be.
+     * All non-diagonal blocks are zero matrices.
+     * @param elements an array of square matrices
+     * @return a block diagonal matrix D, with each element D<sub>k,k</sub>
+     *   corresponding to {@code elements[k]}
+     * @apiNote The resulting matrix may retain a reference to the array that was
+     *   passed in. Arrays are mutable, so modifying one may modify the other.
+     *   To avoid this problem entirely, use {@link #blockDiagonal(List)} instead.
+     */
     public static AggregateMatrix<Numeric> blockDiagonal(Matrix<? extends Numeric>[] elements) {
         if (Arrays.stream(elements).anyMatch(M -> M.rows() != M.columns())) {
             throw new IllegalArgumentException("Diagonal elements of a block diagonal matrix must be square");
@@ -115,11 +125,17 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             public Numeric trace() {
                 return Arrays.stream(elements).map(Matrix::trace)
                         .map(Numeric.class::cast)
-                        .reduce(ExactZero.getInstance(ctx), Numeric::multiply);
+                        .reduce(ExactZero.getInstance(ctx), Numeric::add);
             }
         };
     }
 
+    /**
+     * Generate a block diagonal matrix from a {@link List<Matrix>}.
+     * @param elements a list of square matrices which will become the diagonal elements
+     * @return a block diagonal matrix
+     * @see #blockDiagonal(Matrix[])
+     */
     public static AggregateMatrix<Numeric> blockDiagonal(List<Matrix<? extends Numeric>> elements) {
         Matrix<Numeric>[] converted = elements.toArray(Matrix[]::new);
         return blockDiagonal(converted);
