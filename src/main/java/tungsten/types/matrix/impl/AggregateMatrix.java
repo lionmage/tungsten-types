@@ -67,7 +67,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             long val = subMatrices[row][0].rows();
             for (int column = 1; column < subMatrices[row].length; column++) {
                 if (subMatrices[row][column].rows() != val) {
-                    throw new IllegalArgumentException("All submatrices in row " + row + " must have the same number of rows.");
+                    throw new IllegalArgumentException("All submatrices in row " + row + " must have the same number of rows");
                 }
             }
         }
@@ -76,7 +76,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             long val = subMatrices[0][column].columns();
             for (int row = 1; row < subMatrices.length; row++) {
                 if (subMatrices[row][column].columns() != val) {
-                    throw new IllegalArgumentException("All submatrices in column " + column + " must have the same number of columns.");
+                    throw new IllegalArgumentException("All submatrices in column " + column + " must have the same number of columns");
                 }
             }
         }
@@ -226,7 +226,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public T determinant() {
-        if (this.columns() != this.rows()) throw new ArithmeticException("Cannot compute determinant of a non-square matrix.");
+        if (this.columns() != this.rows()) throw new ArithmeticException("Cannot compute determinant of a non-square matrix");
         cacheLock.lock();
         try {
             if (detCache == null) {
@@ -349,7 +349,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
         if (this.columns() != multiplier.rows()) {
-            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns.");
+            throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
         return new SubMatrix<>(this).multiply(multiplier);
     }
