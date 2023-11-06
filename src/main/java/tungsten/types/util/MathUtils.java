@@ -3005,8 +3005,8 @@ public class MathUtils {
         Matrix<Numeric> XinvY  = Xinv.multiply(Y);
         Matrix<Numeric>[][] uu = new Matrix[][] { {I, XinvY}, {z0, I} };
         AggregateMatrix<Numeric> U = new AggregateMatrix<>(uu);
-        Matrix<Numeric>[][] dd = new Matrix[][] { {X, z0}, {z0, W.subtract(Z.multiply(XinvY))} };
-        AggregateMatrix<Numeric> D = new AggregateMatrix<>(dd);  // block diagonal matrix D of LDU
+        Matrix<Numeric>[] dd = new Matrix[] { X, W.subtract(Z.multiply(XinvY)) };
+        AggregateMatrix<Numeric> D = AggregateMatrix.blockDiagonal(dd); // block diagonal matrix D of LDU
 
         return List.of(L, D, U);
     }

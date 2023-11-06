@@ -28,7 +28,9 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
@@ -41,6 +43,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -81,6 +84,45 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         // if we passed those tests, do the internal bookkeeping and return
         this.subMatrices = subMatrices;
         this.clazz = subMatrices[0][0].getRow(0L).getElementType();
+    }
+
+    public static AggregateMatrix<Numeric> blockDiagonal(Matrix<? extends Numeric>[] elements) {
+        if (Arrays.stream(elements).anyMatch(M -> M.rows() != M.columns())) {
+            throw new IllegalArgumentException("Diagonal elements of a block diagonal matrix must be square");
+        }
+        final MathContext ctx = elements[0].getRow(0L).getMathContext();
+        Matrix<Numeric>[][] blocks = new Matrix[elements.length][elements.length];
+        for (int j = 0; j < elements.length; j++) {  // row index
+            for (int k = 0; k < elements.length; k++) {  // column index
+                if (j == k) {
+                    blocks[j][k] = (Matrix<Numeric>) elements[j];
+                } else {
+                    // only the diagonal elements need be square matrices
+                    blocks[j][k] = new ZeroMatrix(elements[j].rows(), elements[k].columns(), ctx);
+                }
+            }
+        }
+
+        return new AggregateMatrix<>(blocks) {
+            @Override
+            public Numeric determinant() {
+                return Arrays.stream(elements).map(Matrix::determinant)
+                        .map(Numeric.class::cast)
+                        .reduce(One.getInstance(ctx), Numeric::multiply);
+            }
+
+            @Override
+            public Numeric trace() {
+                return Arrays.stream(elements).map(Matrix::trace)
+                        .map(Numeric.class::cast)
+                        .reduce(ExactZero.getInstance(ctx), Numeric::multiply);
+            }
+        };
+    }
+
+    public static AggregateMatrix<Numeric> blockDiagonal(List<Matrix<? extends Numeric>> elements) {
+        Matrix<Numeric>[] converted = elements.toArray(Matrix[]::new);
+        return blockDiagonal(converted);
     }
 
     @Override
