@@ -2964,7 +2964,7 @@ public class MathUtils {
             // initialize the column vector to 0 except for the ith element
             for (long j = 0L; j < n; j++) col.setElementAt(j == i ? one : zero, j);
             if (i + 1L  < n) {
-                for (long k = i + 1L; i < n; i++) {
+                for (long k = i + 1L; k < n; k++) {
                     RowVector<T> reducedL = L.getRow(k).trimTo(i - 1L);
                     ColumnVector<T> reducedU = U.getColumn(i).trimTo(i - 1L);
                     col.setElementAt((T) A.valueAt(k, i).subtract(reducedL.dotProduct(reducedU)).divide(U.valueAt(i, i)), k);
