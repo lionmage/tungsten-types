@@ -25,9 +25,9 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
     @SafeVarargs
     public ArrayColumnVector(T... elements) {
         elementArray = elements;
-        if (elements != null && elements.length > 0) {
-            setMathContext(MathUtils.inferMathContext(List.of(elements)));
+        if (elements != null) {
             super.elementType = (Class<T>) ClassTools.getInterfaceTypeFor((Class<? extends Numeric>) elements.getClass().getComponentType());
+            if (elements.length > 0) setMathContext(MathUtils.inferMathContext(List.of(elements)));
         }
     }
 

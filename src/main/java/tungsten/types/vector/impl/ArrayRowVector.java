@@ -25,9 +25,9 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     @SafeVarargs
     public ArrayRowVector(T... elements) {
         this.elementArray = elements;
-        if (elements != null && elements.length > 0) {
-            setMathContext(MathUtils.inferMathContext(List.of(elements)));
+        if (elements != null) {
             super.elementType = (Class<T>) ClassTools.getInterfaceTypeFor((Class<? extends Numeric>) elements.getClass().getComponentType());
+            if (elements.length > 0) setMathContext(MathUtils.inferMathContext(List.of(elements)));
         }
     }
 
