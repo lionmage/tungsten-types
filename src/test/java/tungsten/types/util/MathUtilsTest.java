@@ -138,9 +138,11 @@ public class MathUtilsTest {
 
         System.out.println("L is:");
         System.out.println(formatMatrixForDisplay(results.get(0), null, (String) null));
+        assertTrue(results.get(0).isLowerTriangular(), "L should be lower triangular");
 
         System.out.println("U is:");
         System.out.println(formatMatrixForDisplay(results.get(1), null, (String) null));
+        assertTrue(results.get(1).isUpperTriangular(), "U should be upper triangular");
 
         System.out.println("LU is:");
         Matrix<? extends Numeric> LU = results.get(0).multiply(results.get(1));
