@@ -24,7 +24,9 @@ package tungsten.types.util;
  */
 
 import org.junit.jupiter.api.Test;
+import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.matrix.impl.BasicMatrix;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
@@ -36,8 +38,10 @@ import tungsten.types.numerics.impl.RealImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tungsten.types.util.UnicodeTextEffects.formatMatrixForDisplay;
 
 public class MathUtilsTest {
     @Test
@@ -108,5 +112,39 @@ public class MathUtilsTest {
         lgfloor = MathUtils.log2floor(val);
         assertTrue(lgfloor.isExact());  // this ought to return an exact value since val is a power of 2
         assertEquals(BigInteger.TEN, lgfloor.asBigInteger());
+    }
+
+    @Test
+    public void compactLUdecomp() {
+        String[][] srcEntries = {
+                {"6", "18", "3"},
+                {"2", "12", "1"},
+                {"4", "15", "3"}
+        };
+
+        RealType[][] rSrc = new RealType[3][3];
+        for (int j = 0; j < srcEntries.length; j++) {  // row
+            for (int k = 0; k < srcEntries[0].length; k++) { // column
+                rSrc[j][k] = new RealImpl(srcEntries[j][k], MathContext.DECIMAL64);
+            }
+        }
+
+        BasicMatrix<RealType> R = new BasicMatrix<>(rSrc);
+
+        System.out.println("Real matrix R:");
+        System.out.println(formatMatrixForDisplay(R, null, (String) null));
+
+        List<Matrix<RealType>> results = MathUtils.compactLUdecomposition(R);
+
+        System.out.println("L is:");
+        System.out.println(formatMatrixForDisplay(results.get(0), null, (String) null));
+
+        System.out.println("U is:");
+        System.out.println(formatMatrixForDisplay(results.get(1), null, (String) null));
+
+        System.out.println("LU is:");
+        Matrix<? extends Numeric> LU = results.get(0).multiply(results.get(1));
+        System.out.println(formatMatrixForDisplay(LU, null, (String) null));
+        assertEquals(R, LU, "LU product should equal original matrix");
     }
 }
