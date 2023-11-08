@@ -2955,8 +2955,8 @@ public class MathUtils {
             // initialize the row vector to 0
             for (long j = 0L; j < n; j++) row.setElementAt(zero, j);
             for (long k = i; k < n; k++) {
-                RowVector<T> reducedL = L.getRow(i).trimTo(i - 1L);
-                ColumnVector<T> reducedU = U.getColumn(k).trimTo(i - 1L);
+                RowVector<T> reducedL = L.getRow(i).trimTo(i);
+                ColumnVector<T> reducedU = U.getColumn(k).trimTo(i);
                 row.setElementAt((T) A.valueAt(i, k).subtract(reducedL.dotProduct(reducedU)), k);
             }
             U.append(row);
@@ -2965,8 +2965,8 @@ public class MathUtils {
             for (long j = 0L; j < n; j++) col.setElementAt(j == i ? one : zero, j);
             if (i + 1L  < n) {
                 for (long k = i + 1L; k < n; k++) {
-                    RowVector<T> reducedL = L.getRow(k).trimTo(i - 1L);
-                    ColumnVector<T> reducedU = U.getColumn(i).trimTo(i - 1L);
+                    RowVector<T> reducedL = L.getRow(k).trimTo(i);
+                    ColumnVector<T> reducedU = U.getColumn(i).trimTo(i);
                     col.setElementAt((T) A.valueAt(k, i).subtract(reducedL.dotProduct(reducedU)).divide(U.valueAt(i, i)), k);
                 }
             }

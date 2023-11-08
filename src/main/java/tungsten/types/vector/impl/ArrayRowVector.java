@@ -186,7 +186,9 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     public RowVector<T> trimTo(long columns) {
         if (columns >= this.columns()) return this;
         T[] trimmed = Arrays.copyOf(elementArray, (int) columns);
-        return new ArrayRowVector<>(trimmed);
+        ArrayRowVector<T> result = new ArrayRowVector<>(trimmed);
+        if (columns == 0L) result.setMathContext(getMathContext());
+        return result;
     }
 
     @Override

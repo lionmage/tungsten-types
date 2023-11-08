@@ -192,7 +192,9 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
     public ColumnVector<T> trimTo(long rows) {
         if (rows >= this.rows()) return this;
         T[] trimmed = Arrays.copyOf(elementArray, (int) rows);
-        return new ArrayColumnVector<>(trimmed);
+        ArrayColumnVector<T> result = new ArrayColumnVector<>(trimmed);
+        if (rows == 0L) result.setMathContext(getMathContext());
+        return result;
     }
 
     @Override
