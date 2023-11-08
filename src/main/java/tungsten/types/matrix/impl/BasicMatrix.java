@@ -241,7 +241,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
             if (!columnCache.isEmpty()) columnCache.clear();
         } else {
             throw new IllegalArgumentException("Expected a row vector with " + this.columns() +
-                    " columns, but received one with " + row.columns() + " instead.");
+                    " columns, but received one with " + row.columns() + " instead");
         }
     }
     
