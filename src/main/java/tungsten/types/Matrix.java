@@ -26,10 +26,7 @@ package tungsten.types;
 
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.IdentityMatrix;
-import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.RationalType;
-import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
@@ -333,19 +330,38 @@ public interface Matrix<T extends Numeric> {
     }
     
     default RowVector<T> getRow(long row) {
-        Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(valueAt(row, 0L).getClass());
+        Class<? extends Numeric> pclass = LongStream.range(0L, columns()).mapToObj(col -> valueAt(row, col))
+                .map(Numeric::getClass).max(NumericHierarchy.obtainTypeComparator())
+                .orElseThrow(() -> new IllegalStateException("Row " + row + " has no elements to compare"));
+        final Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(pclass);
         T[] temp = (T[]) Array.newInstance(clazz, (int) columns());
-        for (int i = 0; i < columns(); i++) {
-            temp[i] = valueAt(row, i);
+        try {
+            for (int i = 0; i < columns(); i++) {
+                Numeric value = valueAt(row, i);
+                // guard against any incompatible types sneaking through
+                if (!clazz.isAssignableFrom(value.getClass())) value = value.coerceTo(clazz);
+                temp[i] = (T) value;
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While obtaining row " + row, e);
         }
         return new ArrayRowVector<>(temp);
     }
     
     default ColumnVector<T> getColumn(long column) {
-        Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(valueAt(0L, column).getClass());
+        Class<? extends Numeric> pclass = LongStream.range(0L, rows()).mapToObj(row -> valueAt(row, column))
+                .map(Numeric::getClass).max(NumericHierarchy.obtainTypeComparator())
+                .orElseThrow(() -> new IllegalStateException("Column " + column + " has no elements to compare"));
+        final Class<T> clazz = (Class<T>) ClassTools.getInterfaceTypeFor(pclass);
         T[] temp = (T[]) Array.newInstance(clazz, (int) rows());
-        for (int j = 0; j < rows(); j++) {
-            temp[j] = valueAt(j, column);
+        try {
+            for (int j = 0; j < rows(); j++) {
+                Numeric value = valueAt(j, column);
+                if (!clazz.isAssignableFrom(value.getClass())) value = value.coerceTo(clazz);
+                temp[j] = (T) value;
+            }
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While obtaining column " + column, e);
         }
         return new ArrayColumnVector<>(temp);
     }
