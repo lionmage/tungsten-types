@@ -19,6 +19,10 @@ numeric types:
   * Real representations of +∞ and -∞
   * If enabled, there is a point at infinity ∞ in the extended complex numbers ℂ∪{∞}
 * In addition to basic numeric types, vectors and matrices are fully supported.
+  * Real, complex, integer, and generic vector types.
+  * Several matrix structures supplied, including row-based, column-based, and fully parametric.
+  * Matrix exponential, logarithm, square root, and powers.
+  * Matrix decomposition with (QR) and without (LU) pivoting.
 * Functions are supported:
   * Single- or multi-variate
   * Basic functional building-blocks are provided with full composition possible
