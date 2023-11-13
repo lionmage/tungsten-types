@@ -39,6 +39,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -266,7 +268,13 @@ public class AngularDegrees {
         this.degrees = decDegrees.floor();
         RealType realMinutes = (RealType) decDegrees.subtract(degrees).multiply(SIXTY);
         this.minutes = realMinutes.floor();
-        this.seconds = (RealType) realMinutes.subtract(minutes).multiply(SIXTY);
+        try {
+            this.seconds = (RealType) realMinutes.subtract(minutes).multiply(SIXTY).coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            Logger.getLogger(AngularDegrees.class.getName()).log(Level.WARNING,
+                    "Unexpected failure computing seconds as real", e);
+            this.seconds = new RealImpl(BigDecimal.ZERO, decDegrees.getMathContext());
+        }
     }
 
     public static boolean isDecimalDegrees(String input) {
