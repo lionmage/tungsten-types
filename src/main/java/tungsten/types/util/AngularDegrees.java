@@ -83,6 +83,13 @@ public class AngularDegrees {
     private RealType decDegrees;
     private final MathContext mctx;
 
+    /**
+     * Constructor using degrees, minutes, and seconds (DMS) values.
+     * @param degrees an integer value for degrees of arc in the range [0,&nbsp;359],
+     *                with corresponding negative values supported
+     * @param minutes an integer value for minutes of arc in the range [0,&nbsp;59]
+     * @param seconds a real value for seconds of arc in the range [0,&nbsp;60)
+     */
     public AngularDegrees(IntegerType degrees, IntegerType minutes, RealType seconds) {
         this.degrees = degrees;
         if (minutes.sign() == Sign.NEGATIVE || seconds.sign() == Sign.NEGATIVE) {
@@ -105,6 +112,11 @@ public class AngularDegrees {
     public static final Range<RealType> DECIMAL_DEGREE_RANGE = new Range<>(new RealImpl(BigDecimal.ZERO), Range.BoundType.INCLUSIVE,
             DEGREES_IN_CIRCLE, Range.BoundType.EXCLUSIVE);
 
+    /**
+     * Constructor that takes decimal degrees.
+     * @param decimalDegrees a real value for degrees of arc in the range [0,&nbsp;360),
+     *                       with corresponding negative values supported
+     */
     public AngularDegrees(RealType decimalDegrees) {
         mctx = decimalDegrees.getMathContext().getPrecision() > DEFAULT_CONTEXT.getPrecision() ?
                 decimalDegrees.getMathContext() : DEFAULT_CONTEXT;
@@ -220,6 +232,13 @@ public class AngularDegrees {
         return new AngularDegrees(degrees, minutes, seconds);
     }
 
+    /**
+     * Normalize this representation of an angle so that it falls
+     * within the range of [0,&nbsp;360) degrees.
+     * @apiNote Unlike most other methods that generate a brand new {@link AngularDegrees}
+     *   object, this method will modify DMS values in-place. This may be useful for
+     *   after-the-fact clean-up of data, for example.
+     */
     public void normalizeRange() {
         final IntegerType fullCircle = new IntegerImpl(BigInteger.valueOf(360L));
         if (degrees.sign() == Sign.NEGATIVE) {
