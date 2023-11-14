@@ -266,13 +266,14 @@ public class AngularDegrees {
 
     private void updateDMSvalues() {
         this.degrees = decDegrees.floor();
-        RealType realMinutes = (RealType) decDegrees.subtract(degrees).multiply(SIXTY);
-        this.minutes = realMinutes.floor();
         try {
+            RealType realMinutes = (RealType) decDegrees.subtract(degrees).multiply(SIXTY).coerceTo(RealType.class);
+            this.minutes = realMinutes.floor();
             this.seconds = (RealType) realMinutes.subtract(minutes).multiply(SIXTY).coerceTo(RealType.class);
         } catch (CoercionException e) {
             Logger.getLogger(AngularDegrees.class.getName()).log(Level.WARNING,
-                    "Unexpected failure computing seconds as real", e);
+                    "Unexpected failure computing minutes or seconds as real", e);
+            if (this.minutes == null) this.minutes = new IntegerImpl(BigInteger.ZERO);
             this.seconds = new RealImpl(BigDecimal.ZERO, decDegrees.getMathContext());
         }
     }
