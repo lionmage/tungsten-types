@@ -38,6 +38,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +50,7 @@ import java.util.regex.Pattern;
  * supports both decimal and sexagesimal representations of angles, and
  * can freely convert between them.  This class also supports conversion
  * to radians, obviating the need to perform this conversion elsewhere.
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class AngularDegrees {
     public static final char DEGREE_SIGN = '\u00B0';
@@ -141,7 +142,9 @@ public class AngularDegrees {
         } else {
             m = decimalDegreesPattern.matcher(expression);
             if (!m.find()) throw new IllegalArgumentException("Unable to parse expression " + expression);
-            decDegrees = new RealImpl(m.group(1));
+            final DecimalFormatSymbols dfSymbols = DecimalFormatSymbols.getInstance();
+            final String decPoint = String.valueOf(dfSymbols.getDecimalSeparator());
+            decDegrees = new RealImpl(m.group(1), new MathContext(m.group(1).replace(decPoint, "").length()));
             updateDMSvalues();
         }
         mctx = decDegrees.getMathContext().getPrecision() > DEFAULT_CONTEXT.getPrecision() ?
@@ -278,16 +281,34 @@ public class AngularDegrees {
         }
     }
 
+    /**
+     * Check whether the given {@link String} is an angle
+     * expressed in decimal degrees notation.
+     * @param input the textual value to check
+     * @return true if the provided text is in decimal degrees format
+     */
     public static boolean isDecimalDegrees(String input) {
         Matcher m = decimalDegreesPattern.matcher(input);
         return m.find();
     }
 
+    /**
+     * Determines if the given {@link String} is an angle
+     * expressed in degrees-minutes-seconds (DMS) notation.
+     * @param input the textual value to check
+     * @return true if the provided text is in degrees-minutes-seconds format
+     */
     public static boolean isDMS(String input) {
         Matcher m = DMSpattern.matcher(input);
         return m.find();
     }
 
+    /**
+     * Factory method to generate an instance of {@link AngularDegrees}
+     * from an angle expressed in radians.
+     * @param radians an angle in radians
+     * @return a representation of the same angle in degrees
+     */
     public static AngularDegrees forRadiansValue(RealType radians) {
         final Pi pi = Pi.getInstance(radians.getMathContext());
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), radians.getMathContext());
