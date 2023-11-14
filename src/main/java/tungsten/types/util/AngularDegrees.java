@@ -191,8 +191,10 @@ public class AngularDegrees {
             minutes = (IntegerType) minutes.add(one);
         }
         if (minutes.compareTo(SIXTY) >= 0) {
-            degrees = (IntegerType) degrees.add(minutes.divide(SIXTY));
-            minutes = minutes.modulus(SIXTY);
+            // it's more efficient to do this in one shot, and we need guaranteed integer division with truncation
+            BigInteger[] results = minutes.asBigInteger().divideAndRemainder(SIXTY.asBigInteger());
+            degrees = (IntegerType) degrees.add(new IntegerImpl(results[0]));
+            minutes = new IntegerImpl(results[1]);
         }
 
         return new AngularDegrees(degrees, minutes, seconds);
