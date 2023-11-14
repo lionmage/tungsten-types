@@ -30,10 +30,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.One;
-import tungsten.types.numerics.impl.Pi;
-import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.numerics.impl.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -245,13 +242,15 @@ public class AngularDegrees {
             while (degrees.sign() == Sign.NEGATIVE) {
                 degrees = (IntegerType) degrees.add(fullCircle);
             }
-            minutes = (IntegerType) SIXTY.subtract(minutes);
-            try {
-                // just some code paranoia, on the off-chance that the result
-                // of this subtraction is something other than a real value
-                seconds = (RealType) SIXTY.subtract(seconds).coerceTo(RealType.class);
-            } catch (CoercionException e) {
-                throw new IllegalStateException("While normalizing negative DMS angle", e);
+            if (!Zero.isZero(minutes)) minutes = (IntegerType) SIXTY.subtract(minutes);
+            if (!Zero.isZero(seconds)) {
+                try {
+                    // just some code paranoia, on the off-chance that the result
+                    // of this subtraction is something other than a real value
+                    seconds = (RealType) SIXTY.subtract(seconds).coerceTo(RealType.class);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While normalizing negative DMS angle", e);
+                }
             }
         }
         if (degrees.compareTo(fullCircle) >= 0) {
