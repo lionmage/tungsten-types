@@ -274,7 +274,7 @@ public class AngularDegrees {
             Logger.getLogger(AngularDegrees.class.getName()).log(Level.WARNING,
                     "Unexpected failure computing minutes or seconds as real", e);
             if (this.minutes == null) this.minutes = new IntegerImpl(BigInteger.ZERO);
-            this.seconds = new RealImpl(BigDecimal.ZERO, decDegrees.getMathContext());
+            this.seconds = new RealImpl(BigDecimal.ZERO, mctx);
         }
     }
 
