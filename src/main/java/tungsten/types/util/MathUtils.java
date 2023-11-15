@@ -92,7 +92,7 @@ public class MathUtils {
     public static final String GAMMA_BLOCK_SIZE = "tungsten.types.numerics.MathUtils.Gamma.blockSize";
     /**
      * The Gamma function &#x1D6AA;(z) can be approximated near zero much more quickly
-     * than computing a series.  Any value |z|&nbsp;&lt;&epsilon; would be considered
+     * than computing a series.  Any value |z|&nbsp;&lt;&nbsp;&epsilon; would be considered
      * close enough to 0 to use the approximation.  The System property that governs this
      * &epsilon; value is represented by this {@link String}, and the default value is 0.01.
      */
@@ -110,7 +110,7 @@ public class MathUtils {
      * {@link #computeIntegerExponent(RealType, long, MathContext)}
      * may give more accurate results at the cost of slower performance.
      * @return true if the system is configured to prefer Java-supplied
-     *  operations, false otherwise
+     *   operations, false otherwise
      * @see #PREFER_INBUILT
      */
     public static boolean useBuiltInOperations() {
@@ -168,8 +168,8 @@ public class MathUtils {
      * If there's a cached factorial value, find the highest key that is less
      * than n.
      * @param n the upper bound of our search
-     * @return the highest cache key given the search parameter, or null
-     *  if no key is found
+     * @return the highest cache key given the search parameter, or {@code null}
+     *   if no key is found
      */
     private static Long findMaxKeyUnder(IntegerType n) {
         try {
@@ -544,7 +544,8 @@ public class MathUtils {
 
     /**
      * Computes the error term E<sub>m,n</sub>(s) for the Riemann zeta function &#x1D701;(s)
-     * where m and n are integer values (see above).
+     * where m and n are integer values (see {@link #zetaT_kn(long, long, Numeric, BernoulliNumbers) T<sub>k,n</sub>(s)}
+     * as well as the {@link #zeta(Numeric) implementation of &#x1D701;(s)} itself).
      * @param n  a parameter determining accuracy
      * @param m  a parameter determining accuracy
      * @param s  the parameter of &#x1D701;(s)
@@ -620,7 +621,7 @@ public class MathUtils {
      * @param k the number of elements &ldquo;chosen&rdquo; at a time
      * @return the generalized binomial coefficient
      * @see <a href="https://math.stackexchange.com/questions/340124/binomial-coefficients-1-2-choose-k">an article
-     *  on Mathematics Stack Exchange</a>
+     *   on Mathematics Stack Exchange</a>
      */
     public static Numeric generalizedBinomialCoefficient(Numeric x, IntegerType k) {
         final MathContext ctx = inferMathContext(List.of(x, k));
