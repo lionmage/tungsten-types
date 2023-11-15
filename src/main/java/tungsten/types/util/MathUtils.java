@@ -47,6 +47,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -1163,6 +1164,15 @@ public class MathUtils {
     public static final String LN_RATIONAL_THRESHOLD = "tungsten.types.numerics.MathUtils.ln.rational.threshold";
     private static final IntegerType lnRationalCutoff = new IntegerImpl(System.getProperty(LN_RATIONAL_THRESHOLD, "250"));
 
+    /**
+     * Compute the natural logarithm of a rational value. For a rational p/q, this method may
+     * compute it by first converting the rational value into a real, or it may compute the
+     * result as ln(p)&nbsp;&minus;&nbsp;ln(q).  The threshold for which calculation to use
+     * is configurable via a system property.
+     * @param x a rational value
+     * @return the natural logarithm ln(x)
+     * @see #LN_RATIONAL_THRESHOLD
+     */
     public static RealType ln(RationalType x) {
         final MathContext ctx = x.getMathContext();
         if (x.numerator().compareTo(lnRationalCutoff) < 0 && x.denominator().compareTo(lnRationalCutoff) < 0) {
@@ -1546,11 +1556,23 @@ public class MathUtils {
         return counts.entrySet().stream().sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).map(Map.Entry::getKey)
                 .findFirst().orElse(RoundingMode.HALF_UP);
     }
-    
+
+    /**
+     * Render a real value in scientific notation.
+     * @param value the value to render
+     * @return a {@link String} representation of {@code value} rendered in scientific notation
+     */
     public static String inScientificNotation(RealType value) {
         return convertToScientificNotation(value.asBigDecimal());
     }
-    
+
+    /**
+     * Render a rational value in scientific notation. The formatting is decimal; if
+     * traditional fractional representation is desired, consider using {@code value.toString()}
+     * instead, or perhaps separately render the numerator and denominator in scientific notation.
+     * @param value the value to render
+     * @return a {@link String} representation of {@code value} rendered in scientific notation
+     */
     public static String inScientificNotation(RationalType value) {
         return convertToScientificNotation(value.asBigDecimal());
     }
@@ -1573,15 +1595,21 @@ public class MathUtils {
         
         return buf.toString();
     }
-    
+
+    /**
+     * Render an integer value in scientific notation.
+     * @param value the value to render
+     * @return a {@link String} representation of {@code value} rendered in scientific notation
+     */
     public static String inScientificNotation(IntegerType value) {
         long digits = value.numberOfDigits();
         int exponent = (int) (digits - 1L);
+        final DecimalFormatSymbols dfSymbols = DecimalFormatSymbols.getInstance();
         StringBuilder buf = new StringBuilder();
         buf.append(value.asBigInteger());
         int insertionPoint = 1;
         if (value.sign() == Sign.NEGATIVE) insertionPoint++;
-        buf.insert(insertionPoint, '.');
+        buf.insert(insertionPoint, dfSymbols.getDecimalSeparator());
         // U+2009 is thin space, U+00D7 is multiplication symbol
         buf.append("\u2009\u00D7\u200910").append(UnicodeTextEffects.numericSuperscript(exponent));
         
@@ -2249,6 +2277,13 @@ public class MathUtils {
         return maxVal;
     }
 
+    /**
+     * Convert a {@link Matrix<ComplexType>} C into a {@link Matrix<RealType>}.
+     * All values in C must be coercible to {@link RealType} or an
+     * {@link ArithmeticException} will be thrown.
+     * @param C a matrix of {@link ComplexType} values that can be coerced to real
+     * @return a real-valued matrix
+     */
     public static Matrix<RealType> reify(Matrix<ComplexType> C) {
         if (C.getClass().isAnnotationPresent(Columnar.class)) {
             // for more efficient handling of column-based matrices
@@ -2283,10 +2318,22 @@ public class MathUtils {
         return result;
     }
 
+    /**
+     * Compute the upper limit of the rank of a matrix.
+     * @param M any matrix
+     * @return the upper limit of rank(M)
+     * @see <a href="https://en.wikipedia.org/wiki/Rank_(linear_algebra)">Wikipedia's article on Rank</a>
+     */
     public static long rankUpperLimit(Matrix<? extends Numeric> M) {
         return Math.min(M.rows(), M.columns());
     }
 
+    /**
+     * Compute the rank of a matrix.
+     * @param M any matrix for which to compute the rank
+     * @return the value of rank(M)
+     * @see <a href="https://en.wikipedia.org/wiki/Rank_(linear_algebra)">Wikipedia's article on Rank</a>
+     */
     public static long rank(Matrix<? extends Numeric> M) {
         Matrix<? extends Numeric> R = toReducedRowEchelonForm(M);
         long rank = 0L;
@@ -2303,7 +2350,7 @@ public class MathUtils {
      * @param M the matrix to be converted
      * @return the converted matrix in reduced row echelon form
      * @see <a href="https://en.wikipedia.org/wiki/Row_echelon_form">the Wikipedia article</a>, which
-     *  outlines the basic algorithm
+     *   outlines the basic algorithm
      */
     public static Matrix<? extends Numeric> toReducedRowEchelonForm(Matrix<? extends Numeric> M) {
         long lead = 0L;
@@ -2595,7 +2642,7 @@ public class MathUtils {
      * @param M       the matrix to test for upper-triangularity
      * @param epsilon the tolerance value &epsilon; denoting the maximum acceptable error
      * @return true if the given matrix satisfies the error-tolerance criteria for upper-triangularity,
-     *  false otherwise
+     *   false otherwise
      */
     public static boolean isUpperTriangularWithin(Matrix<? extends Numeric> M, RealType epsilon) {
         if (!epsilonRange.contains(epsilon)) throw new IllegalArgumentException("Tolerance should be in range 0 < \uD835\uDF00 \u226A 1");
@@ -2648,6 +2695,11 @@ public class MathUtils {
         return results;
     }
 
+    /**
+     * Determines whether an {@link AggregateMatrix} is block diagonal.
+     * @param blockMatrix a block matrix
+     * @return true if the supplied matrix is block diagonal
+     */
     public static boolean isBlockDiagonal(AggregateMatrix<? extends Numeric> blockMatrix) {
         for (int blockRow = 0; blockRow < blockMatrix.subMatrixRows(); blockRow++) {
             for (int blockCol = 0; blockCol < blockMatrix.subMatrixColumns(); blockCol++) {
@@ -2658,6 +2710,11 @@ public class MathUtils {
         return true;
     }
 
+    /**
+     * Determines whether a matrix is symmetric around the diagonal.
+     * @param matrix the matrix to be checked for symmetry
+     * @return true if the supplied matrix is symmetric, false otherwise
+     */
     public static boolean isSymmetric(Matrix<? extends Numeric> matrix) {
         if (matrix instanceof DiagonalMatrix) return true;
         if (matrix.rows() != matrix.columns()) return false;
@@ -3115,7 +3172,7 @@ public class MathUtils {
      * @param B the second real value to test for equality
      * @param epsilon the largest allowable delta between A and B for them to be
      *  considered equal, a fractional value between 0 and 1 (exclusive)
-     * @return true if the supplied values have a difference &lt; &epsilon;
+     * @return true if the supplied values have a difference &lt;&nbsp;&epsilon;
      */
     public static boolean areEqualToWithin(RealType A, RealType B, RealType epsilon) {
         if (epsilon.sign() != Sign.POSITIVE || !epsilonRange.contains(epsilon)) {
@@ -3134,15 +3191,15 @@ public class MathUtils {
      * Tests if two real vectors are equal according to
      * {@link #areEqualToWithin(RealType, RealType, RealType) }. The two
      * vectors are compared element-wise, and if any pair of elements has
-     * a difference &ge; &epsilon;, the comparison fails fast and returns false.
-     * 
-     * @param A the first real-valued vector to test for equality
-     * @param B the second real-valued vector to test for equality
+     * a difference &ge;&nbsp;&epsilon;, the comparison fails fast and returns false.
+     *
+     * @param A       the first real-valued vector to test for equality
+     * @param B       the second real-valued vector to test for equality
      * @param epsilon a value between 0 and 1, exclusive, denoting the maximum
-     *  difference allowed between any pair of elements for A and B to be
-     *  considered equal
+     *   difference allowed between any pair of elements for A and B to be
+     *   considered equal
      * @return true if the supplied vectors are of equal length and all the
-     *  elements of A are within &epsilon; of their counterparts in B 
+     *   elements of A are within &epsilon; of their counterparts in B
      */
     public static boolean areEqualToWithin(Vector<RealType> A, Vector<RealType> B, RealType epsilon) {
         if (A.length() != B.length()) return false;
@@ -3160,10 +3217,10 @@ public class MathUtils {
      * annotated as {@link Columnar} and will attempt to adjust its access
      * pattern accordingly.
      * 
-     * @param A the first real-valued matrix to test for equality
-     * @param B the second real-valued matrix to test for equality
+     * @param A       the first real-valued matrix to test for equality
+     * @param B       the second real-valued matrix to test for equality
      * @param epsilon the maximum delta allowed between corresponding elements,
-     *  a fractional value between 0 and 1 (exclusive)
+     *   a fractional value between 0 and 1 (exclusive)
      * @return true if all elements of A are within &epsilon; of their counterparts in B
      */
     public static boolean areEqualToWithin(Matrix<RealType> A, Matrix<RealType> B, RealType epsilon) {
@@ -3185,6 +3242,12 @@ public class MathUtils {
         }
     }
 
+    /**
+     * Truncates a value, i.e., removes the fractional part.
+     * This is conceptually the same as rounding toward zero with integer precision.
+     * @param val the value to be rounded
+     * @return an integer which consists of the non-fractional part of {@code val}
+     */
     public static IntegerType trunc(Numeric val) {
         NumericHierarchy hval = NumericHierarchy.forNumericType(val.getClass());
         switch (hval) {
@@ -3202,6 +3265,14 @@ public class MathUtils {
         }
     }
 
+    /**
+     * A version of arctan(z) which works for all complex values of z.
+     * Non-complex values are also handled, but the calculation for real
+     * values is delegated to {@link #arctan(RealType)}.
+     * <br/>This function is also commonly referred to as atan().
+     * @param z a value for which to compute the arctangent
+     * @return the value of arctan(z)
+     */
     public static Numeric arctan(Numeric z) {
         if (z.isCoercibleTo(RealType.class)) {
             try {
@@ -3274,6 +3345,19 @@ public class MathUtils {
     }
 
 
+    /**
+     * A version of arctan() that preserves quadrant information.
+     * Given a point on the Cartesian plane (x,&nbsp;y) which forms
+     * a triangle anchored at the origin with legs of length x and y,
+     * find the angle between the positive x-axis and the hypotenuse
+     * of the triangle.
+     * @param y the y-axis coordinate of our &ldquo;point,&rdquo; or
+     *          in the case of a complex value, the imaginary component
+     * @param x the x-axis coordinate, or for a complex value,
+     *          the real component
+     * @return the angle formed between the positive x-axis and
+     *   the vector (x,&nbsp;y)
+     */
     public static Numeric atan2(RealType y, RealType x) {
         final RealType two  = new RealImpl(decTWO, y.getMathContext());
         final Numeric term = x.multiply(x).add(y.multiply(y)).sqrt();
@@ -3295,6 +3379,12 @@ public class MathUtils {
     private static final Range<RealType> acosRange = new Range<>(new RealImpl(BigDecimal.valueOf(-1L)),
             new RealImpl(BigDecimal.ONE), BoundType.INCLUSIVE);
 
+    /**
+     * Compute arccos(z), the inverse function of cos().
+     * Real input values in the range [-1,&nbsp;1] will generate a real-valued result.
+     * @param z the argument, may be complex or real
+     * @return the value of arccos(z), typically interpreted as an angle for real results
+     */
     public static Numeric arccos(Numeric z) {
         if (z instanceof RealType && !acosRange.contains((RealType) z)) {
             throw new ArithmeticException("arccos input range is " + acosRange + " for real-valued input");
@@ -3507,6 +3597,14 @@ public class MathUtils {
                 .divide(e.exp(scaledArg).add(one));
     }
 
+    /**
+     * Factory method that provides a comparator that works with
+     * all {@link Numeric} subtypes that are comparable, even
+     * distinctly different subtypes. This comparator also
+     * works with concrete classes that inherit directly from
+     * {@link Numeric}.
+     * @return a comparator suitable for use with e.g. heterogeneous collections
+     */
     public static Comparator<Numeric> obtainGenericComparator() {
         return new Comparator<>() {
             @Override
