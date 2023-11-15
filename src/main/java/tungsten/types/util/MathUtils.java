@@ -3531,7 +3531,7 @@ public class MathUtils {
         // an in-range argument or calculating the sin() and cos() power series
         RealType argOverPi = x.divide(pi).magnitude();
         if (((RealType) argOverPi.subtract(argOverPi.floor())).compareTo(epsilon) < 0) {
-            // tan(x) has zero crossings periodically at x=k𝜋 ∀ k ∈ 𝕴
+            // tan(x) has zero crossings periodically at x=k𝜋 ∀ k ∈ ℤ
             return new RealImpl(BigDecimal.ZERO, ctx);
         }
         Range<RealType> range = RangeUtils.getTangentInstance(ctx);

@@ -30,8 +30,8 @@ import java.math.BigInteger;
 
 /**
  * General interface for types representing rational values of the form
- * p/q, where p and q are integral values (p, q &isin; &#x2124;), q &ne; 0, and in general normalized
- * so that q &gt; 0.  The set of rational numbers is typically denoted &#x211A;.
+ * p/q, where p and q are integral values (p, q &isin; &#x2124;), q&nbsp;&ne;&nbsp;0, and in general normalized
+ * so that q&nbsp;&gt;&nbsp;0.  The set of rational numbers is typically denoted &#x211A;.
  *
  * @author Robert Poole
  */
