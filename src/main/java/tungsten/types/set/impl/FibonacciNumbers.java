@@ -81,9 +81,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
         if (element.sign() == Sign.NEGATIVE) return false;
         if (cache.contains(element)) return true;
 
-        Iterator<IntegerType> iter = this.iterator();
-        while (iter.hasNext()) {
-            IntegerType val = iter.next();
+        for (IntegerType val : this) {
             if (val.equals(element)) return true;
             if (val.compareTo(element) > 0) break;
         }
@@ -191,9 +189,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
             @Override
             public boolean contains(IntegerType element) {
-                Iterator<IntegerType> iter = this.iterator();
-                while (iter.hasNext()) {
-                    IntegerType val = iter.next();
+                for (IntegerType val : this) {
                     if (val.equals(element)) return true;
                     if (val.compareTo(element) > 0) break;
                 }
@@ -351,7 +347,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
      * &epsilon; &lt; &epsilon;<sub>0</sub>, this iteration is bypassed and the value of &#x03D5;
      * is derived directly from {@link Phi}.
      *
-     * @param epsilon the maximum allowable delta in approximations to &#03D5;
+     * @param epsilon the maximum allowable delta in approximations to &#x03D5;
      * @return a rational approximation to &#x03D5; with an accuracy determined by epsilon, or a real
      *  approximation of &#x03D5; if enabled by a threshold set by a special {@link #EPSILON_LIMIT System property}
      * @see #EPSILON_LIMIT
@@ -367,9 +363,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
         RationalType prevPhi = new RationalImpl(ONE, ONE, epsilon.getMathContext());
         IntegerType prevElement = ONE;
 
-        Iterator<IntegerType> iter = this.iterator();
-        while (iter.hasNext()) {
-            IntegerType currElement = iter.next();
+        for (IntegerType currElement : this) {
             RationalType currPhi = new RationalImpl(currElement, prevElement, epsilon.getMathContext());
             BigDecimal delta = currPhi.asBigDecimal().subtract(prevPhi.asBigDecimal()).abs();
             if (delta.compareTo(epsilon.asBigDecimal()) < 0) {
@@ -383,11 +377,8 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("\uD835\uDDD9 \u2243 {");
-        buf.append(cache.stream().map(Object::toString).collect(Collectors.joining(", ")));
-        buf.append("\u2009\u2026}");
-
-        return buf.toString();
+        return "\uD835\uDDD9 \u2243 {" +
+                cache.stream().map(Object::toString).collect(Collectors.joining(", ")) +
+                "\u2009\u2026}";
     }
 }

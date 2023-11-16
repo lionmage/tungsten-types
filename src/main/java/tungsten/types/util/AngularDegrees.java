@@ -182,10 +182,13 @@ public class AngularDegrees {
      * @return this angle in radians
      */
     public RealType asRadians() {
-        final Pi pi = Pi.getInstance(mctx);
-        final RealType two = new RealImpl(BigDecimal.valueOf(2L), mctx);
+        final MathContext compctx = new MathContext(mctx.getPrecision() + 2, mctx.getRoundingMode());
+        // grab a couple extra digits of pi for better rounding behavior
+        final Pi pi = Pi.getInstance(compctx);
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), compctx);
         final RealType halfCircleDegrees = (RealType) DEGREES_IN_CIRCLE.divide(two);
-        return (RealType) decDegrees.multiply(pi).divide(halfCircleDegrees);
+        // if decDegrees.mathContext.precision < mctx.precision, this will promote decDegrees to a higher precision
+        return (RealType) MathUtils.round(decDegrees, mctx).multiply(pi).divide(halfCircleDegrees);
     }
 
     public AngularDegrees add(AngularDegrees addend) {
