@@ -400,6 +400,12 @@ public class MathUtils {
         return new RealImpl(value, ctx);
     }
 
+    /**
+     * Obtain the real part of {@code z}. For non-complex
+     * arguments, this will coerce the value to {@link RealType}.
+     * @param z any {@link Numeric} value
+     * @return the real part of z
+     */
     public static RealType Re(Numeric z) {
         if (z instanceof ComplexType) return ((ComplexType) z).real();
         try {
@@ -409,6 +415,12 @@ public class MathUtils {
         }
     }
 
+    /**
+     * If {@code z} is a complex value, return the imaginary component.
+     * Otherwise, return zero.
+     * @param z any {@link Numeric} value
+     * @return the imaginary part of z, or 0 if it does not exist
+     */
     public static RealType Im(Numeric z) {
         if (z instanceof ComplexType) return ((ComplexType) z).imaginary();
         // anything else has a zero imaginary component
@@ -709,21 +721,45 @@ public class MathUtils {
         return result;
     }
 
+    /**
+     * Compute the minimum of two real values.
+     * @param a the first value
+     * @param b the second value
+     * @return the minimum of a and b
+     */
     public static RealType min(RealType a, RealType b) {
         if (a.compareTo(b) < 0) return a;
         return b;
     }
 
+    /**
+     * Compute the minimum of two rational values.
+     * @param a the first value
+     * @param b the second value
+     * @return the minimum of a and b
+     */
     public static RationalType min(RationalType a, RationalType b) {
         if (a.compareTo(b) <= 0) return a;
         return b;
     }
 
+    /**
+     * Compute the maximum of two real values.
+     * @param a the first value
+     * @param b the second value
+     * @return the maximum of a and b
+     */
     public static RealType max(RealType a, RealType b) {
         if (a.compareTo(b) > 0) return a;
         return b;
     }
 
+    /**
+     * Compute the maximum of two rational values.
+     * @param a the first value
+     * @param b the second value
+     * @return the maximum of a and b
+     */
     public static RationalType max(RationalType a, RationalType b) {
         if (a.compareTo(b) >= 0) return a;
         return b;
@@ -893,6 +929,14 @@ public class MathUtils {
         };
     }
 
+    /**
+     * Compute the value of x<sup>n</sup>, where x is coercible to {@link RealType} and
+     * n is an integer value.
+     * @param x any value that can be coerced to a real
+     * @param n any integer value
+     * @return the value of x<sup>n</sup>
+     * @throws ArithmeticException if x is not coercible to a real value
+     */
     public static RealType computeIntegerExponent(Numeric x, IntegerType n) {
         final RealType result;
         final BigInteger exponent = n.asBigInteger();
@@ -916,7 +960,13 @@ public class MathUtils {
         
         return result;
     }
-    
+
+    /**
+     * A convenience method for computing z<sup>n</sup> for complex value z.
+     * @param z a complex number
+     * @param n any integer value
+     * @return the value of z<sup>n</sup>
+     */
     public static ComplexType computeIntegerExponent(ComplexType z, IntegerType n) {
         return computeIntegerExponent(z, n.asBigInteger().longValueExact(), z.getMathContext());
     }
@@ -1718,12 +1768,12 @@ public class MathUtils {
 
     /**
      * Compute the Hadamard product for two n&times;n matrices.
-     * In standard notation, that is <strong>A&#x2218;B</strong>.
+     * In standard notation, that is <strong>A&#x2218;B</strong> or A&#x2299;B.
      * Note that, unlike regular matrix multiplication, the Hadamard
      * product is commutative.
      * @param A the first matrix in the product
      * @param B the second matrix in the product
-     * @return the Hadamard product of {@code A} and {@code B}
+     * @return the Hadamard product A&#x2299;B
      * @param <T> the element type for the input matrices
      */
     public static <T extends Numeric> Matrix<T> hadamardProduct(Matrix<T> A, Matrix<T> B) {
@@ -1734,6 +1784,13 @@ public class MathUtils {
                 (row, column) -> (T) A.valueAt(row, column).multiply(B.valueAt(row, column)));
     }
 
+    /**
+     * Compute the Hadamard product of two vectors of the same length.
+     * @param a the first vector
+     * @param b the second vector
+     * @return the Hadamard product a&#x2299;b
+     * @param <T> the element type for the input vectors
+     */
     public static <T extends Numeric> Matrix<T> hadamardProduct(Vector<T> a, Vector<T> b) {
         if (a.length() != b.length()) throw new ArithmeticException("Vectors must be of equal dimension");
         Matrix<T> diag = new DiagonalMatrix<>(a);
@@ -2283,6 +2340,7 @@ public class MathUtils {
      * {@link ArithmeticException} will be thrown.
      * @param C a matrix of {@link ComplexType} values that can be coerced to real
      * @return a real-valued matrix
+     * @throws ArithmeticException if any elements of C cannot be coerced to real values
      */
     public static Matrix<RealType> reify(Matrix<ComplexType> C) {
         if (C.getClass().isAnnotationPresent(Columnar.class)) {
@@ -3511,18 +3569,33 @@ public class MathUtils {
         return temp;
     }
 
+    /**
+     * The cosine function.
+     * @param x a real value (e.g., an angle in radians)
+     * @return the real-valued result of cos(x)
+     */
     public static RealType cos(RealType x) {
         if (x instanceof Pi) return new RealImpl(BigDecimal.valueOf(-1L), x.getMathContext());
         RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n)));
     }
 
+    /**
+     * The sine function.
+     * @param x a real value (e.g., an angle in radians)
+     * @return the real-valued result of sin(x)
+     */
     public static RealType sin(RealType x) {
         if (x instanceof Pi) return new RealImpl(BigDecimal.ZERO, x.getMathContext());
         RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n + 1L)));
     }
 
+    /**
+     * The tangent function.
+     * @param x a real value (e.g., an angle in radians)
+     * @return the real-valued result of tan(x)
+     */
     public static RealType tan(RealType x) {
         final MathContext ctx = x.getMathContext();
         final Pi pi = Pi.getInstance(ctx);
@@ -3546,6 +3619,11 @@ public class MathUtils {
         return (RealType) sin(inBounds).divide(cos(inBounds));
     }
 
+    /**
+     * The complex-valued cosine function.
+     * @param z a complex value
+     * @return the complex-valued result of cos(z)
+     */
     public static ComplexType cos(ComplexType z) {
         if (z.isCoercibleTo(RealType.class)) return new ComplexRectImpl(cos(z.real()));
         final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
@@ -3554,6 +3632,11 @@ public class MathUtils {
         return (ComplexType) e.exp(iz).add(e.exp(iz.negate())).divide(new RealImpl(decTWO, z.getMathContext()));
     }
 
+    /**
+     * The complex-valued sine function.
+     * @param z a complex value
+     * @return the complex-valued result of sin(z)
+     */
     public static ComplexType sin(ComplexType z) {
         if (z.isCoercibleTo(RealType.class)) return new ComplexRectImpl(sin(z.real()));
         final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
@@ -3661,6 +3744,11 @@ public class MathUtils {
         inverses.put(NaturalLog.class, Exp.class);
     }
 
+    /**
+     * Given a {@link UnaryFunction}, return a function (if known) which performs the inverse operation.
+     * @param fClazz the {@link Class} of the unary function for which we wish to obtain the inverse
+     * @return the {@link Class} of the inverse unary function, if known, otherwise {@code null}
+     */
     public static Class<? extends UnaryFunction> inverseFunctionFor(Class<? extends UnaryFunction> fClazz) {
         return inverses.get(fClazz);
     }
