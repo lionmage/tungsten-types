@@ -54,6 +54,12 @@ import java.util.stream.StreamSupport;
  *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class FibonacciNumbers implements Set<IntegerType> {
+    /**
+     * A {@link String} representing a system property that governs a threshold limit
+     * for &epsilon; values used to compute &#x03D5;.  When invoking {@link #getPhi(RealType)},
+     * the &epsilon; argument is compared to this limit (if specified), and if &epsilon;
+     * is less than the limit, &#x03D5; is computed directly.
+     */
     public static final String EPSILON_LIMIT = "tungsten.types.set.impl.FibonacciNumbers.epsilonLimit";
     /**
      * The maximum number of Fibonacci values to cache.
