@@ -47,7 +47,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
     /**
      * Given a string representation of a polynomial, parse it into its
      * component terms and assemble them into a new {@code Polynomial}.
-     * <br/>
+     * <br>
      * Note that terms are separated by a + (plus) surrounded by at least
      * one whitespace character on either side. This is to avoid confusing
      * the regex-based parser.  Parsing the contents of individual terms is up
@@ -254,7 +254,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
     /**
      * Generate a polynomial identical to this one, but with the terms
      * ordered according to the exponent of the given variable.
-     * <br/>
+     * <br>
      * The ordering is from the highest exponent in {@code varName to the
      * lowest.
      * }

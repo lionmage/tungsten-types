@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  * and keeps a cache of instances that have been generated so that the value
  * of &#x212f; only needs to be calculated once for a given precision and
  * {@link RoundingMode}.
- * <br/>
+ * <br>
  * Internally, this class uses Brothers' formula for deriving &#x212f; to an
  * arbitrary precision.
  *

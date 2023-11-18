@@ -31,7 +31,7 @@ import tungsten.types.numerics.RealType;
  * Implementing this interface is sufficient to identify that a function is periodic,
  * eliminating the need to spend computational resources figuring out whether a
  * function is periodic.
- * <br/>
+ * <br>
  * The obvious danger is in mis-applying this interface to a non-periodic function.
  * Doing so may lead to incorrect behavior.
  */

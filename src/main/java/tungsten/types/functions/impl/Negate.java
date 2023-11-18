@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 
 /**
  * A representation of the function &fnof;(x)&nbsp;=&nbsp;&minus;x
- * <br/>Not terribly useful by itself, but it is very handy for composition
+ * <br>Not terribly useful by itself, but it is very handy for composition
  * of differentiable functions.
  *
  * @param <T> the type of the function's sole input parameter

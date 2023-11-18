@@ -47,10 +47,10 @@ import java.util.logging.Logger;
  * and keeps a cache of instances that have been generated so that the value
  * of pi only needs to be calculated once for a given precision and
  * {@link RoundingMode}.
- * <br/>
+ * <br>
  * Internally, this class uses the BBP formula for deriving Pi to an
  * arbitrary precision.
- * <br/>
+ * <br>
  * Currently, intermediate terms are cached as {@link RationalType} objects;
  * coercion to real (via {@link BigDecimal} division with {@link MathContext}-specified rounding)
  * is only done once the correct number of terms have been summed. This saves a

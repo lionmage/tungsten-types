@@ -262,7 +262,7 @@ public class UnicodeTextEffects {
 
     /**
      * Compute the width of a {@link CharSequence} or subsequence, measured in displayed characters.
-     * This method assumes a monospaced font.<br/>
+     * This method assumes a monospaced font.<br>
      * This method will properly handle surrogate pairs and most combining characters
      * (e.g., vinculum, arrow).
      * @param source         a Unicode character sequence

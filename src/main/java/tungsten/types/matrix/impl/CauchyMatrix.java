@@ -40,7 +40,7 @@ import java.util.stream.LongStream;
  * A representation of a Cauchy matrix.  Given a Cauchy matrix <strong>C</strong>,
  * it holds that c<sub>ij</sub> = 1/(X<sub>i</sub> + Y<sub>j</sub>) for vectors
  * X&#x20D7; and Y&#x20D7;.
- * <br/>This matrix implementation has optimized methods for {@link #determinant()}
+ * <br>This matrix implementation has optimized methods for {@link #determinant()}
  * and {@link #inverse()}. Note that, for a given Cauchy matrix <strong>C</strong>,
  * the following hold true:
  * <ul>

@@ -68,7 +68,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     /**
      * Constructor which initializes a diagonal matrix with the
      * elements of a vector.  Note that this is equivalent to
-     * the <em>diag</em> operator:<br/>
+     * the <em>diag</em> operator:<br>
      * For vector <strong>a</strong> with elements a<sub>0</sub>, a<sub>1</sub>, &hellip;, a<sub>n - 1</sub>,
      * the diagonal matrix <strong>D</strong> may be denoted
      * <strong>D</strong>&nbsp;=&nbsp;diag(a<sub>0</sub>,&thinsp;&hellip;,&thinsp;a<sub>n - 1</sub>)
@@ -274,7 +274,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     /**
      * This is the <em>diag</em> operator, intended to convert a diagonal matrix into a vector.
-     * It is the effective inverse of {@link DiagonalMatrix#DiagonalMatrix(Vector)}.<br/>
+     * It is the effective inverse of {@link DiagonalMatrix#DiagonalMatrix(Vector)}.<br>
      * For a diagonal matrix <strong>D</strong> with diagonal elements d<sub>0</sub>, d<sub>1</sub>, &hellip;, d<sub>n - 1</sub>,
      * diag(<strong>D</strong>)&nbsp;=&nbsp;[d<sub>0</sub>,&thinsp;&hellip;,&thinsp;d<sub>n - 1</sub>]<sup>T</sup>
      *

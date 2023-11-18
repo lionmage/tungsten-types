@@ -73,8 +73,8 @@ public class RepeatingDecimal extends RationalImpl {
      * number with a group of repeating digits at the end, and given an integer
      * representing the position after the decimal point where the periodicity
      * begins, construct a {@link tungsten.types.Numeric} representation.
-     * <br/>
-     * The assumptions are:<br/>
+     * <br>
+     * The assumptions are:<br>
      * <ul>
      * <li>The {@link String} representation only contains a single instance
      * of the repeated digits</li>

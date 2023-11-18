@@ -237,7 +237,7 @@ public interface Matrix<T extends Numeric> {
      * max norm and returns it as a positive {@link RealType real}
      * value.  If the environment variable {@link #USE_FROBENIUS_NORM}
      * is set to {@code true}, the Frobenius norm is computed instead.
-     * <br/>Any classes implementing this interface which override
+     * <br>Any classes implementing this interface which override
      * this default implementation <strong>must</strong> handle computing both types
      * of norm; it is recommended that implementing classes use {@link #useFrobeniusNorm()}
      * to make this determination rather than rolling their own.

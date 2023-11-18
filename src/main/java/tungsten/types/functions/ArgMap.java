@@ -44,9 +44,9 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
      * This constructor takes a formatted {@link String} and
      * populates this {@link Map} with one or more variable
      * mappings parsed from the input.
-     * <br/>
+     * <br>
      * The accepted format is: [a:1,b:5,c:2.7]
-     * <br/>
+     * <br>
      * Square brackets are optional.
      *
      * @param init the formatted string specifying variable mappings

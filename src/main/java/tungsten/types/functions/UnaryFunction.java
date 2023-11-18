@@ -78,7 +78,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
      * Note that this method was renamed to {@code composeWith} since
      * {@link java.util.function.Function#compose(Function)} has a similar
      * signature and can confuse Java.
-     * <br/>
+     * <br>
      * The {@code before} function executes before this function, and its result
      * is fed into the input of this function.
      *

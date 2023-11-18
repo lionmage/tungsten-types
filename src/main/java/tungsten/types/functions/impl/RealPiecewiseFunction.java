@@ -107,7 +107,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
      * Sets the &#x1D6FC; value which governs transition zone width. This value is ignored for
      * {@link SmoothingType#NONE}.  For {@link SmoothingType#LINEAR}, the current implementation
      * treats &#x1D6FC; as an override for &#x1D700; (denoted {@code epsilon} in method and function
-     * arguments).<br/>
+     * arguments).<br>
      * In the case of {@link SmoothingType#SIGMOID}, &#x1D6FC; is directly supplied as the
      * {@code alpha} parameter to the {@link Sigmoid} constructor. For the sake of simplicity, the
      * same &#x1D6FC; value is applied to all internally generated {@link Sigmoid} instances unless

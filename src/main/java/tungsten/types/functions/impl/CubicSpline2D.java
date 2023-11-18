@@ -11,8 +11,8 @@ import tungsten.types.util.MathUtils;
  * other applications where cubic splines may be appropriate.  For now, the input
  * argument is assumed to be a variable named <em>x</em>. A typical application
  * might involve multiple splines contained by a {@link PiecewiseFunction} with
- * no smoothing defined or enabled.<br/>
- * The spline function is of the form:<br/>
+ * no smoothing defined or enabled.<br>
+ * The spline function is of the form:<br>
  * S(x) = a + b(x&minus;x<sub>0</sub>) + c(x&minus;x<sub>0</sub>)<sup>2</sup> + d(x&minus;x<sub>0</sub>)<sup>3</sup>
  * @see <a href="https://en.wikipedia.org/wiki/Spline_(mathematics)">the Wikipedia article on splines,
  *  which also gives excellent details on a basic algorithm for computing natural cubic splines</a>
@@ -23,7 +23,7 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
     private final Range<RealType> scope;
 
     /**
-     * Creates a cubic spline with the listed coefficients.<br/>
+     * Creates a cubic spline with the listed coefficients.<br>
      * These coefficients directly relate to the spline equation
      * a&nbsp;+&nbsp;b&sdot;(x&minus;x<sub>0</sub>)&nbsp;+&nbsp;c&sdot;(x&minus;x<sub>0</sub>)<sup>2</sup>&nbsp;+&nbsp;d&sdot;(x&minus;x<sub>0</sub>)<sup>3</sup>
      * @param a     the first spline parameter

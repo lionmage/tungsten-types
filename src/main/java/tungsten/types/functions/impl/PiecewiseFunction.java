@@ -49,7 +49,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
      * Checks the current {@link Range} to {@link UnaryFunction} mappings to ensure
      * that ranges are non-overlapping and have complementary bound types
      * (i.e., open vs. closed) where they touch.
-     * <br/>
+     * <br>
      * Note that this current implementation requires calling this method before
      * attempting to apply this function.  Without performing this check first,
      * it's possible to get completely undefined results, or no results at all.

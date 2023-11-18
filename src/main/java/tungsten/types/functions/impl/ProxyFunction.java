@@ -103,7 +103,7 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
     /**
      * Remap input value to fall within a particular range.  This is
      * especially useful for things like periodic functions.
-     * <br/>
+     * <br>
      * The default behavior is to return the input exactly. Subclasses
      * should override this method if this behavior is not desired.
      *

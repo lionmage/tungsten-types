@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 
 /**
  * A function that represents a product of two or more functions.
- * Formally, &prod;&fnof;<sub>n</sub>(x) = &fnof;<sub>1</sub>(x) &sdot; &fnof;<sub>2</sub>(x) &ctdot; &fnof;<sub>N</sub>(x)<br/>
+ * Formally, &prod;&fnof;<sub>n</sub>(x) = &fnof;<sub>1</sub>(x) &sdot; &fnof;<sub>2</sub>(x) &ctdot; &fnof;<sub>N</sub>(x)<br>
  * This function is entirely intended for composition, and is fully
  * differentiable.
  *

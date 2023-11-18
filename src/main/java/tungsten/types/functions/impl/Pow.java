@@ -47,7 +47,7 @@ import java.util.Objects;
 /**
  * A function that raises a value to a given power.  More formally, given x,
  * this function computes x<sup>n</sup>, where n is an integer or rational value.
- * <br/>This function is intended for composition with other functions, and is
+ * <br>This function is intended for composition with other functions, and is
  * fully differentiable.
  *
  * @param <T> the input parameter type

@@ -9,7 +9,7 @@ import java.util.Objects;
  * {@link java.util.Map} tracking Taylor polynomials by
  * their order (number of terms) and a<sub>0</sub>, the point
  * around which a given Taylor polynomial is generated.
- * <br/>
+ * <br>
  * Note that this class implements {@link Comparable} so that
  * it may be used in non-hash-based {@link java.util.Map}
  * implementations. The default behavior is to first compare

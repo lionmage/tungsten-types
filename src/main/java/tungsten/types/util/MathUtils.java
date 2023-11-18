@@ -79,7 +79,7 @@ public class MathUtils {
      * governs how many terms to compute for &#x1D6AA;(z) using
      * the Weierstrass method.  This value is multiplied by the requested
      * precision of the result to provide the total number of terms
-     * (and hence, multiplicative iterations) to compute.<br/>
+     * (and hence, multiplicative iterations) to compute.<br>
      * The default value is 2048.
      */
     public static final String GAMMA_TERM_SCALE = "tungsten.types.numerics.MathUtils.Gamma.termScale";
@@ -216,14 +216,14 @@ public class MathUtils {
      * Compute the gamma function, &#x1D6AA;(z) for any value z.
      * Note that this is a generalization of factorial; for an
      * integer value z, &#x1D6AA;(z)&nbsp;=&nbsp;(z&thinsp;&minus;&thinsp;1)!
-     * <br/>Note also that this function converges very slowly for
+     * <br>Note also that this function converges very slowly for
      * non-integer and non-half-integer values. Currently, given z with {@link MathContext#DECIMAL128}
      * precision, we obtain about 6 digits of accuracy with the property {@link #GAMMA_TERM_SCALE} set to
      * its default value.  This may be revisited in the future.
-     * <br/>Since the implementation of Weierstrass' formula is written to be concurrent,
+     * <br>Since the implementation of Weierstrass' formula is written to be concurrent,
      * the user is encouraged to set {@link #GAMMA_TERM_SCALE} to be as large as tolerable,
      * and to adjust {@link #GAMMA_BLOCK_SIZE} accordingly.
-     * <br/>The <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
+     * <br>The <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
      * was not chosen because it requires special handling (e.g., it only works for values &gt; 1&#x2044;2),
      * necessitating reflection around the imaginary axis using &#x1D6AA; identities.  Weierstrass
      * works for the entire complex plane, and concurrency allows us to compute many more terms in
@@ -368,7 +368,7 @@ public class MathUtils {
      * This computes an approximation of the Gamma function &#x1D6AA;(z)
      * for values of z where |z| is close to 0.
      * A basic approximation is &#x1D6AA;(z) &sim; 1/z &minus; &#x1D6FE; for z&nbsp;&#x2192;&nbsp;0
-     * <br/>A better approximation is given by
+     * <br>A better approximation is given by
      * &#x1D6AA;(z) &#x2245; (1/z)&sdot;(1 + (π² &minus; 6γ²)z/12γ)/(1 + (π² + 6γ²)z/12γ)
      * and is the one used in this method.
      * @param z a value that is close to 0
@@ -849,12 +849,12 @@ public class MathUtils {
      * of the resulting values is inferred from the arguments.  This method
      * returns a {@link Supplier<RealType>} which includes its own source
      * of randomness, independent of any used elsewhere.
-     * <br/>This method is roughly analogous to {@link Random#nextGaussian()}
+     * <br>This method is roughly analogous to {@link Random#nextGaussian()}
      * except that it returns a theoretically unending source of values
      * rather than a single value.  The algorithm used in that method is
      * virtually identical to the one used here, except that more Gaussian noise
      * values are cached in this version.
-     * <br/>Best efforts have been made to make the resulting {@link Supplier}
+     * <br>Best efforts have been made to make the resulting {@link Supplier}
      * thread-safe, should it be needed for e.g. a parallel
      * {@link java.util.stream.Stream stream}.
      * @param mu    the mean of the distribution
@@ -1179,10 +1179,10 @@ public class MathUtils {
 
     /**
      * A fast way to compute the natural logarithm for integer values; it is more
-     * accurate for large values of {@code N}.<br/>
-     * This method takes advantage of the observation that the series<br/>
+     * accurate for large values of {@code N}.<br>
+     * This method takes advantage of the observation that the series<br>
      * 1 + 1&#x2044;2 + 1&#x2044;3 + 1&#x2044;4 + 1&#x2044;5 + &#x22EF; + 1&#x2044;N &cong; ln(N)&nbsp;+&nbsp;&#x1D6FE;
-     * <br/> where &#x1D6FE; is the {@link EulerMascheroni Euler-Mascheroni constant}.  Thus, to compute an
+     * <br> where &#x1D6FE; is the {@link EulerMascheroni Euler-Mascheroni constant}.  Thus, to compute an
      * approximation of ln(N) where N is an integer value, one merely has to compute the series of 1/n for
      * n in [1, N], then subtract &#x1D6FE;.  Note that the calculation of &#x1D6FE; can be expensive, but the
      * value is cached on a per-{@link MathContext} basis &mdash; thus, the expected average case cost for
@@ -1266,7 +1266,7 @@ public class MathUtils {
     /**
      * Efficiently calculate &#x230A;log<sub>2</sub>(x)&#x230B; for any
      * integer, rational, or real value x.
-     * <br/><strong>Note:</strong> this method does not support zero or
+     * <br><strong>Note:</strong> this method does not support zero or
      * negative arguments.
      * @param val a {@link Numeric} that is not a complex value
      * @return the floor of log<sub>2</sub>({@code val})
@@ -2045,7 +2045,7 @@ public class MathUtils {
      * Compute the Moore-Penrose inverse of a matrix.  This is a generalization of the
      * inverse of a square matrix, and can be used to solve a linear system of equations
      * represented by a non-square matrix. Given a matrix A, the Moore-Penrose inverse
-     * is written as A<sup>+</sup>.<br/>
+     * is written as A<sup>+</sup>.<br>
      * If the supplied matrix is neither of full column rank nor full row rank, the
      * iterative algorithm by Ben-Israel and Cohen will be used.
      * @param M the {@link Matrix} for which to compute the Moore-Penrose inverse
@@ -2146,7 +2146,7 @@ public class MathUtils {
      * Experimental code to compute the square root of a matrix using a power series.
      * This may be impractical due to the use of {@link #generalizedBinomialCoefficient(Numeric, IntegerType)},
      * but testing will reveal all.
-     * <br/>Note that this method converges slowly (slower than {@link #denmanBeavers(Matrix) Denman-Beavers})
+     * <br>Note that this method converges slowly (slower than {@link #denmanBeavers(Matrix) Denman-Beavers})
      * and appears to require that all matrix eigenvalues are at a distance &le; 1 from the
      * point z&nbsp;=&nbsp;1, which would require computing the eigenvalues of the input matrix to check
      * whether this method would even work.  That's a lot of up-front work to do, and there are methods
@@ -2613,7 +2613,7 @@ public class MathUtils {
     /**
      * Compute the eigenvalues for the given matrix. The returned {@link Set}
      * may be heterogeneous (i.e., {@link Set<Numeric>} which can contain
-     * any subclass of {@link Numeric}).<br/>
+     * any subclass of {@link Numeric}).<br>
      * <strong>Note:</strong> This method is currently only guaranteed to
      * produce results for triangular matrices and 2&times;2 matrices.
      * Symmetric 3&times;3 matrices are also supported. There is very
@@ -3327,7 +3327,7 @@ public class MathUtils {
      * A version of arctan(z) which works for all complex values of z.
      * Non-complex values are also handled, but the calculation for real
      * values is delegated to {@link #arctan(RealType)}.
-     * <br/>This function is also commonly referred to as atan().
+     * <br>This function is also commonly referred to as atan().
      * @param z a value for which to compute the arctangent
      * @return the value of arctan(z)
      */
@@ -3353,7 +3353,7 @@ public class MathUtils {
      * computation using {@link #atan2(RealType, RealType)}, which delegated
      * to {@link #arctan(Numeric)}.  Unfortunately, that method computes the
      * result of ln(z) using {@code z.argument()}, which results in an
-     * infinite loop.<br/>
+     * infinite loop.<br>
      * One solution is to compute arctan() using some kind of power series.
      * We've already implemented Maclaurin series (special case of Taylor
      * series) for cos() and sin(), but Euler discovered a series for arctan()
@@ -3523,7 +3523,7 @@ public class MathUtils {
      * @param idxMapper the mapping function for summation indices
      * @return the estimated number of terms required to minimize error
      * @see <a href="https://en.wikipedia.org/wiki/Taylor's_theorem#Estimates">Wikipedia article on Taylor's Theorem,
-     *  section on estimates for the remainder</a>
+     *   section on estimates for the remainder</a>
      */
     private static int calculateOptimumNumTerms(MathContext ctx, Function<Long, IntegerType> idxMapper) {
         final TrigTermCountKey key = new TrigTermCountKey(ctx, idxMapper);

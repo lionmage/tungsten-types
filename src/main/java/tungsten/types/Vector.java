@@ -127,7 +127,7 @@ public interface Vector<T extends Numeric> {
      * The resulting vector is orthogonal to this and {@code other},
      * with a magnitude equal to ||this||&sdot;||other||&sdot;sin(&theta;) &mdash;
      * with &theta; being the angle between these two vectors.
-     * <br/><strong>Note:</strong> The cross product of two vectors
+     * <br><strong>Note:</strong> The cross product of two vectors
      * is only defined for 3- and 7-dimensions. Other dimensionalities, or
      * a dimensional mismatch between the two vectors, should result in
      * an exception being thrown.
