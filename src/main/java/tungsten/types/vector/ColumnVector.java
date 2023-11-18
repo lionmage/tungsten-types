@@ -37,7 +37,6 @@ import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.impl.ComplexVector;
 import tungsten.types.vector.impl.RealVector;
 
-import java.lang.reflect.Array;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +46,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A column vector, which is also a N&#215;1 (single-column) matrix.
+ * A column vector, which is also a N&times;1 (single-column) matrix.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the {@link Numeric} type for this column vector
  */
 @Columnar

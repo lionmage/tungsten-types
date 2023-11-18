@@ -48,10 +48,10 @@ import java.util.stream.Stream;
 
 /**
  * Representation of a row vector.  This can also be
- * treated as a 1&#215;N (single-row) matrix with N columns.
+ * treated as a 1&times;N (single-row) matrix with N columns.
  *
  * @param <T> the {@link Numeric} type of this row vector
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<T> {
     private MathContext mctx;

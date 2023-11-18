@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 
 
 /**
- * A 1&#215;1 matrix consisting of a single element.
+ * A 1&times;1 matrix consisting of a single element.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  * @param <T> the type of the single element of this matrix
@@ -61,7 +61,7 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public T valueAt(long row, long column) {
-        if (row != 0L || column != 0L) throw new IndexOutOfBoundsException("The only valid row, column indices for a singleton matrix are 0, 0.");
+        if (row != 0L || column != 0L) throw new IndexOutOfBoundsException("The only valid row, column indices for a singleton matrix are 0, 0");
         return element;
     }
 

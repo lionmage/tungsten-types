@@ -1672,7 +1672,7 @@ public class MathUtils {
      * Generate a matrix of rotation in 2 dimensions.
      * 
      * @param theta the angle of rotation in radians around the origin
-     * @return a 2&#215;2 matrix of rotation
+     * @return a 2&times;2 matrix of rotation
      */
     public static Matrix<RealType> get2DMatrixOfRotation(RealType theta) {
         RealType[][] temp = new RealType[2][2];
@@ -1693,7 +1693,7 @@ public class MathUtils {
      * 
      * @param theta the angle of rotation in radians
      * @param axis the major axis around which the rotation is to occur
-     * @return a 3&#215;3 matrix of rotation
+     * @return a 3&times;3 matrix of rotation
      * @see <a href="https://en.wikipedia.org/wiki/Rotation_matrix">the Wikipedia article on matrices of rotation</a>
      */
     public static Matrix<RealType> get3DMatrixOfRotation(RealType theta, Axis axis) {
