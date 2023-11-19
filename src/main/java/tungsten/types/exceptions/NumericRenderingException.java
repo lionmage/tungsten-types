@@ -25,14 +25,29 @@ package tungsten.types.exceptions;
 
 import tungsten.types.Numeric;
 
+/**
+ * An exception thrown when rendering a numeric value, either stand-alone
+ * or as part of a multi-valued structure such as a matrix or vector.
+ * @see tungsten.types.util.UnicodeTextEffects
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ */
 public class NumericRenderingException extends RuntimeException {
     private final Numeric original;
 
+    /**
+     * The sole constructor for this exception.
+     * @param message a mandatory message describing the problem encountered
+     * @param value   the value that was being rendered when the exception occurred
+     */
     public NumericRenderingException(String message, Numeric value) {
         super(message);
         original = value;
     }
 
+    /**
+     * Obtain the value that was being rendered at the time of the exception.
+     * @return a {@link Numeric} value, or that of one of its subclasses
+     */
     public Numeric getOriginalValue() {
         return original;
     }
