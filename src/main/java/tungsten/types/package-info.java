@@ -23,5 +23,8 @@
  * In this case, however, {@link java.util.Vector} has been largely deprecated since the Java Collections Framework
  * has evolved and matured. I can't think of anyone who would use {@link java.util.Vector} in new Java code when
  * there are so many better {@link java.util.List} implementations available.
+ * @since 0.1
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 package tungsten.types;
