@@ -4,7 +4,8 @@
  * <ul>
  *     <li>{@link tungsten.types.Numeric}, the root type for all subtypes found in {@link tungsten.types.numerics}</li>
  *     <li>{@link tungsten.types.Set} and {@link tungsten.types.Multiset}, which encapsulate the mathematical
- *       concepts of sets and multisets (the latter is also known as a bag)</li>
+ *       concepts of sets and <a href="https://en.wikipedia.org/wiki/Multiset">multisets</a>
+ *       (the latter of which is also known as a bag)</li>
  *     <li>{@link tungsten.types.Range} and {@link tungsten.types.NotchedRange} encapsulate ranges of values, and
  *       can be used for any {@link tungsten.types.Numeric} subtype that implements {@link java.lang.Comparable}</li>
  *     <li>{@link tungsten.types.Vector} maps directly onto the mathematical concept of a vector</li>
@@ -21,8 +22,8 @@
  * internally.<br>
  * A similar problem can crop up involving confusion between {@link java.util.Vector} and {@link tungsten.types.Vector}.
  * In this case, however, {@link java.util.Vector} has been largely deprecated since the Java Collections Framework
- * has evolved and matured. I can't think of anyone who would use {@link java.util.Vector} in new Java code when
- * there are so many better {@link java.util.List} implementations available.
+ * has evolved and matured. Who would use {@link java.util.Vector} in new Java code when
+ * there are so many better {@link java.util.List} implementations available?
  * @since 0.1
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
