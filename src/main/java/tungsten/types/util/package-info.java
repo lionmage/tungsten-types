@@ -5,7 +5,8 @@
  *     <li>{@link tungsten.types.util.ClassTools} covering low-level class operations</li>
  *     <li>{@link tungsten.types.util.OptionalOperations}, which contains methods to perform some common operations
  *       on different types</li>
- *     <li>{@link tungsten.types.util.UnicodeTextEffects} embodying all things Unicode related to rendering text</li>
+ *     <li>{@link tungsten.types.util.UnicodeTextEffects} embodying all things Unicode related to rendering
+ *       various data types in text</li>
  *     <li>{@link tungsten.types.util.RangeUtils}, which contains methods to generate and manipulate
  *       {@link tungsten.types.Range}s</li>
  *     <li>{@link tungsten.types.util.MathUtils} providing basic functions, including trigonometry, and various
@@ -26,4 +27,4 @@
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
-package tungsten.types.util.rendering;
+package tungsten.types.util;
