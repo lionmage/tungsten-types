@@ -110,7 +110,8 @@ public class MatrixParser<T extends Numeric> {
     private Matrix<T> innerRead(BufferedReader reader) {
         final String delimiter = "\\s+";
         BasicMatrix<T> result = new BasicMatrix<>();
-        reader.lines().map(line -> line.split(delimiter))
+        reader.lines().takeWhile(line -> !line.isBlank())
+                .map(line -> line.split(delimiter))
                 .map(this::convert)
                 .map(ArrayRowVector::new)
                 .forEachOrdered(result::append);
@@ -132,7 +133,8 @@ public class MatrixParser<T extends Numeric> {
     private Matrix<T> cplxRead(BufferedReader reader) {
         final String delimiter = "\\s*\\|\\s*"; // pipe delimited with optional whitespace
         BasicMatrix<ComplexType> result = new BasicMatrix<>();
-        reader.lines().map(line -> line.split(delimiter))
+        reader.lines().takeWhile(line -> !line.isBlank())
+                .map(line -> line.split(delimiter))
                 .map(this::convertCplx)
                 .map(ArrayRowVector::new)
                 .forEachOrdered(result::append);
