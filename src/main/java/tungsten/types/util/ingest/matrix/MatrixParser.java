@@ -56,6 +56,7 @@ import java.util.logging.Logger;
  *     <li>For parsing all other numeric values, the values in a row are
  *         simply delimited with whitespace.</li>
  *     <li>Each row is terminated by a newline, as recognized by {@link BufferedReader#readLine()}.</li>
+ *     <li>A blank line (empty or containing nothing but whitespace) terminates input.</li>
  *     <li>If parsing a file rather than a stream, a warning is emitted if the file name
  *         does not end in &ldquo;.matrix&rdquo; &mdash; note that file name extensions
  *         are not currently enforced, but may be in the future.</li>
