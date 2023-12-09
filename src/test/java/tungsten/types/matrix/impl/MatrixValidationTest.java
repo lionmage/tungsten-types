@@ -161,4 +161,29 @@ public class MatrixValidationTest {
 //        System.out.println "cm2 inverse is:\n" + formatMatrixForDisplay(inv2, null, null)
         assertEquals(inv2, inv1, "Cauchy inverse should equal regular matrix inverse");
     }
+
+    @Test
+    public void canWeMultiply() {
+        long start = System.currentTimeMillis();
+        Matrix<RealType> result1 = test1.multiply(test2);
+        long end = System.currentTimeMillis();
+        System.out.println("test multiply 1 took " + (end - start) + " ms");
+
+        start = System.currentTimeMillis();
+        Matrix<RealType> result2 = MathUtils.efficientMatrixMultiply(test1, test2);
+        end = System.currentTimeMillis();
+        System.out.println("test multiply 2 took " + (end - start) + " ms");
+
+        System.out.println("\nResult 1:");
+        System.out.println(formatMatrixForDisplay(result1, (String) null, (String) null));
+        System.out.println("\nResult 2:");
+        System.out.println(formatMatrixForDisplay(result2, (String) null, (String) null));
+
+        // TODO normally, this is where I'd check if result1 equals result2 to within some epsilon.
+        // Unfortunately, running the above and visually inspecting the results shows that they
+        // deviate substantially, especially the lower-left quadrant.  And this is just for
+        // multiplying two 8×8 matrices! Further, I would have expected to see some time savings
+        // with Strassen (broken though it is), but instead the implementation of Strassen seems
+        // to take 15× longer.  Some adjustments are in order.
+    }
 }
