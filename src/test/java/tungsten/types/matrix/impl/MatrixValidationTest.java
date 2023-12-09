@@ -164,6 +164,7 @@ public class MatrixValidationTest {
 
     @Test
     public void canWeMultiply() {
+        System.out.println("Checking implementation of Strassen's algorithm using persisted matrices");
         long start = System.currentTimeMillis();
         Matrix<RealType> result1 = test1.multiply(test2);
         long end = System.currentTimeMillis();
@@ -179,11 +180,8 @@ public class MatrixValidationTest {
         System.out.println("\nResult 2:");
         System.out.println(formatMatrixForDisplay(result2, (String) null, (String) null));
 
-        // TODO normally, this is where I'd check if result1 equals result2 to within some epsilon.
-        // Unfortunately, running the above and visually inspecting the results shows that they
-        // deviate substantially, especially the lower-left quadrant.  And this is just for
-        // multiplying two 8×8 matrices! Further, I would have expected to see some time savings
-        // with Strassen (broken though it is), but instead the implementation of Strassen seems
-        // to take 15× longer.  Some adjustments are in order.
+        RealType epsilon = new RealImpl("0.001", MathContext.DECIMAL32);
+        assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
+                "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }
 }

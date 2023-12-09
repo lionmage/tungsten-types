@@ -3145,6 +3145,8 @@ public class MathUtils {
                 // rows and columns are powers of 2
                 if (lhs.rows() == 2L) {
                     // we have 2×2 matrices
+                    // we could delegate to the normal multiply for the 2×2 case, but this actually would take longer
+//                    return lhs.multiply(rhs);
                     final RealType a = lhs.valueAt(0L, 0L);
                     final RealType b = lhs.valueAt(0L, 1L);
                     final RealType c = lhs.valueAt(1L, 0L);
@@ -3163,7 +3165,7 @@ public class MathUtils {
                     RealType[][] result = new RealType[2][2];
                     result[0][0] = (RealType) aA_product.add(b.multiply(B));
                     result[0][1] = (RealType) w.add(v).add(a.add(b).subtract(c).subtract(d).multiply(D));
-                    result[1][0] = (RealType) w.add(u).add(B.add(C).subtract(A).subtract(D).multiply(d));
+                    result[1][0] = (RealType) w.add(u).add(B.add(C).subtract(A).subtract(D).multiply(d)); // order not important for multiplying scalars
                     result[1][1] = (RealType) w.add(u).add(v);
                     return new BasicMatrix<>(result);
                 } else {
@@ -3183,10 +3185,10 @@ public class MathUtils {
                     final Matrix<RealType> aAprod = efficientMatrixMultiply(a, A);
                     final Matrix<RealType> w = aAprod.add(efficientMatrixMultiply(c.add(d).subtract(a), A.add(D).subtract(C)));
 
-                    Matrix<RealType>[][] result = (Matrix<RealType>[][]) new Matrix[2][2];
+                    Matrix<RealType>[][] result = new Matrix[2][2];
                     result[0][0] = aAprod.add(efficientMatrixMultiply(b, B));
                     result[0][1] = w.add(v).add(efficientMatrixMultiply(a.add(b).subtract(c).subtract(d), D));
-                    result[1][0] = w.add(u).add(efficientMatrixMultiply(B.add(C).subtract(A).subtract(D), d));
+                    result[1][0] = w.add(u).add(efficientMatrixMultiply(d, B.add(C).subtract(A).subtract(D)));
                     result[1][1] = w.add(u).add(v);
                     return new AggregateMatrix<>(result);
                 }
