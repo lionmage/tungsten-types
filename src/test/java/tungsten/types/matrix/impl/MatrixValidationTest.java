@@ -11,6 +11,7 @@ import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.ingest.matrix.MatrixParser;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayRowVector;
 import tungsten.types.vector.impl.IntVector;
@@ -43,6 +44,7 @@ public class MatrixValidationTest {
             {"0", "0", "1", "2"},
             {"0", "0", "1", "1"}
     };
+    Matrix<RealType> test1, test2;
 
     public MatrixValidationTest() {
         RealType[][] src = new RealType[][] {{zero, one}, {one.negate(), zero}};
@@ -57,6 +59,10 @@ public class MatrixValidationTest {
         }
         W = new BasicMatrix<>(iSrc);
         Z = new ColumnarMatrix<>(iSrc2);
+        // load the test matrices from text files
+        MatrixParser<RealType> parser = new MatrixParser<>(MathContext.DECIMAL32, RealType.class);
+        test1 = parser.read(getClass().getClassLoader().getResourceAsStream("test1.matrix"));
+        test2 = parser.read(getClass().getClassLoader().getResource("test2.matrix"));
     }
 
     @Test

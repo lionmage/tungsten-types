@@ -112,6 +112,7 @@ public class MatrixParser<T extends Numeric> {
         final String delimiter = "\\s+";
         BasicMatrix<T> result = new BasicMatrix<>();
         reader.lines().takeWhile(line -> !line.isBlank())
+                .map(this::stripBOM)
                 .map(line -> line.split(delimiter))
                 .map(this::convert)
                 .map(ArrayRowVector::new)
@@ -131,10 +132,18 @@ public class MatrixParser<T extends Numeric> {
         return converted;
     }
 
+    private String stripBOM(String original) {
+        if (original.startsWith("\ufeff")) {
+            return original.substring(1); // throw away the initial BOM character
+        }
+        return original;
+    }
+
     private Matrix<T> cplxRead(BufferedReader reader) {
         final String delimiter = "\\s*\\|\\s*"; // pipe delimited with optional whitespace
         BasicMatrix<ComplexType> result = new BasicMatrix<>();
         reader.lines().takeWhile(line -> !line.isBlank())
+                .map(this::stripBOM)
                 .map(line -> line.split(delimiter))
                 .map(this::convertCplx)
                 .map(ArrayRowVector::new)
