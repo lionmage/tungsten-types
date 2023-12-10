@@ -149,9 +149,9 @@ public class MatrixParser<T extends Numeric> {
 
     private String stripBOM(String original) {
         if (original.startsWith("\ufeff")) {
-            return original.substring(1); // throw away the initial BOM character
+            original = original.substring(1); // throw away the initial BOM character
         }
-        return original;
+        return original.stripLeading();  // remove initial whitespace, if any
     }
 
     private Matrix<T> cplxRead(BufferedReader reader) {
