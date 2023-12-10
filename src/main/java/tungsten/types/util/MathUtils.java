@@ -3212,7 +3212,7 @@ public class MathUtils {
      * equal to a given value.
      *
      * @param input the given value
-     * @return the smallest power of 2 ≥ {@code input}
+     * @return the smallest power of 2 &ge; {@code input}
      */
     public static long smallestPowerOf2GTE(long input) {
         if (input < 0L) throw new IllegalArgumentException("Negative values not supported");
