@@ -38,6 +38,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * A representation of the set of prime numbers.
+ * @since 0.3
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Gmail</a>
  */
