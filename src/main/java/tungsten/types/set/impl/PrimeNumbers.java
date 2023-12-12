@@ -50,6 +50,7 @@ public class PrimeNumbers implements Set<IntegerType> {
         primes.add(BigInteger.valueOf(3L));
         primes.add(BigInteger.valueOf(5L));
         primes.add(BigInteger.valueOf(7L));
+        primes.add(BigInteger.valueOf(11L));
         primes.add(BigInteger.valueOf(13L));
     }
 
