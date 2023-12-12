@@ -335,7 +335,7 @@ public class PrimeNumbers implements Set<IntegerType> {
     public boolean equals(Object obj) {
         if (obj instanceof Set) {
             if (obj instanceof PrimeNumbers) return true;
-            // TODO we need to ensure that obj is a set of IntegerType and not something else
+            if (!((Set<?>) obj).isOfType(IntegerType.class)) return false;
             Set<IntegerType> that = (Set<IntegerType>) obj;
             return this.difference(that).cardinality() == 0L;
         }

@@ -153,7 +153,7 @@ public class NumericSet implements Set<Numeric> {
         final java.util.Set<T> innerSet = Comparable.class.isAssignableFrom(clazz) ? new TreeSet<>() : new LinkedHashSet<>();
         for (Numeric element : internal) {
             if (!element.isCoercibleTo(clazz)) {
-                throw new CoercionException("Element of NumericSet cannot be coerced to target type.", element.getClass(), clazz);
+                throw new CoercionException("Element of NumericSet cannot be coerced to target type", element.getClass(), clazz);
             }
             innerSet.add((T) element.coerceTo(clazz));
         }
@@ -178,12 +178,12 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public void append(T element) {
-                throw new UnsupportedOperationException("Cannot modify this view.");
+                throw new UnsupportedOperationException("Cannot modify this view");
             }
 
             @Override
             public void remove(T element) {
-                throw new UnsupportedOperationException("Cannot modify this view.");
+                throw new UnsupportedOperationException("Cannot modify this view");
             }
 
             @Override
@@ -232,6 +232,11 @@ public class NumericSet implements Set<Numeric> {
             }
 
             @Override
+            public boolean isOfType(Class<?> test) {
+                return clazz.isAssignableFrom(test);
+            }
+
+            @Override
             public int hashCode() {
                 return Objects.hash(elements, clazz);
             }
@@ -266,6 +271,11 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public Spliterator<Numeric> spliterator() {
         return internal.spliterator();
+    }
+
+    @Override
+    public boolean isOfType(Class<?> clazz) {
+        return Numeric.class.isAssignableFrom(clazz);
     }
 
     @Override
