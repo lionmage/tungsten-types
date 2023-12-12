@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.IntegerType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -244,6 +245,7 @@ public class NumericSet implements Set<Numeric> {
             @Override
             public boolean equals(Object obj) {
                 if (obj instanceof Set) {
+                    if (!((Set<?>) obj).isOfType(clazz)) return false;
                     Set<T> that = (Set<T>) obj;
                     if (that.countable() && that.cardinality() == this.cardinality()) {
                         return elements.parallelStream().allMatch(that::contains);
@@ -286,6 +288,7 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Set) {
+            if (!((Set<?>) obj).isOfType(Numeric.class)) return false;
             Set<Numeric> that = (Set<Numeric>) obj;
             if (that.countable() && that.cardinality() == this.cardinality()) {
                 return internal.parallelStream().allMatch(that::contains);
