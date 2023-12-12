@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 /**
  * The empty set, &empty;.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class EmptySet implements Set<Object> {
     private EmptySet() {}
@@ -59,12 +59,12 @@ public class EmptySet implements Set<Object> {
 
     @Override
     public void append(Object element) {
-        throw new UnsupportedOperationException("Cannot append to singleton empty set.");
+        throw new UnsupportedOperationException("Cannot append to singleton empty set");
     }
 
     @Override
     public void remove(Object element) {
-        throw new NoSuchElementException("EmptySet has no elements to remove.");
+        throw new NoSuchElementException("EmptySet has no elements to remove");
     }
 
     @Override
