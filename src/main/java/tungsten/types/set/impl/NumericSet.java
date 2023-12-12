@@ -27,7 +27,6 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
