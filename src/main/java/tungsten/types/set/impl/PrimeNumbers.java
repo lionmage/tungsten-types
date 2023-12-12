@@ -77,7 +77,7 @@ public class PrimeNumbers implements Set<IntegerType> {
     public boolean isPrime(IntegerType value) {
         final BigInteger inner = value.asBigInteger();
         if (primes.contains(inner)) return true;
-        if (primes.stream().anyMatch(v -> inner.mod(v).equals(BigInteger.ZERO))) return false;
+        if (primes.parallelStream().anyMatch(v -> inner.mod(v).equals(BigInteger.ZERO))) return false;
         // otherwise, do it the slow way
         BigInteger divisor = BigInteger.valueOf(17L); // we pre-cache up to 13
         final BigInteger limit = inner.sqrt();
