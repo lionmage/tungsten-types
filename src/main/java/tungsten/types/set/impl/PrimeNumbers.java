@@ -34,6 +34,7 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -323,5 +324,26 @@ public class PrimeNumbers implements Set<IntegerType> {
                 return result;
             }
         };
+    }
+
+    @Override
+    public int hashCode() {
+        return 5 + 7 * primes.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Set) {
+            if (obj instanceof PrimeNumbers) return true;
+            // TODO we need to ensure that obj is a set of IntegerType and not something else
+            Set<IntegerType> that = (Set<IntegerType>) obj;
+            return this.difference(that).cardinality() == 0L;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return primes.stream().map(BigInteger::toString).collect(Collectors.joining(", ", "{", "\u2009\u2026}"));
     }
 }

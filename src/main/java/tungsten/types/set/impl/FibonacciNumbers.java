@@ -40,6 +40,7 @@ import tungsten.types.util.CombiningIterator;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -379,6 +380,22 @@ public class FibonacciNumbers implements Set<IntegerType> {
             prevElement = currElement;
         }
         throw new IllegalStateException("We should never have gotten here");
+    }
+
+    @Override
+    public int hashCode() {
+        return 13 + cache.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Set) {
+            if (obj instanceof FibonacciNumbers) return true;
+            // TODO we need to ensure that obj is a set of IntegerType and not something else
+            Set<IntegerType> that = (Set<IntegerType>) obj;
+            return this.difference(that).cardinality() == 0L;
+        }
+        return false;
     }
 
     @Override
