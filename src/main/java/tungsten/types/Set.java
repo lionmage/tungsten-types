@@ -244,6 +244,20 @@ public interface Set<T> extends Iterable<T> {
         return !Arrays.stream(elements).allMatch(cache::add);
     }
 
+    /**
+     * Determine if this {@link Set} satisfies the condition
+     * that its elements are of a given type.<br>
+     * The default implementation inspects the first element
+     * returned from this set's {@link #iterator() iterator},
+     * if an element exists.  Empty sets will always return {@code false}.
+     * @param clazz the type we are checking this set against
+     * @return true if the elements of this set are of the given type,
+     *   false otherwise (including when this set is empty)
+     * @apiNote Implementations are free to use more extensive
+     *   logic, and may even handle the case of an empty set
+     *   differently &mdash; this is relevant in the case of
+     *   specifically typed sets.
+     */
     default boolean isOfType(Class<?> clazz) {
         Iterator<?> iter = iterator();
         if (iter.hasNext()) {
