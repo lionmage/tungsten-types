@@ -253,6 +253,7 @@ public interface Set<T> extends Iterable<T> {
      * @param clazz the type we are checking this set against
      * @return true if the elements of this set are of the given type,
      *   false otherwise (including when this set is empty)
+     * @since 0.3
      * @apiNote Implementations are free to use more extensive
      *   logic, and may even handle the case of an empty set
      *   differently &mdash; this is relevant in the case of
