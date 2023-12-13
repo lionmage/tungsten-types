@@ -74,6 +74,13 @@ public class PrimeNumbers implements Set<IntegerType> {
         return isPrime(element);
     }
 
+    /**
+     * Determine if the supplied value is a prime number or not.
+     * For a number N, this check will entail at most &radic;N
+     * division operations.
+     * @param value the integer to be tested for primality
+     * @return true if {@code value} is prime, false otherwise
+     */
     public boolean isPrime(IntegerType value) {
         final BigInteger inner = value.asBigInteger();
         if (primes.contains(inner)) return true;
