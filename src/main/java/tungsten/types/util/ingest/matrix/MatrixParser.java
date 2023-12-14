@@ -83,7 +83,7 @@ public class MatrixParser<T extends Numeric> {
      * @return a representation of the matrix described by the input
      */
     public Matrix<T> read(InputStream input) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             if (ComplexType.class.isAssignableFrom(matrixType)) {
                 return cplxRead(reader);
             }
