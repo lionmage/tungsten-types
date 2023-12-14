@@ -262,7 +262,7 @@ public interface Set<T> extends Iterable<T> {
     default boolean isOfType(Class<?> clazz) {
         Iterator<?> iter = iterator();
         if (iter.hasNext()) {
-            return clazz.isAssignableFrom(iter.next().getClass());
+            return clazz.isInstance(iter.next());
         }
         return false;
     }
