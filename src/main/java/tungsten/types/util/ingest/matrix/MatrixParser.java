@@ -72,6 +72,9 @@ public class MatrixParser<T extends Numeric> {
     private final MathContext mctx;
 
     public MatrixParser(MathContext mctx, Class<T> type) {
+        if (!type.isInterface()) {
+            throw new IllegalArgumentException("Type argument must not be a concrete class");
+        }
         this.mctx = mctx;
         this.matrixType = type;
     }
