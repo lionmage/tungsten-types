@@ -23,13 +23,23 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
+import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.RealImpl;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 /**
  * A real-typed range that supports iteration.
+ * The lower bound is always {@link tungsten.types.Range.BoundType#INCLUSIVE inclusive}.
  * @since 0.3
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
@@ -40,6 +50,9 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
         super(start, BoundType.INCLUSIVE, end, endType);
         if (stepSize.compareTo((RealType) end.subtract(start)) > 0) {
             throw new IllegalArgumentException("stepSize > span from start to end");
+        } else if (stepSize.sign() != Sign.POSITIVE) {
+            // TODO we should revisit this and see if we want to support negative stepping
+            throw new IllegalArgumentException("stepSize must be > 0");
         }
         this.stepSize = stepSize;
     }
@@ -64,6 +77,69 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
                 RealType result = current;
                 current = (RealType) current.add(stepSize);
                 return result;
+            }
+        };
+    }
+
+    @Override
+    public Spliterator<RealType> spliterator() {
+        return new Spliterator<>() {
+            private RealType current = getLowerBound();
+            private final RealType threshold = (RealType) getUpperBound().subtract(stepSize);
+
+            @Override
+            public boolean tryAdvance(Consumer<? super RealType> consumer) {
+                if (current.compareTo(threshold) > 0) return false;
+                if (!isUpperClosed() && current.equals(threshold)) return false; // corner case
+                consumer.accept(current);
+                current = (RealType) current.add(stepSize);
+                return true;
+            }
+
+            @Override
+            public void forEachRemaining(Consumer<? super RealType> action) {
+                BigDecimal iter = current.asBigDecimal();
+                final MathContext ctx = getLowerBound().getMathContext();
+                final BigDecimal step = stepSize.asBigDecimal();
+                final BigDecimal endstop = isUpperClosed() ? getUpperBound().asBigDecimal() : threshold.asBigDecimal();
+                // by using a for loop here with BigDecimal, as opposed to a do/while loop or similar,
+                // the hope is to get some optimizations from the compiler or runtime
+                for (; iter.compareTo(endstop) <= 0; iter = iter.add(step)) {
+                    RealType val = new RealImpl(iter, ctx, current.isExact());
+                    action.accept(val);
+                }
+                // and update current so that future calls to this Spliterator will fail
+                current = getUpperBound();
+            }
+
+            @Override
+            public Spliterator<RealType> trySplit() {
+                final long elementCount = estimateSize();
+                if (elementCount < 4L) return null;
+                // we're going to chop the range in half
+                IntegerType scale = new IntegerImpl(BigInteger.valueOf(elementCount >> 1L)) {
+                    @Override
+                    public MathContext getMathContext() {
+                        return getLowerBound().getMathContext();
+                    }
+                };
+
+                RealType newBase = (RealType) stepSize.multiply(scale).add(current);
+                SteppedRange subrange = new SteppedRange(current, newBase, BoundType.EXCLUSIVE, stepSize);
+                current = newBase;
+                return subrange.spliterator();
+            }
+
+            @Override
+            public long estimateSize() {
+                RealType span = getUpperBound().subtract(getLowerBound()).magnitude();
+                // this is probably faster than doing ...floor().asBigInteger().longValueExact()
+                return ((RealType) span.divide(stepSize)).asBigDecimal().longValue();
+            }
+
+            @Override
+            public int characteristics() {
+                return SIZED | DISTINCT | IMMUTABLE | ORDERED | SORTED | SUBSIZED | NONNULL;
             }
         };
     }
