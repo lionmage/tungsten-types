@@ -133,7 +133,7 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
 
             @Override
             public long estimateSize() {
-                RealType span = getUpperBound().subtract(getLowerBound()).magnitude();
+                RealType span = getUpperBound().subtract(current).magnitude();
                 // this is probably faster than doing ...floor().asBigInteger().longValueExact()
                 return ((RealType) span.divide(stepSize)).asBigDecimal().longValue();
             }
