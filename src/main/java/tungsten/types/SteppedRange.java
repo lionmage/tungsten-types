@@ -98,13 +98,14 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
 
             @Override
             public void forEachRemaining(Consumer<? super RealType> action) {
-                BigDecimal iter = current.asBigDecimal();
                 final MathContext ctx = getLowerBound().getMathContext();
                 final BigDecimal step = stepSize.asBigDecimal();
                 final BigDecimal endstop = isUpperClosed() ? getUpperBound().asBigDecimal() : threshold.asBigDecimal();
                 // by using a for loop here with BigDecimal, as opposed to a do/while loop or similar,
                 // the hope is to get some optimizations from the compiler or runtime
-                for (; iter.compareTo(endstop) <= 0; iter = iter.add(step)) {
+                // note the use of BigDecimal.add() without the MathContext argument
+                // we don't want or need to be spending extra time rounding the result at each step
+                for (BigDecimal iter = current.asBigDecimal(); iter.compareTo(endstop) <= 0; iter = iter.add(step)) {
                     RealType val = new RealImpl(iter, ctx, current.isExact());
                     action.accept(val);
                 }
