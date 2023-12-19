@@ -27,6 +27,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.RangeUtils;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,6 +80,20 @@ public class Range<T extends Numeric & Comparable<? super T>> {
         
         public boolean isInclusive() { return type == BoundType.INCLUSIVE; }
         public T getValue() { return value; }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value, type);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Range.Bound) {
+                Bound other = (Bound) obj;
+                return other.type == this.type && other.value.equals(this.value);
+            }
+            return false;
+        }
     }
     
     private final Bound lowerBound, upperBound;
@@ -211,7 +226,21 @@ public class Range<T extends Numeric & Comparable<? super T>> {
     public Predicate<T> getPredicate() {
         return this::contains;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lowerBound, upperBound);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Range) {
+            Range<?> other = (Range<?>) obj;
+            return lowerBound.equals(other.lowerBound) && upperBound.equals(other.upperBound);
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();

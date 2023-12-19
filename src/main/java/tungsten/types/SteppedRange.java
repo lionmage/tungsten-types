@@ -34,6 +34,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
@@ -143,5 +144,24 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
                 return SIZED | DISTINCT | IMMUTABLE | ORDERED | SORTED | SUBSIZED | NONNULL;
             }
         };
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", step\u2009=\u2009" + stepSize;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getLowerBound(), getUpperBound(), stepSize);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof SteppedRange) {
+            SteppedRange other = (SteppedRange) obj;
+            if (!stepSize.equals(other.stepSize)) return false;
+        }
+        return super.equals(obj);  // compare bounds
     }
 }
