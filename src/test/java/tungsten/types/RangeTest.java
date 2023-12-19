@@ -37,20 +37,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class RangeTest {
-    private Range intrange;
-    private Range halfOpen;
+    private Range<IntegerType> intrange;
+    private Range<IntegerType> halfOpen;
     
     public RangeTest() {
     }
     
     @BeforeEach
     public void setUp() {
-        intrange = new Range(new IntegerImpl("3"), new IntegerImpl("7"), Range.BoundType.INCLUSIVE);
+        intrange = new Range<>(new IntegerImpl("3"), new IntegerImpl("7"), Range.BoundType.INCLUSIVE);
         // This range has an open (exclusive) lower bound, and a closed (inclusive) upper bound
-        halfOpen = new Range(new IntegerImpl("0"), Range.BoundType.EXCLUSIVE, new IntegerImpl("10"), Range.BoundType.INCLUSIVE);
+        halfOpen = new Range<>(new IntegerImpl("0"), Range.BoundType.EXCLUSIVE, new IntegerImpl("10"), Range.BoundType.INCLUSIVE);
     }
     
     @AfterEach
@@ -65,16 +65,16 @@ public class RangeTest {
         System.out.println("contains");
         String[] rawvalues = {"0", "1", "3", "5", "7", "10"};
         List<IntegerImpl> values = Arrays.stream(rawvalues).sequential().map(IntegerImpl::new).collect(Collectors.toList());
-        final Range instance = intrange;
+        final Range<IntegerType> instance = intrange;
         Boolean[] rawresults = {false, false, true, true, true, false};
         List<Boolean> expResults = Arrays.stream(rawresults).collect(Collectors.toList());
-        List<Boolean> results = values.stream().map(x -> instance.contains(x)).collect(Collectors.toList());
+        List<Boolean> results = values.stream().map(instance::contains).collect(Collectors.toList());
         assertEquals(expResults, results);
         
-        final Range instance2 = halfOpen;
+        final Range<IntegerType> instance2 = halfOpen;
         Boolean[] rawresults2 = {false, true, true, true, true, true};
         expResults = Arrays.stream(rawresults2).collect(Collectors.toList());
-        results = values.stream().map(x -> instance2.contains(x)).collect(Collectors.toList());
+        results = values.stream().map(instance2::contains).collect(Collectors.toList());
         assertEquals(expResults, results);
     }
 
@@ -84,7 +84,7 @@ public class RangeTest {
     @Test
     public void testToString() {
         System.out.println("toString");
-        Range instance = intrange;
+        Range<IntegerType> instance = intrange;
         String expResult = "[3, 7]";
         String result = instance.toString();
         assertEquals(expResult, result);
@@ -101,7 +101,7 @@ public class RangeTest {
     public void testIsBelow() {
         System.out.println("isBelow");
         IntegerType val = new IntegerImpl("1");
-        Range instance = intrange;
+        Range<IntegerType> instance = intrange;
         boolean expResult = true;
         boolean result = instance.isBelow(val);
         assertEquals(expResult, result);
@@ -114,10 +114,9 @@ public class RangeTest {
     public void testIsAbove() {
         System.out.println("isAbove");
         IntegerType val = new IntegerImpl("11");
-        Range instance = intrange;
+        Range<IntegerType> instance = intrange;
         boolean expResult = true;
         boolean result = instance.isAbove(val);
         assertEquals(expResult, result);
     }
-    
 }
