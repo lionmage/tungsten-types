@@ -37,6 +37,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A real-typed range that supports iteration.
@@ -144,6 +146,10 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
                 return SIZED | DISTINCT | IMMUTABLE | ORDERED | SORTED | SUBSIZED | NONNULL;
             }
         };
+    }
+
+    public Stream<RealType> parallelStream() {
+        return StreamSupport.stream(this.spliterator(), true);
     }
 
     @Override
