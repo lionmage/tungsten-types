@@ -23,6 +23,7 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
@@ -37,6 +38,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -54,7 +57,6 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
         if (stepSize.compareTo((RealType) end.subtract(start)) > 0) {
             throw new IllegalArgumentException("stepSize > span from start to end");
         } else if (stepSize.sign() != Sign.POSITIVE) {
-            // TODO we should revisit this and see if we want to support negative stepping
             throw new IllegalArgumentException("stepSize must be > 0");
         }
         this.stepSize = stepSize;
@@ -64,12 +66,11 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
     public Iterator<RealType> iterator() {
         return new Iterator<>() {
             private RealType current = getLowerBound();
-            private final RealType threshold = (RealType) getUpperBound().subtract(stepSize);
+            private final RealType threshold = isUpperClosed() ? getUpperBound() : computeThreshold();
 
             @Override
             public boolean hasNext() {
-                int comparison = current.compareTo(threshold);
-                return isUpperClosed() ? comparison <= 0 : comparison < 0;
+                return current.compareTo(threshold) <= 0;
             }
 
             @Override
@@ -84,11 +85,29 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
         };
     }
 
+    private RealType computeThreshold() {
+        RealType span = getUpperBound().subtract(getLowerBound()).magnitude();
+        RealType fracSteps = (RealType) span.divide(stepSize);
+        IntegerType steps = fracSteps.floor();
+        try {
+            RealType temp = (RealType) stepSize.multiply(steps).coerceTo(RealType.class);
+            if (temp.equals(getUpperBound())) {  // upper bound is open here
+                temp = (RealType) temp.subtract(stepSize).coerceTo(RealType.class);
+            }
+            return temp;
+        } catch (CoercionException e) {
+            Logger.getLogger(SteppedRange.class.getName()).log(Level.WARNING,
+                    "Encountered a problem computing adjusted step size for a span of {0} with {1} whole steps",
+                    new Object[] {span, steps});
+            return getUpperBound();
+        }
+    }
+
     @Override
     public Spliterator<RealType> spliterator() {
         return new Spliterator<>() {
             private RealType current = getLowerBound();
-            private final RealType threshold = (RealType) getUpperBound().subtract(stepSize);
+            private final RealType threshold = isUpperClosed() ? getUpperBound() : computeThreshold();
 
             @Override
             public boolean tryAdvance(Consumer<? super RealType> consumer) {
