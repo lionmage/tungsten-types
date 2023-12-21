@@ -157,8 +157,12 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
             @Override
             public long estimateSize() {
                 RealType span = getUpperBound().subtract(current).magnitude();
+                RealType rawCount = (RealType) span.divide(stepSize);
+                // Since this Spliterator is SIZED, we need to provide an accurate count of elements,
+                // at least initially. That means we need to check for fencepost errors.
+                long fencepost = isUpperClosed() && rawCount.isCoercibleTo(IntegerType.class) ? 1L : 0L;
                 // this is probably faster than doing ...floor().asBigInteger().longValueExact()
-                return ((RealType) span.divide(stepSize)).asBigDecimal().longValue();
+                return rawCount.asBigDecimal().longValue() + fencepost;
             }
 
             @Override
