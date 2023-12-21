@@ -127,8 +127,9 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
                 // the hope is to get some optimizations from the compiler or runtime
                 // note the use of BigDecimal.add() without the MathContext argument
                 // we don't want or need to be spending extra time rounding the result at each step
+                final boolean exact = current.isExact() && stepSize.isExact();  // compute only once
                 for (BigDecimal iter = current.asBigDecimal(); iter.compareTo(endstop) <= 0; iter = iter.add(step)) {
-                    RealType val = new RealImpl(iter, ctx, current.isExact());
+                    RealType val = new RealImpl(iter, ctx, exact);
                     action.accept(val);
                 }
                 // and update current so that future calls to this Spliterator will fail
