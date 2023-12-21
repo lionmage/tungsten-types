@@ -45,7 +45,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * A real-typed range that supports iteration.
- * The lower bound is always {@link tungsten.types.Range.BoundType#INCLUSIVE inclusive}.
+ * The lower bound is always {@link tungsten.types.Range.BoundType#INCLUSIVE inclusive}, i.e. closed.
  * @since 0.3
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
