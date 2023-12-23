@@ -33,10 +33,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -163,6 +160,16 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
                 long fencepost = isUpperClosed() && rawCount.isCoercibleTo(IntegerType.class) ? 1L : 0L;
                 // this is probably faster than doing ...floor().asBigInteger().longValueExact()
                 return rawCount.asBigDecimal().longValue() + fencepost;
+            }
+
+            /**
+             * Since this Spliterator uses the natural ordering of RealType,
+             * it should return null.
+             * @return always null
+             */
+            @Override
+            public Comparator<? super RealType> getComparator() {
+                return null;
             }
 
             @Override

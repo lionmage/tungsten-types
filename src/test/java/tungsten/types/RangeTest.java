@@ -27,8 +27,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.RealImpl;
 
+import java.math.MathContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -118,5 +121,32 @@ public class RangeTest {
         boolean expResult = true;
         boolean result = instance.isAbove(val);
         assertEquals(expResult, result);
+    }
+
+    @Test
+    public void iteration() {
+        System.out.println("iteration over various bounds");
+        RealType low = new RealImpl("0.0", MathContext.DECIMAL32);
+        RealType high = new RealImpl("10.0", MathContext.DECIMAL32);
+        RealType step1 = new RealImpl("1.0", MathContext.DECIMAL32);
+        SteppedRange range1 = new SteppedRange(low, high, Range.BoundType.EXCLUSIVE, step1);
+        System.out.println("Range 1 = " + range1);
+        int count = 0;
+        for (RealType val : range1) count++;
+        assertEquals(10, count);
+
+        SteppedRange range2 = new SteppedRange(low, high, Range.BoundType.INCLUSIVE, step1);
+        count = 0;
+        for (RealType val : range2) count++;
+        assertEquals(11, count);
+
+        RealType step2 = new RealImpl("0.5", MathContext.DECIMAL32);
+        SteppedRange range3 = new SteppedRange(low, high, Range.BoundType.INCLUSIVE, step2);
+        count = 0;
+        for (RealType val : range3) count++;
+        assertEquals(21, count);
+
+        // testing the Spliterator implementation
+        assertEquals(21L, range3.parallelStream().count());
     }
 }
