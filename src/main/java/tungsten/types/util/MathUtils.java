@@ -1941,6 +1941,7 @@ public class MathUtils {
      *   specified accuracy</a> by Cheng et al.
      * @see <a href="https://en.wikipedia.org/wiki/Logarithm_of_a_matrix">the Wikipedia article on matrix logarithms</a>
      */
+    @Experimental
     public static Matrix<? extends Numeric> ln(Matrix<? extends Numeric> X) {
         if (X instanceof DiagonalMatrix) return ((DiagonalMatrix<? extends Numeric>) X).ln();
         if (X instanceof SingletonMatrix || (X.columns() == 1L && X.rows() == 1L)) {
@@ -3137,7 +3138,6 @@ public class MathUtils {
      * @return the product of {@code lhs} and {@code rhs}
      * @see <a href="https://en.wikipedia.org/wiki/Strassen_algorithm">the Wikipedia article on Strassen's algorithm</a>
      */
-    @Experimental
     public static Matrix<RealType> efficientMatrixMultiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
         if (lhs.rows() == rhs.rows() && lhs.columns() == rhs.columns() && lhs.rows() == lhs.columns()) {
             // we have two square matrices of equal dimension
