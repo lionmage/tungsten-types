@@ -3658,8 +3658,8 @@ public class MathUtils {
         final RealType two = new RealImpl(decTWO, z.getMathContext());
         ComplexType scaledArg = (ComplexType) z.multiply(two);
         final Euler e = Euler.getInstance(z.getMathContext());
-        return (ComplexType) e.exp(scaledArg).subtract(one)
-                .divide(e.exp(scaledArg).add(one));
+        ComplexType exp = e.exp(scaledArg);
+        return (ComplexType) exp.subtract(one).divide(exp.add(one));
     }
 
     /**
@@ -3678,8 +3678,8 @@ public class MathUtils {
         final RealType two = new RealImpl(decTWO, x.getMathContext());
         RealType scaledArg = (RealType) x.multiply(two);
         final Euler e = Euler.getInstance(x.getMathContext());
-        return (RealType) e.exp(scaledArg).subtract(one)
-                .divide(e.exp(scaledArg).add(one));
+        RealType exp = e.exp(scaledArg);
+        return (RealType) exp.subtract(one).divide(exp.add(one));
     }
 
     /**
