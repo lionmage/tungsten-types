@@ -164,7 +164,7 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
 
             /**
              * Since this Spliterator uses the natural ordering of RealType,
-             * it should return null.
+             * this method should return null.
              * @return always null
              */
             @Override
