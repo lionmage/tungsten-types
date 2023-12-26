@@ -366,4 +366,18 @@ public class Euler implements RealType {
         }
         return RealType.super.asType(clazz);
     }
+
+    public ComplexType power(ComplexType operand) {
+        return this.exp(operand);
+    }
+    public RealType power(RealType operand) {
+        return this.exp(operand);
+    }
+    public RealType power(RationalType operand) {
+        RealType converted = new RealImpl(operand.asBigDecimal(), getMathContext());
+        return this.exp(converted);
+    }
+    public RealType power(IntegerType operand) {
+        return MathUtils.computeIntegerExponent(this, operand.asBigInteger().longValueExact());
+    }
 }
