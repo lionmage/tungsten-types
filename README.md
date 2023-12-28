@@ -69,5 +69,5 @@ Vector supports negative indexing for the [] operator.
 **Note:** I had originally intended to
 include Groovy scripts and Categories in this project, but due to classpath limitations
 with IntelliJ and its Gradle integration, I have decided to move Groovy-specific stuff
-into a separate project. This README will be updated once that project is spun up.
+into a [separate project](https://github.com/lionmage/tungsten-groovy).
 Methods to support Groovy operator overloading will remain.
