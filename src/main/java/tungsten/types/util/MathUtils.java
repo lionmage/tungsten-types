@@ -1487,6 +1487,21 @@ public class MathUtils {
         }
     }
 
+    /**
+     * Compute the generalized exponent of a {@link Matrix} <strong>M</strong>, that is,
+     * <strong>M</strong><sup>x</sup> where x is any {@link Numeric} value (e.g., real or complex).
+     * This method uses the identity
+     * <strong>M</strong><sup>x</sup>&nbsp;=&nbsp;&#x212f;<sup>x&sdot;ln(<strong>M</strong>)</sup><br>
+     * and should work for all square matrices and exponent types. Note that this operation can be very
+     * slow, so {@link Matrix#pow(Numeric)} is preferred in the case of integer exponents.
+     * @param M        the matrix to exponentiate
+     * @param exponent the power with which to raise M
+     * @return the value of M<sup>exponent</sup>
+     */
+    public static Matrix<? extends Numeric> generalizedExponent(Matrix<? extends Numeric> M, Numeric exponent) {
+        Matrix<? extends Numeric> logexp = ((Matrix<Numeric>) ln(M)).scale(exponent);
+        return exp(logexp);
+    }
 
     /**
      * Compute the n<sup>th</sup> root of a real value a.  The result is the principal
@@ -3140,6 +3155,7 @@ public class MathUtils {
      */
     public static Matrix<RealType> efficientMatrixMultiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
         if (lhs.rows() == rhs.rows() && lhs.columns() == rhs.columns() && lhs.rows() == lhs.columns()) {
+            if (lhs.rows() == 1L) return new SingletonMatrix<>((RealType) lhs.valueAt(0L, 0L).multiply(rhs.valueAt(0L, 0L)));
             // we have two square matrices of equal dimension
             if (BigInteger.valueOf(lhs.rows()).bitCount() == 1) {
                 // rows and columns are powers of 2
