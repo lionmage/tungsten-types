@@ -275,8 +275,8 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     /**
      * This is the <em>diag</em> operator, intended to convert a diagonal matrix into a vector.
      * It is the effective inverse of {@link DiagonalMatrix#DiagonalMatrix(Vector)}.<br>
-     * For a diagonal matrix <strong>D</strong> with diagonal elements d<sub>0</sub>, d<sub>1</sub>, &hellip;, d<sub>n - 1</sub>,
-     * diag(<strong>D</strong>)&nbsp;=&nbsp;[d<sub>0</sub>,&thinsp;&hellip;,&thinsp;d<sub>n - 1</sub>]<sup>T</sup>
+     * For a diagonal matrix <strong>D</strong> with diagonal elements d<sub>0</sub>, d<sub>1</sub>, &hellip;, d<sub>n&nbsp;-&nbsp;1</sub>,
+     * diag(<strong>D</strong>)&nbsp;=&nbsp;[d<sub>0</sub>,&thinsp;&hellip;,&thinsp;d<sub>n&nbsp;-&nbsp;1</sub>]<sup>T</sup>
      *
      * @return a vector containing the diagonal elements of this matrix
      */
