@@ -401,6 +401,11 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             public MathContext getMathContext() {
                 return MathUtils.inferMathContext(Arrays.asList(elements));  // was:  elements[0].getMathContext()
             }
+
+            @Override
+            public Class<T> getElementType() {
+                return (Class<T>) elements.getClass().getComponentType();
+            }
         };
     }
 
