@@ -290,7 +290,7 @@ public class Euler implements RealType {
      */
     public ComplexType exp(ComplexType z) {
         if (z.isCoercibleTo(RealType.class)) {
-            return new ComplexRectImpl(exp(z.real()), new RealImpl(BigDecimal.ZERO));
+            return new ComplexRectImpl(exp(z.real()), new RealImpl(BigDecimal.ZERO, mctx), false);
         }
         
         // e^(x+iy) = (e^x)*(e^iy), where e^x becomes the modulus and y becomes the argument
