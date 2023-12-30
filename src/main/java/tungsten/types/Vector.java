@@ -172,6 +172,6 @@ public interface Vector<T extends Numeric> {
     }
     default void putAt(int i, T element) {
         if (i < 0) this.setElementAt(element, length() + i);
-        this.setElementAt(element, i);
+        else this.setElementAt(element, i);
     }
 }
