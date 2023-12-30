@@ -243,11 +243,10 @@ public class Euler implements RealType {
     }
     
     private static final BigDecimal TWO = BigDecimal.valueOf(2L);
-    private static final BigInteger iTWO = BigInteger.valueOf(2L);
-    
+
     private BigDecimal computeKthTerm(int k, MathContext ctx) {
         BigDecimal numerator = TWO.multiply(BigDecimal.valueOf(k), ctx).add(TWO, ctx);
-        BigInteger innerDenom = iTWO.multiply(BigInteger.valueOf(k)).add(BigInteger.ONE);
+        BigInteger innerDenom = BigInteger.TWO.multiply(BigInteger.valueOf(k)).add(BigInteger.ONE);
         IntegerType denominator = MathUtils.factorial(new IntegerImpl(innerDenom));
         
         return numerator.divide(new BigDecimal(denominator.asBigInteger(), ctx), ctx);
@@ -279,9 +278,8 @@ public class Euler implements RealType {
         for (int n = 0; n < mctx.getPrecision(); n++) {
             sum = sum.add(computeNthTerm(n, x, compctx), compctx);
         }
-        RealImpl result = new RealImpl(sum.round(mctx), false);
+        RealImpl result = new RealImpl(sum.round(mctx), mctx, false);
         result.setIrrational(true);
-        result.setMathContext(mctx);
         return result;
     }
     
