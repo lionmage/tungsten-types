@@ -303,4 +303,15 @@ public class EulerMascheroni implements RealType {
         // precision should always be > 0
         return "\uD835\uDEFE[" + mctx.getPrecision() + "]";
     }
+
+    /*
+    Groovy methods below.
+     */
+    public Object asType(Class<?> clazz) {
+        if (CharSequence.class.isAssignableFrom(clazz)) {
+            if (clazz == StringBuilder.class) return new StringBuilder().append(value.toPlainString());
+            return value.toPlainString();
+        }
+        return RealType.super.asType(clazz);
+    }
 }

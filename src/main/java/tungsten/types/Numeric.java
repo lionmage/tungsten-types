@@ -88,6 +88,7 @@ public interface Numeric {
                 throw new ArithmeticException("Error converting type: " + e.getMessage());
             }
         } else if (CharSequence.class.isAssignableFrom(clazz)) {
+            if (clazz == StringBuilder.class) return new StringBuilder().append(this);
             return this.toString();
         }
         throw new ClassCastException("Unable to coerce to " + clazz.getTypeName());

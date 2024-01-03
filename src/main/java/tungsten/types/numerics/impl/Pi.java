@@ -372,6 +372,7 @@ public class Pi implements RealType {
      */
     public Object asType(Class<?> clazz) {
         if (CharSequence.class.isAssignableFrom(clazz)) {
+            if (clazz == StringBuilder.class) return new StringBuilder().append(value.toPlainString());
             return value.toPlainString();
         }
         return RealType.super.asType(clazz);
