@@ -55,6 +55,15 @@ public class OptionalOperations {
     }
 
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, String strValue) {
+        if (strValue.contains("\u221E")) {
+            if (RealType.class.isAssignableFrom(clazz)) {
+                Sign sign = strValue.startsWith("-") || strValue.startsWith("\u2212") ? Sign.NEGATIVE : Sign.POSITIVE;
+                return (T) RealInfinity.getInstance(sign, MathContext.UNLIMITED);
+            } else if (ComplexType.isExtendedEnabled() && ComplexType.class.isAssignableFrom(clazz)) {
+                return (T) PointAtInfinity.getInstance();
+            }
+        }
+        // normal flow follows
         final Class<? extends T> toInstantiate = ClassTools.reify(clazz);
         try {
             return toInstantiate.getConstructor(String.class).newInstance(strValue);
