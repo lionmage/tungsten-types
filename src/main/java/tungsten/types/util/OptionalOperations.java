@@ -80,6 +80,11 @@ public class OptionalOperations {
                 return (T) new IntegerImpl(BigInteger.valueOf(quasiPrimitive.longValue()));
             case RATIONAL:
                 if (quasiPrimitive instanceof Double || quasiPrimitive instanceof Float) {
+                    if (quasiPrimitive instanceof Double && ((Double) quasiPrimitive).isInfinite()) {
+                        throw new ArithmeticException("double infinity cannot be converted to a rational");
+                    } else if (quasiPrimitive instanceof Float && ((Float) quasiPrimitive).isInfinite()) {
+                        throw new ArithmeticException("float infinity cannot be converted to a rational");
+                    }
                     RealType real = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
                     try {
                         return (T) real.coerceTo(RationalType.class);
@@ -90,6 +95,11 @@ public class OptionalOperations {
                 // otherwise, just assume it's an integer value and return a rational with a denom of 1
                 return (T) new RationalImpl(quasiPrimitive.longValue(), 1L, MathContext.UNLIMITED);
             case REAL:
+                if (quasiPrimitive instanceof Double && ((Double) quasiPrimitive).isInfinite()) {
+                    return (T) RealInfinity.getInstance(quasiPrimitive.doubleValue() < 0d ? Sign.NEGATIVE : Sign.POSITIVE, MathContext.UNLIMITED);
+                } else if (quasiPrimitive instanceof Float && ((Float) quasiPrimitive).isInfinite()) {
+                    return (T) RealInfinity.getInstance(quasiPrimitive.floatValue() < 0f ? Sign.NEGATIVE : Sign.POSITIVE, MathContext.UNLIMITED);
+                }
                 return (T) new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
             case COMPLEX:
                 RealType realVal = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
