@@ -103,9 +103,8 @@ public class OptionalOperations {
                 return (T) new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
             case COMPLEX:
                 if (ComplexType.isExtendedEnabled()) {
-                    if (quasiPrimitive instanceof Double && ((Double) quasiPrimitive).isInfinite()) {
-                        return (T) PointAtInfinity.getInstance();
-                    } else if (quasiPrimitive instanceof Float && ((Float) quasiPrimitive).isInfinite()) {
+                    if ((quasiPrimitive instanceof Double && ((Double) quasiPrimitive).isInfinite()) ||
+                            (quasiPrimitive instanceof Float && ((Float) quasiPrimitive).isInfinite())) {
                         return (T) PointAtInfinity.getInstance();
                     }
                 }
