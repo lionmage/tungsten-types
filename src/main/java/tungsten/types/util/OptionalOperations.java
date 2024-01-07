@@ -41,27 +41,39 @@ import java.math.MathContext;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * A utility class containing useful operations that may be safely
- * invoked on objects, whether or not those objects directly support
+ * invoked on objects, whether those objects directly support
  * those operations.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class OptionalOperations {
     private OptionalOperations() {
         // this class should never be instantiable
     }
 
+    private static final Pattern infinityPat = Pattern.compile("[+-\u2212]?\u221E");
+
+    /**
+     * Given a string representing a numeric value, instantiate a {@link Numeric} subtype
+     * which represents that value. Note that this method can handle representations of infinity,
+     * but must conform to existing mathematical conventions.  (For example, {@code ComplexType}
+     * only supports a single {@link PointAtInfinity}, therefore does not support signed infinity.)
+     * @param clazz    the target type for instantiation, typically an interface subtype of {@link Numeric}
+     * @param strValue the string value to be parsed
+     * @return a concrete instance of {@code Numeric}
+     * @param <T> the {@code Numeric} subtype
+     */
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, String strValue) {
-        if (strValue.contains("\u221E")) {
-            if (RealType.class.isAssignableFrom(clazz)) {
-                Sign sign = strValue.startsWith("-") || strValue.startsWith("\u2212") ? Sign.NEGATIVE : Sign.POSITIVE;
-                return (T) RealInfinity.getInstance(sign, MathContext.UNLIMITED);
-            } else if (ComplexType.isExtendedEnabled() && ComplexType.class.isAssignableFrom(clazz)) {
-                return (T) PointAtInfinity.getInstance();
-            }
+        if (RealType.class.isAssignableFrom(clazz) && infinityPat.matcher(strValue).matches()) {
+            Sign sign = strValue.startsWith("-") || strValue.startsWith("\u2212") ? Sign.NEGATIVE : Sign.POSITIVE;
+            return (T) RealInfinity.getInstance(sign, MathContext.UNLIMITED);
+        } else if (ComplexType.isExtendedEnabled() && ComplexType.class.isAssignableFrom(clazz) &&
+                strValue.equals("\u221E")) {  // point at infinity is neither positive nor negative
+            return (T) PointAtInfinity.getInstance();
         }
         // normal flow follows
         final Class<? extends T> toInstantiate = ClassTools.reify(clazz);
@@ -82,6 +94,13 @@ public class OptionalOperations {
         }
     }
 
+    /**
+     * Given a Java wrapper subclass of {@link Number}, convert it to a {@link Numeric} subtype.
+     * @param clazz          the target type for conversion
+     * @param quasiPrimitive any instance of {@code Number}, e.g., a {@code Long}, {@code Double}, etc.
+     * @return a concrete instance of a {@code Numeric} subtype
+     * @param <T> the numeric subtype
+     */
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, Number quasiPrimitive) {
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
         switch (h) {
@@ -123,6 +142,13 @@ public class OptionalOperations {
         throw new UnsupportedOperationException("No way to construct an instance of " + h + " at this time");
     }
 
+    /**
+     * Instantiate a mathematical constant by name.
+     * @param constName the name of the constant to instantiate
+     * @param mctx      the {@link MathContext} to apply to the generated constant
+     * @return a concrete instance of a constant
+     * @param <R> the {@code Numeric} subtype of the constant
+     */
     public static <R extends Numeric> R instantiateConstant(String constName, MathContext mctx) {
         Collection<Class<?>> constClasses =
                 ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
@@ -137,7 +163,7 @@ public class OptionalOperations {
                 final Method m = method.get();
                 Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
                         "Constant factory method {0} will be invoked on {1} to obtain {2}",
-                        new Object[]{m.getName(), type.getName(), constAnno.representation()});
+                        new Object[] { m.getName(), type.getName(), constAnno.representation() });
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {
@@ -168,6 +194,16 @@ public class OptionalOperations {
         throw new IllegalArgumentException("No constant found named " + constName);
     }
 
+    /**
+     * Given a name, {@link MathContext}, and sign, generate an instance of a constant.
+     * This is useful for constants that can be instantiated with a sign, e.g., one of
+     * the real infinities.
+     * @param constName the name of the constant
+     * @param mctx      the {@code MathContext}
+     * @param sign      the {@code Sign} of the constant
+     * @return a concrete instance of the requested constant
+     * @param <R> the {@code Numeric} subtype of the constant
+     */
     public static <R extends Numeric> R instantiateConstant(String constName, MathContext mctx, Sign sign) {
         Collection<Class<?>> constClasses =
                 ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
@@ -207,10 +243,17 @@ public class OptionalOperations {
                 }
             }
         }
-        // if we fall through, we failed -- should we return null instead of throwing an exception?
+        // if we fall through, we failed — should we return null instead of throwing an exception?
         throw new IllegalArgumentException("No constant found named " + constName);
     }
 
+    /**
+     * Varargs version of {@link #instantiateConstant(String, MathContext)}.
+     * @param constName the name of the constant
+     * @param arguments an argument list; may be null for invoking no-args factory methods
+     * @return a concrete instance of a constant
+     * @param <R> the {@code Numeric} subtype of the constant
+     */
     public static <R extends Numeric> R instantiateConstant(String constName, Object... arguments) {
         Collection<Class<?>> constClasses =
                 ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
@@ -266,6 +309,13 @@ public class OptionalOperations {
         throw new IllegalArgumentException("No constant found named " + constName);
     }
 
+    /**
+     * Given two {@code Class}es representing two subtypes of {@link Numeric}, choose a type that can be used
+     * as a common type for them.
+     * @param type1 the first type
+     * @param type2 the second type
+     * @return a {@code Class<? extends Numeric>} representing the compromise type
+     */
     public static Class<? extends Numeric> findCommonType(Class<? extends Numeric> type1, Class<? extends Numeric> type2) {
         SortedSet<Class<? extends Numeric>> if1 = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
         expandHierarchy(if1, type1);
@@ -308,6 +358,14 @@ public class OptionalOperations {
         if (type.isInterface()) accumulator.add(type);
     }
 
+    /**
+     * Get the {@link Numeric} subtype for a given matrix.
+     * This method inspects the first row or first column of the supplied
+     * matrix and obtains the type of its elements.  For heterogeneous
+     * matrices, this may not give ideal results.
+     * @param M the matrix to inspect
+     * @return the inferred type of the elements of {@code M}
+     */
     public static Class<? extends Numeric> findTypeFor(Matrix<? extends Numeric> M) {
         if (M.getClass().isAnnotationPresent(Columnar.class)) {
             return M.getColumn(0L).getElementType();
@@ -353,6 +411,14 @@ public class OptionalOperations {
         }
     }
 
+    /**
+     * If present, invoke the {@code setMathContext()} method of the given object.
+     * This is a safe way to update the {@link MathContext} of any {@code Numeric}
+     * instance without casting or even knowing the exact type or implementation.
+     * @param number  the target {@code Numeric} instance
+     * @param updated an updated {@code MathContext}
+     * @return true if successful, false otherwise
+     */
     public static boolean setMathContext(Numeric number, MathContext updated) {
         try {
             Method m = number.getClass().getMethod("setMathContext", MathContext.class);
