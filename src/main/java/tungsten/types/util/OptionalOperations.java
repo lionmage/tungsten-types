@@ -51,6 +51,8 @@ import java.util.regex.Pattern;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class OptionalOperations {
+    private static final String CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE = "Supplied Class must not be for a concrete type";
+
     private OptionalOperations() {
         // this class should never be instantiable
     }
@@ -62,12 +64,18 @@ public class OptionalOperations {
      * which represents that value. Note that this method can handle representations of infinity,
      * but must conform to existing mathematical conventions.  (For example, {@code ComplexType}
      * only supports a single {@link PointAtInfinity}, therefore does not support signed infinity.)
-     * @param clazz    the target type for instantiation, typically an interface subtype of {@link Numeric}
+     * @param clazz    the target type for instantiation, an interface subtype of {@link Numeric}
      * @param strValue the string value to be parsed
      * @return a concrete instance of {@code Numeric}
      * @param <T> the {@code Numeric} subtype
+     * @apiNote Using a concrete type {@code T} for {@code Class<T>} argument {@code clazz} can
+     *   result in {@link ClassCastException}s &mdash; for example, passing {@code RealImpl.class}
+     *   with {@code strValue = "+∞"} could be problematic since {@link RealInfinity} is not
+     *   a subtype of {@code RealImpl}, but of {@link RealType}. Therefore, concrete types are
+     *   disallowed for {@code clazz}.
      */
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, String strValue) {
+        if (!clazz.isInterface()) throw new IllegalArgumentException(CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE);
         if (RealType.class.isAssignableFrom(clazz) && infinityPat.matcher(strValue).matches()) {
             Sign sign = strValue.startsWith("-") || strValue.startsWith("\u2212") ? Sign.NEGATIVE : Sign.POSITIVE;
             return (T) RealInfinity.getInstance(sign, MathContext.UNLIMITED);
@@ -100,8 +108,14 @@ public class OptionalOperations {
      * @param quasiPrimitive any instance of {@code Number}, e.g., a {@code Long}, {@code Double}, etc.
      * @return a concrete instance of a {@code Numeric} subtype
      * @param <T> the numeric subtype
+     * @apiNote Using a concrete type {@code T} for {@code Class<T>} argument {@code clazz} can
+     *   result in {@link ClassCastException}s &mdash; for example, passing {@code RealImpl.class}
+     *   when {@code quasiPrimitive} takes on an infinite value could be problematic since {@link RealInfinity}
+     *   is not a subtype of {@code RealImpl}, but of {@link RealType}. Therefore, concrete types are
+     *   disallowed for {@code clazz}.
      */
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, Number quasiPrimitive) {
+        if (!clazz.isInterface()) throw new IllegalArgumentException(CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE);
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
         switch (h) {
             case INTEGER:
