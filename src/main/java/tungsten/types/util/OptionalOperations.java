@@ -440,12 +440,12 @@ public class OptionalOperations {
             return true;
         } catch (NoSuchMethodException e) {
             Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
-                    "{0} does not have a setMathContext() method, not updating", number.getClass().getTypeName());
+                    "{0} does not have a setMathContext() method; not updating.", number.getClass().getTypeName());
             return false;
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException abend) {
             // this is a warning because these exceptions are unexpected (and potentially problematic)
             Logger.getLogger(OptionalOperations.class.getName()).log(Level.WARNING,
-                    "While attempting to invoke setMathContext() on " + number, e);
+                    "While attempting to invoke setMathContext() on " + number, abend);
             return false;
         }
     }
