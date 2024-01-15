@@ -31,6 +31,8 @@ import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
+import tungsten.types.vector.ColumnVector;
+import tungsten.types.vector.RowVector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,16 +44,20 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.LongStream;
 
 /**
  * A utility class containing useful operations that may be safely
  * invoked on objects, whether those objects directly support
  * those operations.
  *
- * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class OptionalOperations {
     private static final String CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE = "Supplied Class must not be for a concrete type";
+    private static final String INDETERMINATE_TYPE = "Cannot determine element type of matrix";
+    public static final String SLOW_MATRIX_SCAN = "tungsten.types.numerics.OptionalOperations.slow.matrix.scan";
 
     private OptionalOperations() {
         // this class should never be instantiable
@@ -381,6 +387,24 @@ public class OptionalOperations {
      * @return the inferred type of the elements of {@code M}
      */
     public static Class<? extends Numeric> findTypeFor(Matrix<? extends Numeric> M) {
+        if (Boolean.getBoolean(SLOW_MATRIX_SCAN)) {
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.FINE,
+                    "Performing slow scan of {0}\u00D7{1} matrix to determine element type.",
+                    new Object[] { M.rows(), M.columns() });
+            if (M.getClass().isAnnotationPresent(Columnar.class)) {
+                return LongStream.range(0L, M.columns()).parallel()
+                        .mapToObj(M::getColumn).flatMap(ColumnVector::stream)
+                        .map(x -> (Class<Numeric>) x.getClass())
+                        .reduce((type1, type2) -> (Class<Numeric>) findCommonType(type1, type2))
+                        .orElseThrow(() -> new IllegalStateException(INDETERMINATE_TYPE));
+            } else {
+                return LongStream.range(0L, M.rows()).parallel()
+                        .mapToObj(M::getRow).flatMap(RowVector::stream)
+                        .map(x -> (Class<Numeric>) x.getClass())
+                        .reduce((type1, type2) -> (Class<Numeric>) findCommonType(type1, type2))
+                        .orElseThrow(() -> new IllegalStateException(INDETERMINATE_TYPE));
+            }
+        }
         if (M.getClass().isAnnotationPresent(Columnar.class)) {
             return M.getColumn(0L).getElementType();
         } else {
