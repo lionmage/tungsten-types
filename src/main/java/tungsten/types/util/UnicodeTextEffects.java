@@ -59,6 +59,7 @@ public class UnicodeTextEffects {
     private static final Map<Character, String> superscriptMap;
     private static final Map<Character, String> subscriptMap;
     private static final Map<Integer, String> radicalMap;
+    private static final String NEGATIVE_VALUES_PROHIBITED = "Negative fractional values prohibited";
 
     static {
         superscriptMap = new HashMap<>();
@@ -360,7 +361,7 @@ public class UnicodeTextEffects {
     public static String functionNameForDisplay(String fname, int derivativeOrder, boolean preferPrimes, String... argumentNames) {
         if (derivativeOrder < 0) throw new IllegalArgumentException("Order of derivative must be a non-negative integer");
         StringBuilder buf = new StringBuilder();
-        buf.append(fname != null && fname.length() > 0 ? fname : "\u0192");
+        buf.append(fname != null && !fname.isEmpty() ? fname : "\u0192");
         switch (derivativeOrder) {
             case 0:
                 // the function itself
@@ -512,7 +513,7 @@ public class UnicodeTextEffects {
         }
 
         public static FractionalHorizontalBlock forFraction(RationalType frac) {
-            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
             RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
             for (FractionalHorizontalBlock block : values()) {
@@ -522,7 +523,7 @@ public class UnicodeTextEffects {
         }
 
         public static FractionalHorizontalBlock forFraction(RealType frac) {
-            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             if (Zero.isZero(frac)) return EMPTY;
             if (One.isUnity(frac)) return FULL;
             RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
@@ -567,7 +568,7 @@ public class UnicodeTextEffects {
         }
 
         public static FractionalVerticalBlock forFraction(RationalType frac) {
-            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
             RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
             for (FractionalVerticalBlock block : values()) {
@@ -577,7 +578,7 @@ public class UnicodeTextEffects {
         }
 
         public static FractionalVerticalBlock forFraction(RealType frac) {
-            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Negative fractional values prohibited");
+            if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             if (Zero.isZero(frac)) return EMPTY;
             if (One.isUnity(frac)) return FULL;
             RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));

@@ -111,7 +111,7 @@ public class RationalCellRenderer implements CellRenderingStrategy {
         }
     }
 
-    private static final String SOLIDUS_REGEX = "[/\u2044]";
+    private static final String SOLIDUS_REGEX = "[/\u2044\u2215]";
     private static final Pattern solidusPattern = Pattern.compile(SOLIDUS_REGEX);
     private static final String ONE_DENOM = SOLIDUS_REGEX + "1$";
     private static final Pattern oneDenomPattern = Pattern.compile(ONE_DENOM);
@@ -177,21 +177,21 @@ public class RationalCellRenderer implements CellRenderingStrategy {
             if (!m.find()) {
                 throw new NumericRenderingException("Failed to detect unity denominator in " + strVal, ratValue);
             }
-            m.appendReplacement(cell, ""); // no need to appendTail() here since we're cutting off the end anyway
+            m.appendReplacement(cell, "\u2008"); // no need to appendTail() here since we're cutting off the end anyway
         } else if (One.isUnity(ratValue)) {
-            // if our denominator is not 1 but we are unity anyway, complain and clean up
+            // if our denominator is not 1, but we are unity anyway, complain and clean up
             Logger.getLogger(RationalCellRenderer.class.getName()).log(Level.WARNING,
                     "Encountered rational value {0} with equal numerator and " +
                     "denominator. This should have been reduced to 1/1.", ratValue);
             // this is really just unity (1), so substitute a 1 here
-            IntStream.range(0, valPos - 1).forEach(dummy -> cell.append(' '));
-            cell.append('1');
+            IntStream.range(0, valPos - 1).forEach(dummy -> cell.append('\u2007'));  // figure space
+            cell.append("1\u2008");  // U+2008 punctuation space
         } else {
             cell.append(strVal);
         }
         // trailing space
         int remaining = cellWidth - UnicodeTextEffects.computeCharacterWidth(cell);
-        IntStream.range(0, remaining).forEach(dummy -> cell.append(' '));
+        IntStream.range(0, remaining).forEach(dummy -> cell.append('\u2007'));  // figure space
 
         return cell.toString();
     }

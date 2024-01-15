@@ -194,17 +194,17 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
             buf.append(trimDecimalPlaces(reVal.toString()));
         }
         while (UnicodeTextEffects.computeCharacterWidth(buf) < separatorPos[column] - 2) {
-            buf.insert(0, ' ');
+            buf.insert(0, '\u2007'); // figure space
         }
-        buf.append('\u00A0');
+        buf.append('\u205F');  // U+205F is a medium mathematical space
 
         // imaginary part
         RealType imVal = cpVal.imaginary();
         if (imVal.sign() == Sign.NEGATIVE) {
-            buf.append("\u2212\u00A0");
+            buf.append("\u2212\u205F");
             imVal = imVal.negate();
         } else {
-            buf.append("+\u00A0");
+            buf.append("+\u205F");
         }
         if (imVal.getClass().isAnnotationPresent(Constant.class)) {
             precisionPat.matcher(imVal.toString()).appendReplacement(buf, "").appendTail(buf);
@@ -213,7 +213,7 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
         }
         buf.append(IMAG_UNIT);
         while (UnicodeTextEffects.computeCharacterWidth(buf) < colWidth[column]) {
-            buf.append(' ');
+            buf.append('\u2007');
         }
 
         return buf.toString();

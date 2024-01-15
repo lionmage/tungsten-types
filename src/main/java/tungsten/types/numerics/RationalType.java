@@ -27,16 +27,18 @@ import tungsten.types.Numeric;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.regex.Pattern;
 
 /**
  * General interface for types representing rational values of the form
  * p/q, where p and q are integral values (p, q &isin; &#x2124;), q&nbsp;&ne;&nbsp;0, and in general normalized
  * so that q&nbsp;&gt;&nbsp;0.  The set of rational numbers is typically denoted &#x211A;.
  *
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public interface RationalType extends Numeric, Comparable<RationalType> {
     String REDUCE_FOR_EQUALITY_TEST = "tungsten.types.numerics.RationalType.reduceForEquals";
+    Pattern SOLIDUS_REGEX = Pattern.compile("[/\u2044\u2215]");
     /**
      * Returns the magnitude (absolute value) of this rational
      * number in reduced form.

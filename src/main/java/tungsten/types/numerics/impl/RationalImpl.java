@@ -37,6 +37,7 @@ import java.math.MathContext;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 /**
  * An implementation of a rational number data type.
@@ -67,15 +68,19 @@ public class RationalImpl implements RationalType {
     }
     
     public RationalImpl(String representation) {
-        final int position = representation.indexOf('/');
-        if (position < 1) {
+        Matcher m = SOLIDUS_REGEX.matcher(representation);
+        if (!m.find()) {
             throw new IllegalArgumentException("Badly formatted rational value: " + representation);
+        }
+        final int position = m.start(); // was: representation.indexOf('/');
+        if (position < 1) {
+            throw new IllegalArgumentException("Missing numerator: " + representation);
         }
         String numStr = representation.substring(0, position);
         String denomStr = representation.substring(position + 1);
         
-        numerator = new BigInteger(numStr.trim());
-        denominator = new BigInteger(denomStr.trim());
+        numerator = new BigInteger(numStr.strip());
+        denominator = new BigInteger(denomStr.strip());
     }
     
     public RationalImpl(BigInteger numerator, BigInteger denominator, boolean exact) {
@@ -429,7 +434,7 @@ public class RationalImpl implements RationalType {
             return new RationalImpl(numroot, denomroot, mctx);
         } else {
             if (MathUtils.useBuiltInOperations()) {
-                return new RealImpl(this.asBigDecimal().sqrt(mctx), false);
+                return new RealImpl(this.asBigDecimal().sqrt(mctx), mctx, false);
             }
             try {
                 RealType realNum = (RealType) reduced.numerator().coerceTo(RealType.class);

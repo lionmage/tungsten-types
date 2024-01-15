@@ -209,7 +209,7 @@ public class RealCellRenderer implements CellRenderingStrategy {
         final int fracPartSize = decPoint < strRep.length() ? UnicodeTextEffects.computeCharacterWidth(strRep, decPoint + 1) : 0;
         StringBuilder buf = new StringBuilder().append(strRep);
         while (UnicodeTextEffects.computeActualDecimalPointCharPosition(buf, decPoint) < decPos[column]) {
-            buf.insert(0, ' ');
+            buf.insert(0, '\u2007'); // figure space
             decPoint++;  // we're inserting spaces of unit width, so we can get away with incrementing directly here
         }
         if (fracPartSize > maxFractionDigits) {
@@ -217,8 +217,13 @@ public class RealCellRenderer implements CellRenderingStrategy {
             if (useEllipses()) buf.append(HORIZONTAL_ELLIPSIS);
         }
         int curWidth = UnicodeTextEffects.computeCharacterWidth(buf);
+        if (fracPartSize == 0) {
+            // we need to insert a space proportional to the width of the decimal point
+            buf.append('\u2008'); // punctuation space
+            curWidth++;
+        }
         while (curWidth++ < colWidth[column]) {
-            buf.append(' ');
+            buf.append('\u2007'); // figure space
         }
         return buf.toString();
     }
