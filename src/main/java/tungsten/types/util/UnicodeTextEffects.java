@@ -255,10 +255,50 @@ public class UnicodeTextEffects {
         return buf.toString();
     }
 
+    /**
+     * Remove all combining characters from a {@link String} after first
+     * normalizing it to {@link Normalizer.Form#NFKD NFKD} compatibility
+     * decomposition form.
+     * @param source the original {@code String}
+     * @return the original {@code String} with all combining characters removed
+     */
     public static String stripCombiningCharacters(final String source) {
         String expanded = Normalizer.isNormalized(source, Normalizer.Form.NFKD) ? source :
                 Normalizer.normalize(source, Normalizer.Form.NFKD);
         return expanded.replaceAll("\\p{M}", "");
+    }
+
+    /**
+     * Returns {@code true} if the source {@link String} contains any vulgar fractions,
+     * including U+215F (Fraction Numerator One).  All vulgar fractions are part of the
+     * Number Forms Unicode character block.
+     * @param source the {@code String} to test
+     * @return true if {@code source} contains any fraction characters, false otherwise
+     */
+    public static boolean hasVulgarFraction(final String source) {
+        return source.chars().anyMatch(ch -> ch >= 0x2150 && ch <= 0x215F);
+    }
+
+    /**
+     * Expand any vulgar fraction into a proper fraction.  This method
+     * is suitable for pre-processing a {@code String} containing fractions
+     * for parsing and ingestion.<br>
+     * Examples:
+     * <table>
+     *     <tr><th>Original</th><th>Converted</th></tr>
+     *     <tr><td>&#x215F;30</td><td>1/30</td></tr>
+     *     <tr><td>&#x2151;</td><td>1/9</td></tr>
+     * </table>
+     * @param source the {@code String} to be expanded
+     * @return a {@code String} with all vulgar fractions expanded into a canonical form
+     * @apiNote The current implementation will convert U+2044 Fraction Slash into a
+     *   regular solidus (forward slash) character, which is guaranteed to be easily parseable.
+     *   This transformation is not strictly necessary for use with e.g. the
+     *   {@link RationalImpl#RationalImpl(String)} and related constructors. This transformation
+     *   does have the advantage of rendering plainly, which makes this useful for debugging.
+     */
+    public static String expandFractions(final String source) {
+        return Normalizer.normalize(source, Normalizer.Form.NFKC).replace('\u2044', '/');
     }
 
     /**

@@ -29,6 +29,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
+import tungsten.types.util.UnicodeTextEffects;
 //import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -68,6 +69,9 @@ public class RationalImpl implements RationalType {
     }
     
     public RationalImpl(String representation) {
+        if (UnicodeTextEffects.hasVulgarFraction(representation)) {
+            representation = UnicodeTextEffects.expandFractions(representation);
+        }
         Matcher m = SOLIDUS_REGEX.matcher(representation);
         if (!m.find()) {
             throw new IllegalArgumentException("Badly formatted rational value: " + representation);
