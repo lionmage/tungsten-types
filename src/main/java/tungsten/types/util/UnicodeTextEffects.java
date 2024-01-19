@@ -301,6 +301,71 @@ public class UnicodeTextEffects {
         return Normalizer.normalize(source, Normalizer.Form.NFKC).replace('\u2044', '/');
     }
 
+    private static final Map<Integer, String> romanDigits = new HashMap<>();
+    // indices of Roman numeral glyphs that must only be used in the terminal position
+    private static final List<Integer> terminalOnly = List.of(2, 3, 6, 7, 8, 11, 12);
+    static {
+        romanDigits.put(1000, "\u216F"); // M
+        romanDigits.put(900, "\u216D\u216F"); // CM
+        romanDigits.put(500, "\u216E");  // D
+        romanDigits.put(400, "\u216D\u216E");  // CD
+        romanDigits.put(100, "\u216D"); // C
+        romanDigits.put(90, "\u2169\u216D"); // XC
+        romanDigits.put(50, "\u216C"); // L
+        romanDigits.put(40, "\u2169\u216C");  // XL
+        romanDigits.put(12, "\u216B"); // XII, must only be used in terminal case
+        romanDigits.put(11, "\u216A"); // XI, must only be used in terminal case
+        romanDigits.put(10, "\u2169"); // X
+        romanDigits.put(9, "\u2168");  // IX
+        romanDigits.put(8, "\u2167");  // VIII
+        romanDigits.put(7, "\u2166");  // VII
+        romanDigits.put(6, "\u2165");  // VI
+        romanDigits.put(5, "\u2164");  // V
+        romanDigits.put(4, "\u2163");  // IV
+        romanDigits.put(3, "\u2162");  // III
+        romanDigits.put(2, "\u2161");  // II
+        romanDigits.put(1, "\u2160");  // I
+    }
+
+    /**
+     * Render the supplied value in Roman numerals.
+     * @param number    the value to render
+     * @param smallCase if true, render in small case (may be lower case or small caps depending on font)
+     * @return a representation of {@code number} in Roman numerals
+     * @throws IllegalArgumentException if {@code number} is 0 or negative
+     */
+    public static String inRomanNumerals(int number, boolean smallCase) {
+        if (number < 1) throw new IllegalArgumentException("Cannot render " + number + " in Roman numerals");
+        SortedSet<Integer> digitValues = new TreeSet<>(Comparator.reverseOrder());
+        digitValues.addAll(romanDigits.keySet());
+        StringBuilder result = new StringBuilder();
+
+        for (Integer value : digitValues) {
+            if (terminalOnly.contains(value)) {
+                if (number == value) {
+                    result.append(romanDigits.get(value));
+                    break;
+                }
+                // otherwise skip this value
+                continue;
+            }
+            while (number >= value) {
+                number -= value;
+                result.append(romanDigits.get(value));
+            }
+        }
+
+        if (smallCase) {
+            // the glyphs for small Roman numerals exist between 0x2170 and 0x217F
+            // rather than store these redundantly, we can take the existing characters
+            // and add 0x10 to each
+            for (int i = 0; i < result.length(); i++) {
+                result.setCharAt(i, (char) (result.charAt(i) + 0x10));
+            }
+        }
+        return result.toString();
+    }
+
     /**
      * Compute the width of a {@link CharSequence} or subsequence, measured in displayed characters.
      * This method assumes a monospaced font.<br>
@@ -319,7 +384,7 @@ public class UnicodeTextEffects {
         }
         int width = Character.codePointCount(source, startInclusive, endExclusive);
         // subtract off any combining characters that don't add to a character's width
-        width -= source.subSequence(startInclusive, endExclusive).chars()
+        width -= (int) source.subSequence(startInclusive, endExclusive).chars()
                 .filter(cp -> Character.getType(cp) == Character.NON_SPACING_MARK)
                 .count();
         return width;
