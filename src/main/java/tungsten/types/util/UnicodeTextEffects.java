@@ -283,8 +283,8 @@ public class UnicodeTextEffects {
      * Expand any vulgar fraction into a proper fraction.  This method
      * is suitable for pre-processing a {@code String} containing fractions
      * for parsing and ingestion.<br>
-     * Examples:
      * <table>
+     *     <caption>Examples</caption>
      *     <tr><th>Original</th><th>Converted</th></tr>
      *     <tr><td>&#x215F;30</td><td>1/30</td></tr>
      *     <tr><td>&#x2151;</td><td>1/9</td></tr>

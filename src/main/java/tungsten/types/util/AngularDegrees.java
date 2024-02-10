@@ -125,8 +125,8 @@ public class AngularDegrees {
      * A {@link String}-based constructor that can handle both decimal
      * (37.5&deg;) and sexagesimal (35&deg;&thinsp;42&prime;&thinsp;13&Prime;)
      * representations.<br>
-     * Permissible symbol substitutions:
      * <table style="border: 1px solid black;border-collapse: collapse;">
+     *     <caption>Permissible symbol substitutions</caption>
      *     <tr><th>Preferred</th><th>Alternate</th><th>Meaning</th></tr>
      *     <tr><td>&prime;</td><td>'</td><td>minutes</td></tr>
      *     <tr><td>&Prime;</td><td>&quot;</td><td>seconds</td></tr>
