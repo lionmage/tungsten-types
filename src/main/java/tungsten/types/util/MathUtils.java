@@ -3078,9 +3078,19 @@ public class MathUtils {
         } catch (CoercionException e) {
             throw new IllegalStateException("Could not obtain unity or zero for " + clazz.getTypeName(), e);
         }
-        BasicMatrix<T> U = new BasicMatrix<>();
+        BasicMatrix<T> U = new BasicMatrix<>() {
+            @Override
+            public boolean isUpperTriangular() {
+                return true;  // we know the result is going to be upper triangular
+            }
+        };
         U.append(A.getRow(0L));
-        ColumnarMatrix<T> L = new ColumnarMatrix<>();
+        ColumnarMatrix<T> L = new ColumnarMatrix<>() {
+            @Override
+            public boolean isLowerTriangular() {
+                return true;  // we know the result is going to be lower triangular
+            }
+        };
         L.append(A.getColumn(0L).scale((T) U.valueAt(0L, 0L).inverse()));
         for (long i = 1L; i < n; i++) {
             RowVector<T> row = new ArrayRowVector<>(clazz, n);
