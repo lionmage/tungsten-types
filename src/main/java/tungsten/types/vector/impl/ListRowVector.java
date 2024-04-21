@@ -14,6 +14,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public class ListRowVector<T extends Numeric> extends RowVector<T> {
@@ -34,7 +35,7 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
     }
 
     public ListRowVector(List<T> source) {
-        super((Class<T>) ClassTools.getInterfaceTypeFor(source.get(0).getClass()));
+        super((Class<T>) ClassTools.getInterfaceTypeFor(ClassTools.getBaseTypeFor(source)));
         elements = source;
     }
 
@@ -59,7 +60,7 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
         } else {
             elements = new LinkedList<>();
         }
-        for (long k = 0L; k < source.length(); k++) elements.add(source.elementAt(k));
+        LongStream.range(0L, source.length()).mapToObj(source::elementAt).forEachOrdered(elements::add);
     }
 
     @Override

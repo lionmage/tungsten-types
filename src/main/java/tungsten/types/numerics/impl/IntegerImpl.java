@@ -293,6 +293,12 @@ public class IntegerImpl implements IntegerType {
             return this;
         }
         NumericHierarchy hval = NumericHierarchy.forNumericType(numtype);
+        if (hval == null) {
+            Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE,
+                    "NumericHierarchy for target type of {0} when converting {1} is null.",
+                    new Object[] { numtype.getTypeName(), val });
+            throw new CoercionException("Specified type cannot be inferred", this.getClass(), numtype);
+        }
         switch (hval) {
             case INTEGER:
                 return this;
@@ -506,7 +512,7 @@ public class IntegerImpl implements IntegerType {
                     final IntegerType asInt = (IntegerType) that.coerceTo(IntegerType.class);
                     return this.equals(asInt);
                 } catch (CoercionException e) {
-                    throw new IllegalStateException("Failed to coerce to IntegerType after test for coercibility.", e);
+                    throw new IllegalStateException("Failed to coerce to IntegerType after test for coercibility", e);
                 }
             }
         }

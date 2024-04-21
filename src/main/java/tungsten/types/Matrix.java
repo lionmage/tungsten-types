@@ -24,10 +24,13 @@ package tungsten.types;
  * THE SOFTWARE.
  */
 
+import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.IdentityMatrix;
+import tungsten.types.matrix.impl.ZeroMatrix;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
@@ -38,6 +41,7 @@ import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.concurrent.*;
@@ -59,6 +63,7 @@ public interface Matrix<T extends Numeric> {
      * max norm.
      */
     String USE_FROBENIUS_NORM = "tungsten.types.Matrix.useFrobenius";
+    String MULT_SIGN = "\u00D7";
 
     long columns();
     long rows();
@@ -101,7 +106,7 @@ public interface Matrix<T extends Numeric> {
             if (lowResult.get() || upResult.get()) return true;
         } catch (InterruptedException ie) {
             // log a warning, but let this method return false for now
-            Logger.getLogger(Matrix.class.getName()).log(Level.WARNING, "isTriangular() calculation was interrupted", ie);
+            Logger.getLogger(Matrix.class.getName()).log(Level.WARNING, "isTriangular() calculation was interrupted.", ie);
         } catch (ExecutionException exEx) {
             Logger.getLogger(Matrix.class.getName()).log(Level.SEVERE, "Execution of one or both triangularity tests failed.", exEx);
             throw new IllegalStateException(exEx);
@@ -127,7 +132,7 @@ public interface Matrix<T extends Numeric> {
             throw new ArithmeticException("Trace is only defined for square matrices");
         }
         Numeric accum = valueAt(0L, 0L);
-        final Class<T> clazz = (Class<T>) accum.getClass();
+        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(this); // safer than accum.getClass()
         for (long index = 1L; index < this.columns(); index++) {
             accum = accum.add(valueAt(index, index));
         }
@@ -160,7 +165,7 @@ public interface Matrix<T extends Numeric> {
             public T valueAt(long row, long column) {
                 if (row < 0L || row >= rows || column < 0L || column >= columns) {
                     throw new IndexOutOfBoundsException("row:" + row + ", column:" + column +
-                            " is out of bounds for a " + rows + " by " + columns + " matrix");
+                            " is out of bounds for a " + rows + MULT_SIGN + columns + " matrix");
                 }
                 return source.valueAt(column, row);
             }
@@ -308,24 +313,44 @@ public interface Matrix<T extends Numeric> {
             if (exponent.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
                 // even case
                 x = x.multiply(x);
-                exponent = exponent.shiftRight(1); // divide(TWO);
+                exponent = exponent.shiftRight(1); // bit shift instead of division by 2
             } else {
                 // odd case
                 y = x.multiply(y);
                 x = x.multiply(x);
-                exponent = exponent.subtract(BigInteger.ONE).shiftRight(1); // divide(TWO);
+                exponent = exponent.subtract(BigInteger.ONE).shiftRight(1);
             }
         }
         return x.multiply(y);
     }
 
     default Matrix<T> subtract(Matrix<T> subtrahend) {
-        final Class<T> clazz = (Class<T>) subtrahend.valueAt(0L, 0L).getClass();
+        if (subtrahend.rows() != this.rows() || subtrahend.columns() != this.columns()) {
+            throw new IllegalArgumentException("Matrix dimensions are mismatched");
+        }
+        if (ZeroMatrix.isZeroMatrix(subtrahend)) {
+            // A-0 = A
+            return this;
+        }
+        if (subtrahend instanceof IdentityMatrix) {
+            // optimized calculation of A-I
+            return MathUtils.calcAminusI(subtrahend);
+        }
+        Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(subtrahend); // safer than subtrahend.valueAt(0L, 0L).getClass()
+        final MathContext ctx = subtrahend.getClass().isAnnotationPresent(Columnar.class) ?
+                subtrahend.getColumn(0L).getMathContext() :
+                subtrahend.getRow(0L).getMathContext();
+        if (clazz == null || clazz == Numeric.class) {
+            Logger.getLogger(Matrix.class.getName()).log(Level.FINE,
+                    "Subtrahend matrix elements are of an abstract Numeric type; using lhs element type instead.");
+            clazz = (Class<T>) OptionalOperations.findTypeFor(this);
+        }
         try {
-            final T negOne = (T) new IntegerImpl(BigInteger.valueOf(-1L)).coerceTo(clazz);
+            final T negOne = (T) new RealImpl(BigDecimal.valueOf(-1L), ctx).coerceTo(clazz);
             return this.add(subtrahend.scale(negOne));
         } catch (CoercionException ce) {
-            throw new IllegalStateException(ce);
+            throw new IllegalStateException("While subtracting a " +
+                    subtrahend.rows() + MULT_SIGN + subtrahend.columns() + " matrix", ce);
         }
     }
     

@@ -2016,7 +2016,8 @@ public class MathUtils {
             }
         }
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
-        if (((Matrix<Numeric>) X).subtract(I).norm().compareTo(one) < 0) {
+        if (calcAminusI(X).norm().compareTo(one) < 0) {
+//        if (((Matrix<Numeric>) X).subtract(I).norm().compareTo(one) < 0) {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
@@ -2038,8 +2039,8 @@ public class MathUtils {
      */
     private static Matrix<? extends Numeric> lnSeries(Matrix<? extends Numeric> B) {
         final MathContext ctx = B.valueAt(0L, 0L).getMathContext();
-        final Matrix<Numeric> I = new IdentityMatrix(B.rows(), ctx);
-        final Matrix<? extends Numeric> M = ((Matrix<Numeric>) B).subtract(I);
+//        final Matrix<Numeric> I = new IdentityMatrix(B.rows(), ctx);
+        final Matrix<? extends Numeric> M = calcAminusI(B); // ((Matrix<Numeric>) B).subtract(I);
         final long sumlimit = 32L * ctx.getPrecision() + 5L;
         Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
                 "Computing ln() of a {0}\u00D7{1} matrix with {2} series terms.",
@@ -3151,6 +3152,97 @@ public class MathUtils {
         AggregateMatrix<Numeric> D = AggregateMatrix.blockDiagonal(dd); // block diagonal matrix D of LDU
 
         return List.of(L, D, U);
+    }
+
+    /**
+     * Given a matrix <strong>A</strong>, calculate <strong>A</strong>&minus;<strong>I</strong>,
+     * where <strong>I</strong> is the identity matrix.  This is far more efficient than
+     * instantiating an identity matrix and doing regular subtraction.  The value
+     * <strong>A</strong>&minus;<strong>I</strong> is used in some routine calculations, e.g.,
+     * computing the logarithm of a matrix.
+     * @param A the matrix
+     * @return the result A&minus;I
+     * @param <T> the element type of matrix A
+     * @since 0.4
+     */
+    public static <T extends Numeric> Matrix<T> calcAminusI(Matrix<T> A) {
+        if (A.rows() != A.columns()) throw new IllegalArgumentException("Matrix A must be square");
+
+        BasicMatrix<T> result = new BasicMatrix<>(A);
+        Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
+        Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
+                A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
+
+        try {
+            for (long idx = 0L; idx < A.rows(); idx++) {
+                T element = (T) A.valueAt(idx, idx).subtract(one).coerceTo(clazz);
+                result.setValueAt(element, idx, idx);
+            }
+        } catch (CoercionException e) {
+            throw new ArithmeticException("While computing A-I: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * Given the matrix <strong>A</strong>, calculate <strong>A</strong>+<strong>I</strong>,
+     * where I is the identity matrix.  This is much faster and more efficient than
+     * instantiating an identity matrix for this calculation.
+     * @param A the matrix
+     * @return the result A+I
+     * @param <T> the element type of matrix A
+     * @since 0.4
+     */
+    public static <T extends Numeric> Matrix<T> calcAplusI(Matrix<T> A) {
+        if (A.rows() != A.columns()) throw new IllegalArgumentException("Matrix A must be square");
+
+        BasicMatrix<T> result = new BasicMatrix<>(A);
+        Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
+        Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
+                A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
+
+        try {
+            for (long idx = 0L; idx < A.rows(); idx++) {
+                T element = (T) A.valueAt(idx, idx).add(one).coerceTo(clazz);
+                result.setValueAt(element, idx, idx);
+            }
+        } catch (CoercionException e) {
+            throw new ArithmeticException("While computing A+I: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * Given a matrix <strong>A</strong>, calculate <strong>I</strong>&minus;<strong>A</strong>,
+     * where <strong>A</strong> is the identity matrix.  This implementation is far more
+     * efficient than performing this calculation using an actual identity matrix.
+     * @param A the matrix
+     * @return the result I&minus;A
+     * @param <T> the element type of matrix A
+     * @since 0.4
+     */
+    public static <T extends Numeric> Matrix<T> calcIminusA(Matrix<T> A) {
+        if (A.rows() != A.columns()) throw new IllegalArgumentException("Matrix A must be square");
+
+        BasicMatrix<T> result = new BasicMatrix<>();
+        Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
+        Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
+                A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
+
+        try {
+            for (long idx = 0L; idx < A.rows(); idx++) {
+                RowVector<T> row = A.getRow(idx).negate();
+                T element = (T) one.subtract(A.valueAt(idx, idx)).coerceTo(clazz);
+                row.setElementAt(element, idx);
+                result.append(row);
+            }
+        } catch (CoercionException e) {
+            throw new ArithmeticException("While computing I-A: " + e.getMessage());
+        }
+
+        return result;
     }
 
     /**

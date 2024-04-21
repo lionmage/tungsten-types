@@ -99,6 +99,23 @@ public class ClassTools {
         return typeArgumentsAsClasses;
     }
 
+    private static final List<Class<? extends Numeric>> nonAbstractTypes = List.of(IntegerType.class, RationalType.class,
+            RealType.class, ComplexType.class);
+
+    /**
+     * Determine if a {@link Numeric} value is an abstract type.
+     * Abstract numeric types would be subtypes of {@code Numeric}
+     * that are not integer, rational, real, or complex (e.g.,
+     * {@code ExactZero} or {@code PosInfinity}).
+     * @param value any instance of {@code Numeric}
+     * @return true if {@code value} is an abstract type
+     * @since 0.4
+     */
+    public static boolean isAbstractType(Numeric value) {
+        final Class<? extends Numeric> clazz = value.getClass();
+        return nonAbstractTypes.stream().noneMatch(naType -> naType.isAssignableFrom(clazz));
+    }
+
     private static final Map<Class<? extends Numeric>, Class<? extends Numeric>> reificationMap;
 
     static {
@@ -110,6 +127,16 @@ public class ClassTools {
         reificationMap.put(Zero.class, ExactZero.class);
     }
 
+    /**
+     * Given a type, return a potential implementation type.
+     * For example, given {@code RealType.class}, this method
+     * would return {@code RealImpl.class} or a plausibly
+     * equivalent {@code Class}.
+     * @param potential the type we want to reify, which could refer
+     *                  to an interface or a concrete class
+     * @return a concrete type, equal to or a subtype of {@code potential}
+     * @param <T> the type of {@code potential}
+     */
     public static <T extends Numeric> Class<? extends T> reify(Class<T> potential) {
         if (!potential.isInterface()) {
             // it's already a concrete type, so return it
@@ -122,6 +149,14 @@ public class ClassTools {
         return (Class<? extends T>) ourClass;
     }
 
+    /**
+     * Given a {@code Class} that represents a potentially concrete type,
+     * obtain the interface type. This interface is guaranteed to be
+     * {@link Numeric} or one of its immediate subinterfaces.
+     * @param concrete a {@code Class} representing a concrete subtype of {@code Numeric}
+     * @return the interface most closely associated with {@code concrete}
+     * @param <T> the type represented by {@code concrete}
+     */
     public static <T extends Numeric> Class<? super T> getInterfaceTypeFor(Class<T> concrete) {
         NumericHierarchy h = NumericHierarchy.forNumericType(concrete);
         if (h != null) {
@@ -130,6 +165,16 @@ public class ClassTools {
         return Numeric.class;  // when all else fails...
     }
 
+    /**
+     * Given a {@code Collection} of {@link Numeric} instances, obtain the
+     * base type for them.  The base type is the lowest type found
+     * in the {@link NumericHierarchy type hierarchy} that describes the
+     * contents of the collection.
+     * @param source a collection of instances of {@code Numeric}
+     * @return the interface corresponding to the base type for the collection
+     * @param <T> the base type
+     * @see NumericHierarchy#obtainTypeComparator()
+     */
     public static <T extends Numeric> Class<T> getBaseTypeFor(Collection<? extends T> source) {
         Optional<? extends Class<? extends Numeric>> clazz = source.stream().map(Numeric::getClass).min(NumericHierarchy.obtainTypeComparator());
         return clazz.map(aClass -> (Class<T>) aClass).orElseGet(() -> (Class<T>) Numeric.class);

@@ -77,7 +77,13 @@ public enum NumericHierarchy {
         
         return retval;
     }
-    
+
+    /**
+     * Obtain an instance of a {@code Comparator} for comparison of
+     * type information to determine which type is lower/higher in
+     * the numeric hierarchy.
+     * @return a {@code Comparator} instance
+     */
     public static Comparator<Class<? extends Numeric>> obtainTypeComparator() {
         return new Comparator<>() {
             @Override

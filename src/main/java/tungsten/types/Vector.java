@@ -35,6 +35,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.LongStream;
 
 /**
  * Base interface for all <a href="https://en.wikipedia.org/wiki/Vector_(mathematics_and_physics)">vector</a> objects.
@@ -96,7 +97,6 @@ public interface Vector<T extends Numeric> {
      * @return the {@link Class} of the vector elements
      */
     default Class<T> getElementType() {
-//        Class<T> clazz = (Class<T>) ClassTools.getTypeArguments(Vector.class, getClass()).get(0);
         if (length() > 0L) {
             if (length() == 1L) {
                 return (Class<T>) ClassTools.getInterfaceTypeFor(elementAt(0L).getClass());
@@ -104,10 +104,10 @@ public interface Vector<T extends Numeric> {
                 return (Class<T>) OptionalOperations.findCommonType(elementAt(0L).getClass(), elementAt(1L).getClass());
             }
             SortedSet<Class<? extends Numeric>> uniqueTypes = new TreeSet<>(NumericHierarchy.obtainTypeComparator());
-            for (long k = 0; k < length(); k++) {
-                uniqueTypes.add((Class<? extends Numeric>) ClassTools.getInterfaceTypeFor(elementAt(k).getClass()));
-            }
-            return (Class<T>) uniqueTypes.first();
+            LongStream.range(0L, length()).mapToObj(this::elementAt).map(T::getClass).map(ClassTools::getInterfaceTypeFor)
+                    .map(Class.class::cast).forEach(uniqueTypes::add);
+            if (uniqueTypes.isEmpty()) return (Class<T>) Numeric.class;  // the only sane default here
+            return (Class<T>) uniqueTypes.last();  // we want the "highest" type
         }
         // this is not a very good default value, but subclasses should override this behavior
         return null;

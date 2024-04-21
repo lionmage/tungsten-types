@@ -121,7 +121,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
             return new ArrayRowVector<>(sumArray);
         } catch (CoercionException ce) {
             Logger.getLogger(ArrayRowVector.class.getName()).log(Level.SEVERE, "Unable to compute sum of row vectors.", ce);
-            throw new ArithmeticException("Cannot add row vectors.");
+            throw new ArithmeticException("Cannot add row vectors");
         }
     }
 
@@ -144,7 +144,7 @@ public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
             return new ArrayRowVector<>(scaledArray);
         } catch (CoercionException ce) {
             Logger.getLogger(ArrayRowVector.class.getName()).log(Level.SEVERE, "Unable to compute scaled row vector.", ce);
-            throw new ArithmeticException("Cannot scale row vector.");
+            throw new ArithmeticException("Cannot scale row vector");
         }
     }
 
