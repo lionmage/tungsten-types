@@ -3227,7 +3227,6 @@ public class MathUtils {
     public static <T extends Numeric> Matrix<T> calcIminusA(Matrix<T> A) {
         if (A.rows() != A.columns()) throw new IllegalArgumentException("Matrix A must be square");
 
-        BasicMatrix<T> result = new BasicMatrix<>();
         Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
         final Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
                 A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
@@ -3242,22 +3241,21 @@ public class MathUtils {
                     col.setElementAt(element, idx);
                     columnarResult.append(col);
                 }
-                // we do an early return here so that we only sacrifice
-                // an uninitialized BasicMatrix
                 return columnarResult;
             }
 
+            // otherwise, build it up by rows
+            BasicMatrix<T> result = new BasicMatrix<>();
             for (long idx = 0L; idx < A.rows(); idx++) {
                 RowVector<T> row = A.getRow(idx).negate();
                 T element = (T) one.subtract(A.valueAt(idx, idx)).coerceTo(clazz);
                 row.setElementAt(element, idx);
                 result.append(row);
             }
+            return result;
         } catch (CoercionException e) {
             throw new ArithmeticException("While computing I-A: " + e.getMessage());
         }
-
-        return result;
     }
 
     /**
