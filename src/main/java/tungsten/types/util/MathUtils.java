@@ -2149,7 +2149,6 @@ public class MathUtils {
             // the cast is necessary to make the following expression work, though it boggles the mind that
             // Java generics can't see that a Matrix<Numeric> is a Matrix<? extends Numeric>
             return calcAplusI((Matrix<Numeric>) A).scale(denom.inverse());
-//            return ((Matrix<Numeric>) A).add(new IdentityMatrix(A.rows(), sqrtDet.getMathContext()).scale(denom.inverse()));
         }
         // if A is upper triangular and has no more than 1 diagonal element = 0
         if (A.isUpperTriangular() &&
@@ -2179,7 +2178,6 @@ public class MathUtils {
         final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
         OptionalOperations.setMathContext(onehalf, ctx);
         Matrix<Numeric> result = new ZeroMatrix(A.rows(), ctx);
-        // we were doing  new IdentityMatrix(A.rows(), ctx).subtract((Matrix<Numeric>) A);
         final Matrix<Numeric> IminA = calcIminusA((Matrix<Numeric>) A);  // I - A only needs to be computed once
 
         long bailout = 2L * ctx.getPrecision() + 3L;
