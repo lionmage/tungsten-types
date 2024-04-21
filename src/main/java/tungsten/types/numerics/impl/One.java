@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -145,6 +146,7 @@ public class One implements Numeric, Comparable<Numeric> {
     }
     
     private boolean isArgumentRealOrCplx(Numeric argument) {
+        if (ClassTools.isAbstractType(argument)) return false;
         return NumericHierarchy.forNumericType(argument.getClass()).compareTo(NumericHierarchy.RATIONAL) > 0;
     }
 
