@@ -2017,7 +2017,6 @@ public class MathUtils {
         }
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         if (calcAminusI(X).norm().compareTo(one) < 0) {
-//        if (((Matrix<Numeric>) X).subtract(I).norm().compareTo(one) < 0) {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
@@ -3170,7 +3169,7 @@ public class MathUtils {
 
         BasicMatrix<T> result = new BasicMatrix<>(A);
         Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
-        Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
+        final Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
                 A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
 
         try {
@@ -3199,7 +3198,7 @@ public class MathUtils {
 
         BasicMatrix<T> result = new BasicMatrix<>(A);
         Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
-        Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
+        final Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
                 A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
 
         try {
@@ -3230,7 +3229,7 @@ public class MathUtils {
 
         BasicMatrix<T> result = new BasicMatrix<>();
         Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(A);
-        Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
+        final Numeric one = One.getInstance(A.getClass().isAnnotationPresent(Columnar.class) ?
                 A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
 
         try {
