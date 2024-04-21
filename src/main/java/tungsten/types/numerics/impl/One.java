@@ -152,6 +152,7 @@ public class One implements Numeric, Comparable<Numeric> {
 
     @Override
     public Numeric add(Numeric addend) {
+        if (Zero.isZero(addend)) return this;
         if (isArgumentRealOrCplx(addend)) {
             if (addend instanceof RealType) {
                 // small optimization
@@ -166,6 +167,8 @@ public class One implements Numeric, Comparable<Numeric> {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (isUnity(subtrahend)) return ExactZero.getInstance(mctx);
+        if (Zero.isZero(subtrahend)) return this;
         if (isArgumentRealOrCplx(subtrahend)) {
             if (subtrahend instanceof RealType) {
                 // small optimization
