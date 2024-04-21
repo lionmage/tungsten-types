@@ -48,7 +48,6 @@ public class PosZero extends Zero {
 
     @Override
     public Numeric inverse() {
-//        throw new ArithmeticException("Cannot divide by zero");
         return PosInfinity.getInstance(mctx);
     }
 

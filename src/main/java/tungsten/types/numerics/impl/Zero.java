@@ -135,6 +135,21 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     public Numeric divide(Numeric divisor) {
         if (Zero.isZero(divisor) && ComplexType.isExtendedEnabled()) {
             throw new ArithmeticException("0/0 is undefined");
+        } else if (Zero.isZero(divisor)) {
+            Sign aggSign = this.sign();  // the aggregate sign of the result
+            if (aggSign == Sign.NEGATIVE && OptionalOperations.sign(divisor) == Sign.NEGATIVE) {
+                aggSign = Sign.POSITIVE;
+            } else if (OptionalOperations.sign(divisor) == Sign.NEGATIVE && aggSign != Sign.NEGATIVE) {
+                aggSign = Sign.NEGATIVE;
+            }
+            switch (aggSign) {
+                case POSITIVE:
+                    return PosInfinity.getInstance(mctx);
+                case NEGATIVE:
+                    return NegInfinity.getInstance(mctx);
+                case ZERO:
+                    throw new ArithmeticException("0/0 cannot be interpreted");
+            }
         }
         return this;
     }

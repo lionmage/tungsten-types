@@ -76,7 +76,6 @@ public class NegZero extends Zero {
 
     @Override
     public Numeric inverse() {
-//        throw new ArithmeticException("Cannot divide by zero");
         return NegInfinity.getInstance(mctx);
     }
 
