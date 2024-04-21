@@ -3233,6 +3233,20 @@ public class MathUtils {
                 A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext());
 
         try {
+            if (A.getClass().isAnnotationPresent(Columnar.class)) {
+                // we should use a column-based approach
+                ColumnarMatrix<T> columnarResult = new ColumnarMatrix<>();
+                for (long idx = 0L; idx < A.columns(); idx++) {
+                    ColumnVector<T> col = A.getColumn(idx).negate();
+                    T element = (T) one.subtract(A.valueAt(idx, idx)).coerceTo(clazz);
+                    col.setElementAt(element, idx);
+                    columnarResult.append(col);
+                }
+                // we do an early return here so that we only sacrifice
+                // an uninitialized BasicMatrix
+                return columnarResult;
+            }
+
             for (long idx = 0L; idx < A.rows(); idx++) {
                 RowVector<T> row = A.getRow(idx).negate();
                 T element = (T) one.subtract(A.valueAt(idx, idx)).coerceTo(clazz);
