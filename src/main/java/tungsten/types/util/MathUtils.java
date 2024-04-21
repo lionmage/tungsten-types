@@ -2148,7 +2148,8 @@ public class MathUtils {
             Numeric denom = A.trace().add(two.multiply(sqrtDet)).sqrt();
             // the cast is necessary to make the following expression work, though it boggles the mind that
             // Java generics can't see that a Matrix<Numeric> is a Matrix<? extends Numeric>
-            return ((Matrix<Numeric>) A).add(new IdentityMatrix(A.rows(), sqrtDet.getMathContext()).scale(denom.inverse()));
+            return calcAplusI((Matrix<Numeric>) A).scale(denom.inverse());
+//            return ((Matrix<Numeric>) A).add(new IdentityMatrix(A.rows(), sqrtDet.getMathContext()).scale(denom.inverse()));
         }
         // if A is upper triangular and has no more than 1 diagonal element = 0
         if (A.isUpperTriangular() &&
@@ -2178,7 +2179,8 @@ public class MathUtils {
         final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
         OptionalOperations.setMathContext(onehalf, ctx);
         Matrix<Numeric> result = new ZeroMatrix(A.rows(), ctx);
-        final Matrix<Numeric> IminA = new IdentityMatrix(A.rows(), ctx).subtract((Matrix<Numeric>) A);  // I - A only needs to be computed once
+        // we were doing  new IdentityMatrix(A.rows(), ctx).subtract((Matrix<Numeric>) A);
+        final Matrix<Numeric> IminA = calcIminusA((Matrix<Numeric>) A);  // I - A only needs to be computed once
 
         long bailout = 2L * ctx.getPrecision() + 3L;
         for (long n = 0L; n < bailout; n++) {
@@ -3218,6 +3220,8 @@ public class MathUtils {
      * Given a matrix <strong>A</strong>, calculate <strong>I</strong>&minus;<strong>A</strong>,
      * where <strong>A</strong> is the identity matrix.  This implementation is far more
      * efficient than performing this calculation using an actual identity matrix.
+     * One application of this method is in calculating the square root of a matrix via
+     * a power series.
      * @param A the matrix
      * @return the result I&minus;A
      * @param <T> the element type of matrix A
