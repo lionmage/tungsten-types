@@ -55,6 +55,10 @@ import static tungsten.types.Range.BoundType;
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RangeUtils {
+    private RangeUtils() {
+        // to prevent instantiation
+    }
+
     /**
      * The default input range for all real-valued functions.
      */

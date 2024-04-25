@@ -101,6 +101,10 @@ public class MathUtils {
 
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
 
+    private MathUtils() {
+        // to prevent instantiation
+    }
+
     /**
      * Checks configuration and returns {@code true} if we should
      * prefer built-in operations (i.e., those supplied by Java) over

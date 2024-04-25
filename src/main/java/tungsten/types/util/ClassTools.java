@@ -18,6 +18,10 @@ import java.util.stream.Collectors;
  * @see <a href="https://www.artima.com/weblogs/viewpost.jsp?thread=208860">Ian Robertson's blog entry regarding this technique.</a>
  */
 public class ClassTools {
+    private ClassTools() {
+        // to prevent instantiation
+    }
+
     /**
      * Get the underlying class for a type, or null if the type is a variable type.
      * @param type the type

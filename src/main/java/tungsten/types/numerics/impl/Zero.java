@@ -139,7 +139,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
             Sign aggSign = this.sign();  // the aggregate sign of the result
             if (aggSign == Sign.NEGATIVE && OptionalOperations.sign(divisor) == Sign.NEGATIVE) {
                 aggSign = Sign.POSITIVE;
-            } else if (OptionalOperations.sign(divisor) == Sign.NEGATIVE && aggSign != Sign.NEGATIVE) {
+            } else if (aggSign == Sign.POSITIVE && OptionalOperations.sign(divisor) == Sign.NEGATIVE) {
                 aggSign = Sign.NEGATIVE;
             }
             switch (aggSign) {

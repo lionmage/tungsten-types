@@ -99,6 +99,10 @@ public class UnicodeTextEffects {
             radicalMap.put(i, superscriptDigits[i] + "\u221A");
         }
     }
+
+    private UnicodeTextEffects() {
+        // this class should never be instantiable
+    }
     
     public static String numericSuperscript(int n) {
         StringBuilder buf = new StringBuilder();
