@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright © 2024 Robert Poole <Tarquin.AZ@gmail.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package tungsten.types.util;
 
 import tungsten.types.Numeric;
@@ -13,8 +36,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Derived from the work of Ian Robertson.
+ * Methods to obtain the type arguments for parameterized types are derived from the work of Ian Robertson.
+ * All others are Copyright &copy; 2024 Robert Poole, All Rights Reserved.
  *
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://www.artima.com/weblogs/viewpost.jsp?thread=208860">Ian Robertson's blog entry regarding this technique.</a>
  */
 public class ClassTools {
@@ -29,7 +54,7 @@ public class ClassTools {
      */
     public static Class<?> getClass(Type type) {
         if (type instanceof Class) {
-            return (Class) type;
+            return (Class<?>) type;
         }
         else if (type instanceof ParameterizedType) {
             return getClass(((ParameterizedType) type).getRawType());
@@ -57,19 +82,18 @@ public class ClassTools {
      * @param <T> the type associated with {@code baseClass}
      * @return a list of the raw classes for the actual type arguments.
      */
-    public static <T> List<Class<?>> getTypeArguments(
-            Class<T> baseClass, Class<? extends T> childClass) {
+    public static <T> List<Class<?>> getTypeArguments(Class<T> baseClass, Class<? extends T> childClass) {
         Map<Type, Type> resolvedTypes = new HashMap<>();
         Type type = childClass;
         // start walking up the inheritance hierarchy until we hit baseClass
         while (!Objects.equals(getClass(type), baseClass)) {  // getClass() can return null
             if (type instanceof Class) {
                 // there is no useful information for us in raw types, so just keep going.
-                type = ((Class) type).getGenericSuperclass();
+                type = ((Class<?>) type).getGenericSuperclass();
             }
             else {
                 ParameterizedType parameterizedType = (ParameterizedType) type;
-                Class<?> rawType = (Class) parameterizedType.getRawType();
+                Class<?> rawType = (Class<?>) parameterizedType.getRawType();
 
                 Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
                 TypeVariable<?>[] typeParameters = rawType.getTypeParameters();
@@ -87,7 +111,7 @@ public class ClassTools {
         // the raw class for that type argument.
         Type[] actualTypeArguments;
         if (type instanceof Class) {
-            actualTypeArguments = ((Class) type).getTypeParameters();
+            actualTypeArguments = ((Class<?>) type).getTypeParameters();
         }
         else {
             actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
