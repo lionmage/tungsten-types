@@ -133,9 +133,12 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
 
     @Override
     public Numeric divide(Numeric divisor) {
-        if (Zero.isZero(divisor) && ComplexType.isExtendedEnabled()) {
-            throw new ArithmeticException("0/0 is undefined");
-        } else if (Zero.isZero(divisor)) {
+        if (Zero.isZero(divisor)) {
+            if (ComplexType.isExtendedEnabled()) {
+                throw new ArithmeticException("0/0 is undefined");
+            }
+
+            // otherwise, make a best guess as to what we should give back
             Sign aggSign = this.sign();  // the aggregate sign of the result
             if (aggSign == Sign.NEGATIVE && OptionalOperations.sign(divisor) == Sign.NEGATIVE) {
                 aggSign = Sign.POSITIVE;
