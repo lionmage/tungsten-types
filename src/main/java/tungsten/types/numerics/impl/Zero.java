@@ -75,8 +75,6 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         Numeric retval;
         switch (htype) {
             case INTEGER:
-                // we can get away with this because IntegerImpl doesn't keep
-                // math context state
                 retval = INT_ZERO;
                 break;
             case RATIONAL:
