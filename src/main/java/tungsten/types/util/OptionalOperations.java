@@ -123,6 +123,12 @@ public class OptionalOperations {
     public static <T extends Numeric> T dynamicInstantiate(Class<T> clazz, Number quasiPrimitive) {
         if (!clazz.isInterface()) throw new IllegalArgumentException(CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE);
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
+        if (h == null) {
+            Logger.getLogger(OptionalOperations.class.getName()).log(Level.SEVERE,
+                    "Unable to dynamically instantiate {0} as a {1} \u2014 abstract? = {3}",
+                    new Object[] { quasiPrimitive, clazz.getName(), ClassTools.isAbstractType(clazz) });
+            throw new ArithmeticException("Requested type for instantiation is not allowed (may be abstract)");
+        }
         switch (h) {
             case INTEGER:
                 return (T) new IntegerImpl(BigInteger.valueOf(quasiPrimitive.longValue()));

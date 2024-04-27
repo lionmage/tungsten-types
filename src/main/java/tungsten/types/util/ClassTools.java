@@ -141,6 +141,10 @@ public class ClassTools {
      */
     public static boolean isAbstractType(Numeric value) {
         final Class<? extends Numeric> clazz = value.getClass();
+        return isAbstractType(clazz);
+    }
+
+    public static boolean isAbstractType(Class<? extends Numeric> clazz) {
         return nonAbstractTypes.stream().noneMatch(naType -> naType.isAssignableFrom(clazz));
     }
 
