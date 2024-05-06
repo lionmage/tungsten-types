@@ -91,6 +91,11 @@ public class RationalImpl implements RationalType {
         this(numerator, denominator);
         this.exact = exact;
     }
+
+    public RationalImpl(BigInteger numerator, BigInteger denominator, MathContext mctx) {
+        this(numerator, denominator);
+        this.mctx = mctx;
+    }
     
     public RationalImpl(String representation, boolean exact) {
         this(representation);

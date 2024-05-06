@@ -31,6 +31,7 @@ import tungsten.types.*;
 import tungsten.types.annotations.Columnar;
 import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.exceptions.ConvergenceException;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.impl.Exp;
 import tungsten.types.functions.impl.NaturalLog;
@@ -1820,7 +1821,8 @@ public class MathUtils {
     public static long MAX_CLONE_DEPTH = (long) Integer.MAX_VALUE >> 4L;
 
     /**
-     * Compute the conjugate transpose of a given matrix A, denoted A<sup>*</sup>.
+     * Compute the conjugate transpose of a given matrix A, denoted A<sup>*</sup>
+     * or A<sup>&#x2020;</sup>.
      * This is equivalent to taking the transpose of A and then taking the complex
      * conjugate of each value contained therein.
      * @param original the original matrix for which we want the conjugate transpose
@@ -1868,6 +1870,34 @@ public class MathUtils {
             throw new IllegalStateException("Any type should be coercible to ComplexType", e);
         }
         return new BasicMatrix<>(working);
+    }
+
+    /**
+     * Compute the Hilbert-Schmidt norm for a matrix, written as
+     * (Tr[X<sup>&#x2020;</sup>X])<sup>1/2</sup>.
+     * This is an appropriate matrix norm to use when determining
+     * whether certain series can be used for computing e.g.
+     * a matrix logarithm or square root.
+     * @param M any matrix for which we wish to compute the norm
+     * @return the Hilbert-Schmidt norm of the given matrix
+     * @since 0.4
+     */
+    public static RealType hilbertSchmidtNorm(Matrix<? extends Numeric> M) {
+        Matrix<ComplexType> orig = new ComplexMatrixAdapter(M);
+        Matrix<ComplexType> dagger = conjugateTranspose(M);
+        if (M.rows() == M.columns() && M.rows() > 3L) {
+            // just compute directly to avoid computing unnecessary dot products
+            return LongStream.range(0L, M.rows()).parallel()
+                    .mapToObj(idx -> dagger.getRow(idx).dotProduct(orig.getColumn(idx)))
+                    .reduce((x, y) -> (ComplexType) x.add(y)).map(ComplexType::sqrt)
+                    .map(MathUtils::Re).orElseThrow(() -> new ArithmeticException("No elements to compute norm"));
+        }
+        ComplexType trace = dagger.multiply(orig).trace();
+        try {
+            return (RealType) trace.sqrt().coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Hilbert-Schmidt norm \u221A(" + trace + ") is not real");
+        }
     }
 
     /**
@@ -2024,14 +2054,21 @@ public class MathUtils {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
+        // TODO check the norm first before using D-B at all
         // per Cheng et al., we can approximate the logarithm recursively using
         // a square root identity and the Denman-Beavers iteration
         logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
-        // log A = 2 log Yk − log YkZk
-        Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X);
-        Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
         final Numeric two = new RealImpl(decTWO, ctx);
-        return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
+        // log A = 2 log Yk − log YkZk
+        try {
+            Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X, 8); // don't need it to be perfect, so limit to 8 iterations
+            Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
+            return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
+        } catch (ConvergenceException e) {
+            // if Denman-Beavers iteration fails, fall back to computing a power series -- slower but should work over the same domain
+            Matrix<? extends Numeric> Y = sqrtPowerSeries(X);
+            return ((Matrix<Numeric>) ln(Y)).scale(two);
+        }
     }
 
     /**
@@ -2159,14 +2196,20 @@ public class MathUtils {
             // see https://www.sciencedirect.com/science/article/pii/002437958380010X?ref=cra_js_challenge&fr=RR-1 section 3
             return parlett(Numeric::sqrt, A);
         }
-        return denmanBeavers(A);
+        // TODO implement other algorithms, factor out the 2×2 case
+        // TODO also check the norm first before we use Denman-Beavers or the power series
+        try {
+            return denmanBeavers(A, -1);
+        } catch (ConvergenceException e) {
+            return sqrtPowerSeries(A);
+        }
     }
 
     /**
      * Experimental code to compute the square root of a matrix using a power series.
      * This may be impractical due to the use of {@link #generalizedBinomialCoefficient(Numeric, IntegerType)},
      * but testing will reveal all.
-     * <br>Note that this method converges slowly (slower than {@link #denmanBeavers(Matrix) Denman-Beavers})
+     * <br>Note that this method converges slowly (slower than {@link #denmanBeavers(Matrix, int) Denman-Beavers})
      * and appears to require that all matrix eigenvalues are at a distance &le; 1 from the
      * point z&nbsp;=&nbsp;1, which would require computing the eigenvalues of the input matrix to check
      * whether this method would even work.  That's a lot of up-front work to do, and there are methods
@@ -2202,29 +2245,38 @@ public class MathUtils {
         return result;
     }
 
+    private static final int MAX_NORM_GROWTH = 3;
+
     /**
      * Implementation of the Denman-Beavers iteration for computing the
      * square root of matrix {@code A}.  This method is not guaranteed to
      * converge.
      * @param A the source matrix for which we wish to compute the square root
+     * @param iterationLimit the maximum number of iterations to perform, or -1 to let the algorithm decide
      * @return the square root, if the iteration converges
-     * @throws ArithmeticException if the iteration does not converge
+     * @throws ConvergenceException if the iteration does not converge
      * @see <a href="https://en.wikipedia.org/wiki/Square_root_of_a_matrix#By_Denman%E2%80%93Beavers_iteration">the Wikipedia article</a>
      * @see <a href="https://arxiv.org/pdf/1804.11000.pdf">Zolotarev Iterations for the Matrix Square Root</a> by Evan S. Gawlik
      * @apiNote This implementation computes both the square root and its inverse; a reference to the inverse is
      *   included in the returned {@link Matrix} and is accessible using the {@link Matrix#inverse()} method.
      */
-    private static Matrix<? extends Numeric> denmanBeavers(Matrix<? extends Numeric> A) {
+    private static Matrix<? extends Numeric> denmanBeavers(Matrix<? extends Numeric> A, int iterationLimit) throws ConvergenceException {
+        if (iterationLimit == 0 || iterationLimit < -1) throw new IllegalArgumentException("Iteration limit must be -1 or positive");
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
-        final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
-        OptionalOperations.setMathContext(onehalf, ctx);
-        final Matrix<Numeric>  I = new IdentityMatrix(A.rows(), ctx);
+        final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO, ctx);
         Matrix<Numeric>  Y = (Matrix<Numeric>) A;
-        Matrix<Numeric>  Z = I;
+        Matrix<Numeric>  Z = new IdentityMatrix(A.rows(), ctx);
 
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         final RealType epsilon = computeIntegerExponent(TEN, 3L - ctx.getPrecision(), ctx);
-        final int bailout = ctx.getPrecision() * 2 + 5;
+        final int bailout = iterationLimit == -1 ? ctx.getPrecision() * 2 + 5 : iterationLimit;
+        logger.log(Level.INFO,
+                // surrogate pair for 1D700 epsilon
+                "Attempting Denman-Beavers iteration with \uD835\uDF00={0} and a bailout set to {1}.",
+                new Object[] { epsilon, bailout });
         int itercount = 0;
+        int growthCount = 0;
+        RealType prevNorm = hilbertSchmidtNorm(A);
 
         while (itercount++ < bailout) {
             Matrix<Numeric> Y1 = Y.add((Matrix<Numeric>) Z.inverse()).scale(onehalf);
@@ -2232,18 +2284,27 @@ public class MathUtils {
             // copy values back for the next iteration
             Y = Y1;
             Z = Z1;
-            RealType errAbsolute = Y.multiply(Y).subtract((Matrix<Numeric>) A).norm();
-            RealType errRelative = Y.multiply(Z).subtract(I).norm();
-            Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+            RealType errAbsolute = Y.multiply(Y).subtract((Matrix<Numeric>) A).norm(); // coarse
+            RealType errRelative = hilbertSchmidtNorm(calcAminusI(Y.multiply(Z))); // Y.multiply(Z).subtract(I).norm();
+            logger.log(Level.FINE,
                     "After {0} D-B iterations, absolute error = {1}, relative error = {2}",
                     new Object[] {itercount, errAbsolute, errRelative});
+            RealType currNorm = hilbertSchmidtNorm(Y);
+            if (currNorm.compareTo(prevNorm) > 0) {
+                logger.log(Level.WARNING, "At iteration {0}, ||Y|| = {1} (was {2} in previous iteration)",
+                        new Object[] { itercount, currNorm, prevNorm });
+                if (++growthCount > MAX_NORM_GROWTH) {
+                    throw new ConvergenceException("Denman-Beavers iteration appears to diverge", "denmanBeavers", itercount);
+                }
+            }
+            prevNorm = currNorm;
             // check how far off we are and bail if we're ≤ epsilon
             if (min(errRelative, errAbsolute).compareTo(epsilon) <= 0) break;
         }
         // if we don't escape before hitting the bailout, we haven't converged
         if (itercount >= bailout) {
-            throw new ArithmeticException("Denman-Beavers iteration does not converge to within " + epsilon +
-                    " after " + bailout + " steps");
+            throw new ConvergenceException("Denman-Beavers iteration does not converge to within " + epsilon,
+                    "denmanBeavers", bailout);
         }
 
         // Z converges to the inverse of Y, so let's not waste this result
