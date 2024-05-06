@@ -2044,12 +2044,20 @@ public class MathUtils {
                             new Object[] {p, r, q});
                     RealType a = (RealType) ln((IntegerType) p.add(r), ctx).subtract(ln(q, ctx));
                     RealType zero = new RealImpl(BigDecimal.ZERO, ctx);
-                    RealType[][] result = new RealType[][]{{zero, a}, {a, zero}};
+                    RealType[][] result = new RealType[][] {{zero, a}, {a, zero}};
                     return new BasicMatrix<>(result);
                 }
             }
         }
+
+        final Numeric two = new RealImpl(decTWO, ctx);
+        if (X.rows() == 2L) {
+            logger.fine("We have a 2×2 matrix, so computing exact sqrt and recursing to compute ln of that");
+            // we can get an exact square root for a 2×2 matrix, so recursively compute ln using this identity
+            return ((Matrix<Numeric>) ln(fast2x2Sqrt(X))).scale(two);
+        }
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        // TODO change the norm used here
         if (calcAminusI(X).norm().compareTo(one) < 0) {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
@@ -2058,7 +2066,6 @@ public class MathUtils {
         // per Cheng et al., we can approximate the logarithm recursively using
         // a square root identity and the Denman-Beavers iteration
         logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
-        final Numeric two = new RealImpl(decTWO, ctx);
         // log A = 2 log Yk − log YkZk
         try {
             Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X, 8); // don't need it to be perfect, so limit to 8 iterations
@@ -2079,8 +2086,7 @@ public class MathUtils {
      */
     private static Matrix<? extends Numeric> lnSeries(Matrix<? extends Numeric> B) {
         final MathContext ctx = B.valueAt(0L, 0L).getMathContext();
-//        final Matrix<Numeric> I = new IdentityMatrix(B.rows(), ctx);
-        final Matrix<? extends Numeric> M = calcAminusI(B); // ((Matrix<Numeric>) B).subtract(I);
+        final Matrix<? extends Numeric> M = calcAminusI(B);
         final long sumlimit = 32L * ctx.getPrecision() + 5L;
         Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
                 "Computing ln() of a {0}\u00D7{1} matrix with {2} series terms.",
@@ -2092,6 +2098,40 @@ public class MathUtils {
             RationalType factor = new RationalImpl(k % 2L == 1L ? 1L : -1L, k, ctx);
             IntegerType n = new IntegerImpl(BigInteger.valueOf(k));
             Matrix<Numeric> mtxpow = (Matrix<Numeric>) M.pow(n);
+            if (ZeroMatrix.isZeroMatrix(mtxpow)) break; // nilpotency check
+            intermediate = intermediate.add(mtxpow.scale(factor));
+        }
+        return intermediate;
+    }
+
+    /**
+     * Compute ln(<strong>A</strong>) for matrix <strong>A</strong> using
+     * a Gregory series.  This will converge for any Hermitian positive definite
+     * matrix.
+     * @param A the matrix for which we wish to find the natural log
+     * @return the natural log, ln(<strong>A</strong>)
+     * @see <a href="https://scipp.ucsc.edu/~haber/webpage/MatrixExpLog.pdf">this paper</a>
+     *   by Howard E. Haber
+     */
+    private static Matrix<? extends Numeric> lnGregorySeries(Matrix<? extends Numeric> A) {
+        final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
+        // TODO do we want to check if the matrix is Hermitian? would have to convert to complex
+        Matrix<? extends Numeric> IminA = calcIminusA(A);
+        Matrix<? extends Numeric> IplusAinv = calcAplusI(A).inverse();
+        // these casts are ugly TODO let's see if we can get rid of them
+        Matrix<? extends Numeric> term = ((Matrix<Numeric>) IminA).multiply((Matrix<Numeric>) IplusAinv);
+
+        final long sumlimit = 32L * ctx.getPrecision() + 5L;
+        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                "Computing ln() of a {0}\u00D7{1} matrix with {2} Gregory series terms.",
+                new Object[] { A.rows(), A.columns(), sumlimit });
+
+        Matrix<Numeric> intermediate = new ZeroMatrix(A.rows(), ctx);
+        for (long k = 1L; k < sumlimit; k++) {
+            final long dval = 2L * k + 1L;
+            RationalType factor = new RationalImpl(-2L, dval, ctx);
+            IntegerType n = new IntegerImpl(BigInteger.valueOf(dval));
+            Matrix<Numeric> mtxpow = (Matrix<Numeric>) term.pow(n);
             if (ZeroMatrix.isZeroMatrix(mtxpow)) break; // nilpotency check
             intermediate = intermediate.add(mtxpow.scale(factor));
         }
@@ -2183,12 +2223,7 @@ public class MathUtils {
         }
         // if it's a 2×2 matrix, we have an exact solution
         if (A.rows() == 2L && A.columns() == 2L) {
-            final Numeric sqrtDet = A.determinant().sqrt();
-            final RealType two = new RealImpl(decTWO, sqrtDet.getMathContext());
-            Numeric denom = A.trace().add(two.multiply(sqrtDet)).sqrt();
-            // the cast is necessary to make the following expression work, though it boggles the mind that
-            // Java generics can't see that a Matrix<Numeric> is a Matrix<? extends Numeric>
-            return calcAplusI((Matrix<Numeric>) A).scale(denom.inverse());
+            return fast2x2Sqrt(A);
         }
         // if A is upper triangular and has no more than 1 diagonal element = 0
         if (A.isUpperTriangular() &&
@@ -2203,6 +2238,16 @@ public class MathUtils {
         } catch (ConvergenceException e) {
             return sqrtPowerSeries(A);
         }
+    }
+
+    private static Matrix<Numeric> fast2x2Sqrt(Matrix<? extends Numeric> A) {
+        if (A.rows() != 2L || A.columns() != 2L) throw new IllegalArgumentException("Only 2×2 matrices supported");
+        final Numeric sqrtDet = A.determinant().sqrt();
+        final RealType two = new RealImpl(decTWO, sqrtDet.getMathContext());
+        Numeric denom = A.trace().add(two.multiply(sqrtDet)).sqrt();
+        // the cast is necessary to make the following expression work, though it boggles the mind that
+        // Java generics can't see that a Matrix<Numeric> is a Matrix<? extends Numeric>
+        return calcAplusI((Matrix<Numeric>) A).scale(denom.inverse());
     }
 
     /**
