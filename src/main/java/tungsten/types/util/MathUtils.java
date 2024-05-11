@@ -2050,15 +2050,14 @@ public class MathUtils {
             }
         }
 
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         final Numeric two = new RealImpl(decTWO, ctx);
-        if (X.rows() == 2L) {
-            logger.fine("We have a 2×2 matrix, so computing exact sqrt and recursing to compute ln of that");
+        if (X.rows() == 2L && hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) > 0) {
+            logger.fine("We have a 2×2 matrix, so computing exact sqrt and recursing to compute ln of that result");
             // we can get an exact square root for a 2×2 matrix, so recursively compute ln using this identity
             return ((Matrix<Numeric>) ln(fast2x2Sqrt(X))).scale(two);
         }
-        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
-        // TODO change the norm used here
-        if (calcAminusI(X).norm().compareTo(one) < 0) {
+        if (hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) < 0) {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
@@ -2110,12 +2109,25 @@ public class MathUtils {
      * matrix.
      * @param A the matrix for which we wish to find the natural log
      * @return the natural log, ln(<strong>A</strong>)
+     * @throws ConvergenceException if this series will not converge
      * @see <a href="https://scipp.ucsc.edu/~haber/webpage/MatrixExpLog.pdf">this paper</a>
      *   by Howard E. Haber
      */
-    private static Matrix<? extends Numeric> lnGregorySeries(Matrix<? extends Numeric> A) {
+    private static Matrix<? extends Numeric> lnGregorySeries(Matrix<? extends Numeric> A) throws ConvergenceException {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
-        // TODO do we want to check if the matrix is Hermitian? would have to convert to complex
+        if (ComplexType.class.isAssignableFrom(OptionalOperations.findTypeFor(A))) {
+            Matrix<ComplexType> cplxA = (Matrix<ComplexType>) A;
+            if (!isHermitian(cplxA)) {
+                Logger.getLogger(MathUtils.class.getName()).warning("The given matrix is not Hermitian, and will not converge.");
+                // TODO do we really want to throw this exception?  Do we know for a fact that ln(A) will not converge if A is not Hermitian?
+                throw new ConvergenceException("ln(A) will not converge because A is not Hermitian");
+            }
+        } else {
+            // for non-complex matrices, we just check equality with the transpose, not the conjugate transpose
+            if (!isSymmetric(A)) {
+                Logger.getLogger(MathUtils.class.getName()).info("The given matrix is not symmetric (not equal to its transpose), and may not converge");
+            }
+        }
         Matrix<? extends Numeric> IminA = calcIminusA(A);
         Matrix<? extends Numeric> IplusAinv = calcAplusI(A).inverse();
         // these casts are ugly TODO let's see if we can get rid of them
@@ -2218,7 +2230,7 @@ public class MathUtils {
                     .map(Numeric::sqrt).toArray(Numeric[]::new);
             return new DiagonalMatrix<>(elements);
         }
-        if (A instanceof SingletonMatrix) {
+        if (A instanceof SingletonMatrix || (A.rows() == 1L && A.columns() == 1L)) {
             return new SingletonMatrix<>(A.valueAt(0L, 0L).sqrt());
         }
         // if it's a 2×2 matrix, we have an exact solution
@@ -2233,11 +2245,15 @@ public class MathUtils {
         }
         // TODO implement other algorithms, factor out the 2×2 case
         // TODO also check the norm first before we use Denman-Beavers or the power series
-        try {
-            return denmanBeavers(A, -1);
-        } catch (ConvergenceException e) {
-            return sqrtPowerSeries(A);
+        final RealType one = new RealImpl(BigDecimal.ONE, A.valueAt(0L, 0L).getMathContext());
+        if (hilbertSchmidtNorm(calcAminusI(A)).compareTo(one) <= 0) {
+            try {
+                return denmanBeavers(A, -1);
+            } catch (ConvergenceException e) {
+                return sqrtPowerSeries(A);
+            }
         }
+        throw new UnsupportedOperationException("Unable to compute a general square root for the given matrix");
     }
 
     private static Matrix<Numeric> fast2x2Sqrt(Matrix<? extends Numeric> A) {
@@ -2347,7 +2363,7 @@ public class MathUtils {
             if (min(errRelative, errAbsolute).compareTo(epsilon) <= 0) break;
         }
         // if we don't escape before hitting the bailout, we haven't converged
-        if (itercount >= bailout) {
+        if (iterationLimit == -1 && itercount >= bailout) {
             throw new ConvergenceException("Denman-Beavers iteration does not converge to within " + epsilon,
                     "denmanBeavers", bailout);
         }
@@ -2584,17 +2600,13 @@ public class MathUtils {
         }
         // otherwise, handle the case where veclen > numVec, i.e., more dimensions than vectors
         Logger logger = Logger.getLogger(MathUtils.class.getName());
-        logger.log(Level.INFO, "Computing {0} permutations of {1} vectors for a {1}\00D7{2} matrix.",
+        logger.log(Level.INFO, "Computing {0} permutations of {1} vectors for a {2}\00D7{1} matrix.",
                 new Object[] {nChooseK(veclen, numVec), numVec, veclen});
-        // first, we will transpose M so that the vectors we're checking are on the rows, not the columns
-        Matrix<Numeric> V = M.transpose();
-        assert V.columns() == veclen;
-        assert V.rows() == numVec;
         List<List<Long>> indexSets = permuteIndices(veclen, numVec);
         for (List<Long> indices : indexSets) {
             if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "Checking vectors at rows {0}.", indices);
             BasicMatrix<Numeric> constructed = new BasicMatrix<>();
-            indices.stream().map(V::getRow).forEachOrdered(constructed::append);
+            indices.stream().map(M::getRow).forEachOrdered(constructed::append);
             if (Zero.isZero(constructed.determinant())) return false;
         }
         return true;
@@ -2608,8 +2620,10 @@ public class MathUtils {
     }
 
     private static List<Long> expandIndices(BigInteger bits) {
-        List<Long> result = new LinkedList<>();
-        for (int k = 0; k < bits.bitLength(); k++) {
+        final int size = bits.bitLength();
+        final int idxCount = bits.bitCount();
+        List<Long> result = idxCount <= 10 ? new ArrayList<>(idxCount) : new LinkedList<>();
+        for (int k = bits.getLowestSetBit(); k < size; k++) {
             if (bits.testBit(k)) result.add((long) k);
         }
         return result;
@@ -3084,11 +3098,22 @@ public class MathUtils {
     private static Set<Numeric> computeEigenvaluesFor2x2(Matrix<? extends Numeric> matrix) {
         Numeric diagSum = matrix.valueAt(0L, 0L).add(matrix.valueAt(1L, 1L));
         Numeric diagDiff = matrix.valueAt(0L, 0L).subtract(matrix.valueAt(1L, 1L));
-        final IntegerType four = new IntegerImpl(BigInteger.valueOf(4L));
+        final MathContext ctx = inferMathContext(List.of(diagSum, diagDiff, matrix.valueAt(0L, 1L)));
+        final IntegerType four = new IntegerImpl(BigInteger.valueOf(4L)) {
+            @Override
+            public MathContext getMathContext() {
+                return ctx;
+            }
+        };
         Numeric term2 = diagDiff.multiply(diagDiff)
                 .add(four.multiply(matrix.valueAt(0L, 1L)).multiply(matrix.valueAt(1L, 0L)))
                 .sqrt();
-        final IntegerType two = new IntegerImpl(BigInteger.TWO);
+        final IntegerType two = new IntegerImpl(BigInteger.TWO) {
+            @Override
+            public MathContext getMathContext() {
+                return ctx;
+            }
+        };
         return Set.of(diagSum.add(term2).divide(two), diagSum.subtract(term2).divide(two));
     }
 
@@ -3108,13 +3133,7 @@ public class MathUtils {
             ComplexType intermediate = (ComplexType) LongStream.range(0L, matrix.rows()).mapToObj(idx -> matrix.valueAt(idx, idx))
                     .map(z -> z.multiply(z)).reduce(triangleSq.multiply(two), Numeric::add).coerceTo(ComplexType.class);
             ComplexType p = (ComplexType) intermediate.divide(six).sqrt();
-            Matrix<ComplexType> A = new ParametricMatrix<>(matrix.rows(), matrix.columns(), (row, column) -> {
-                try {
-                    return (ComplexType) matrix.valueAt(row, column).coerceTo(ComplexType.class);
-                } catch (CoercionException e) {
-                    throw new ArithmeticException("Unable to coerce element at " + row + ", " + column);
-                }
-            });
+            Matrix<ComplexType> A = new ComplexMatrixAdapter(matrix);
             Matrix<ComplexType> B = A.subtract(lambdaMatrix(3L, q));
             ComplexType r = (ComplexType) B.determinant().divide(two);
             ComplexType phi;
@@ -3288,7 +3307,7 @@ public class MathUtils {
                 result.setValueAt(element, idx, idx);
             }
         } catch (CoercionException e) {
-            throw new ArithmeticException("While computing A-I: " + e.getMessage());
+            throw new ArithmeticException("While computing A\u2212I: " + e.getMessage());
         }
 
         return result;
@@ -3364,7 +3383,7 @@ public class MathUtils {
             }
             return result;
         } catch (CoercionException e) {
-            throw new ArithmeticException("While computing I-A: " + e.getMessage());
+            throw new ArithmeticException("While computing I\u2212A: " + e.getMessage());
         }
     }
 
