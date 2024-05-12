@@ -148,13 +148,20 @@ public class MathUtils {
             return new IntegerImpl(getCacheFor(n)) {
                 @Override
                 public MathContext getMathContext() {
+                    // we don't know if n is using the default getMathContext()
+                    // which computes precision based on number of digits, or if
+                    // n is using some custom MathContext, so compare with
+                    // n's precision
+                    if (this.numberOfDigits() > n.getMathContext().getPrecision()) {
+                        return super.getMathContext();
+                    }
                     return n.getMathContext();
                 }
             };
         }
-        
+
         Long m = findMaxKeyUnder(n);
-        
+
         BigInteger accum = m != null ? factorialCache.get(m) : BigInteger.ONE;
         BigInteger intermediate = n.asBigInteger();
         BigInteger bailout = m != null ? BigInteger.valueOf(m + 1L) : BigInteger.TWO;
@@ -166,6 +173,9 @@ public class MathUtils {
         return new IntegerImpl(accum) {
             @Override
             public MathContext getMathContext() {
+                if (this.numberOfDigits() > n.getMathContext().getPrecision()) {
+                    return super.getMathContext();
+                }
                 return n.getMathContext();  // preserve MathContext
             }
         };
@@ -188,23 +198,23 @@ public class MathUtils {
             return factorialCache.keySet().parallelStream().max(Long::compareTo).orElse(null);
         }
     }
-    
+
     private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
-    
+
     private static void cacheFact(BigInteger n, BigInteger value) {
         // these bounds should prevent an ArithmeticException from being thrown
         // if not, we want to fail fast to catch the problem
         if (n.compareTo(BigInteger.TWO) >= 0 && n.compareTo(MAX_LONG) < 0) {
             Long key = n.longValueExact();
-            
+
             if (!factorialCache.containsKey(key)) factorialCache.put(key, value);
         }
     }
-    
+
     private static void cacheFact(IntegerType n, BigInteger value) {
         cacheFact(n.asBigInteger(), value);
     }
-    
+
     private static BigInteger getCacheFor(BigInteger n) {
         try {
             return factorialCache.get(n.longValueExact());
@@ -213,7 +223,7 @@ public class MathUtils {
             return null; // this is the same as if we had a regular cache miss
         }
     }
-    
+
     private static BigInteger getCacheFor(IntegerType n) {
         return getCacheFor(n.asBigInteger());
     }
@@ -963,7 +973,7 @@ public class MathUtils {
                 throw new ArithmeticException("While coercing argument to computeIntegerExponent: " + ex.getMessage());
             }
         }
-        
+
         return result;
     }
 
@@ -1071,7 +1081,7 @@ public class MathUtils {
             throw new ArithmeticException("Failure to coerce result to ComplexType");
         }
     }
-    
+
     /**
      * Compute x<sup>n</sup>. The {@link MathContext} is inferred from {@code x}.
      * @param x the value to take the exponent of
@@ -1081,10 +1091,10 @@ public class MathUtils {
     public static RealType computeIntegerExponent(RealType x, long n) {
         return computeIntegerExponent(x, n, x.getMathContext());
     }
-    
+
     private static final BigDecimal decTWO = BigDecimal.valueOf(2L);
     private static final Range<RealType> newtonRange = new Range<>(new RealImpl(BigDecimal.ZERO), new RealImpl(decTWO), BoundType.EXCLUSIVE);
-    
+
     /**
      * Compute the natural logarithm, ln(x).
      * @param x the value for which to obtain the natural logarithm
@@ -1105,7 +1115,7 @@ public class MathUtils {
             throw new ArithmeticException("ln(x) is undefined for x < 0");
         }
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
-        
+
         if (x.asBigDecimal().compareTo(BigDecimal.TEN) > 0) {
             RealType mantissa = mantissa(x);
             IntegerType exponent = exponent(x);
@@ -1122,10 +1132,10 @@ public class MathUtils {
                 throw new IllegalStateException("Calculation of ln(a × 10\u207F) = ln(a) + n × ln(10) failed to generate a real value", ex);
             }
         }
-        
+
         return lnSeries(x, mctx);
     }
-    
+
     /**
      * Compute the natural logarithm, ln(x).
      * @param x the value for which to obtain the natural logarithm
@@ -1134,7 +1144,7 @@ public class MathUtils {
     public static RealType ln(RealType x) {
         return ln(x, x.getMathContext());
     }
-    
+
     private static RealType lnNewton(RealType x, MathContext mctx) {
         Euler e = Euler.getInstance(mctx);
         BigDecimal xval = x.asBigDecimal();
@@ -1142,12 +1152,12 @@ public class MathUtils {
         BigDecimal y1;
         while (true) {
             final BigDecimal expval = e.exp(new RealImpl(y0, false)).asBigDecimal();
-            
+
             BigDecimal num = xval.subtract(expval, mctx);
             BigDecimal denom = xval.add(expval, mctx);
             y1 = y0.add(decTWO.multiply(num.divide(denom, mctx), mctx), mctx);
             if (y0.compareTo(y1) == 0) break;
-            
+
             y0 = y1;
         }
         final RealImpl result = new RealImpl(y0, false);
@@ -1155,7 +1165,7 @@ public class MathUtils {
         result.setMathContext(mctx);
         return result;
     }
-    
+
     private static RealType lnSeries(RealType x, MathContext mctx) {
         final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
         BigDecimal xfrac = x.asBigDecimal().subtract(BigDecimal.ONE, compctx).divide(x.asBigDecimal(), compctx);
@@ -1168,7 +1178,7 @@ public class MathUtils {
         result.setMathContext(mctx);
         return result;
     }
-    
+
     private static BigDecimal computeNthTerm_ln(BigDecimal frac, int n, MathContext mctx) {
         BigDecimal ninv = BigDecimal.ONE.divide(BigDecimal.valueOf(n), mctx);
         return ninv.multiply(frac.pow(n, mctx), mctx);
@@ -1257,7 +1267,7 @@ public class MathUtils {
         // otherwise, you get things like log₂(1024) = 9.9999... instead of 10.0
         return round((RealType) ln(x, compCtx).divide(ln(base, compCtx)), mctx);
     }
-    
+
     /**
      * Compute the general logarithm, log<sub>b</sub>(x).
      * The {@link MathContext} is inferred from the argument {@code x}.
@@ -1323,7 +1333,7 @@ public class MathUtils {
         result.setIrrational(x.isIrrational());
         return result;
     }
-    
+
     /**
      * Computes the exponent of a real value as expressed in scientific
      * notation, mantissa&nbsp;&times;&nbsp;10<sup>exponent</sup>.
@@ -1334,7 +1344,7 @@ public class MathUtils {
         int exponent = x.asBigDecimal().precision() - x.asBigDecimal().scale() - 1;
         return new IntegerImpl(BigInteger.valueOf(exponent));  // the exponent should always be exact
     }
-    
+
     /**
      * Compute the general case of x<sup>y</sup>, where x is a real number
      * and y is anything generally coercible to a real (i.e., integer,
@@ -1520,7 +1530,7 @@ public class MathUtils {
     public static RealType nthRoot(RealType a, IntegerType n) {
         return nthRoot(a, n, a.getMathContext());
     }
-    
+
     /**
      * Compute the n<sup>th</sup> root of a real value a.  The result is the principal
      * root of the equation x<sup>n</sup>&nbsp;=&nbsp;a.  The {@link MathContext}
@@ -1571,14 +1581,14 @@ public class MathUtils {
         result.setIrrational(irrational);
         return result;
     }
-    
+
     private static boolean classifyIfIrrational(BigDecimal realval, MathContext mctx) {
         if (realval.scale() <= 0) return false;  // this is an integer
         IntegerType nonFractionPart = new IntegerImpl(realval.toBigInteger());
         int reducedDigitLength = mctx.getPrecision() - (int) nonFractionPart.numberOfDigits();
         return reducedDigitLength == realval.scale();
     }
-    
+
     /**
      * Compute the n<sup>th</sup> roots of unity, &#x212f;<sup>2&pi;&#x2148;k/n</sup> for
      * {k=0,&thinsp;1,&thinsp;2,&thinsp;&hellip;,&thinsp;n&minus;1}.
@@ -1647,14 +1657,14 @@ public class MathUtils {
     public static String inScientificNotation(RationalType value) {
         return convertToScientificNotation(value.asBigDecimal());
     }
-    
+
     private static String convertToScientificNotation(BigDecimal decValue) {
         if (decValue.scale() <= 0) {
             IntegerImpl temp = new IntegerImpl(decValue.toBigIntegerExact());
             return inScientificNotation(temp);
         }
         StringBuilder buf = new StringBuilder();
-        
+
         int exponent = decValue.scale();
         BigDecimal temp = decValue;
         while (temp.abs().compareTo(BigDecimal.TEN) > 0) {
@@ -1663,7 +1673,7 @@ public class MathUtils {
         }
         buf.append(temp.toPlainString()).append("\u2009\u00D7\u200910");
         buf.append(UnicodeTextEffects.numericSuperscript(exponent));
-        
+
         return buf.toString();
     }
 
@@ -1683,15 +1693,15 @@ public class MathUtils {
         buf.insert(insertionPoint, dfSymbols.getDecimalSeparator());
         // U+2009 is thin space, U+00D7 is multiplication symbol
         buf.append("\u2009\u00D7\u200910").append(UnicodeTextEffects.numericSuperscript(exponent));
-        
+
         return buf.toString();
     }
 
     private static final RealType TEN = new RealImpl(BigDecimal.TEN, MathContext.UNLIMITED);
-    
+
     /**
      * Generate a matrix of rotation in 2 dimensions.
-     * 
+     *
      * @param theta the angle of rotation in radians around the origin
      * @return a 2&times;2 matrix of rotation
      */
@@ -1705,13 +1715,13 @@ public class MathUtils {
         temp[0][1] = sin.negate();
         temp[1][0] = sin;
         temp[1][1] = cos;
-        
+
         return new BasicMatrix<>(temp);
     }
-    
+
     /**
      * Generate a matrix of rotation in 3 dimensions.
-     * 
+     *
      * @param theta the angle of rotation in radians
      * @param axis the major axis around which the rotation is to occur
      * @return a 3&times;3 matrix of rotation
@@ -3569,13 +3579,13 @@ public class MathUtils {
     }
 
     private static final Range<RealType> epsilonRange = new Range<>(new RealImpl("0"), new RealImpl("1"), BoundType.EXCLUSIVE);
-    
+
     /**
      * Tests if two real values are within &epsilon; of each other.  This is
      * useful in cases where rounding error or truncation can render a test
      * using {@link RealImpl#equals(Object) the default test for equality}
      * entirely useless.
-     * 
+     *
      * @param A the first real value to test for equality
      * @param B the second real value to test for equality
      * @param epsilon the largest allowable delta between A and B for them to be
@@ -3594,7 +3604,7 @@ public class MathUtils {
             throw new IllegalStateException("Cannot coerce delta to a real value", e);
         }
     }
-    
+
     /**
      * Tests if two real vectors are equal according to
      * {@link #areEqualToWithin(RealType, RealType, RealType) }. The two
@@ -3616,7 +3626,7 @@ public class MathUtils {
         }
         return true;
     }
-    
+
     /**
      * Tests if two real-valued matrices are equal according to
      * {@link #areEqualToWithin(RealType, RealType, RealType) }.
@@ -3624,7 +3634,7 @@ public class MathUtils {
      * two matrices (still a work in progress).  It recognizes any matrices
      * annotated as {@link Columnar} and will attempt to adjust its access
      * pattern accordingly.
-     * 
+     *
      * @param A       the first real-valued matrix to test for equality
      * @param B       the second real-valued matrix to test for equality
      * @param epsilon the maximum delta allowed between corresponding elements,
