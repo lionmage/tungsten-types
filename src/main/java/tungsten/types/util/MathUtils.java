@@ -2126,7 +2126,7 @@ public class MathUtils {
 //        }
 
         // special real logarithm case
-        logger.info("Using the general solution of ln(X) for a 2×2 matrix.");
+        logger.info("Using the general solution of ln(X) for a 2\u00D72 matrix.");
         final Numeric four = new RealImpl(BigDecimal.valueOf(4L), ctx);
         final Numeric a = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two);
         final Numeric diffSq = (X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)))
