@@ -1103,12 +1103,7 @@ public class MathUtils {
      */
     public static RealType ln(RealType x, MathContext mctx) {
         if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) {
-            try {
-                return (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
-            } catch (CoercionException ex) {
-                // We should never get here!
-                throw new IllegalStateException(ex);
-            }
+            return new RealImpl(BigDecimal.ZERO, mctx, x.isExact());
         }
         if (x.asBigDecimal().compareTo(BigDecimal.ZERO) <= 0) {
             if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return RealInfinity.getInstance(Sign.NEGATIVE, mctx);
@@ -1942,19 +1937,20 @@ public class MathUtils {
             Numeric exponent = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two); // (a + d)/2
             final Euler e = Euler.getInstance(ctx);
             Numeric scaleFactor = isOfType(X, ComplexType.class) ? e.exp((ComplexType) exponent) : e.exp(Re(exponent));
+            Numeric halfadDiff = adDiff.divide(two);
             if (Zero.isZero(adDiff.multiply(adDiff).add(bc4))) {
                 final Numeric one = One.getInstance(ctx);
-                Numeric[][] seed = new Numeric[][] { {one.add(adDiff.divide(two)), X.valueAt(0L, 1L)},
-                        {X.valueAt(1L, 0L), one.subtract(adDiff.divide(two))} };
+                Numeric[][] seed = new Numeric[][] { {one.add(halfadDiff), X.valueAt(0L, 1L)},
+                        {X.valueAt(1L, 0L), one.subtract(halfadDiff)} };
                 return new BasicMatrix<>(seed).scale(scaleFactor);
             } else {
                 Numeric delta = adDiff.multiply(adDiff).add(bc4).divide(two);
                 Numeric cshDelta = delta instanceof ComplexType ? cosh((ComplexType) delta) : cosh(Re(delta));
                 Numeric snhDelta = delta instanceof ComplexType ? sinh((ComplexType) delta) : sinh(Re(delta));
-                Numeric[][] seed = new Numeric[][] { { cshDelta.add(adDiff.divide(two).multiply(snhDelta).divide(delta)),
+                Numeric[][] seed = new Numeric[][] { { cshDelta.add(halfadDiff.multiply(snhDelta).divide(delta)),
                         X.valueAt(0L, 1L).multiply(snhDelta).divide(delta) },
                         { X.valueAt(1L, 0L).multiply(snhDelta).divide(delta),
-                                cshDelta.subtract(adDiff.divide(two).multiply(snhDelta).divide(delta)) } };
+                                cshDelta.subtract(halfadDiff.multiply(snhDelta).divide(delta)) } };
                 return new BasicMatrix<>(seed).scale(scaleFactor);
             }
         }
@@ -2150,13 +2146,8 @@ public class MathUtils {
                 }
             }
         }
-//        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+
         final Numeric two = new RealImpl(decTWO, ctx);
-//        if (hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) > 0) {
-//            logger.fine("We have a 2×2 matrix, so computing exact sqrt and recursing to compute ln of that result");
-//            // we can get an exact square root for a 2×2 matrix, so recursively compute ln using this identity
-//            return ((Matrix<Numeric>) ln(fast2x2Sqrt(X))).scale(two);
-//        }
 
         // special real logarithm case
         logger.info("Using the general solution of ln(X) for a 2\u00D72 matrix.");
