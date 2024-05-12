@@ -41,6 +41,9 @@ import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static tungsten.types.util.MathUtils.Im;
+import static tungsten.types.util.MathUtils.Re;
+
 /**
  * A representation of the imaginary unit &#x2148;, or the unit imaginary number.
  * Note that although this class has been marked with the {@link Polar @Polar interface},
@@ -212,18 +215,9 @@ public class ImaginaryUnit implements ComplexType {
         if (multiplier instanceof ImaginaryUnit) {
             // i * i = -1
             return new RealImpl(BigDecimal.valueOf(-1L), mctx);
-        } else if (multiplier instanceof ComplexType) {
-            // multiplying by i is a rotation
-            final ComplexType val = (ComplexType) multiplier;
-            return new ComplexRectImpl(val.imaginary().negate(), val.real());
         }
-        try {
-            // scale the imaginary unit by the multiplier
-            return new ComplexRectImpl((RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class),
-                    (RealType) multiplier.coerceTo(RealType.class));
-        } catch (CoercionException e) {
-            throw new ArithmeticException("Could not coerce " + multiplier + " to a real type");
-        }
+        // multiplying by i is a rotation
+        return new ComplexRectImpl(Im(multiplier).negate(), Re(multiplier));
     }
 
     @Override
