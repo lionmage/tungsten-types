@@ -4008,6 +4008,50 @@ public class MathUtils {
     }
 
     /**
+     * Computes the hyperbolic sine.
+     * @param z the argument
+     * @return the value of sinh(z)
+     */
+    public static ComplexType sinh(ComplexType z) {
+        Euler e = Euler.getInstance(z.getMathContext());
+        final RealType two = new RealImpl(decTWO, z.getMathContext());
+        return (ComplexType) e.exp(z).subtract(e.exp(z.negate())).divide(two);
+    }
+
+    /**
+     * Computes the hyperbolic sine.
+     * @param x the argument
+     * @return the value of sinh(x)
+     */
+    public static RealType sinh(RealType x) {
+        Euler e = Euler.getInstance(x.getMathContext());
+        final RealType two = new RealImpl(decTWO, x.getMathContext());
+        return (RealType) e.exp(x).subtract(e.exp(x.negate())).divide(two);
+    }
+
+    /**
+     * Computes the hyperbolic cosine.
+     * @param z the argument
+     * @return the value of cosh(z)
+     */
+    public static ComplexType cosh(ComplexType z) {
+        Euler e = Euler.getInstance(z.getMathContext());
+        final RealType two = new RealImpl(decTWO, z.getMathContext());
+        return (ComplexType) e.exp(z).add(e.exp(z.negate())).divide(two);
+    }
+
+    /**
+     * Computes the hyperbolic cosine.
+     * @param x the argument
+     * @return the value of cosh(x)
+     */
+    public static RealType cosh(RealType x) {
+        Euler e = Euler.getInstance(x.getMathContext());
+        final RealType two = new RealImpl(decTWO, x.getMathContext());
+        return (RealType) e.exp(x).add(e.exp(x.negate())).divide(two);
+    }
+
+    /**
      * Factory method that provides a comparator that works with
      * all {@link Numeric} subtypes that are comparable, even
      * distinctly different subtypes. This comparator also
