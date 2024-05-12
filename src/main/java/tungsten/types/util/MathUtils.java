@@ -65,7 +65,8 @@ import static tungsten.types.Range.BoundType;
 /**
  * A utility class to hold commonly used functions and algorithms.
  *
- * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class MathUtils {
     public static final String THETA = "\u03B8";
@@ -1996,11 +1997,7 @@ public class MathUtils {
                 if (tr instanceof ComplexType) {
                     return e.exp((ComplexType) tr);
                 } else {
-                    try {
-                        return e.exp((RealType) tr.coerceTo(RealType.class));
-                    } catch (CoercionException ex) {
-                        throw new IllegalStateException("While computing determinant from trace", ex);
-                    }
+                    return e.exp(Re(tr));
                 }
             }
         };
@@ -2162,7 +2159,7 @@ public class MathUtils {
         logger.log(Level.FINE, "ln: a={0}, b={1}", new Object[] {a, b});
         final Numeric theta = ln((RealType) a.multiply(a).add(b.multiply(b))).divide(two);
         final Numeric mu = arctan(b.divide(a));
-        logger.log(Level.FINE, "ln: \uD835\uDF03={0}, and \uD835\uDF07={1}", new Object[] {theta, mu});
+        logger.log(Level.FINE, "ln: \uD835\uDF03={0}, \uD835\uDF07={1}", new Object[] {theta, mu});
         final Matrix<Numeric> I = new IdentityMatrix(2L, ctx);
         Matrix<Numeric> intermediate = ((Matrix<Numeric>) X).subtract(I.scale(a)).scale(mu.divide(b));
         return I.scale(theta).add(intermediate);
