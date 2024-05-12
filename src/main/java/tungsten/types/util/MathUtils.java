@@ -1922,6 +1922,32 @@ public class MathUtils {
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
         if (ZeroMatrix.isZeroMatrix(X)) return new IdentityMatrix(X.rows(), ctx);
+
+        if (X.rows() == 2L) {
+            Numeric adDiff = X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)); // a - d
+            final RealType four = new RealImpl(BigDecimal.valueOf(4L), ctx);
+            Numeric bc4 = four.multiply(X.valueAt(0L, 1L)).multiply(X.valueAt(1L, 0L));  // 4bc
+            final RealType two  = new RealImpl(decTWO, ctx);
+            Numeric exponent = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two); // (a + d)/2
+            final Euler e = Euler.getInstance(ctx);
+            Numeric scaleFactor = isOfType(X, ComplexType.class) ? e.exp((ComplexType) exponent) : e.exp(Re(exponent));
+            if (Zero.isZero(adDiff.multiply(adDiff).add(bc4))) {
+                final Numeric one = One.getInstance(ctx);
+                Numeric[][] seed = new Numeric[][] { {one.add(adDiff.divide(two)), X.valueAt(0L, 1L)},
+                        {X.valueAt(1L, 0L), one.subtract(adDiff.divide(two))} };
+                return new BasicMatrix<>(seed).scale(scaleFactor);
+            } else {
+                Numeric delta = adDiff.multiply(adDiff).add(bc4).divide(two);
+                Numeric cshDelta = delta instanceof ComplexType ? cosh((ComplexType) delta) : cosh(Re(delta));
+                Numeric snhDelta = delta instanceof ComplexType ? sinh((ComplexType) delta) : sinh(Re(delta));
+                Numeric[][] seed = new Numeric[][] { { cshDelta.add(adDiff.divide(two).multiply(snhDelta).divide(delta)),
+                        X.valueAt(0L, 1L).multiply(snhDelta).divide(delta) },
+                        { X.valueAt(1L, 0L).multiply(snhDelta).divide(delta),
+                                cshDelta.subtract(adDiff.divide(two).multiply(snhDelta).divide(delta)) } };
+                return new BasicMatrix<>(seed).scale(scaleFactor);
+            }
+        }
+
         if (X.rows() > 4L && X.isUpperTriangular()) {
             Logger.getLogger(MathUtils.class.getName()).info("Attempting the Parlett method for computing exp");
             final Euler e = Euler.getInstance(ctx);
