@@ -2309,7 +2309,6 @@ public class MathUtils {
             return parlett(Numeric::sqrt, A);
         }
         // TODO implement other algorithms, factor out the 2×2 case
-        // TODO also check the norm first before we use Denman-Beavers or the power series
         final RealType one = new RealImpl(BigDecimal.ONE, A.valueAt(0L, 0L).getMathContext());
         if (hilbertSchmidtNorm(calcAminusI(A)).compareTo(one) <= 0) {
             try {
@@ -2318,7 +2317,8 @@ public class MathUtils {
                 return sqrtPowerSeries(A);
             }
         }
-        throw new UnsupportedOperationException("Unable to compute a general square root for the given matrix");
+        // ArithmeticException seems appropriate, as opposed to UnsupportedOperationException
+        throw new ArithmeticException("Unable to compute a general square root for the given matrix");
     }
 
     private static Matrix<Numeric> fast2x2Sqrt(Matrix<? extends Numeric> A) {
