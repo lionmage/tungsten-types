@@ -2028,7 +2028,75 @@ public class MathUtils {
                     break;
             }
         }
-        if (X.rows() == 2L && RationalType.class.isAssignableFrom(OptionalOperations.findTypeFor(X))) {
+        // All special handling for 2×2 matrices goes in the following method.
+        if (X.rows() == 2L) {
+            return ln2x2(X);
+        }
+
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        if (hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) < 0) {
+            logger.fine("||X - I|| < 1, computing ln(X) using series.");
+            return lnSeries(X);
+        }
+        // TODO check the norm first before using D-B at all
+        // per Cheng et al., we can approximate the logarithm recursively using
+        // a square root identity and the Denman-Beavers iteration
+        logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
+        // log A = 2 log Yk − log YkZk
+        final Numeric two = new RealImpl(decTWO, ctx);
+        try {
+            Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X, 8); // don't need it to be perfect, so limit to 8 iterations
+            Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
+            return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
+        } catch (ConvergenceException e) {
+            // if Denman-Beavers iteration fails, fall back to computing a power series -- slower but should work over the same domain
+            Matrix<? extends Numeric> Y = sqrtPowerSeries(X);
+            return ((Matrix<Numeric>) ln(Y)).scale(two);
+        }
+    }
+
+    private static Matrix<? extends Numeric> ln2x2(Matrix<? extends Numeric> X) {
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
+        final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
+
+        if (X.rows() != 2L || X.columns() != 2L) throw new IllegalArgumentException("Only 2×2 matrices supported");
+
+        if (RealType.class.isAssignableFrom(OptionalOperations.findTypeFor(X))) {
+            final RealType zero = new RealImpl(BigDecimal.ZERO, ctx);
+            // check for special 2×2 matrix of the form [[-𝜆, 0],[0, -𝜆]]
+            if (Zero.isZero(X.valueAt(0L, 1L)) && Zero.isZero(X.valueAt(1L, 0L)) &&
+                    X.valueAt(0L, 0L).equals(X.valueAt(1L, 1L))) {
+                RealType lambda = (RealType) X.valueAt(0L, 0L).negate();
+                if (lambda.compareTo(zero) > 0) { // this works for 𝜆 > 0
+                    logger.log(Level.INFO, "Detected a real matrix of the form \u2212\uD835\uDF06I with \uD835\uDF06={0}", lambda);
+                    RealType logLambda = ln(lambda);
+                    RealType pi = Pi.getInstance(ctx);
+                    RealType[][] seed = {{logLambda, pi}, {pi.negate(), logLambda}};
+                    return new BasicMatrix<>(seed);
+                }
+            }
+            // check for special 2×2 matrix of the form [[a, b], [-b, a]]
+            if (X.valueAt(0L, 0L).equals(X.valueAt(1L, 1L)) &&
+                X.valueAt(0L, 1L).equals(X.valueAt(1L, 0L).negate())) {
+                RealType a = (RealType) X.valueAt(0L, 0L);
+                RealType b = (RealType) X.valueAt(0L, 1L);
+                if (!Zero.isZero(b)) {
+                    logger.log(Level.INFO, "Detected a real matrix of the form [[a, b], [-b, a]] where a={0} and b={1}",
+                            new Object[] {a, b});
+                    ComplexType cplxsum = new ComplexRectImpl(a, b);  // a + ib
+                    ComplexType result = ln(cplxsum);  // 𝜃 + i𝜇
+                    logger.log(Level.FINE, "Computed ln({0}) = {1}", new Object[] {cplxsum, result});
+                    RealType theta = result.real();
+                    RealType mu = result.imaginary();
+                    logger.log(Level.INFO, "Generating matrix with \uD835\uDF03={0} and \uD835\uDF07={1}",
+                            new Object[] {theta, mu});
+                    RealType[][] seed = {{theta, mu}, {mu.negate(), theta}};
+                    return new BasicMatrix<>(seed);
+                }
+            }
+        }
+
+        if (RationalType.class.isAssignableFrom(OptionalOperations.findTypeFor(X))) {
             logger.fine("Checking for a special type of 2\u00D72 rational matrix");
             Matrix<RationalType> source = (Matrix<RationalType>) X;
             if (source.valueAt(0L, 0L).equals(source.valueAt(1L, 1L)) &&
@@ -2049,32 +2117,29 @@ public class MathUtils {
                 }
             }
         }
-
-        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+//        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         final Numeric two = new RealImpl(decTWO, ctx);
-        if (X.rows() == 2L && hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) > 0) {
-            logger.fine("We have a 2×2 matrix, so computing exact sqrt and recursing to compute ln of that result");
-            // we can get an exact square root for a 2×2 matrix, so recursively compute ln using this identity
-            return ((Matrix<Numeric>) ln(fast2x2Sqrt(X))).scale(two);
-        }
-        if (hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) < 0) {
-            logger.fine("||X - I|| < 1, computing ln(X) using series.");
-            return lnSeries(X);
-        }
-        // TODO check the norm first before using D-B at all
-        // per Cheng et al., we can approximate the logarithm recursively using
-        // a square root identity and the Denman-Beavers iteration
-        logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
-        // log A = 2 log Yk − log YkZk
-        try {
-            Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X, 8); // don't need it to be perfect, so limit to 8 iterations
-            Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
-            return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
-        } catch (ConvergenceException e) {
-            // if Denman-Beavers iteration fails, fall back to computing a power series -- slower but should work over the same domain
-            Matrix<? extends Numeric> Y = sqrtPowerSeries(X);
-            return ((Matrix<Numeric>) ln(Y)).scale(two);
-        }
+//        if (hilbertSchmidtNorm(calcAminusI(X)).compareTo(one) > 0) {
+//            logger.fine("We have a 2×2 matrix, so computing exact sqrt and recursing to compute ln of that result");
+//            // we can get an exact square root for a 2×2 matrix, so recursively compute ln using this identity
+//            return ((Matrix<Numeric>) ln(fast2x2Sqrt(X))).scale(two);
+//        }
+
+        // special real logarithm case
+        logger.log(Level.INFO, "Using the general solution of ln(X) for a 2×2 matrix.");
+        final Numeric four = new RealImpl(BigDecimal.valueOf(4L), ctx);
+        final Numeric a = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two);
+        final Numeric diffSq = (X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)))
+                .multiply(X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)));
+        final Numeric b = diffSq.negate()
+                .subtract(four.multiply(X.valueAt(0L, 1L)).multiply(X.valueAt(1L, 0L))).sqrt().divide(two);
+        logger.log(Level.FINE, "ln: a={0}, b={1}", new Object[] {a, b});
+        final Numeric theta = ln((RealType) a.multiply(a).add(b.multiply(b))).divide(two);
+        final Numeric mu = arctan(b.divide(a));
+        logger.log(Level.FINE, "ln: \uD835\uDF03={0}, and \uD835\uDF07={1}", new Object[] {theta, mu});
+        final Matrix<Numeric> I = new IdentityMatrix(2L, ctx);
+        Matrix<Numeric> intermediate = ((Matrix<Numeric>) X).subtract(I.scale(a)).scale(mu.divide(b));
+        return I.scale(theta).add(intermediate);
     }
 
     /**
