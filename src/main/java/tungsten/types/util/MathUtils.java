@@ -2067,13 +2067,16 @@ public class MathUtils {
             logger.fine("||X - I|| < 1, computing ln(X) using series.");
             return lnSeries(X);
         }
-        // TODO check the norm first before using D-B at all
-        // per Cheng et al., we can approximate the logarithm recursively using
-        // a square root identity and the Denman-Beavers iteration
-        logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
-        // log A = 2 log Yk − log YkZk
+
         final Numeric two = new RealImpl(decTWO, ctx);
         try {
+            if (isPositiveDefinite(X)) {
+                return lnGregorySeries(X);
+            }
+            // per Cheng et al., we can approximate the logarithm recursively using
+            // a square root identity and the Denman-Beavers iteration
+            logger.fine("Using square root identity to recursively compute ln(X) using Denman-Beavers iteration.");
+            // log A = 2 log Yk − log YkZk
             Matrix<Numeric> Y = (Matrix<Numeric>) denmanBeavers(X, 8); // don't need it to be perfect, so limit to 8 iterations
             Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
             return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
@@ -2809,6 +2812,24 @@ public class MathUtils {
                     "While computing matrix inverse for comparison to conjugate transpose.", e);
             return false;
         }
+    }
+
+    public static boolean isPositiveDefinite(Matrix<? extends Numeric> M) {
+        if (M.rows() != M.columns()) return false;  // must be square
+        final RealType zero = new RealImpl(BigDecimal.ZERO, M.valueAt(0L, 0L).getMathContext());
+        RealType det = Re(M.determinant());
+        if (det.compareTo(zero) <= 0) return false;
+        // for a 2×2 symmetric matrix [[a, b], [b, c]], a must be positive; det > 0 already established
+        if (M.rows() == 2L && M.valueAt(0L, 1L).equals(M.valueAt(1L, 0L))) {
+            return Re(M.valueAt(0L, 0L)).compareTo(zero) > 0;
+        }
+        // apparently, positive definiteness only applies to symmetric matrices
+        if (!isSymmetric(M)) return false;
+        // we alreadu checked the determinant of the whole matrix above, so only check
+        // the k = 0..N-2 submatrices
+        return LongStream.range(0L, M.rows() - 1L).parallel()
+                .mapToObj(k -> new SubMatrix<>(M, 0L, 0L, k, k))
+                .map(Matrix::determinant).allMatch(x -> Re(x).compareTo(zero) > 0);
     }
 
     /**
