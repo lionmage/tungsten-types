@@ -1510,6 +1510,17 @@ public class MathUtils {
      * @return the value of M<sup>exponent</sup>
      */
     public static Matrix<? extends Numeric> generalizedExponent(Matrix<? extends Numeric> M, Numeric exponent) {
+        if (exponent.isCoercibleTo(IntegerType.class)) {
+            // for integer exponents, it's much faster to use Matrix.pow(n)
+            try {
+                IntegerType n = (IntegerType) exponent.coerceTo(IntegerType.class);
+                return M.pow(n);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Unable to coerce " + exponent + " to an integer");
+            }
+        }
+        // this should support even fractional exponents, so no need to cover
+        // special cases for fractions and nth roots
         Matrix<? extends Numeric> logexp = ((Matrix<Numeric>) ln(M)).scale(exponent);
         return exp(logexp);
     }
@@ -2498,10 +2509,13 @@ public class MathUtils {
             }
             return new DiagonalMatrix<>(elements);
         }
-        if (A.isUpperTriangular() && RealType.class.isAssignableFrom(OptionalOperations.findTypeFor(A)) &&
+        // if the diagonal values are all coercible to real, that should be good enough
+        if (A.isUpperTriangular() &&
+                (RealType.class.isAssignableFrom(OptionalOperations.findTypeFor(A)) ||
+                 LongStream.range(0L, A.columns()).mapToObj(idx -> A.valueAt(idx, idx)).allMatch(v -> v.isCoercibleTo(RealType.class))) &&
                 LongStream.range(0L, A.rows()).mapToObj(idx -> A.valueAt(idx, idx)).filter(Zero::isZero).count() <= 1L) {
             final Function<Numeric, ? extends Numeric> f =
-                    x -> nthRoot((RealType) x, root);
+                    x -> nthRoot(Re(x), root);
             return parlett(f, A);
         }
         throw new UnsupportedOperationException("Cannot compute " + root + "th root of matrix");

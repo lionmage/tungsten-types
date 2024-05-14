@@ -294,7 +294,7 @@ public interface Matrix<T extends Numeric> {
         }
         // if we didn't get special handling above, n must be an integer
         if (!(n instanceof IntegerType)) {
-            throw new IllegalArgumentException("Non-integer exponents other than of the form m/2\u207F are not allowed for this type of matrix");
+            throw new IllegalArgumentException("Non-integer exponents other than of the form m/2\u207F are not supported for this type of matrix");
         }
         if (OptionalOperations.sign(n) == Sign.NEGATIVE) {
             return inverse().pow(n.negate());
