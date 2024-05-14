@@ -1400,8 +1400,8 @@ public class MathUtils {
                 }
                 // approximate with a rational
                 try {
-                    RationalType ratexponent = (RationalType) exponent.coerceTo(RationalType.class);
-                    return generalizedExponent(base, ratexponent, mctx);
+                    RationalType ratExponent = (RationalType) exponent.coerceTo(RationalType.class);
+                    return generalizedExponent(base, ratExponent, mctx);
                 } catch (CoercionException ex) {
                     // recover by using exponential identity, which is more costly than rational exponentiation
                     final Euler e = Euler.getInstance(mctx);
@@ -2082,8 +2082,9 @@ public class MathUtils {
             Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
             return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
         } catch (ConvergenceException e) {
-            logger.log(Level.WARNING, "Denman-Beavers did not converge; switching to sqrt power series for ln(X) computation.", e);
-            // if Denman-Beavers iteration fails, fall back to computing a power series -- slower but should work over the same domain
+            logger.log(Level.WARNING, "Failed to converge; switching to sqrt power series for ln(X) computation.", e);
+            // if Denman-Beavers iteration fails, or Gregory series does not converge,
+            // fall back to computing a power series -- slower but should work over the same domain
             Matrix<? extends Numeric> Y = sqrtPowerSeries(X);
             return ((Matrix<Numeric>) ln(Y)).scale(two);
         }
@@ -2827,7 +2828,7 @@ public class MathUtils {
         }
         // apparently, positive definiteness only applies to symmetric matrices
         if (!isSymmetric(M)) return false;
-        // we alreadu checked the determinant of the whole matrix above, so only check
+        // we already checked the determinant of the whole matrix above, so only check
         // the k = 0..N-2 submatrices
         return LongStream.range(0L, M.rows() - 1L).parallel()
                 .mapToObj(k -> new SubMatrix<>(M, 0L, 0L, k, k))
