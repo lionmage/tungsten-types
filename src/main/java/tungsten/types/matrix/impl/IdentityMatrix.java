@@ -79,7 +79,12 @@ public class IdentityMatrix implements Matrix<Numeric> {
     @Override
     public Numeric trace() {
         // this could be any Numeric subtype, really, but IntegerImpl has less overhead
-        return new IntegerImpl(BigInteger.valueOf(elementCount));
+        return new IntegerImpl(BigInteger.valueOf(elementCount)) {
+            @Override
+            public MathContext getMathContext() {
+                return mctx;
+            }
+        };
     }
     
     @Override

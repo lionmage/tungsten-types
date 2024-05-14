@@ -2071,6 +2071,7 @@ public class MathUtils {
         final Numeric two = new RealImpl(decTWO, ctx);
         try {
             if (isPositiveDefinite(X)) {
+                logger.fine("Trying the Gregory series for ln(X).");
                 return lnGregorySeries(X);
             }
             // per Cheng et al., we can approximate the logarithm recursively using
@@ -2081,6 +2082,7 @@ public class MathUtils {
             Matrix<Numeric> Z = (Matrix<Numeric>) Y.inverse();  // this is computed for free by Denman-Beavers
             return ((Matrix<Numeric>) ln(Y)).scale(two).subtract((Matrix<Numeric>) ln(Y.multiply(Z)));  // YZ should converge to I
         } catch (ConvergenceException e) {
+            logger.log(Level.WARNING, "Denman-Beavers did not converge; switching to sqrt power series for ln(X) computation.", e);
             // if Denman-Beavers iteration fails, fall back to computing a power series -- slower but should work over the same domain
             Matrix<? extends Numeric> Y = sqrtPowerSeries(X);
             return ((Matrix<Numeric>) ln(Y)).scale(two);
