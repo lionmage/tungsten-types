@@ -1237,11 +1237,7 @@ public class MathUtils {
     public static RealType ln(RationalType x) {
         final MathContext ctx = x.getMathContext();
         if (x.numerator().compareTo(lnRationalCutoff) < 0 && x.denominator().compareTo(lnRationalCutoff) < 0) {
-            try {
-                return ln((RealType) x.coerceTo(RealType.class), ctx);
-            } catch (CoercionException fatal) {
-                throw new IllegalStateException("While computing ln(" + x + ")", fatal);
-            }
+            return ln(new RealImpl(x), ctx);
         }
         return (RealType) ln(x.numerator(), ctx).subtract(ln(x.denominator(), ctx));
     }
@@ -1604,8 +1600,8 @@ public class MathUtils {
      */
     public static Set<ComplexType> rootsOfUnity(long n, MathContext mctx) {
         if (n < 1L) throw new IllegalArgumentException("Degree of roots must be \u2265 1");
-        final RealImpl reTwo = new RealImpl(decTWO, mctx);
-        final RealImpl reOne = new RealImpl(BigDecimal.ONE, mctx);
+        final RealType reTwo = new RealImpl(decTWO, mctx);
+        final RealType reOne = new RealImpl(BigDecimal.ONE, mctx);
         final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(reTwo);
         NumericSet set = new NumericSet();
         for (long k = 0L; k < n; k++) {
