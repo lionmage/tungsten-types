@@ -1604,15 +1604,13 @@ public class MathUtils {
      */
     public static Set<ComplexType> rootsOfUnity(long n, MathContext mctx) {
         if (n < 1L) throw new IllegalArgumentException("Degree of roots must be \u2265 1");
-        final RealImpl decTwo = new RealImpl(new BigDecimal(BigInteger.TWO), mctx);
-        decTwo.setMathContext(mctx);
-        final RealImpl decOne = new RealImpl(BigDecimal.ONE, mctx);
-        decOne.setMathContext(mctx);
-        final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(decTwo);
+        final RealImpl reTwo = new RealImpl(decTWO, mctx);
+        final RealImpl reOne = new RealImpl(BigDecimal.ONE, mctx);
+        final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(reTwo);
         NumericSet set = new NumericSet();
         for (long k = 0L; k < n; k++) {
             RationalType expFactor = new RationalImpl(k, n, mctx);
-            ComplexPolarImpl val = new ComplexPolarImpl(decOne, (RealType) twopi.multiply(expFactor));
+            ComplexPolarImpl val = new ComplexPolarImpl(reOne, (RealType) twopi.multiply(expFactor));
             val.setMathContext(mctx);
             set.append(val);
         }
