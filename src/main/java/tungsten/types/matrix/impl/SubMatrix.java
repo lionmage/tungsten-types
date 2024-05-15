@@ -27,10 +27,12 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.annotations.Columnar;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.RationalImpl;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ListColumnVector;
@@ -74,13 +76,25 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         startColumn = 0L;
         endColumn = original.columns() - 1L;
     }
-    
+
+    /**
+     * Given a source matrix S, generate a {@code Matrix} which is the submatrix
+     * of S bounded by {@code row1} at the top and {@code row2} at the bottom, inclusive,
+     * and by {@code column1} on the left and {@code column2} on the right, inclusive.
+     * The resulting submatrix is a view, and as such, depends on S for all data
+     * and underlying operations.
+     * @param original the source matrix S
+     * @param row1     the first row of S belonging to the submatrix
+     * @param column1  the first column of S belonging to the submatrix
+     * @param row2     the last row of S belonging to the submatrix
+     * @param column2  the last column of S belonging to the submatrix
+     */
     public SubMatrix(Matrix<T> original, long row1, long column1, long row2, long column2) {
         if (row1 < 0L || row1 >= original.rows() || row2 < 0L || row2 >= original.rows()) {
-            throw new IllegalArgumentException("Row indices must be within range.");
+            throw new IndexOutOfBoundsException("Row indices must be within range");
         }
         if (column1 < 0L || column1 >= original.columns() || column2 < 0L || column2 >= original.columns()) {
-            throw new IllegalArgumentException("Column indices must be within range.");
+            throw new IndexOutOfBoundsException("Column indices must be within range");
         }
         if (row1 > row2) throw new IllegalArgumentException("row1 must be \u2264 row2");
         if (column1 > column2) throw new IllegalArgumentException("column1 must be \u2264 column2");
@@ -251,6 +265,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         }
         
         RowVector<T> firstRow = this.getRow(0L);
+        final Class<T> clazz = firstRow.getElementType();
         SubMatrix<T> intermediate = this.duplicate();
         intermediate.removeRow(0L);
         Numeric accum = ExactZero.getInstance(valueAt(0L, 0L).getMathContext());
@@ -261,7 +276,11 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             sub.removeColumm(column);
             accum = accum.add(coeff.multiply(sub.determinant()));
         }
-        return (T) accum;
+        try {
+            return (T) accum.coerceTo(clazz);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Could not coerce determinant to " + clazz.getName(), e);
+        }
     }
 
     @Override
@@ -343,8 +362,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             return commonPool.invoke(task);
         }
 
-        final Class<T> clazz = multiplier.getClass().isAnnotationPresent(Columnar.class) ?
-                multiplier.getColumn(0L).getElementType() : multiplier.getRow(0L).getElementType();
+        final Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(multiplier);
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
             RowVector<T> rowvec = this.getRow(row);

@@ -2962,8 +2962,8 @@ public class MathUtils {
 
     /**
      * Determine if a given matrix is upper-triangular within some tolerance.
-     * More formally, determines if all the matrix elements in the lower (left) triangle
-     * are &lt;&thinsp;&epsilon; for some value &#x1D700; that satisfies the
+     * More formally, determines if for each matrix element x in the lower (left) triangle,
+     * |x|&thinsp;&lt;&thinsp;&epsilon; for some value &#x1D700; that satisfies the
      * inequality 0 &lt; &#x1D700; &#x226A; 1.
      * @param M       the matrix to test for upper-triangularity
      * @param epsilon the tolerance value &epsilon; denoting the maximum acceptable error
