@@ -2343,7 +2343,7 @@ public class MathUtils {
             // see https://www.sciencedirect.com/science/article/pii/002437958380010X?ref=cra_js_challenge&fr=RR-1 section 3
             return parlett(Numeric::sqrt, A);
         }
-        // TODO implement other algorithms, factor out the 2×2 case
+        // There may be other algorithms to try.  If so, they would go here.
         final RealType one = new RealImpl(BigDecimal.ONE, A.valueAt(0L, 0L).getMathContext());
         if (hilbertSchmidtNorm(calcAminusI(A)).compareTo(one) <= 0) {
             try {
@@ -2825,6 +2825,13 @@ public class MathUtils {
         }
     }
 
+    /**
+     * Determine whether a matrix is positive definite.
+     * @param M the matrix to check for positive definiteness
+     * @return true if {@code M} is positive definite, false otherwise
+     * @see <a href="https://sites.math.northwestern.edu/~clark/285/2006-07/handouts/pos-def.pdf"></a>this handout</a>
+     *   by Professor Emeritus R.&nbsp;Clark Robinson at Northwestern University, Dept. of Mathematics
+     */
     public static boolean isPositiveDefinite(Matrix<? extends Numeric> M) {
         if (M.rows() != M.columns()) return false;  // must be square
         final RealType zero = new RealImpl(BigDecimal.ZERO, M.valueAt(0L, 0L).getMathContext());
