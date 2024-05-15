@@ -238,9 +238,8 @@ public class ComplexVector implements Vector<ComplexType> {
         if (this.length() != other.length()) {
             throw new ArithmeticException("Cannot compute cross product for vectors of different dimension");
         }
-        ComplexVector result;
         if (this.length() == 3L || this.length() == 7L) {
-            result = new ComplexVector(this.length());
+            ComplexVector result = new ComplexVector(this.length());
             int maxidx = (int) this.length();
             // see: https://en.wikipedia.org/wiki/Seven-dimensional_cross_product
             for (int y = 0; y < maxidx; y++) {
@@ -252,10 +251,10 @@ public class ComplexVector implements Vector<ComplexType> {
                     result.setElementAt((ComplexType) accum.add(this.elementAt(y).multiply(other.elementAt(x)).multiply(coeff)), index);
                 }
             }
+            return result;
         } else {
             throw new ArithmeticException("Cross product undefined for " + this.length() + " dimensions");
         }
-        return result;
     }
 
     /**
@@ -288,7 +287,7 @@ public class ComplexVector implements Vector<ComplexType> {
             final ComplexType scalefactor = (ComplexType) this.magnitude().inverse().coerceTo(ComplexType.class);
             return this.scale(scalefactor);
         } catch (CoercionException ex) {
-            Logger.getLogger(RealVector.class.getName()).log(Level.SEVERE, "Coercion failed for computed scale.", ex);
+            Logger.getLogger(ComplexVector.class.getName()).log(Level.SEVERE, "Coercion failed for computed scale.", ex);
         }
         throw new ArithmeticException("Could not compute the normal of this vector");
     }
