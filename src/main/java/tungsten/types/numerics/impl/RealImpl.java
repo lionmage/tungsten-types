@@ -229,9 +229,14 @@ public class RealImpl implements RealType {
             result.setIrrational(irrational);
             return result;
         } else if (addend instanceof IntegerType) {
+            BigDecimal sum = val.add(new BigDecimal(((IntegerType) addend).asBigInteger(), mctx));
+            final RealImpl result = new RealImpl(sum, mctx, exactness);
+            result.setIrrational(irrational);
+            return result;
+            // the following is more concise, but not as performant
             // convenience constructor preserves exactness
-            RealType that = new RealImpl((IntegerType) addend);
-            return this.add(that);
+//            RealType that = new RealImpl((IntegerType) addend);
+//            return this.add(that);
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
             if (iface == Numeric.class) {

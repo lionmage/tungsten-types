@@ -228,13 +228,11 @@ public class RationalImpl implements RationalType {
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         if (numtype == Numeric.class) return true;
-        NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
-        switch (htype) {
-            case INTEGER:
-                return denominator.equals(BigInteger.ONE) || numerator.equals(BigInteger.ZERO);
-            default:
-                return htype != null;
+        if (IntegerType.class.isAssignableFrom(numtype)) {
+            return denominator.equals(BigInteger.ONE) || numerator.equals(BigInteger.ZERO);
         }
+        // for anything other than an integer or an abstract type, always true
+        return !ClassTools.isAbstractType(numtype);
     }
 
     @Override
@@ -242,8 +240,8 @@ public class RationalImpl implements RationalType {
         if (numtype == Numeric.class) {
             if (exact) {
                 // if it's one of two special values, return One or Zero
-                if (numerator.equals(BigInteger.ZERO)) ExactZero.getInstance(mctx);
-                if (denominator.equals(BigInteger.ONE) && numerator.equals(BigInteger.ONE))
+                if (numerator.equals(BigInteger.ZERO)) return ExactZero.getInstance(mctx);
+                if (denominator.equals(numerator))
                     return One.getInstance(mctx);
             }
 
@@ -265,7 +263,7 @@ public class RationalImpl implements RationalType {
                 return new RealImpl(this, mctx);
             case COMPLEX:
                 final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
-                final RealImpl creal = new RealImpl(this, mctx);
+                final RealType creal = new RealImpl(this, mctx);
                 return new ComplexRectImpl(creal, zero, exact);
             default:
                 throw new CoercionException("Cannot convert rational to unknown type", this.getClass(), numtype);
