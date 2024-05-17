@@ -568,6 +568,14 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric power(Numeric operand) {
+        if (Zero.isZero(operand)) return One.getInstance(getMathContext());
+        if (One.isUnity(operand)) return this;
+        if (numerator.equals(BigInteger.ZERO)) return ExactZero.getInstance(getMathContext());
+        if (MathUtils.isInfinity(operand, Sign.NEGATIVE)) {
+            return this.sign() == Sign.POSITIVE ? PosZero.getInstance(getMathContext()) : NegZero.getInstance(getMathContext());
+        } else if (MathUtils.isInfinity(operand, Sign.POSITIVE)) {
+            return RealInfinity.getInstance(this.sign(), getMathContext());
+        }
         if (operand.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType exponent = (IntegerType) operand.coerceTo(IntegerType.class);
@@ -585,6 +593,7 @@ public class RationalImpl implements RationalType {
             }
         }
         final RealType converted = new RealImpl(asBigDecimal(), getMathContext(), isExact());
+        if (operand instanceof ComplexType) return MathUtils.generalizedExponent(converted, (ComplexType) operand, getMathContext());
         return MathUtils.generalizedExponent(converted, operand, getMathContext());
     }
 }
