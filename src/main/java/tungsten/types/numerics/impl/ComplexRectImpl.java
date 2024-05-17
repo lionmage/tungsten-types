@@ -390,10 +390,9 @@ public class ComplexRectImpl implements ComplexType {
     @Override
     public Numeric sqrt() {
         try {
-            final RealType re_f = real();
             // Must use coercion since sqrt() can return an integer for perfect squares
-            RealType rootreal = (RealType) magnitude().add(re_f).divide(TWO).sqrt().coerceTo(RealType.class);
-            RealType rootimag = (RealType) magnitude().subtract(re_f).divide(TWO).sqrt().coerceTo(RealType.class);
+            RealType rootreal = (RealType) magnitude().add(real).divide(TWO).sqrt().coerceTo(RealType.class);
+            RealType rootimag = (RealType) magnitude().subtract(real).divide(TWO).sqrt().coerceTo(RealType.class);
             if (imag.sign() == Sign.NEGATIVE) rootimag = rootimag.negate();
             final ComplexRectImpl root = new ComplexRectImpl(rootreal, rootimag, rootreal.isExact() && rootimag.isExact());
             root.setMathContext(mctx);

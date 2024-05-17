@@ -164,6 +164,7 @@ public class RealImpl implements RealType {
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
+        if (htype == null) return numtype == Numeric.class;
         switch (htype) {
             case COMPLEX:
             case REAL:
@@ -173,7 +174,8 @@ public class RealImpl implements RealType {
             case RATIONAL:
                 return !this.isIrrational();
             default:
-                return numtype == Numeric.class;
+                // some unknown type, return false by default
+                return false;
         }
     }
 
@@ -219,17 +221,18 @@ public class RealImpl implements RealType {
     public Numeric add(Numeric addend) {
         final boolean exactness = exact && addend.isExact();
         if (addend instanceof RealType) {
-            RealType that = (RealType) addend;
+            final RealType that = (RealType) addend;
             final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(irrational || that.isIrrational());
             return result;
         } else if (addend instanceof RationalType) {
-            RationalType that = (RationalType) addend;
+            final RationalType that = (RationalType) addend;
             final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(irrational);
             return result;
         } else if (addend instanceof IntegerType) {
-            BigDecimal sum = val.add(new BigDecimal(((IntegerType) addend).asBigInteger(), mctx));
+            final IntegerType that = (IntegerType) addend;
+            BigDecimal sum = val.add(new BigDecimal(that.asBigInteger(), mctx));
             final RealImpl result = new RealImpl(sum, mctx, exactness);
             result.setIrrational(irrational);
             return result;
@@ -284,7 +287,12 @@ public class RealImpl implements RealType {
         } else if (multiplier instanceof IntegerType) {
             IntegerType intmult = (IntegerType) multiplier;
             if (isIntegralValue()) {
-                return new IntegerImpl(val.toBigIntegerExact().multiply(intmult.asBigInteger()), exactness);
+                return new IntegerImpl(val.toBigIntegerExact().multiply(intmult.asBigInteger()), exactness) {
+                    @Override
+                    public MathContext getMathContext() {
+                        return mctx;
+                    }
+                };
             } else {
                 BigDecimal decmult = new BigDecimal(intmult.asBigInteger());
                 final RealImpl result = new RealImpl(val.multiply(decmult, mctx), mctx, exactness);

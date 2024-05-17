@@ -305,14 +305,12 @@ public class ComplexPolarImpl implements ComplexType {
         } else if (multiplier.isCoercibleTo(RealType.class)) {
             try {
                 RealType scalar = (RealType) multiplier.coerceTo(RealType.class);
-                switch (scalar.sign()) {
-                    case NEGATIVE:
-                        Pi pi = Pi.getInstance(mctx);
-                        RealType absval = scalar.magnitude();
-                        return new ComplexPolarImpl((RealType) modulus.multiply(absval), (RealType) argument.add(pi), false);
-                    default:
-                        return new ComplexPolarImpl((RealType) modulus.multiply(scalar), argument, exact && scalar.isExact());
+                if (scalar.sign() == Sign.NEGATIVE) {
+                    Pi pi = Pi.getInstance(mctx);
+                    RealType absval = scalar.magnitude();
+                    return new ComplexPolarImpl((RealType) modulus.multiply(absval), (RealType) argument.add(pi), false);
                 }
+                return new ComplexPolarImpl((RealType) modulus.multiply(scalar), argument, exact && scalar.isExact());
             } catch (CoercionException ex) {
                 // we should never get here
                 Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
@@ -438,7 +436,11 @@ public class ComplexPolarImpl implements ComplexType {
             if (o instanceof PointAtInfinity) return false;
             ComplexType that = (ComplexType) o;
             if (this.isExact() != that.isExact()) return false;
-            return this.modulus.equals(that.magnitude()) && this.normalizeArgument().equals(that.argument());
+            // both are exact or inexact at this point
+            boolean argsMatch = !exact ?
+                    MathUtils.areEqualToWithin(this.normalizeArgument(), that.argument(), epsilon) :
+                    this.normalizeArgument().equals(that.argument());
+            return this.modulus.equals(that.magnitude()) && argsMatch;
         }
         return isCoercibleTo(RealType.class) && real().equals(o);
     }
