@@ -99,7 +99,7 @@ public class RepeatingDecimal extends RationalImpl {
         assert repeatingDigits.length() == this.decimalPeriod.intValueExact();
         // ensure that the MathContext is big enough that we don't round unnecessarily
         MathContext ctx = new MathContext(representation.length() + this.decimalPeriod.intValueExact());
-        int exponent = this.decimalPeriod.intValueExact(); // this.decimalPeriod.intValueExact() + this.position.intValueExact()
+        int exponent = this.decimalPeriod.intValueExact();
         BigDecimal orig = new BigDecimal(representation);
         BigDecimal scaled = new BigDecimal(representation + repeatingDigits).scaleByPowerOfTen(exponent);
         BigDecimal diff = scaled.subtract(orig, ctx);

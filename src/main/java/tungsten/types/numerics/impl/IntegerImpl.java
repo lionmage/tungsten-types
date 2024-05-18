@@ -455,40 +455,7 @@ public class IntegerImpl implements IntegerType {
                 return rootCtx;
             }
         };
-
-        // I'm keeping this here because this code is just too interesting to throw away... and
-        // under Java 8, there is no sqrt() method for either BigInteger or BigDecimal.
-        // The original project was begun under Java 8, thus necessitating custom code as below.
-//        BigInteger div = BigInteger.ZERO.setBit(val.bitLength()/2);
-//        BigInteger div2 = div;
-//        // Loop until we hit the same value twice in a row, or wind
-//        // up alternating.
-//        while (true) {
-//            BigInteger y = div.add(val.divide(div)).shiftRight(1);
-//            if (y.equals(div) || y.equals(div2)) {
-//                BigInteger lowest = div.min(div2);
-//                // The original algorithm always returned y, but that broke for
-//                // some small integers.  Sadly, picking the lowest of div and div2
-//                // *also* caused some bad behavior.  Sometimes y contains the right
-//                // value after all.  This forces us to do a few more computations
-//                // to get the right behavior, but at least we're still doing a
-//                // minimal number of iterations.
-//                BigInteger result = closestWithoutGoingOver(lowest, y);
-//                boolean exactness = exact && result.multiply(result).equals(this.asBigInteger());
-//                return new IntegerImpl(result, exactness);
-//            }
-//            div2 = div;
-//            div = y;
-//        }
     }
-    
-//    private BigInteger closestWithoutGoingOver(BigInteger a, BigInteger b) {
-//        final BigInteger asquared = a.multiply(a);
-//        if (asquared.compareTo(val) > 0) return b;
-//        final BigInteger bsquared = b.multiply(b);
-//        if (bsquared.compareTo(val) > 0) return a;
-//        return val.subtract(asquared).compareTo(val.subtract(bsquared)) > 0 ? b : a;
-//    }
 
     @Override
     public boolean equals(Object other) {
