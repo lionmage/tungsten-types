@@ -266,10 +266,10 @@ public class RepeatingDecimal extends RationalImpl {
             throw new ArithmeticException("Multiplicative order only exists for relatively prime arguments");
         }
 
-        long e = 1L;
-        while (!b.modPow(BigInteger.valueOf(e), n).equals(BigInteger.ONE)) {  // was: b.pow(e).mod(n)
-            e++;
+        long order = 1L;
+        while (!b.modPow(BigInteger.valueOf(order), n).equals(BigInteger.ONE)) {  // was: b.pow(order).mod(n)
+            order++;
         }
-        return BigInteger.valueOf(e);
+        return BigInteger.valueOf(order);
     }
 }

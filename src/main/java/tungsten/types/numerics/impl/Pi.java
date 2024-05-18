@@ -143,6 +143,7 @@ public class Pi implements RealType {
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         if (numtype == Numeric.class) return true;
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
+        if (htype == null) return false;
         // can be coerced to real or complex
         return htype.compareTo(NumericHierarchy.REAL) >= 0;
     }
@@ -151,6 +152,7 @@ public class Pi implements RealType {
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (numtype == Numeric.class) return this;
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
+        if (htype == null) throw new CoercionException("Unknown type for coercion", this.getClass(), numtype);
         switch (htype) {
             case REAL:
                 return this;  // it's already a real
@@ -170,8 +172,7 @@ public class Pi implements RealType {
             real.setIrrational(true);
             return real;
         }
-        final Numeric result = addend.add(this);
-        return result;
+        return addend.add(this);
     }
 
     @Override
@@ -179,8 +180,7 @@ public class Pi implements RealType {
         if (subtrahend instanceof Pi) {
             return ExactZero.getInstance(mctx);
         }
-        final Numeric result = subtrahend.negate().add(this);
-        return result;
+        return subtrahend.negate().add(this);
     }
 
     @Override
@@ -198,8 +198,7 @@ public class Pi implements RealType {
             real.setIrrational(true);
             return real;
         }
-        final Numeric result = multiplier.multiply(this);
-        return result;
+        return multiplier.multiply(this);
     }
 
     @Override
@@ -304,7 +303,7 @@ public class Pi implements RealType {
         }
         final IntegerType one = new IntegerImpl(BigInteger.ONE);
         final IntegerType four = new IntegerImpl(BigInteger.valueOf(4L));
-        final IntegerType two = new IntegerImpl(BigInteger.valueOf(2L));
+        final IntegerType two = new IntegerImpl(BigInteger.TWO);
         final IntegerType five = (IntegerType) four.add(one);
         final IntegerType six  = (IntegerType) five.add(one);
 
