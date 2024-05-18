@@ -440,7 +440,10 @@ public class ComplexPolarImpl implements ComplexType {
             boolean argsMatch = !exact ?
                     MathUtils.areEqualToWithin(this.normalizeArgument(), that.argument(), epsilon) :
                     this.normalizeArgument().equals(that.argument());
-            return this.modulus.equals(that.magnitude()) && argsMatch;
+            boolean modMatch = !exact ?
+                    MathUtils.areEqualToWithin(this.modulus, that.magnitude(), epsilon) :
+                    this.modulus.equals(that.magnitude());
+            return modMatch && argsMatch;
         }
         return isCoercibleTo(RealType.class) && real().equals(o);
     }
