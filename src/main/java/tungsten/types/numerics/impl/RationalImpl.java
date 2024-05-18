@@ -428,12 +428,21 @@ public class RationalImpl implements RationalType {
      * This implementation of square root relies on the identity
      * sqrt(a/b) = sqrt(a)/sqrt(b). The result will only be exact
      * if the numerator and denominator are both perfect squares.
+     * <br>As of 0.4, taking the square root of a negative
+     * rational value will result in an {@link ArithmeticException}.
+     * It is recommended to coerce rational values to {@link RealType}
+     * if taking roots of negative values is desired.
      *
      * @return the square root of this fraction
-     * @see IntegerImpl#sqrt()  
+     * @throws ArithmeticException if this fraction is negative, or
+     *   if type coercion fails during calculation
+     * @see IntegerImpl#sqrt()
      */
     @Override
     public Numeric sqrt() {
+        if (sign() == Sign.NEGATIVE) {
+            throw new ArithmeticException("Square root of negative rational not supported \u2014 consider converting to real first");
+        }
         final RationalType reduced = this.reduce();
         if (reduced.numerator().isPerfectSquare() && reduced.denominator().isPerfectSquare()) {
             IntegerType numroot = reduced.numerator().sqrt();
