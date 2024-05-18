@@ -395,8 +395,11 @@ public class RealImpl implements RealType {
         if (sign() == Sign.NEGATIVE) {
             try {
                 final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
-                ComplexRectImpl cplx = new ComplexRectImpl(this, zero, exact);
-                return cplx.sqrt();
+                return new ComplexRectImpl(zero, (RealType) this.negate().sqrt().coerceTo(RealType.class));
+                // the following requires computing the magnitude and taking a square root twice each,
+                // which is inefficient since we know √(-x) = i√x
+//                ComplexRectImpl cplx = new ComplexRectImpl(this, zero, exact);
+//                return cplx.sqrt();
             } catch (CoercionException e) {
                 // we should NEVER get here
                 throw new IllegalStateException(e);
