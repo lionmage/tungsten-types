@@ -146,6 +146,7 @@ public class EulerMascheroni implements RealType {
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         NumericHierarchy h = NumericHierarchy.forNumericType(numtype);
+        if (h == null) return false;
         return h.compareTo(NumericHierarchy.REAL) >= 0;
     }
 
