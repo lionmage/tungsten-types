@@ -371,7 +371,7 @@ public class IntegerImpl implements IntegerType {
                 // reducing would give a denominator of 1, so result is an integer
                 return new IntegerImpl(numResult.divide(gcd), exactness);
             } else {
-                return new RationalImpl(numResult, denomResult, exactness).reduce();
+                return new RationalImpl(numResult.divide(gcd), denomResult.divide(gcd), exactness);
             }
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(multiplier.getClass());
