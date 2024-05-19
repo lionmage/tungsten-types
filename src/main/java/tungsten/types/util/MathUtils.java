@@ -2159,13 +2159,13 @@ public class MathUtils {
         }
 
         final Numeric two = new RealImpl(decTWO, ctx);
+        final Numeric four = new RealImpl(BigDecimal.valueOf(4L), ctx);
 
         // special real logarithm case
         logger.info("Using the general solution of ln(X) for a 2\u00D72 matrix.");
-        final Numeric four = new RealImpl(BigDecimal.valueOf(4L), ctx);
         final Numeric a = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two);
-        final Numeric diffSq = (X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)))
-                .multiply(X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)));
+        Numeric diff = X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L));
+        final Numeric diffSq = diff.multiply(diff);
         final Numeric b = diffSq.negate()
                 .subtract(four.multiply(X.valueAt(0L, 1L)).multiply(X.valueAt(1L, 0L))).sqrt().divide(two);
         logger.log(Level.FINE, "ln: a={0}, b={1}", new Object[] {a, b});
