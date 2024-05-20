@@ -76,7 +76,7 @@ public class RationalImpl implements RationalType {
         if (!m.find()) {
             throw new IllegalArgumentException("Badly formatted rational value: " + representation);
         }
-        final int position = m.start(); // was: representation.indexOf('/');
+        final int position = m.start();
         if (position < 1) {
             throw new IllegalArgumentException("Missing numerator: " + representation);
         }
@@ -241,8 +241,7 @@ public class RationalImpl implements RationalType {
             if (exact) {
                 // if it's one of two special values, return One or Zero
                 if (numerator.equals(BigInteger.ZERO)) return ExactZero.getInstance(mctx);
-                if (denominator.equals(numerator))
-                    return One.getInstance(mctx);
+                if (denominator.equals(numerator)) return One.getInstance(mctx);
             }
 
             return this;
@@ -391,6 +390,7 @@ public class RationalImpl implements RationalType {
     @Override
     public Numeric divide(Numeric divisor) {
         if (Zero.isZero(divisor)) throw new ArithmeticException("Division by zero");
+        if (One.isUnity(divisor)) return this;
         if (divisor instanceof IntegerType) {
             IntegerType num = numerator();
             BigInteger gcd = numerator.abs().gcd(((IntegerType) divisor).asBigInteger().abs());
@@ -589,7 +589,7 @@ public class RationalImpl implements RationalType {
             try {
                 IntegerType exponent = (IntegerType) operand.coerceTo(IntegerType.class);
                 final int n = exponent.asBigInteger().intValueExact();
-                RationalImpl result;
+                final RationalImpl result;
                 if (n < 0) {
                     result = new RationalImpl(denominator.pow(-n), numerator.pow(-n), exact);
                 } else {

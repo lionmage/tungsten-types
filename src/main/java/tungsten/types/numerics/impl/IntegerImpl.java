@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 public class IntegerImpl implements IntegerType {
     private boolean exact = true;
     private final BigInteger val;
-    private static final BigInteger TWO = BigInteger.valueOf(2L);
     private static final BigInteger NINE = BigInteger.valueOf(9L);
 
     public IntegerImpl(BigInteger initialVal) {
@@ -89,7 +88,7 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public boolean isEven() {
-        return val.mod(TWO).equals(BigInteger.ZERO);
+        return val.mod(BigInteger.TWO).equals(BigInteger.ZERO);
     }
 
     @Override
