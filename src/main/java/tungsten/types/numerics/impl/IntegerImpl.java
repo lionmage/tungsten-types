@@ -233,7 +233,7 @@ public class IntegerImpl implements IntegerType {
                 // and handle the corner case where we had an odd exponent
                 intermediate = (IntegerType) intermediate.multiply(this);
             }
-            return expSign == Sign.NEGATIVE ? new RationalImpl(BigInteger.ONE, intermediate.asBigInteger()) : intermediate;
+            return expSign == Sign.NEGATIVE ? new RationalImpl(BigInteger.ONE, intermediate.asBigInteger(), this.isExact()) : intermediate;
         }
         if (expSign == Sign.NEGATIVE) {
             IntegerType negexp = exponent.negate();
