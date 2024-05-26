@@ -83,6 +83,12 @@ public class BernoulliNumbers {
         setMathContext(mctx);
     }
 
+    /**
+     * Sets the {@link MathContext} of all the Bernoulli values stored
+     * in this object, and of all future Bernoulli numbers generated
+     * by it.
+     * @param mctx the desired {@code MathContext}
+     */
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
         for (RationalType Bk : B) OptionalOperations.setMathContext(Bk, mctx);
@@ -156,6 +162,10 @@ public class BernoulliNumbers {
         return calculated;
     }
 
+    /**
+     * Generate a sequential stream of Bernoulli numbers, starting with B<sub>0</sub>.
+     * @return a stream of Bernoulli numbers
+     */
     public Stream<RationalType> stream() {
         // the use of LongStream.range() is a kludge -- in any event, getB(k) will probably misbehave
         // long before k gets anywhere close to Long.MAX_VALUE
