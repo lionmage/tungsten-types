@@ -148,7 +148,7 @@ public class BernoulliNumbers {
         if (cache.containsKey(n)) return cache.get(n);
         // otherwise, use the recurrence relationship
         final RationalType coeff = new RationalImpl(-1L, n + 1L, mctx);
-        RationalType calculated = (RationalType) LongStream.range(0L, n) // .parallel()
+        RationalType calculated = (RationalType) LongStream.range(0L, n) // .parallel() will not work here due to recursive getB(k) call
                 .mapToObj(k -> MathUtils.nChooseK(n + 1L, k).multiply(getB(k)))
                 .reduce(Numeric::add).map(coeff::multiply)
                 .orElseThrow(() -> new IllegalStateException("Error computing B" + UnicodeTextEffects.numericSubscript((int) n)));
