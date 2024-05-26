@@ -48,7 +48,6 @@ import java.util.logging.Logger;
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RepeatingDecimal extends RationalImpl {
-    private static final BigInteger TWO  = BigInteger.valueOf(2L);
     private static final BigInteger FIVE = BigInteger.valueOf(5L);
     private static final String HORIZONTAL_ELLIPSIS = "\u2026";
     private static final char DECIMAL_POINT_REPRESENTATION = DecimalFormatSymbols.getInstance().getDecimalSeparator();
@@ -206,13 +205,13 @@ public class RepeatingDecimal extends RationalImpl {
     private void characterize() {
         final RationalType reduced = this.reduce();
         final BigInteger denom = reduced.denominator().asBigInteger();
-        final BigInteger dmod2 = denom.mod(TWO);
+        final BigInteger dmod2 = denom.mod(BigInteger.TWO);
         final BigInteger dmod5 = denom.mod(FIVE);
 
         if (dmod2.equals(BigInteger.ZERO)
                 || dmod5.equals(BigInteger.ZERO)) {
             // this should be a finite decimal representation if there are no other prime factors
-            BigInteger[] tdenom = removeFactorsOf(denom, TWO);
+            BigInteger[] tdenom = removeFactorsOf(denom, BigInteger.TWO);
             BigInteger alpha = tdenom[1];
             tdenom = removeFactorsOf(tdenom[0], FIVE);
             BigInteger beta = tdenom[1];
