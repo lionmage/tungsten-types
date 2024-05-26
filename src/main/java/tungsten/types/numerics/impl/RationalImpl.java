@@ -412,7 +412,9 @@ public class RationalImpl implements RationalType {
     @Override
     public Numeric inverse() {
         if (numerator.equals(BigInteger.ONE)) {
-            return new IntegerImpl(denominator) {
+            if (mctx.getPrecision() == 0) return denominator();
+            // otherwise construct an IntegerType which preserves the MathContext of this
+            return new IntegerImpl(denominator, exact) {
                 @Override
                 public MathContext getMathContext() {
                     return mctx;
