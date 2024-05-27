@@ -3785,8 +3785,8 @@ public class MathUtils {
     }
 
     private static BigDecimal atanEulerProduct(RealType x, long n) {
-        if (n < 0) throw new IllegalArgumentException("Product undefined for n < 0");
-        if (n == 0) return BigDecimal.ONE;  // the empty product
+        if (n < 0L) throw new IllegalArgumentException("Product undefined for n < 0");
+        if (n == 0L) return BigDecimal.ONE;  // the empty product
         final MathContext prodCtx = new MathContext(x.getMathContext().getPrecision() * 2 + 4,
                 x.getMathContext().getRoundingMode());
         BigDecimal accum = BigDecimal.ONE;
