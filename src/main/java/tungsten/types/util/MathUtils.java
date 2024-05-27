@@ -3975,6 +3975,7 @@ public class MathUtils {
      */
     public static RealType cos(RealType x) {
         if (x instanceof Pi) return new RealImpl(BigDecimal.valueOf(-1L), x.getMathContext());
+        if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return new RealImpl(BigDecimal.ONE, x.getMathContext());
         RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n)));
     }
@@ -3985,7 +3986,9 @@ public class MathUtils {
      * @return the real-valued result of sin(x)
      */
     public static RealType sin(RealType x) {
-        if (x instanceof Pi) return new RealImpl(BigDecimal.ZERO, x.getMathContext());
+        if (x instanceof Pi || x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) {
+            return new RealImpl(BigDecimal.ZERO, x.getMathContext());
+        }
         RealType inBounds = mapToInnerRange(x, RangeUtils.getAngularInstance(x.getMathContext()));
         return computeTrigSum(inBounds, n -> new IntegerImpl(BigInteger.valueOf(2L * n + 1L)));
     }
