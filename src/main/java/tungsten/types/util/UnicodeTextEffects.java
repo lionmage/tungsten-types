@@ -525,7 +525,6 @@ public class UnicodeTextEffects {
 
     public static String formatMatrixForDisplay(Matrix<? extends Numeric> M, String superscript, String subscript) {
         Class<? extends Numeric> elementType = OptionalOperations.findTypeFor(M);
-        System.out.println("findTypeFor M = " + elementType.getName());
         NumericHierarchy htype = NumericHierarchy.forNumericType(elementType);
         if (M.columns() > (long) Integer.MAX_VALUE) throw new UnsupportedOperationException("Column indices > 32 bits are unsupported");
         CellRenderingStrategy strategy = getStrategyForCellType(htype);

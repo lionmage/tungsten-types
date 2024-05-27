@@ -185,7 +185,6 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     @Override
     public Class<T> getElementType() {
         if (elementType != null) {
-            System.out.println("Element type was set to " + elementType.getName());
             return elementType;
         }
         return Vector.super.getElementType();

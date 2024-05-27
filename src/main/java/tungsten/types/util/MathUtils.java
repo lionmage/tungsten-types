@@ -2169,12 +2169,20 @@ public class MathUtils {
         final Numeric b = diffSq.negate()
                 .subtract(four.multiply(X.valueAt(0L, 1L)).multiply(X.valueAt(1L, 0L))).sqrt().divide(two);
         logger.log(Level.FINE, "ln: a={0}, b={1}", new Object[] {a, b});
-        final Numeric theta = ln((RealType) a.multiply(a).add(b.multiply(b))).divide(two);
-        final Numeric mu = arctan(b.divide(a));
-        logger.log(Level.FINE, "ln: \uD835\uDF03={0}, \uD835\uDF07={1}", new Object[] {theta, mu});
-        final Matrix<Numeric> I = new IdentityMatrix(2L, ctx);
-        Matrix<Numeric> intermediate = ((Matrix<Numeric>) X).subtract(I.scale(a)).scale(mu.divide(b));
-        return I.scale(theta).add(intermediate);
+        Numeric sumAsqBsq = a.multiply(a).add(b.multiply(b));
+        try {
+            // for a real matrix, b can be complex
+            final Numeric theta = sumAsqBsq.isCoercibleTo(RealType.class) ?
+                    ln((RealType) sumAsqBsq.coerceTo(RealType.class)).divide(two) :
+                    ln((ComplexType) sumAsqBsq).divide(two);
+            final Numeric mu = arctan(b.divide(a));
+            logger.log(Level.FINE, "ln: \uD835\uDF03={0}, \uD835\uDF07={1}", new Object[] {theta, mu});
+            final Matrix<Numeric> I = new IdentityMatrix(2L, ctx);
+            Matrix<Numeric> intermediate = ((Matrix<Numeric>) X).subtract(I.scale(a)).scale(mu.divide(b));
+            return I.scale(theta).add(intermediate);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Unable to coerce a\u00B2+b\u00B2=" + sumAsqBsq);
+        }
     }
 
     /**
