@@ -2172,6 +2172,7 @@ public class MathUtils {
         Numeric sumAsqBsq = a.multiply(a).add(b.multiply(b));
         try {
             // for a real matrix, b can be complex
+            // if a²+b² is not coercible to RealType, assume it is ComplexType
             final Numeric theta = sumAsqBsq.isCoercibleTo(RealType.class) ?
                     ln((RealType) sumAsqBsq.coerceTo(RealType.class)).divide(two) :
                     ln((ComplexType) sumAsqBsq).divide(two);
