@@ -1935,32 +1935,7 @@ public class MathUtils {
         if (ZeroMatrix.isZeroMatrix(X)) return new IdentityMatrix(X.rows(), ctx);
 
         if (X.rows() == 2L) {
-            Numeric adDiff = X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)); // a - d
-            final RealType four = new RealImpl(BigDecimal.valueOf(4L), ctx);
-            Numeric bc4 = four.multiply(X.valueAt(0L, 1L)).multiply(X.valueAt(1L, 0L));  // 4bc
-            final RealType two  = new RealImpl(decTWO, ctx);
-            Numeric exponent = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two); // (a + d)/2
-            final Euler e = Euler.getInstance(ctx);
-            Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
-                    "Source 2\u00D72 matrix is complex? {0}; exponent is {1}",
-                    new Object[] {isOfType(X, ComplexType.class), exponent});
-            Numeric scaleFactor = exponent instanceof ComplexType ? e.exp((ComplexType) exponent) : e.exp(Re(exponent));
-            Numeric halfadDiff = adDiff.divide(two);
-            if (Zero.isZero(adDiff.multiply(adDiff).add(bc4))) {
-                final Numeric one = One.getInstance(ctx);
-                Numeric[][] seed = new Numeric[][] { {one.add(halfadDiff), X.valueAt(0L, 1L)},
-                        {X.valueAt(1L, 0L), one.subtract(halfadDiff)} };
-                return new BasicMatrix<>(seed).scale(scaleFactor);
-            } else {
-                Numeric delta = adDiff.multiply(adDiff).add(bc4).divide(two);
-                Numeric cshDelta = delta instanceof ComplexType ? cosh((ComplexType) delta) : cosh(Re(delta));
-                Numeric snhDelta = delta instanceof ComplexType ? sinh((ComplexType) delta) : sinh(Re(delta));
-                Numeric[][] seed = new Numeric[][] { { cshDelta.add(halfadDiff.multiply(snhDelta).divide(delta)),
-                        X.valueAt(0L, 1L).multiply(snhDelta).divide(delta) },
-                        { X.valueAt(1L, 0L).multiply(snhDelta).divide(delta),
-                                cshDelta.subtract(halfadDiff.multiply(snhDelta).divide(delta)) } };
-                return new BasicMatrix<>(seed).scale(scaleFactor);
-            }
+            return exp2x2(X, ctx);
         }
 
         if (X.rows() > 4L && X.isUpperTriangular()) {
@@ -2017,6 +1992,35 @@ public class MathUtils {
                 }
             }
         };
+    }
+
+    private static Matrix<Numeric> exp2x2(Matrix<? extends Numeric> X, MathContext ctx) {
+        Numeric adDiff = X.valueAt(0L, 0L).subtract(X.valueAt(1L, 1L)); // a - d
+        final RealType four = new RealImpl(BigDecimal.valueOf(4L), ctx);
+        Numeric bc4 = four.multiply(X.valueAt(0L, 1L)).multiply(X.valueAt(1L, 0L));  // 4bc
+        final RealType two  = new RealImpl(decTWO, ctx);
+        Numeric exponent = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two); // (a + d)/2
+        final Euler e = Euler.getInstance(ctx);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "Source 2\u00D72 matrix is complex? {0}; exponent is {1}",
+                new Object[] {isOfType(X, ComplexType.class), exponent});
+        Numeric scaleFactor = exponent instanceof ComplexType ? e.exp((ComplexType) exponent) : e.exp(Re(exponent));
+        Numeric halfadDiff = adDiff.divide(two);
+        if (Zero.isZero(adDiff.multiply(adDiff).add(bc4))) {
+            final Numeric one = One.getInstance(ctx);
+            Numeric[][] seed = new Numeric[][] { {one.add(halfadDiff), X.valueAt(0L, 1L)},
+                    {X.valueAt(1L, 0L), one.subtract(halfadDiff)} };
+            return new BasicMatrix<>(seed).scale(scaleFactor);
+        } else {
+            Numeric delta = adDiff.multiply(adDiff).add(bc4).divide(two);
+            Numeric cshDelta = delta instanceof ComplexType ? cosh((ComplexType) delta) : cosh(Re(delta));
+            Numeric snhDelta = delta instanceof ComplexType ? sinh((ComplexType) delta) : sinh(Re(delta));
+            Numeric[][] seed = new Numeric[][] { { cshDelta.add(halfadDiff.multiply(snhDelta).divide(delta)),
+                    X.valueAt(0L, 1L).multiply(snhDelta).divide(delta) },
+                    { X.valueAt(1L, 0L).multiply(snhDelta).divide(delta),
+                            cshDelta.subtract(halfadDiff.multiply(snhDelta).divide(delta)) } };
+            return new BasicMatrix<>(seed).scale(scaleFactor);
+        }
     }
 
     /**
