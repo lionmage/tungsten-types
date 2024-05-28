@@ -1941,7 +1941,10 @@ public class MathUtils {
             final RealType two  = new RealImpl(decTWO, ctx);
             Numeric exponent = X.valueAt(0L, 0L).add(X.valueAt(1L, 1L)).divide(two); // (a + d)/2
             final Euler e = Euler.getInstance(ctx);
-            Numeric scaleFactor = isOfType(X, ComplexType.class) ? e.exp((ComplexType) exponent) : e.exp(Re(exponent));
+            Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                    "Source 2\u00D72 matrix is complex? {0}; exponent is {1}",
+                    new Object[] {isOfType(X, ComplexType.class), exponent});
+            Numeric scaleFactor = exponent instanceof ComplexType ? e.exp((ComplexType) exponent) : e.exp(Re(exponent));
             Numeric halfadDiff = adDiff.divide(two);
             if (Zero.isZero(adDiff.multiply(adDiff).add(bc4))) {
                 final Numeric one = One.getInstance(ctx);
@@ -1969,11 +1972,13 @@ public class MathUtils {
                     return parlett(x -> e.exp((RealType) x), X);
                 case COMPLEX:
                     return parlett(z -> e.exp((ComplexType) z), X);
-                // Note: The rest of these are faster but less safe than using coerceTo()
+                // Note: The rest of these rely on behind-the-scenes coercion.
                 case RATIONAL:
-                    return parlett(x -> e.exp(new RealImpl((RationalType) x)), X);
                 case INTEGER:
-                    return parlett(x -> e.exp(new RealImpl((IntegerType) x)), X);
+                    // this is a little bit of an abuse of Re(), but it works very well
+                    // coercing all values to real (shielding us from checked exceptions)
+                    // and has the advantage of working with "accidentally" heterogeneous matrices
+                    return parlett(x -> e.exp(Re(x)), X);
                 default:
                     Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
                             "No mapping function available for exp() with argument type {0}.",
