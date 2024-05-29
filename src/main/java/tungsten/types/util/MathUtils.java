@@ -1772,9 +1772,9 @@ public class MathUtils {
      * @return true if the given vector aligns with the given axis
      */
     public static boolean isAlignedWith(Vector<RealType> vector, Axis axis) {
-        long idx = axisToIndex.get(axis);
+        final long idx = axisToIndex.get(axis);
         boolean match = false;
-        for (int k = 0; k < vector.length(); k++) {
+        for (long k = 0L; k < vector.length(); k++) {
             if (k == idx) {
                 // we should have a single non-zero element corresponding with the axis
                 match = !Zero.isZero(vector.elementAt(k));
@@ -2038,12 +2038,7 @@ public class MathUtils {
         if (X instanceof DiagonalMatrix) return ((DiagonalMatrix<? extends Numeric>) X).ln();
         if (X instanceof SingletonMatrix || (X.columns() == 1L && X.rows() == 1L)) {
             final Numeric value = X.valueAt(0L, 0L);
-            try {
-                return new SingletonMatrix<>(value instanceof ComplexType ? ln((ComplexType) value) :
-                        ln((RealType) value.coerceTo(RealType.class)));
-            } catch (CoercionException ex) {
-                throw new ArithmeticException("Cannot compute ln(X): " + ex.getMessage());
-            }
+            return new SingletonMatrix<>(value instanceof ComplexType ? ln((ComplexType) value) : ln(Re(value)));
         }
         final Logger logger = Logger.getLogger(MathUtils.class.getName());
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute ln for a non-square matrix");
