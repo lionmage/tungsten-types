@@ -444,6 +444,20 @@ public class MathUtils {
     }
 
     /**
+     * If {@code z} is a complex value, return its argument.
+     * Any other values on the real line have an argument of
+     * 0 or &pi; for positive or negative values, respectively.
+     * @param z any {@link Numeric} value
+     * @return the argument of z
+     */
+    public static RealType Arg(Numeric z) {
+        if (z instanceof ComplexType) return ((ComplexType) z).argument();
+        // for values on the real line, the argument is either 0 or 𝜋
+        final MathContext ctx = z.getMathContext();
+        return OptionalOperations.sign(z) == Sign.NEGATIVE ? Pi.getInstance(ctx) : new RealImpl(BigDecimal.ZERO, ctx);
+    }
+
+    /**
      * Computes the Riemann zeta function &#x1D701;(s), where s can be any
      * {@link Numeric} value (including {@link ComplexType}). The logic is
      * optimized for certain specific arguments (e.g., even positive integers),
