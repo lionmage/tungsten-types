@@ -372,7 +372,7 @@ public class MathUtils {
         final Numeric one = One.getInstance(ctx);
         final BigDecimal nn = BigDecimal.valueOf(n);
 
-        Numeric zOverN = z instanceof ComplexType ? z.divide(new RealImpl(nn, ctx)) : // may need to invert the order for cplx case
+        Numeric zOverN = z instanceof ComplexType ? z.divide(new RealImpl(nn, ctx)) :
                 new RealImpl(OptionalOperations.asBigDecimal(z).divide(nn, ctx), ctx);
         Numeric lhs = one.add(zOverN).inverse();
         Numeric rhs = z instanceof ComplexType ? e.exp((ComplexType) zOverN) :
@@ -394,8 +394,8 @@ public class MathUtils {
     private static Numeric gammaNearZero(Numeric z) {
         final MathContext ctx = z.getMathContext();
         RealType piSquared = computeIntegerExponent(Pi.getInstance(ctx), 2L);
-        RealType gamma = EulerMascheroni.getInstance(ctx);  // γ from the Javadoc
-        RealType gammaSquared = (RealType) gamma.multiply(gamma);  // γ² from the Javadoc
+        RealType gamma = EulerMascheroni.getInstance(ctx);  // γ as mentioned in the Javadoc above
+        RealType gammaSquared = (RealType) gamma.multiply(gamma);  // γ² in the Javadoc
         RealType six = new RealImpl(BigDecimal.valueOf(6L), ctx);
         RealType twelve = new RealImpl(BigDecimal.valueOf(12L), ctx);
         final Numeric one = One.getInstance(ctx);
@@ -450,12 +450,23 @@ public class MathUtils {
         result = result.add(logArg.divide(two));
 
         // now append the sum for the remainder of the approximation
-        for (long n = 1; n < N; n++) {
+        for (long n = 1L; n < N; n++) {
             result = result.add(lnGamma_term(z, n, B, ctx));
         }
         return result;
     }
 
+    /**
+     * Computes the sum terms for Stirling approximation of ln&#x1D6AA;(z).
+     * These terms are of the form B<sub>2n</sub>/(2n&sdot;(2n - 1)&sdot;z<sup>2n&nbsp;-&nbsp;1</sup>)
+     * and contribute to a finite sum.
+     * @param z   the argument to {@link #lnGamma(Numeric)}
+     * @param n   the ordinal value for which term to compute
+     * @param B   an instance of {@link BernoulliNumbers} initialized to a sufficient capacity
+     *            to quickly generate all the values needed for the entire sum
+     * @param ctx the {@code MathContext} to be used for this computation
+     * @return the n<sup>th</sup> term of the final sum in our Stirling approximation
+     */
     private static Numeric lnGamma_term(Numeric z, long n, BernoulliNumbers B, MathContext ctx) {
         IntegerType twoN = new IntegerImpl(BigInteger.valueOf(2L * n)) {
             @Override
