@@ -417,6 +417,64 @@ public class MathUtils {
     }
 
     /**
+     * An application of Stirling's approximation to the ln&#x1D6AA;(z) function.
+     * It works for all z where Re(z)&nbsp;>&nbsp;0 and |Arg(z)|&nbsp;<&nbsp;&pi;
+     * and provides better approximations for z values with a larger magnitude.
+     * Since &#x1D6AA;(z) grows so quickly, it is often advantageous to use the
+     * natural log of Gamma, or ln&#x1D6AA;(z).
+     * @param z any {@link Numeric} value
+     * @return the natural log of the Gamma function evaluated at {@code z}
+     * @see <a href="https://en.wikipedia.org/wiki/Stirling%27s_approximation#Stirling's_formula_for_the_gamma_function">this
+     *   Wikipedia article</a>
+     * @see #gamma(Numeric) the gamma function
+     * @since 0.4
+     */
+    public static Numeric lnGamma(Numeric z) {
+        final MathContext ctx = z.getMathContext();
+        RealType pi = Pi.getInstance(ctx);
+        if (Arg(z).magnitude().compareTo(pi) >= 0) {
+            throw new IllegalArgumentException("|Arg(z)| must be < \uD835\uDF0B");
+        }
+        if (Re(z).sign() != Sign.POSITIVE) {
+            throw new IllegalArgumentException("Re(z) must be > 0");
+        }
+        // set up needed values
+        RealType two = new RealImpl(decTWO, ctx);
+        RealType twopi = (RealType) two.multiply(pi);
+        final int N = ctx.getPrecision() + 1;
+        BernoulliNumbers B = new BernoulliNumbers(N, ctx);
+
+        Numeric result = z.multiply(z instanceof ComplexType ? ln((ComplexType) z) : ln(Re(z))).subtract(z);
+        Numeric twopiOverZ = twopi.divide(z);
+        Numeric logArg = twopiOverZ instanceof ComplexType ? ln((ComplexType) twopiOverZ) : ln(Re(twopiOverZ));
+        result = result.add(logArg.divide(two));
+
+        // now append the sum for the remainder of the approximation
+        for (long n = 1; n < N; n++) {
+            result = result.add(lnGamma_term(z, n, B, ctx));
+        }
+        return result;
+    }
+
+    private static Numeric lnGamma_term(Numeric z, long n, BernoulliNumbers B, MathContext ctx) {
+        IntegerType twoN = new IntegerImpl(BigInteger.valueOf(2L * n)) {
+            @Override
+            public MathContext getMathContext() {
+                return ctx;
+            }
+        };
+        IntegerType twoNminus1 = new IntegerImpl(BigInteger.valueOf(2L * n - 1L)) {
+            @Override
+            public MathContext getMathContext() {
+                return ctx;
+            }
+        };
+
+        Numeric zToPower = z instanceof ComplexType ? computeIntegerExponent((ComplexType) z, twoNminus1) : computeIntegerExponent(z, twoNminus1);
+        return B.getB(2L * n).divide(twoN.multiply(twoNminus1).multiply(zToPower));
+    }
+
+    /**
      * Obtain the real part of {@code z}. For non-complex
      * arguments, this will coerce the value to {@link RealType}.
      * @param z any {@link Numeric} value
