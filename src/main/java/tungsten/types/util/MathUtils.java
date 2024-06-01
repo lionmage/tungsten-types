@@ -449,6 +449,7 @@ public class MathUtils {
      * 0 or &pi; for positive or negative values, respectively.
      * @param z any {@link Numeric} value
      * @return the argument of z
+     * @since 0.4
      */
     public static RealType Arg(Numeric z) {
         if (z instanceof ComplexType) return ((ComplexType) z).argument();
