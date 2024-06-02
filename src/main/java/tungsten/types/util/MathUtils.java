@@ -458,7 +458,7 @@ public class MathUtils {
 
     /**
      * Computes the sum terms for Stirling approximation of ln&#x1D6AA;(z).
-     * These terms are of the form B<sub>2n</sub>/(2n&sdot;(2n - 1)&sdot;z<sup>2n&nbsp;-&nbsp;1</sup>)
+     * These terms are of the form B<sub>2n</sub>/(2n&sdot;(2n &minus; 1)&sdot;z<sup>2n&nbsp;&minus;&nbsp;1</sup>)
      * and contribute to a finite sum.
      * @param z   the argument to {@link #lnGamma(Numeric)}
      * @param n   the ordinal value for which term to compute
