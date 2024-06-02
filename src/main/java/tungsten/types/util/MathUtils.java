@@ -468,13 +468,8 @@ public class MathUtils {
      * @return the n<sup>th</sup> term of the final sum in our Stirling approximation
      */
     private static Numeric lnGamma_term(Numeric z, long n, BernoulliNumbers B, MathContext ctx) {
-        IntegerType twoN = new IntegerImpl(BigInteger.valueOf(2L * n)) {
-            @Override
-            public MathContext getMathContext() {
-                return ctx;
-            }
-        };
-        IntegerType twoNminus1 = new IntegerImpl(BigInteger.valueOf(2L * n - 1L)) {
+        final RealType twoN = new RealImpl(BigDecimal.valueOf(2L * n), ctx);
+        final IntegerType twoNminus1 = new IntegerImpl(BigInteger.valueOf(2L * n - 1L)) {
             @Override
             public MathContext getMathContext() {
                 return ctx;
