@@ -445,12 +445,12 @@ public class MathUtils {
         BernoulliNumbers B = new BernoulliNumbers(N, ctx);
 
         Numeric result = z.multiply(z instanceof ComplexType ? ln((ComplexType) z) : ln(Re(z))).subtract(z);
-        Numeric twopiOverZ = twopi.divide(z);
-        Numeric logArg = twopiOverZ instanceof ComplexType ? ln((ComplexType) twopiOverZ) : ln(Re(twopiOverZ));
+        Numeric twopiOverZ = twopi.divide(z); // this will be RealType or ComplexType
+        Numeric logArg = twopiOverZ instanceof ComplexType ? ln((ComplexType) twopiOverZ) : ln((RealType) twopiOverZ);
         result = result.add(logArg.divide(two));
 
         // now append the sum for the remainder of the approximation
-        for (long n = 1L; n < N; n++) {
+        for (long n = 1L; n < (long) N; n++) {
             result = result.add(lnGamma_term(z, n, B, ctx));
         }
         return result;
@@ -468,7 +468,7 @@ public class MathUtils {
      * @return the n<sup>th</sup> term of the final sum in our Stirling approximation
      */
     private static Numeric lnGamma_term(Numeric z, long n, BernoulliNumbers B, MathContext ctx) {
-        final RealType twoN = new RealImpl(BigDecimal.valueOf(2L * n), ctx);
+        final RealType twoN = new RealImpl(BigDecimal.valueOf(n << 1L), ctx);
         final IntegerType twoNminus1 = new IntegerImpl(BigInteger.valueOf(2L * n - 1L)) {
             @Override
             public MathContext getMathContext() {
@@ -477,7 +477,7 @@ public class MathUtils {
         };
 
         Numeric zToPower = z instanceof ComplexType ? computeIntegerExponent((ComplexType) z, twoNminus1) : computeIntegerExponent(z, twoNminus1);
-        return B.getB(2L * n).divide(zToPower.multiply(twoN).multiply(twoNminus1)); // zToPower first so MathContext is preserved
+        return B.getB(n << 1L).divide(zToPower.multiply(twoN).multiply(twoNminus1)); // zToPower first so MathContext is preserved
     }
 
     /**
