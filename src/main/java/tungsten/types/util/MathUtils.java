@@ -431,7 +431,7 @@ public class MathUtils {
      */
     public static Numeric lnGamma(Numeric z) {
         final MathContext ctx = z.getMathContext();
-        RealType pi = Pi.getInstance(ctx);
+        final RealType pi = Pi.getInstance(ctx);
         if (Arg(z).magnitude().compareTo(pi) >= 0) {
             throw new IllegalArgumentException("|Arg(z)| must be < \uD835\uDF0B");
         }
@@ -439,7 +439,7 @@ public class MathUtils {
             throw new IllegalArgumentException("Re(z) must be > 0");
         }
         // set up needed values
-        RealType two = new RealImpl(decTWO, ctx);
+        final RealType two = new RealImpl(decTWO, ctx);
         RealType twopi = (RealType) two.multiply(pi);
         final int N = ctx.getPrecision() + 1;
         BernoulliNumbers B = new BernoulliNumbers(N, ctx);
@@ -482,7 +482,7 @@ public class MathUtils {
         };
 
         Numeric zToPower = z instanceof ComplexType ? computeIntegerExponent((ComplexType) z, twoNminus1) : computeIntegerExponent(z, twoNminus1);
-        return B.getB(2L * n).divide(twoN.multiply(twoNminus1).multiply(zToPower));
+        return B.getB(2L * n).divide(zToPower.multiply(twoN).multiply(twoNminus1)); // zToPower first so MathContext is preserved
     }
 
     /**
