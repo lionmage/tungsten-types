@@ -2002,12 +2002,8 @@ public class MathUtils {
         if (X instanceof SingletonMatrix || (X.columns() == 1L && X.rows() == 1L)) {
             final Numeric value = X.valueAt(0L, 0L);
             final Euler e = Euler.getInstance(value.getMathContext());
-            try {
-                return new SingletonMatrix<>(value instanceof ComplexType ? e.exp((ComplexType) value) :
-                        e.exp((RealType) value.coerceTo(RealType.class)));
-            } catch (CoercionException ex) {
-                throw new ArithmeticException("Cannot compute \u212Fˣ: " + ex.getMessage());
-            }
+            return new SingletonMatrix<>(value instanceof ComplexType ? e.exp((ComplexType) value) :
+                    e.exp(Re(value)));
         }
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute exp for a non-square matrix");
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
@@ -2026,7 +2022,6 @@ public class MathUtils {
                     return parlett(x -> e.exp((RealType) x), X);
                 case COMPLEX:
                     return parlett(z -> e.exp((ComplexType) z), X);
-                // Note: The rest of these rely on behind-the-scenes coercion.
                 case RATIONAL:
                 case INTEGER:
                     // this is a little bit of an abuse of Re(), but it works very well
@@ -2132,11 +2127,9 @@ public class MathUtils {
                     return parlett(x -> ln((RealType) x), X);
                 case COMPLEX:
                     return parlett(z -> ln((ComplexType) z), X);
-                // Note: The rest of these are faster but less safe than using coerceTo()
                 case RATIONAL:
-                    return parlett(x -> ln(new RealImpl((RationalType) x)), X);
                 case INTEGER:
-                    return parlett(x -> ln(new RealImpl((IntegerType) x)), X);
+                    return parlett(x -> ln(Re(x)), X);
                 default:
                     logger.log(Level.FINE,
                             "No mapping function available for ln() with argument type {0}.",
