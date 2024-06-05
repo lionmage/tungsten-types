@@ -100,6 +100,14 @@ public class MathUtils {
      * &epsilon; value is represented by this {@link String}, and the default value is 0.01.
      */
     public static final String GAMMA_NEIGHBORHOOD_OF_ZERO = "tungsten.types.numerics.MathUtils.Gamma.zeroNeighborhood";
+    /**
+     * The lnGamma function ln&#x1D6AA;(z) can be approximated accurately for values z
+     * with Re(z) &gt; some threshold value.  Below that threshold, an identity must be used
+     * to accurately compute ln&#x1D6AA;(z).  If not specified, the default threshold is currently 7.
+     * This {@code String} represents the governing System property, which is read once when this class
+     * is loaded.  The value provided must be a parseable integral value.
+     */
+    public static final String LN_GAMMA_THRESHOLD_PROP = "tungsten.types.numerics.MathUtils.lnGamma.threshold";
 
     private static final Map<Long, BigInteger> factorialCache = new HashMap<>();
 
@@ -416,6 +424,8 @@ public class MathUtils {
         return new RealImpl(value, ctx);
     }
 
+    private static final long LN_GAMMA_THRESHOLD = Long.parseLong(System.getProperty(LN_GAMMA_THRESHOLD_PROP, "7"));
+
     /**
      * An application of Stirling's approximation to the ln&#x1D6AA;(z) function.
      * It works for all z where Re(z)&nbsp;>&nbsp;0 and |Arg(z)|&nbsp;<&nbsp;&pi;
@@ -437,6 +447,27 @@ public class MathUtils {
         }
         if (Re(z).sign() != Sign.POSITIVE) {
             throw new IllegalArgumentException("Re(z) must be > 0");
+        }
+        // if below threshold, compute using a bigger value and work backwards
+        final RealType threshold = new RealImpl(BigDecimal.valueOf(LN_GAMMA_THRESHOLD), ctx);
+        if (Re(z).compareTo(threshold) < 0) {
+            Numeric bigZ = z.add(threshold);
+            Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                    "ln\uD835\uDEAA({0}) argument is below threshold {1}; computing ln\uD835\uDEAA({2}) instead and working backwards.",
+                    new Object[] {z, LN_GAMMA_THRESHOLD, bigZ});
+            Numeric aggResult = lnGamma(bigZ);
+            for (long k = 1L; k <= LN_GAMMA_THRESHOLD; k++) {
+                // kval could easily be another type, but this should work well
+                IntegerType kval = new IntegerImpl(BigInteger.valueOf(k)) {
+                    @Override
+                    public MathContext getMathContext() {
+                        return ctx;
+                    }
+                };
+                Numeric diff = bigZ.subtract(kval);
+                aggResult = aggResult.subtract(diff instanceof ComplexType ? ln((ComplexType) diff) : ln(Re(diff)));
+            }
+            return aggResult;
         }
         // set up needed values
         final RealType two = new RealImpl(decTWO, ctx);
