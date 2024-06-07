@@ -2147,7 +2147,7 @@ public class MathUtils {
         // return not-quite-zero imaginary components
         final RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
         return Arrays.stream(source).flatMap(Arrays::stream).filter(ComplexType.class::isInstance)
-                .allMatch(z -> Im(z).magnitude().compareTo(epsilon) < 0);
+                .map(MathUtils::Im).map(RealType::magnitude).allMatch(x -> x.compareTo(epsilon) < 0);
     }
 
     /**
