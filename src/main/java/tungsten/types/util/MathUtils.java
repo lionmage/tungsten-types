@@ -2132,7 +2132,7 @@ public class MathUtils {
                         seed2[j][k] = Re(seed[j][k]);
                     }
                 }
-                // not using the diamond operator here so types match
+                // not using the diamond operator here so the return type matches
                 return new BasicMatrix<Numeric>(seed2).scale(Re(scaleFactor));
             }
             // otherwise, return the result as-is
@@ -2145,7 +2145,7 @@ public class MathUtils {
                 .map(Numeric::getClass).allMatch(RealType.class::isAssignableFrom)) return true;
         // testing for < 𝜀 instead of using isZero because many calculations will
         // return not-quite-zero imaginary components
-        RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
+        final RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
         return Arrays.stream(source).flatMap(Arrays::stream).filter(ComplexType.class::isInstance)
                 .allMatch(z -> Im(z).magnitude().compareTo(epsilon) < 0);
     }
