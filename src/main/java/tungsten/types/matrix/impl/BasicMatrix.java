@@ -324,7 +324,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         NumericHierarchy currentType = NumericHierarchy.forNumericType(currentClazz);
         // if our elements are already of the requested type, just cast and return
         if (currentType == targetType) return (Matrix<R>) this;
-        if (currentType.compareTo(targetType) > 0) {
+        if (currentType != null && currentType.compareTo(targetType) > 0) {
             throw new ArithmeticException("Cannot upconvert elements of " + currentType + " to elements of " + targetType);
         }
         BasicMatrix<R> result = new BasicMatrix<>();

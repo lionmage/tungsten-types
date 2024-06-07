@@ -28,6 +28,10 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.RendererSupports;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.exceptions.StrategyNotFoundException;
+import tungsten.types.matrix.impl.BasicMatrix;
+import tungsten.types.matrix.impl.ColumnarMatrix;
+import tungsten.types.matrix.impl.ComplexMatrixAdapter;
+import tungsten.types.matrix.impl.ParametricMatrix;
 import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.util.rendering.matrix.cell.CellRenderingStrategy;
@@ -527,12 +531,28 @@ public class UnicodeTextEffects {
         Class<? extends Numeric> elementType = OptionalOperations.findTypeFor(M);
         NumericHierarchy htype = NumericHierarchy.forNumericType(elementType);
         if (M.columns() > (long) Integer.MAX_VALUE) throw new UnsupportedOperationException("Column indices > 32 bits are unsupported");
+        if (htype == null) {
+            // ensure M is represented as some concrete type
+            if (MathUtils.containsAny(M, ComplexType.class)) {
+                M = new ComplexMatrixAdapter(M);
+                htype = NumericHierarchy.COMPLEX;
+            } else {
+                // create a RealType view of M
+                if (M instanceof BasicMatrix) M = ((BasicMatrix<? extends Numeric>) M).upconvert(RealType.class);
+                else if (M instanceof ColumnarMatrix) M = ((ColumnarMatrix<? extends Numeric>) M).upconvert(RealType.class);
+                else if (M instanceof ParametricMatrix) M = ((ParametricMatrix<? extends Numeric>) M).upconvert(RealType.class);
+                else M = new BasicMatrix<>(M).upconvert(RealType.class);  // if all else fails, clone M with a BasicMatrix and then upconvert that
+
+                htype = NumericHierarchy.REAL;
+            }
+        }
         CellRenderingStrategy strategy = getStrategyForCellType(htype);
         // For small matrices, inspect the cells of all rows.
         // Otherwise, pick a random subset of rows and inspect only those.
         LongStream indexStream = M.rows() <= 10L ? LongStream.range(0L, M.rows()) :
                 MathUtils.randomIndexPermutation(M.rows(), M.rows() <= 30L ? M.rows() / 2L : M.rows() / 3L).stream().mapToLong(Long::longValue);
-        indexStream.forEach(k -> strategy.inspect(M.getRow(k)));
+        Matrix<? extends Numeric> finalM = M;
+        indexStream.forEach(k -> strategy.inspect(finalM.getRow(k)));
         // now assemble the thing
         StringBuilder buf = new StringBuilder();
         for (long row = 0L; row < M.rows(); row++) {

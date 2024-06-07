@@ -2117,15 +2117,37 @@ public class MathUtils {
                     {X.valueAt(1L, 0L), one.subtract(halfadDiff)} };
             return new BasicMatrix<>(seed).scale(scaleFactor);
         } else {
-            Numeric delta = adDiff.multiply(adDiff).add(bc4).divide(two);
+            Numeric delta = adDiff.multiply(adDiff).add(bc4).sqrt().divide(two);
             Numeric cshDelta = delta instanceof ComplexType ? cosh((ComplexType) delta) : cosh(Re(delta));
             Numeric snhDelta = delta instanceof ComplexType ? sinh((ComplexType) delta) : sinh(Re(delta));
             Numeric[][] seed = new Numeric[][] { { cshDelta.add(halfadDiff.multiply(snhDelta).divide(delta)),
                     X.valueAt(0L, 1L).multiply(snhDelta).divide(delta) },
                     { X.valueAt(1L, 0L).multiply(snhDelta).divide(delta),
                             cshDelta.subtract(halfadDiff.multiply(snhDelta).divide(delta)) } };
+            // sanitize any imaginary parts if this is truly a real matrix
+            if (canConvertToReal(seed, ctx) && Zero.isZero(Im(exponent))) {
+                RealType[][] seed2 = new RealType[2][2];
+                for (int j = 0; j < seed.length; j++) {
+                    for (int k = 0; k < seed[j].length; k++) {
+                        seed2[j][k] = Re(seed[j][k]);
+                    }
+                }
+                // not using the diamond operator here so types match
+                return new BasicMatrix<Numeric>(seed2).scale(Re(scaleFactor));
+            }
+            // otherwise, return the result as-is
             return new BasicMatrix<>(seed).scale(scaleFactor);
         }
+    }
+
+    private static boolean canConvertToReal(Numeric[][] source, MathContext ctx) {
+        if (Arrays.stream(source).flatMap(Arrays::stream)
+                .map(Numeric::getClass).allMatch(RealType.class::isAssignableFrom)) return true;
+        // testing for < 𝜀 instead of using isZero because many calculations will
+        // return not-quite-zero imaginary components
+        RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
+        return Arrays.stream(source).flatMap(Arrays::stream).filter(ComplexType.class::isInstance)
+                .allMatch(z -> Im(z).magnitude().compareTo(epsilon) < 0);
     }
 
     /**
@@ -2992,6 +3014,31 @@ public class MathUtils {
         }
         return LongStream.range(0L, matrix.rows()).mapToObj(matrix::getRow).flatMap(RowVector::stream)
                 .map(Object::getClass).allMatch(clazz::isAssignableFrom);
+    }
+
+    /**
+     * Determine if a {@link Matrix} has <em>any</em> elements of the specified type.
+     * This is useful for determining e.g. if a heterogeneous matrix needs to be upconverted
+     * to a specific type.
+     * @param matrix any matrix
+     * @param clazz  the {@code Class} to be used for testing elements of {@code matrix}
+     * @return true if any elements of {@code matrix} are of type {@code clazz} or one
+     *   of its subtypes
+     */
+    public static boolean containsAny(Matrix<? extends Numeric> matrix, Class<? extends Numeric> clazz) {
+        if (matrix instanceof SingletonMatrix || (matrix.rows() == 1L && matrix.columns() == 1L)) {
+            return clazz.isAssignableFrom(matrix.valueAt(0L, 0L).getClass());
+        }
+        if (matrix instanceof DiagonalMatrix) {
+            return LongStream.range(0L, matrix.rows()).mapToObj(idx -> matrix.valueAt(idx, idx))
+                    .map(Object::getClass).anyMatch(clazz::isAssignableFrom);
+        }
+        if (matrix.getClass().isAnnotationPresent(Columnar.class)) {
+            return LongStream.range(0L, matrix.columns()).mapToObj(matrix::getColumn).flatMap(ColumnVector::stream)
+                    .map(Object::getClass).anyMatch(clazz::isAssignableFrom);
+        }
+        return LongStream.range(0L, matrix.rows()).mapToObj(matrix::getRow).flatMap(RowVector::stream)
+                .map(Object::getClass).anyMatch(clazz::isAssignableFrom);
     }
 
     /**
