@@ -3607,7 +3607,7 @@ public class MathUtils {
 
     /**
      * Given the matrix <strong>A</strong>, calculate <strong>A</strong>+<strong>I</strong>,
-     * where I is the identity matrix.  This is much faster and more efficient than
+     * where <strong>I</strong> is the identity matrix.  This is much faster and more efficient than
      * instantiating an identity matrix for this calculation.
      * @param A the matrix
      * @return the result A+I
@@ -3636,7 +3636,7 @@ public class MathUtils {
 
     /**
      * Given a matrix <strong>A</strong>, calculate <strong>I</strong>&minus;<strong>A</strong>,
-     * where <strong>A</strong> is the identity matrix.  This implementation is far more
+     * where <strong>I</strong> is the identity matrix.  This implementation is far more
      * efficient than performing this calculation using an actual identity matrix.
      * One application of this method is in calculating the square root of a matrix via
      * a power series.
