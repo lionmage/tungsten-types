@@ -184,4 +184,38 @@ public class MatrixValidationTest {
         assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
                 "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }
+
+    @Test
+    public void matrixSquareRoot() {
+        DiagonalMatrix<RealType> diagMtx = new DiagonalMatrix<>(new RealImpl("4", MathContext.DECIMAL64),
+                new RealImpl("9", MathContext.DECIMAL64));
+        System.out.println(formatMatrixForDisplay(diagMtx, null, (String) null));
+        Matrix<? extends Numeric> root1 = MathUtils.sqrt(diagMtx);
+        System.out.println();
+        System.out.println(formatMatrixForDisplay(root1, null, (String) null));
+
+        RealType reTwo = new RealImpl("2", MathContext.DECIMAL64);
+        assertEquals(reTwo, root1.valueAt(0L, 0L));
+        RealType reThree = new RealImpl("3", MathContext.DECIMAL64);
+        assertEquals(reThree, root1.valueAt(1L, 1L));
+
+        RealType[][] seed = new RealType[][]{{new RealImpl("61", MathContext.DECIMAL64), new RealImpl("66", MathContext.DECIMAL64)},
+                {new RealImpl("22", MathContext.DECIMAL64), new RealImpl("28", MathContext.DECIMAL64)}};
+        Matrix<RealType> testMtx1 = new BasicMatrix<>(seed);
+
+        System.out.println();
+        System.out.println(formatMatrixForDisplay(testMtx1, null, (String) null));
+
+        Matrix<? extends Numeric> root2 = MathUtils.sqrt(testMtx1);
+        System.out.println();
+        System.out.println(formatMatrixForDisplay(root2, null, (String) null));
+
+        RealType epsilon = new RealImpl("0.0001", MathContext.DECIMAL64);
+        RealType[][] rootSeed = new RealType[][] {
+                {new RealImpl("7", MathContext.DECIMAL64), new RealImpl("6", MathContext.DECIMAL64)},
+                {reTwo, new RealImpl("4", MathContext.DECIMAL64)}
+        };
+        Matrix<RealType> expected = new BasicMatrix<>(rootSeed);
+        assertTrue(MathUtils.areEqualToWithin(expected, (Matrix<RealType>) root2, epsilon));
+    }
 }

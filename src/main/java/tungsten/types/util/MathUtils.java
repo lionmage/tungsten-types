@@ -2501,7 +2501,8 @@ public class MathUtils {
         Numeric denom = A.trace().add(two.multiply(sqrtDet)).sqrt();
         // the cast is necessary to make the following expression work, though it boggles the mind that
         // Java generics can't see that a Matrix<Numeric> is a Matrix<? extends Numeric>
-        return calcAplusI((Matrix<Numeric>) A).scale(denom.inverse());
+        Matrix<Numeric> sqrtDetI = new IdentityMatrix(2L, sqrtDet.getMathContext()).scale(sqrtDet);
+        return ((Matrix<Numeric>) A).add(sqrtDetI).scale(denom.inverse());
     }
 
     /**

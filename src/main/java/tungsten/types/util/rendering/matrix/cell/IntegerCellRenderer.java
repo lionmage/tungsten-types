@@ -27,7 +27,9 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.RendererSupports;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.NumericHierarchy;
+import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
 import tungsten.types.vector.RowVector;
 
@@ -74,7 +76,8 @@ public class IntegerCellRenderer implements CellRenderingStrategy {
             Arrays.fill(cellWidths, minimumCellWidth);
         }
         for (int col = 0; col < row.columns(); col++) {
-            IntegerType cellVal = (IntegerType) row.elementAt(col);
+            Numeric rawValue = row.elementAt(col);  // this is super paranoid
+            IntegerType cellVal = rawValue instanceof IntegerType ? (IntegerType) rawValue : MathUtils.trunc(rawValue);
             if (cellWidths[col] < computeWidth(cellVal)) {
                 int cwidth = UnicodeTextEffects.computeCharacterWidth(cellVal.toString());
                 cellWidths[col] = maximumCellWidth == -1 ? cwidth :
