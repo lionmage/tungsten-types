@@ -2169,11 +2169,17 @@ public class MathUtils {
             final Numeric value = X.valueAt(0L, 0L);
             return new SingletonMatrix<>(value instanceof ComplexType ? ln((ComplexType) value) : ln(Re(value)));
         }
-        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         if (X.rows() != X.columns()) throw new ArithmeticException("Cannot compute ln for a non-square matrix");
+
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         final MathContext ctx = X.valueAt(0L, 0L).getMathContext();
         final Matrix<Numeric> I = new IdentityMatrix(X.rows(), ctx);
         if (I.equals(X)) return new ZeroMatrix(X.rows(), ctx);  // ln(I) = 0
+        // All special handling for 2×2 matrices goes in the following method.
+        if (X.rows() == 2L) {
+            logger.fine("Special case handling for ln of 2\u00D72 matrices");
+            return ln2x2(X);
+        }
         if (X.isUpperTriangular()) {
             logger.info("Attempting the Parlett method for computing ln");
             NumericHierarchy h = NumericHierarchy.forNumericType(OptionalOperations.findTypeFor(X));
@@ -2192,10 +2198,6 @@ public class MathUtils {
                     // if we got here, we're going to fall through to the calculations below
                     break;
             }
-        }
-        // All special handling for 2×2 matrices goes in the following method.
-        if (X.rows() == 2L) {
-            return ln2x2(X);
         }
 
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
