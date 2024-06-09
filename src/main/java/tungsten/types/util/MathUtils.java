@@ -3932,11 +3932,9 @@ public class MathUtils {
         if (terms < 1L) throw new IllegalArgumentException("Requested number of terms is " + terms);
         final MathContext sumCtx = new MathContext(x.getMathContext().getPrecision() * 2 + 2,
                 x.getMathContext().getRoundingMode());
-        BigDecimal accum = BigDecimal.ZERO;
-        for (long n = 0L; n < terms; n++) {
-            accum = accum.add(atanEulerProduct(x, n), sumCtx);
-        }
-        return accum;
+        return LongStream.range(0L, terms).parallel()
+                .mapToObj(n -> atanEulerProduct(x, n))
+                .reduce(BigDecimal.ZERO, BigDecimal::add).round(sumCtx);
     }
 
     private static BigDecimal atanEulerProduct(RealType x, long n) {
