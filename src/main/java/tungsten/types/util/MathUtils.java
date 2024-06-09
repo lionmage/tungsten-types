@@ -2373,7 +2373,7 @@ public class MathUtils {
         Matrix<? extends Numeric> IminA = calcIminusA(A);
         Matrix<? extends Numeric> IplusAinv = calcAplusI(A).inverse();
         // these casts are ugly TODO let's see if we can get rid of them
-        Matrix<? extends Numeric> term = ((Matrix<Numeric>) IminA).multiply((Matrix<Numeric>) IplusAinv);
+        Matrix<Numeric> term = ((Matrix<Numeric>) IminA).multiply((Matrix<Numeric>) IplusAinv);
 
         final long sumlimit = 32L * ctx.getPrecision() + 5L;
         Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
@@ -2411,14 +2411,7 @@ public class MathUtils {
         // otherwise compute the pseudoinverse
         long rank = rank(M);
         Matrix<ComplexType> Mcxp = conjugateTranspose(M);
-        Matrix<ComplexType> Mcplx = new ParametricMatrix<>(M.rows(), M.columns(), (row, column) -> {
-            try {
-                return (ComplexType) M.valueAt(row, column).coerceTo(ComplexType.class);
-            } catch (CoercionException ce) {
-                throw new IllegalStateException(String.format("Unable to upconvert element %s at %d,\u2009%d",
-                        M.valueAt(row, column), row, column), ce);
-            }
-        });
+        Matrix<ComplexType> Mcplx = new ComplexMatrixAdapter(M);
         final Logger logger = Logger.getLogger(MathUtils.class.getName());
         if (rank == M.columns()) {
             // full column rank
