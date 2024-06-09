@@ -76,6 +76,7 @@ public class UnicodeTextEffects {
         superscriptMap.put('(', "\u207D");
         superscriptMap.put(')', "\u207E");
         superscriptMap.put('i', "\u2071");
+        superscriptMap.put('\u2148', "\u2071"); // complex i
         superscriptMap.put('n', "\u207F");
         superscriptMap.put('=', "\u207C");
         superscriptMap.put('\u221E', "\u1AB2"); // infinity superscript is a combining character
