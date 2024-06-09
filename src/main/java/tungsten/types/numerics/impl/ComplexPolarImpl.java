@@ -342,7 +342,9 @@ public class ComplexPolarImpl implements ComplexType {
                 RealType scalar = (RealType) divisor.coerceTo(RealType.class);
                 switch (scalar.sign()) {
                     case ZERO:
-                        throw new IllegalArgumentException("Division by zero is not allowed");
+                        Logger.getLogger(ComplexPolarImpl.class.getName()).log(Level.SEVERE,
+                                "Scalar {0} has a sign of ZERO, but should have been handled earlier", scalar);
+                        throw new IllegalStateException("Scalar from divisor has sign of ZERO (should not have gotten here)");
                     case NEGATIVE:
                         Pi pi = Pi.getInstance(mctx);
                         RealType absval = scalar.magnitude();

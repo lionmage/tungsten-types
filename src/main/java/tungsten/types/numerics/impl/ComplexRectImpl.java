@@ -193,7 +193,7 @@ public class ComplexRectImpl implements ComplexType {
     }
 
     // computing the argument is costly enough that we should cache it
-    private RealType argCache;
+    private transient RealType argCache;
     private final Lock argLock = new ReentrantLock();
 
     @Override
