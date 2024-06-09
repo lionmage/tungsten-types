@@ -1668,6 +1668,8 @@ public class MathUtils {
         }
         if (n.asBigInteger().longValue() == 2L && useBuiltInOperations()) {
             return new RealImpl(A.sqrt(mctx), mctx, a.isExact());  // faster but sloppier
+        } else if (n.asBigInteger().longValue() == 1L) {
+            return a;
         }
 
         // sadly, we need to use int here because we're relying on
@@ -1678,7 +1680,7 @@ public class MathUtils {
         final BigDecimal ncalc = new BigDecimal(n.asBigInteger());
         final BigDecimal nminus1 = ncalc.subtract(BigDecimal.ONE);
         BigDecimal x0;
-        BigDecimal x1 = A.divide(new BigDecimal(n.asBigInteger()), mctx); // initial estimate
+        BigDecimal x1 = A.divide(ncalc, mctx); // initial estimate
 
         do {
             x0 = x1;
