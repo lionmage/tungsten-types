@@ -1779,7 +1779,8 @@ public class MathUtils {
 
         int exponent = decValue.scale();
         BigDecimal temp = decValue;
-        while (temp.abs().compareTo(BigDecimal.TEN) > 0) {
+        // we only want a single digit to the left of the decimal point
+        while (temp.abs().compareTo(BigDecimal.TEN) >= 0) {
             temp = temp.movePointLeft(1);
             exponent++;
         }
