@@ -1783,7 +1783,7 @@ public class MathUtils {
             temp = temp.movePointLeft(1);
             exponent++;
         }
-        buf.append(temp.toPlainString()).append("\u2009\u00D7\u200910");
+        buf.append(temp.stripTrailingZeros().toPlainString()).append("\u2009\u00D7\u200910");
         buf.append(UnicodeTextEffects.numericSuperscript(exponent));
 
         return buf.toString();
@@ -1795,8 +1795,7 @@ public class MathUtils {
      * @return a {@link String} representation of {@code value} rendered in scientific notation
      */
     public static String inScientificNotation(IntegerType value) {
-        long digits = value.numberOfDigits();
-        int exponent = (int) (digits - 1L);
+        int exponent = (int) (value.numberOfDigits() - 1L);
         final DecimalFormatSymbols dfSymbols = DecimalFormatSymbols.getInstance();
         StringBuilder buf = new StringBuilder();
         buf.append(value.asBigInteger());
