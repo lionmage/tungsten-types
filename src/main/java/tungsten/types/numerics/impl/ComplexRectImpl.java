@@ -405,9 +405,7 @@ public class ComplexRectImpl implements ComplexType {
     
     @Override
     public Set<ComplexType> nthRoots(IntegerType n) {
-        // on the off chance that n doesn't fit into a long, longValue() should degrade gracefully
-        // whereas longValueExact() throws an ArithmeticException
-        if (n.asBigInteger().longValue() == 2L) {
+        if (n.asBigInteger().equals(BigInteger.TWO)) {
             ComplexType principalRoot = (ComplexType) sqrt();
             return Set.of(principalRoot, principalRoot.negate());
         }

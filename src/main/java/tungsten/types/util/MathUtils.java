@@ -1666,15 +1666,15 @@ public class MathUtils {
         if (n.isEven() && a.sign() == Sign.NEGATIVE) {
             throw new ArithmeticException("Cannot compute a real-valued " + n + "th root of " + a);
         }
-        if (n.asBigInteger().longValue() == 2L && useBuiltInOperations()) {
+        if (n.asBigInteger().equals(BigInteger.TWO) && useBuiltInOperations()) {
             return new RealImpl(A.sqrt(mctx), mctx, a.isExact());  // faster but sloppier
-        } else if (n.asBigInteger().longValue() == 1L) {
+        } else if (n.asBigInteger().equals(BigInteger.ONE)) {
             return a;
         }
 
         // sadly, we need to use int here because we're relying on
         // BigDecimal.pow() for speed and efficiency
-        // on the other hand, if we are taking nth roots of values where n > MAX_INTEGER,
+        // on the other hand, if we are taking nth roots of values where n > Integer.MAX_VALUE,
         // we might have other problems...
         final int nint = n.asBigInteger().intValueExact();
         final BigDecimal ncalc = new BigDecimal(n.asBigInteger());
