@@ -2027,8 +2027,15 @@ public class MathUtils {
      * Compute &#x212f;<sup>X</sup> for a square matrix <strong>X</strong>.
      * Since the calculation is an infinite series, we only compute k terms,
      * where k is derived from the {@link MathContext} of the elements in {@code X}.
+     * <br>Note that for 2&times;2 matrices, we compute an exact solution
+     * within the bounds of {@code MathContext} precision.
      * @param X a n&times;n matrix
      * @return the n&times;n matrix that is an approximation of &#x212f;<sup>X</sup>
+     * @apiNote For upper triangular matrices larger than 4&times;4, we use
+     *   Parlett's method to compute the exponent.  For instances where the
+     *   series is computed, the returned {@code Matrix} implements a special
+     *   version of {@link Matrix#determinant()} which takes advantage of
+     *   an exponential identity (in terms of Tr(<strong>X</strong>)) for faster computation.
      */
     public static Matrix<? extends Numeric> exp(Matrix<? extends Numeric> X) {
         if (X instanceof DiagonalMatrix) return ((DiagonalMatrix<? extends Numeric>) X).exp();
@@ -2457,6 +2464,9 @@ public class MathUtils {
      * @return the matrix which is the square root of {@code A}
      * @see <a href="https://www.sciencedirect.com/science/article/pii/002437958380010X">A Schur Method
      *   for the Square Root of a Matrix</a> by Åke Björck and Sven Hammarling
+     * @apiNote This method can provide exact solutions for 2&times;2 matrices, and uses
+     *   Parlett's method for any upper-triangular matrices.  All other matrices will
+     *   employ one of a few iterative method (e.g., computing a series).
      */
     public static Matrix<? extends Numeric> sqrt(Matrix<? extends Numeric> A) {
         if (A instanceof IdentityMatrix) return A;
