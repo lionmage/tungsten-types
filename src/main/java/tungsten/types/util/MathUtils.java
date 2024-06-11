@@ -2435,10 +2435,10 @@ public class MathUtils {
         } else {
             final ComplexType sigma = sigma_1(Mcplx);
             final RealType two = new RealImpl(decTWO, sigma.getMathContext());
-            ComplexType sigSquared = (ComplexType) sigma.multiply(sigma.conjugate());  // this should actually be a real (i.e., zero imaginary part)
-            ComplexType maxAlpha = (ComplexType) two.divide(sigSquared);  // should work without coercion
+            RealType sigSquared = Re(sigma.multiply(sigma.conjugate()));  // multiplication result should be a real (i.e., zero imaginary part)
+            RealType maxAlpha = (RealType) two.divide(sigSquared);  // should work without coercion
             final RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
-            Range<RealType> alphaRange = new Range<>(zero, maxAlpha.real(), BoundType.EXCLUSIVE);
+            Range<RealType> alphaRange = new Range<>(zero, maxAlpha, BoundType.EXCLUSIVE);
             final ComplexType scale = new ComplexRectImpl(random(alphaRange));
             ComplexType cplxTwo = new ComplexRectImpl(two, zero, true);
 
@@ -2528,8 +2528,7 @@ public class MathUtils {
     @Experimental
     public static Matrix<? extends Numeric> sqrtPowerSeries(Matrix<? extends Numeric> A) {
         final MathContext ctx = A.valueAt(0L, 0L).getMathContext();
-        final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO);
-        OptionalOperations.setMathContext(onehalf, ctx);
+        final RationalType onehalf = new RationalImpl(BigInteger.ONE, BigInteger.TWO, ctx);
         Matrix<Numeric> result = new ZeroMatrix(A.rows(), ctx);
         final Matrix<Numeric> IminA = calcIminusA((Matrix<Numeric>) A);  // I - A only needs to be computed once
 
@@ -2751,6 +2750,7 @@ public class MathUtils {
             }
             return cresult;
         }
+        // otherwise, do it row-major
         BasicMatrix<RealType> result = new BasicMatrix<>();
         for (long row = 0L; row < C.rows(); row++) {
             RowVector<ComplexType> orig = C.getRow(row);
@@ -2988,6 +2988,8 @@ public class MathUtils {
             return Re(M.valueAt(0L, 0L)).compareTo(zero) > 0;
         }
         // apparently, positive definiteness only applies to symmetric matrices
+        // Note: not so fast... https://math.stackexchange.com/questions/83134/does-non-symmetric-positive-definite-matrix-have-positive-eigenvalues
+        // and also: https://www.quora.com/Can-a-positive-definite-matrix-be-non-symmetric
         if (!isSymmetric(M)) return false;
         // we already checked the determinant of the whole matrix above, so only check
         // the k = 0..N-2 submatrices
@@ -3128,7 +3130,7 @@ public class MathUtils {
         }
 
         // we can't handle this type of matrix yet
-        throw new UnsupportedOperationException("Cannot compute eigenvalues for square matrix of size " + M.rows());
+        throw new ArithmeticException("Unable to compute eigenvalues for square matrix of size " + M.rows());
     }
 
     /**
@@ -3175,19 +3177,10 @@ public class MathUtils {
         if (eigenvalues.cardinality() <= 0L) throw new IllegalArgumentException("No eigenvalues to solve for");
         Map<T, Vector<T>> results = new HashMap<>((int) eigenvalues.cardinality());
 
-        try {
-            for (T value : eigenvalues) {
-                final Class<T> clazz = (Class<T>) value.getClass();
-                T zero = (T) ExactZero.getInstance(value.getMathContext()).coerceTo(clazz);
-                Vector<T> zeroVector = columnVectorFrom(ZeroVector.getInstance(M.rows(), value.getMathContext()), clazz);
-                Matrix<T> lambdaMatrix = new ParametricMatrix<>(M.rows(), M.columns(), (row, column) -> {
-                    if (row.longValue() == column.longValue()) return value;
-                    return zero;
-                });
-                results.put(value, triangularizeAndSolve(M.subtract(lambdaMatrix), zeroVector));
-            }
-        } catch (CoercionException e) {
-            throw new IllegalStateException("While obtaining a zero instance and converting it", e);
+        for (T value : eigenvalues) {
+            final Class<T> clazz = (Class<T>) value.getClass();
+            Vector<T> zeroVector = columnVectorFrom(ZeroVector.getInstance(M.rows(), value.getMathContext()), clazz);
+            results.put(value, triangularizeAndSolve(M.subtract(lambdaMatrix(M.rows(), value)), zeroVector));
         }
         return results;
     }
@@ -3456,12 +3449,18 @@ public class MathUtils {
         }
     }
 
-    private static Matrix<ComplexType> lambdaMatrix(long dimension, ComplexType lambda) {
-        final ComplexType zero = new ComplexRectImpl(new RealImpl(BigDecimal.ZERO, lambda.getMathContext()));
-        return new ParametricMatrix<>(dimension, dimension, (row, column) -> {
-            if (row.longValue() == column.longValue()) return lambda;
-            return zero;
-        });
+    private static <T extends Numeric> Matrix<T> lambdaMatrix(long dimension, T lambda) {
+        try {
+            final T zero = (T) ExactZero.getInstance(lambda.getMathContext()).coerceTo(lambda.getClass());
+            return new ParametricMatrix<T>(dimension, dimension, (row, column) -> {
+                if (row.longValue() == column.longValue()) return lambda;
+                return zero;
+            });
+        } catch (CoercionException e) {
+            Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
+                    "Unable to obtain a zero value of type {0}.", lambda.getClass().getTypeName());
+            throw new IllegalStateException("While obtaining 0", e);
+        }
     }
 
     /**
