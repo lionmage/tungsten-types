@@ -30,10 +30,7 @@ import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.set.impl.NumericSet;
-import tungsten.types.util.AngularDegrees;
-import tungsten.types.util.MathUtils;
-import tungsten.types.util.OptionalOperations;
-import tungsten.types.util.RangeUtils;
+import tungsten.types.util.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -105,7 +102,7 @@ public class ComplexPolarImpl implements ComplexType {
      */
     public ComplexPolarImpl(String strval) {
         String strMod = strval.substring(0, strval.indexOf(SEPARATOR)).trim();
-        String strAng = strval.substring(strval.indexOf(SEPARATOR) + 1).trim();
+        String strAng = UnicodeTextEffects.sanitizeDecimal(strval.substring(strval.indexOf(SEPARATOR) + 1).trim());
         RealType angle;
         if (AngularDegrees.isDecimalDegrees(strAng) || AngularDegrees.isDMS(strAng)) {
             AngularDegrees degrees = new AngularDegrees(strAng);
@@ -116,7 +113,7 @@ public class ComplexPolarImpl implements ComplexType {
         } else {
             angle = new RealImpl(strAng);
         }
-        this.modulus = new RealImpl(strMod);
+        this.modulus = new RealImpl(UnicodeTextEffects.sanitizeDecimal(strMod));
         if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive or zero");
         this.argument = angle;
         this.mctx = MathUtils.inferMathContext(List.of(this.modulus, this.argument));

@@ -29,6 +29,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
+import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -101,7 +102,7 @@ public class ComplexRectImpl implements ComplexType {
      * @param strval the string representing the complex value we need to parse
      */
     public ComplexRectImpl(String strval) {
-        Matcher m = cplxPat.matcher(strval);
+        Matcher m = cplxPat.matcher(UnicodeTextEffects.sanitizeDecimal(strval));
         if (m.matches()) {
             assert m.groupCount() == 3;
             // group 0 is the entire matched pattern, so skip that

@@ -28,6 +28,7 @@ import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -67,7 +68,7 @@ public class RealImpl implements RealType {
     }
 
     public RealImpl(String representation) {
-        val = new BigDecimal(representation);
+        val = new BigDecimal(UnicodeTextEffects.sanitizeDecimal(representation));
     }
     
     public RealImpl(String representation, boolean exact) {
@@ -86,7 +87,7 @@ public class RealImpl implements RealType {
      */
     public RealImpl(RationalType init) {
         this(init.asBigDecimal(), init.isExact());
-        this.setMathContext(init.getMathContext());
+        this.mctx = init.getMathContext();
         irrational = false;
     }
     
@@ -97,7 +98,7 @@ public class RealImpl implements RealType {
         this.val = init.asBigDecimal();
         this.exact = init.isExact();
         this.irrational = false;
-        this.setMathContext(mctx);
+        this.mctx = mctx;
     }
     
     /**

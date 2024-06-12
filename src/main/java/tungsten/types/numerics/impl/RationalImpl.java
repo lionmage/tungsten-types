@@ -80,8 +80,8 @@ public class RationalImpl implements RationalType {
         if (position < 1) {
             throw new IllegalArgumentException("Missing numerator: " + representation);
         }
-        String numStr = representation.substring(0, position);
-        String denomStr = representation.substring(position + 1);
+        String numStr = UnicodeTextEffects.sanitizeDecimal(representation.substring(0, position));
+        String denomStr = UnicodeTextEffects.sanitizeDecimal(representation.substring(position + 1));
         
         numerator = new BigInteger(numStr.strip());
         denominator = new BigInteger(denomStr.strip());
