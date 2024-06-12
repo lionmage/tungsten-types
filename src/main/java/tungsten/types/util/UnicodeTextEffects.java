@@ -289,6 +289,25 @@ public class UnicodeTextEffects {
     }
 
     /**
+     * Sanitize a decimal value to make it suitable for parsing,
+     * e.g. with {@code String}-based constructors for {@link Numeric}
+     * subtypes.  The Unicode symbol U+2212 (MINUS SIGN) is converted
+     * into the locale-specific minus sign, and grouping separators
+     * are stripped out.  Decimal point characters remain unchanged.
+     * @param decStr a decimal value, with or without a decimal point
+     * @return a sanitized string representing the same numeric value
+     */
+    public static String sanitizeDecimal(String decStr) {
+        final DecimalFormatSymbols df = DecimalFormatSymbols.getInstance();
+        String intermediate = decStr.replace(NEGATIVE_SIGN, df.getMinusSign());
+        StringBuilder buf = new StringBuilder(intermediate.length());
+        for (char c : intermediate.toCharArray()) {
+            if (c != df.getGroupingSeparator()) buf.append(c);
+        }
+        return buf.toString();
+    }
+
+    /**
      * Expand any vulgar fraction into a proper fraction.  This method
      * is suitable for pre-processing a {@code String} containing fractions
      * for parsing and ingestion.<br>
