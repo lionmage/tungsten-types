@@ -82,6 +82,7 @@ public class ComplexPolarImpl implements ComplexType {
         this.argument = realVal.sign() == Sign.NEGATIVE ? Pi.getInstance(mctx) :
                 new RealImpl(BigDecimal.ZERO, mctx);
         this.exact = realVal.isExact();
+        epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
     }
 
     /**
