@@ -132,8 +132,7 @@ public class RationalImpl implements RationalType {
     }
 
     public RationalImpl(long numerator, long denominator, MathContext mctx) {
-        this(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator));
-        setMathContext(mctx);
+        this(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator), mctx);
     }
 
     /**
