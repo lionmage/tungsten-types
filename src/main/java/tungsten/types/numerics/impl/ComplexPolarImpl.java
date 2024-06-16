@@ -102,8 +102,8 @@ public class ComplexPolarImpl implements ComplexType {
      * @param strval the string representation of a complex polar value
      */
     public ComplexPolarImpl(String strval) {
-        String strMod = strval.substring(0, strval.indexOf(SEPARATOR)).trim();
-        String strAng = UnicodeTextEffects.sanitizeDecimal(strval.substring(strval.indexOf(SEPARATOR) + 1).trim());
+        String strMod = strval.substring(0, strval.indexOf(SEPARATOR)).strip();
+        String strAng = UnicodeTextEffects.sanitizeDecimal(strval.substring(strval.indexOf(SEPARATOR) + 1).strip());
         RealType angle;
         if (AngularDegrees.isDecimalDegrees(strAng) || AngularDegrees.isDMS(strAng)) {
             AngularDegrees degrees = new AngularDegrees(strAng);
@@ -112,9 +112,11 @@ public class ComplexPolarImpl implements ComplexType {
                     new Object[] {degrees, strval});
             angle = degrees.asRadians();
         } else {
+            // this is slightly inefficient since the RealImpl constructor will also sanitize String inputs
+            // and we already sanitized strAng above
             angle = new RealImpl(strAng);
         }
-        this.modulus = new RealImpl(UnicodeTextEffects.sanitizeDecimal(strMod));
+        this.modulus = new RealImpl(strMod);
         if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive or zero");
         this.argument = angle;
         this.mctx = MathUtils.inferMathContext(List.of(this.modulus, this.argument));

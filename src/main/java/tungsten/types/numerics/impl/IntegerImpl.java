@@ -30,6 +30,7 @@ import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -58,7 +59,7 @@ public class IntegerImpl implements IntegerType {
     }
 
     public IntegerImpl(String representation) {
-        val = new BigInteger(representation);
+        val = new BigInteger(UnicodeTextEffects.sanitizeDecimal(representation));
     }
     
     public IntegerImpl(BigInteger initialVal, boolean exact) {
