@@ -357,7 +357,7 @@ public class ComplexRectImpl implements ComplexType {
         if (One.isUnity(divisor)) return this;
         if (divisor instanceof ComplexType) {
             if (divisor instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
-                return new ComplexRectImpl(ZERO, ZERO); // would be nice to do this: ExactZero.getInstance(mctx);
+                return ExactZero.getInstance(mctx); // was: new ComplexRectImpl(ZERO, ZERO)
             }
             ComplexType cdiv = (ComplexType) divisor;
             ComplexType conj = cdiv.conjugate();
