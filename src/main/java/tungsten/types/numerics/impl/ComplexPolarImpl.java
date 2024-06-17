@@ -332,7 +332,7 @@ public class ComplexPolarImpl implements ComplexType {
         if (One.isUnity(divisor)) return this;
         if (divisor instanceof ComplexType) {
             if (divisor instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
-                return new ComplexPolarImpl(new RealImpl(BigDecimal.ZERO, mctx));
+                return ExactZero.getInstance(mctx);  // was: new ComplexPolarImpl(new RealImpl(BigDecimal.ZERO, mctx));
             }
             ComplexType cdiv = (ComplexType) divisor;
             RealType modnew = (RealType) modulus.divide(cdiv.magnitude());
