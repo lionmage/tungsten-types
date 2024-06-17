@@ -323,7 +323,10 @@ public class ComplexPolarImpl implements ComplexType {
     @Override
     public Numeric divide(Numeric divisor) {
         if (Zero.isZero(divisor)) {
-            if (ComplexType.isExtendedEnabled()) return PointAtInfinity.getInstance();
+            if (ComplexType.isExtendedEnabled()) {
+                if (Zero.isZero(modulus)) throw new ArithmeticException("0/0 is undefined");
+                return PointAtInfinity.getInstance();
+            }
             throw new ArithmeticException("Division by 0");
         }
         if (One.isUnity(divisor)) return this;
