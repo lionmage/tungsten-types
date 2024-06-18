@@ -115,6 +115,7 @@ public class RealImpl implements RealType {
     public RealImpl(IntegerType n, MathContext ctx) {
         val = new BigDecimal(n.asBigInteger());
         exact = n.isExact();
+        irrational = false;
         mctx = ctx;
     }
 
@@ -213,8 +214,7 @@ public class RealImpl implements RealType {
         final BigDecimal stripped = val.stripTrailingZeros();
         IntegerImpl num = new IntegerImpl(stripped.unscaledValue(), exact);
         IntegerImpl denom = new IntegerImpl(BigInteger.TEN.pow(stripped.scale()));
-        RationalImpl ratl = new RationalImpl(num, denom);
-        ratl.setMathContext(mctx);
+        RationalType ratl = new RationalImpl(num, denom, mctx);
         return ratl.reduce();
     }
 
@@ -328,6 +328,15 @@ public class RealImpl implements RealType {
             return result;
         } else if (divisor instanceof RationalType) {
             RationalType ratdivisor = (RationalType) divisor;
+            if (isIntegralValue()) {
+                IntegerType me = new IntegerImpl(val.toBigIntegerExact(), exactness) {
+                    @Override
+                    public MathContext getMathContext() {
+                        return mctx;
+                    }
+                };
+                return ratdivisor.inverse().multiply(me);
+            }
             final RealImpl result = new RealImpl(val.divide(ratdivisor.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(irrational);
             return result;

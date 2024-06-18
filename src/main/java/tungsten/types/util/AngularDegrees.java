@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -355,9 +356,22 @@ public class AngularDegrees {
         return buf.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AngularDegrees that = (AngularDegrees) o;
+        return Objects.equals(degrees, that.degrees) && Objects.equals(minutes, that.minutes) && Objects.equals(seconds, that.seconds);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(degrees, minutes, seconds);
+    }
+
     /*
-    Methods necessary for Groovy operator overloading follow.
-     */
+        Methods necessary for Groovy operator overloading follow.
+         */
     AngularDegrees plus(AngularDegrees operand) {
         return this.add(operand);
     }
