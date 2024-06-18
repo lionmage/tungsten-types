@@ -105,7 +105,7 @@ public class AngularDegrees {
         updateDecDegrees();
     }
 
-    private static final RealType DEGREES_IN_CIRCLE = new RealImpl(BigDecimal.valueOf(360L));
+    private static final RealType DEGREES_IN_CIRCLE = new RealImpl(BigDecimal.valueOf(360L), DEFAULT_CONTEXT);
     public static final Range<RealType> DECIMAL_DEGREE_RANGE = new Range<>(new RealImpl(BigDecimal.ZERO), Range.BoundType.INCLUSIVE,
             DEGREES_IN_CIRCLE, Range.BoundType.EXCLUSIVE);
 
@@ -144,7 +144,8 @@ public class AngularDegrees {
                 throw new IllegalArgumentException("minutes of arc must be between 0 and 59 inclusive");
             }
             seconds = new RealImpl(m.group(3));
-            if (seconds.asBigDecimal().compareTo(BigDecimal.valueOf(60L)) >= 0) {
+            final RealType reSixty = new RealImpl(SIXTY, DEFAULT_CONTEXT);
+            if (seconds.compareTo(reSixty) >= 0) {
                 throw new IllegalArgumentException("seconds of arc must be \u2265 0 and < 60");
             }
             updateDecDegrees();
@@ -240,7 +241,7 @@ public class AngularDegrees {
      *   after-the-fact clean-up of data, for example.
      */
     public void normalizeRange() {
-        final IntegerType fullCircle = new IntegerImpl(BigInteger.valueOf(360L));
+        final IntegerType fullCircle = new IntegerImpl(DEGREES_IN_CIRCLE.asBigDecimal().toBigInteger());
         if (degrees.sign() == Sign.NEGATIVE) {
             while (degrees.sign() == Sign.NEGATIVE) {
                 degrees = (IntegerType) degrees.add(fullCircle);
