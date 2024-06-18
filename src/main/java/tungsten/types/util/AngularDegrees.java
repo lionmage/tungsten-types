@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
  * to radians, obviating the need to perform this conversion elsewhere.
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
-public class AngularDegrees {
+public class AngularDegrees implements Comparable<AngularDegrees> {
     public static final char DEGREE_SIGN = '\u00B0';
     public static final char MINUTES_SIGN = '\u2032';  // prime, not apostrophe
     public static final char SECONDS_SIGN = '\u2033';  // double-prime, not two apostrophes or double quote
@@ -354,6 +354,11 @@ public class AngularDegrees {
         }
 
         return buf.toString();
+    }
+
+    @Override
+    public int compareTo(AngularDegrees o) {
+        return this.decDegrees.compareTo(o.decDegrees);
     }
 
     @Override
