@@ -376,7 +376,7 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
 
     /*
         Methods necessary for Groovy operator overloading follow.
-         */
+     */
     AngularDegrees plus(AngularDegrees operand) {
         return this.add(operand);
     }
