@@ -4245,9 +4245,10 @@ public class MathUtils {
      * Computes the hyperbolic sine.
      * @param z the argument
      * @return the value of sinh(z)
+     * @since 0.4
      */
     public static ComplexType sinh(ComplexType z) {
-        Euler e = Euler.getInstance(z.getMathContext());
+        final Euler e = Euler.getInstance(z.getMathContext());
         final RealType two = new RealImpl(decTWO, z.getMathContext());
         return (ComplexType) e.exp(z).subtract(e.exp(z.negate())).divide(two);
     }
@@ -4256,9 +4257,10 @@ public class MathUtils {
      * Computes the hyperbolic sine.
      * @param x the argument
      * @return the value of sinh(x)
+     * @since 0.4
      */
     public static RealType sinh(RealType x) {
-        Euler e = Euler.getInstance(x.getMathContext());
+        final Euler e = Euler.getInstance(x.getMathContext());
         final RealType two = new RealImpl(decTWO, x.getMathContext());
         return (RealType) e.exp(x).subtract(e.exp(x.negate())).divide(two);
     }
@@ -4267,9 +4269,10 @@ public class MathUtils {
      * Computes the hyperbolic cosine.
      * @param z the argument
      * @return the value of cosh(z)
+     * @since 0.4
      */
     public static ComplexType cosh(ComplexType z) {
-        Euler e = Euler.getInstance(z.getMathContext());
+        final Euler e = Euler.getInstance(z.getMathContext());
         final RealType two = new RealImpl(decTWO, z.getMathContext());
         return (ComplexType) e.exp(z).add(e.exp(z.negate())).divide(two);
     }
@@ -4278,9 +4281,10 @@ public class MathUtils {
      * Computes the hyperbolic cosine.
      * @param x the argument
      * @return the value of cosh(x)
+     * @since 0.4
      */
     public static RealType cosh(RealType x) {
-        Euler e = Euler.getInstance(x.getMathContext());
+        final Euler e = Euler.getInstance(x.getMathContext());
         final RealType two = new RealImpl(decTWO, x.getMathContext());
         return (RealType) e.exp(x).add(e.exp(x.negate())).divide(two);
     }
