@@ -159,7 +159,7 @@ public class PointAtInfinity implements ComplexType {
 
             @Override
             public RealType imaginary() {
-                return new RealImpl(BigDecimal.ONE, MathContext.UNLIMITED);
+                return new RealImpl(BigDecimal.ZERO, MathContext.UNLIMITED);
             }
 
             @Override
@@ -260,17 +260,17 @@ public class PointAtInfinity implements ComplexType {
 
     @Override
     public RealType real() {
-        throw new UnsupportedOperationException("Re(∞) is undefined");
+        throw new ArithmeticException("Re(∞) is undefined");
     }
 
     @Override
     public RealType imaginary() {
-        throw new UnsupportedOperationException("Im(∞) is undefined");
+        throw new ArithmeticException("Im(∞) is undefined");
     }
 
     @Override
     public RealType argument() {
-        throw new UnsupportedOperationException("arg(∞) is undefined");
+        throw new ArithmeticException("arg(∞) is undefined");
     }
 
     @Override
@@ -291,6 +291,7 @@ public class PointAtInfinity implements ComplexType {
 
     @Override
     public String toString() {
-        return "\u221E \u2208 \u2102 ͚";
+        // the infinity subscript was a dirty hack, so this should render better
+        return "\u221E \u2208 \u2102\u222A{\u221E}";
     }
 }
