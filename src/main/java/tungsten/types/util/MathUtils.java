@@ -2632,7 +2632,7 @@ public class MathUtils {
      * @param root an integer value of the order of the root
      * @return the matrix result, A<sup>1/root</sup>
      */
-    public static Matrix<? extends Numeric> nthRoot(Matrix<Numeric> A, IntegerType root) {
+    public static Matrix<? extends Numeric> nthRoot(Matrix<? extends Numeric> A, IntegerType root) {
         if (root.asBigInteger().equals(BigInteger.TWO)) return sqrt(A);
         if (A instanceof DiagonalMatrix) {
             DiagonalMatrix<Numeric> D = (DiagonalMatrix<Numeric>) A;
@@ -2657,7 +2657,7 @@ public class MathUtils {
                     x -> nthRoot(Re(x), root);
             return parlett(f, A);
         }
-        throw new UnsupportedOperationException("Cannot compute " + root + "th root of matrix");
+        throw new ArithmeticException("Cannot compute " + root + "th root of matrix");
     }
 
     /**
@@ -2849,7 +2849,7 @@ public class MathUtils {
         }
         // otherwise, handle the case where veclen > numVec, i.e., more dimensions than vectors
         Logger logger = Logger.getLogger(MathUtils.class.getName());
-        logger.log(Level.INFO, "Computing {0} permutations of {1} vectors for a {2}\00D7{1} matrix.",
+        logger.log(Level.INFO, "Computing {0} permutations of {1} vectors for a {2}\u00D7{1} matrix.",
                 new Object[] {nChooseK(veclen, numVec), numVec, veclen});
         List<List<Long>> indexSets = permuteIndices(veclen, numVec);
         for (List<Long> indices : indexSets) {

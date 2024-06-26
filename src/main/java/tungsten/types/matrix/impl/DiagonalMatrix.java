@@ -27,10 +27,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.NumericHierarchy;
-import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
@@ -186,6 +183,9 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     
     @Override
     public Matrix<? extends Numeric> pow(Numeric n) {
+        if (Zero.isZero(n)) return new IdentityMatrix(rows(), elements[0].getMathContext());
+        if (One.isUnity(n)) return this;
+
         Numeric[] result;
         final Class<T> clazz = (Class<T>) elements.getClass().getComponentType();
         // the following code should work just fine for negative exponents, without calling inverse()
@@ -205,7 +205,16 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                     .toArray(Numeric[]::new);
         } else {
             if (!n.isCoercibleTo(IntegerType.class)) {
-                throw new UnsupportedOperationException("Currently, non-integer exponents are not supported for non-real and non-complex matrix element types");
+                // maybe it's a rational type?
+                if (n instanceof RationalType) {
+                    RationalType ratN = (RationalType) n;
+                    Matrix<? extends Numeric> intermediate = this.pow(ratN.numerator());
+                    return MathUtils.nthRoot(intermediate, ratN.denominator());
+                }
+                Logger.getLogger(DiagonalMatrix.class.getName()).log(Level.SEVERE,
+                        "Attempt to raise {0}\u00D7{0} diagonal matrix to the {1} power failed: no viable solution",
+                        new Object[] {elements.length, n});
+                throw new UnsupportedOperationException("Uncertain how to compute matrix exponent of power " + n);
             }
 
             try {
