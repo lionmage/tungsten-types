@@ -212,7 +212,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
                     return MathUtils.nthRoot(intermediate, ratN.denominator());
                 }
                 Logger.getLogger(DiagonalMatrix.class.getName()).log(Level.SEVERE,
-                        "Attempt to raise {0}\u00D7{0} diagonal matrix to the {1} power failed: no viable solution",
+                        "Attempt to raise a {0}\u00D7{0} diagonal matrix to the {1} power failed: no viable solution.",
                         new Object[] {elements.length, n});
                 throw new UnsupportedOperationException("Uncertain how to compute matrix exponent of power " + n);
             }
