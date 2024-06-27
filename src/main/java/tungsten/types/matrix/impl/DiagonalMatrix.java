@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * A compact representation of a diagonal matrix.
@@ -185,10 +186,6 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     public Matrix<? extends Numeric> pow(Numeric n) {
         if (Zero.isZero(n)) return new IdentityMatrix(rows(), elements[0].getMathContext());
         if (One.isUnity(n)) return this;
-        // n only has sign if it isn't complex
-        if (!(n instanceof ComplexType) && OptionalOperations.sign(n) == Sign.NEGATIVE) {
-            return this.inverse().pow(n.negate());
-        }
 
         Numeric[] result;
         final Class<T> clazz = (Class<T>) elements.getClass().getComponentType();
