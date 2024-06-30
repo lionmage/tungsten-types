@@ -84,6 +84,18 @@ public class RangeUtils {
     }
 
     /**
+     * Generate a range of (&minus;&pi;, &pi;) with an arbitrarily
+     * chosen {@code MathContext}. This is the typical range of values
+     * permitted for Arg(z) when computing ln&#x1D6AA;(z).
+     * @return a range representing the interval (&minus;&pi;, &pi;)
+     */
+    public static Range<RealType> getGammaArgumentInstance() {
+        // MathContext is chosen arbitrarily
+        final RealType pi = Pi.getInstance(MathContext.DECIMAL64);
+        return new Range<>(pi.negate(), pi, BoundType.EXCLUSIVE);
+    }
+
+    /**
      * Generate a range of (&minus;&pi;/2, &pi;/2) for the given {@link MathContext}.
      * Note that this is the principal input range for the tan function.
      * @param mctx the math context
