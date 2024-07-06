@@ -310,6 +310,7 @@ public class MathUtils {
                     m = m.magnitude();  // and take the absolute value
                     IntegerType m2 = (IntegerType) new IntegerImpl(BigInteger.TWO).multiply(m);
                     RealType num = (RealType) factorial(m2).coerceTo(RealType.class);
+                    OptionalOperations.setMathContext(num, z.getMathContext());  // an insurance policy
                     RealType denom = (RealType) computeIntegerExponent(two, m2).multiply(factorial(m));
                     switch (msign) {
                         case POSITIVE:
