@@ -317,7 +317,7 @@ public class MathUtils {
                             // See https://proofwiki.org/wiki/Gamma_Function_of_Positive_Half-Integer
                             return num.multiply(sqrtPi).divide(denom);
                         case NEGATIVE:
-                            // see https://proofwiki.org/wiki/Gamma_Function_of_Negative_Half-Integer
+                            // See https://proofwiki.org/wiki/Gamma_Function_of_Negative_Half-Integer
                             if (m.isOdd()) denom = denom.negate();
                             return denom.multiply(sqrtPi).divide(num);
                         case ZERO:
@@ -429,7 +429,7 @@ public class MathUtils {
 
     /**
      * An application of Stirling's approximation to the ln&#x1D6AA;(z) function.
-     * It works for all z where Re(z)&nbsp;>&nbsp;0 and |Arg(z)|&nbsp;<&nbsp;&pi;
+     * It works for all z where Re(z)&nbsp;&gt;&nbsp;0 and |Arg(z)|&nbsp;&lt;&nbsp;&pi;
      * and provides better approximations for z values with a larger magnitude.
      * Since &#x1D6AA;(z) grows so quickly, it is often advantageous to use the
      * natural log of Gamma, or ln&#x1D6AA;(z).
@@ -656,10 +656,10 @@ public class MathUtils {
      * @param k  the index of this term
      * @param s  the parameter of &#x1D701;(s)
      * @param bn a generator for Bernoulli numbers, initialized to contain a sufficient number of precalculated values
-     * @return the computed value of the k<sub>th</sub> term
+     * @return the computed value of the k<sup>th</sup> term
      */
     private static Numeric zetaT_kn(long n, long k, Numeric s, BernoulliNumbers bn) {
-        final IntegerType twoK = new IntegerImpl(BigInteger.valueOf(2L * k), true) {
+        final IntegerType twoK = new IntegerImpl(BigInteger.valueOf(k << 1L), true) {
             @Override
             public MathContext getMathContext() {
                 return s.getMathContext();
@@ -676,7 +676,7 @@ public class MathUtils {
             npow = generalizedExponent(new RealImpl(BigDecimal.valueOf(n), s.getMathContext()),
                     one.subtract(s).subtract(twoK), s.getMathContext());
         }
-        Numeric coeff = bn.getB(2L * k).multiply(npow).divide(factorial(twoK));
+        Numeric coeff = bn.getB(k << 1L).multiply(npow).divide(factorial(twoK));
         return LongStream.rangeClosed(0L, 2L * k - 2L)
                 .mapToObj(j -> s.add(new RealImpl(BigDecimal.valueOf(j), s.getMathContext())))
                 .reduce(coeff, Numeric::multiply);
