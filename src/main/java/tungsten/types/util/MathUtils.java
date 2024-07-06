@@ -1222,7 +1222,7 @@ public class MathUtils {
         }
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
 
-        if (x.asBigDecimal().compareTo(BigDecimal.TEN) > 0) {
+        if (x.asBigDecimal().compareTo(BigDecimal.TEN) >= 0) {
             RealType mantissa = mantissa(x);
             IntegerType exponent = exponent(x);
             // use the identity ln(a*10^n) = ln(a) + n*ln(10)
