@@ -309,7 +309,7 @@ public class RealInfinity implements RealType {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(sign.getSymbol()).append("\u221E");
+        buf.append(sign.getSymbol()).append('\u221E');
         return buf.toString();
     }
 

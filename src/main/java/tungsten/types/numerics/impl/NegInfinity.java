@@ -55,12 +55,7 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
     public static Numeric getInstance(MathContext mctx) {
         instanceLock.lock();
         try {
-            NegInfinity instance = instanceMap.get(mctx);
-            if (instance == null) {
-                instance = new NegInfinity(mctx);
-                instanceMap.put(mctx, instance);
-            }
-            return instance;
+            return instanceMap.computeIfAbsent(mctx, NegInfinity::new);
         } finally {
             instanceLock.unlock();
         }

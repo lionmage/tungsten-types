@@ -41,7 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-@Constant(name = "+infinity", representation = "\u221E")
+@Constant(name = "+infinity", representation = "+\u221E")
 public class PosInfinity implements Numeric, Comparable<Numeric> {
     private final MathContext mctx;
 
@@ -55,12 +55,7 @@ public class PosInfinity implements Numeric, Comparable<Numeric> {
     public static Numeric getInstance(MathContext mctx) {
         instanceLock.lock();
         try {
-            PosInfinity instance = instanceMap.get(mctx);
-            if (instance == null) {
-                instance = new PosInfinity(mctx);
-                instanceMap.put(mctx, instance);
-            }
-            return instance;
+            return instanceMap.computeIfAbsent(mctx, PosInfinity::new);
         } finally {
             instanceLock.unlock();
         }
@@ -171,7 +166,7 @@ public class PosInfinity implements Numeric, Comparable<Numeric> {
     
     @Override
     public String toString() {
-        return "\u221E";
+        return "+\u221E";
     }
 
     /*
