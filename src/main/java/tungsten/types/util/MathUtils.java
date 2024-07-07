@@ -1216,8 +1216,9 @@ public class MathUtils {
         if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) {
             return new RealImpl(BigDecimal.ZERO, mctx, x.isExact());
         }
-        if (x.asBigDecimal().compareTo(BigDecimal.ZERO) <= 0) {
-            if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return RealInfinity.getInstance(Sign.NEGATIVE, mctx);
+        final int cmpZero = x.asBigDecimal().compareTo(BigDecimal.ZERO);
+        if (cmpZero <= 0) {
+            if (cmpZero == 0) return RealInfinity.getInstance(Sign.NEGATIVE, mctx);
             throw new ArithmeticException("ln(x) is undefined for x < 0");
         }
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
