@@ -1223,10 +1223,11 @@ public class MathUtils {
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
 
         if (x.asBigDecimal().compareTo(BigDecimal.TEN) >= 0) {
+            final RealType ln10 = lnSeries(new RealImpl(BigDecimal.TEN), mctx);
+            if (x.asBigDecimal().compareTo(BigDecimal.TEN) == 0) return ln10; // we have the exact solution already
+            // use the identity ln(a*10^n) = ln(a) + n*ln(10)
             RealType mantissa = mantissa(x);
             IntegerType exponent = exponent(x);
-            // use the identity ln(a*10^n) = ln(a) + n*ln(10)
-            RealType ln10 = lnSeries(new RealImpl(BigDecimal.TEN), mctx);
             try {
                 // We are mainly coercing here out of an abundance of caution, so if something does break, we log it well.
                 return (RealType) ln(mantissa, mctx).add(ln10.multiply(exponent)).coerceTo(RealType.class);
