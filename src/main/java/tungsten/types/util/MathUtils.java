@@ -1222,9 +1222,10 @@ public class MathUtils {
         }
         if (newtonRange.contains(x)) return lnNewton(x, mctx);
 
-        if (x.asBigDecimal().compareTo(BigDecimal.TEN) >= 0) {
+        final int cmp10 = x.asBigDecimal().compareTo(BigDecimal.TEN);
+        if (cmp10 >= 0) {
             final RealType ln10 = lnSeries(new RealImpl(BigDecimal.TEN), mctx);
-            if (x.asBigDecimal().compareTo(BigDecimal.TEN) == 0) return ln10; // we have the exact solution already
+            if (cmp10 == 0) return ln10; // we have the exact solution already
             // use the identity ln(a*10^n) = ln(a) + n*ln(10)
             RealType mantissa = mantissa(x);
             IntegerType exponent = exponent(x);
