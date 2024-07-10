@@ -315,11 +315,11 @@ public class RealInfinity implements RealType {
 
     @Override
     public IntegerType floor() {
-        throw new ArithmeticException("floor() not supported");
+        throw new ArithmeticException("cannot compute floor() for " + this);
     }
 
     @Override
     public IntegerType ceil() {
-        throw new ArithmeticException("ceil() not supported");
+        throw new ArithmeticException("cannot compute ceil() for " + this);
     }
 }
