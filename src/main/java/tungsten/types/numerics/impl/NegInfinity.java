@@ -175,6 +175,9 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
     public Numeric power(Numeric operand) {
         if (Zero.isZero(operand)) {
             return One.getInstance(mctx);
+        } else if (One.isUnity(operand)) {
+            // exponent = 1, so return this value
+            return this;
         } else if (One.isUnity(operand.negate())) {
             // exponent = -1, so compute the inverse
             return this.inverse();
