@@ -135,7 +135,10 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
 
                 @Override
                 public Range<RealType> inputRange(String argName) {
-                    return inputFunction.inputRange(argName);
+                    if (Arrays.asList(requiredArgs).contains(argName)) {
+                        return inputFunction.inputRange(argName);
+                    }
+                    return null;
                 }
             };
         }
