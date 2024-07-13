@@ -91,8 +91,7 @@ public class NumericMultiset implements Multiset<Numeric> {
                 ElementTuple that = (ElementTuple) o;
                 return this.value.equals(that.value);
             } else if (o instanceof Numeric) {
-                Numeric that = (Numeric) o;
-                return this.value.equals(that);
+                return this.value.equals(o);
             }
             return false;
         }
@@ -105,6 +104,7 @@ public class NumericMultiset implements Multiset<Numeric> {
             return buf.toString();
         }
     }
+
     private final HashSet<ElementTuple> internal = new HashSet<>();
     
     public NumericMultiset(Collection<Numeric> source) {
@@ -130,12 +130,13 @@ public class NumericMultiset implements Multiset<Numeric> {
     @Override
     public long multiplicity(Numeric element) {
         return internal.parallelStream().filter(x -> x.value.equals(element)).findAny()
-                .orElseThrow().multiplicity;
+                .map(ElementTuple::multiplicity).orElse(0L);
     }
 
     @Override
     public Set<Numeric> asSet() {
-        java.util.Set<Numeric> temp = internal.stream().map(x -> x.value).collect(Collectors.toSet());
+        java.util.Set<Numeric> temp = internal.stream().filter(x -> x.multiplicity() > 0L)
+                .map(ElementTuple::getValue).collect(Collectors.toSet());
         return new NumericSet(temp);
     }
 
@@ -151,7 +152,7 @@ public class NumericMultiset implements Multiset<Numeric> {
 
     @Override
     public boolean contains(Numeric element) {
-        return internal.parallelStream().anyMatch(x -> x.value.equals(element));
+        return internal.parallelStream().anyMatch(x -> x.value.equals(element) && x.multiplicity > 0L);
     }
 
     @Override
@@ -165,7 +166,9 @@ public class NumericMultiset implements Multiset<Numeric> {
         // not found, so we need to add a brand new tuple to the set
         if (!internal.add(new ElementTuple(element))) {
             Logger.getLogger(NumericMultiset.class.getName())
-                    .log(Level.FINER, "Attempted to append {0}, but multiset failed to add a new ElementTuple unexpectedly.", element);
+                    .log(Level.SEVERE, "Attempted to append {0}, but multiset failed to add a new ElementTuple unexpectedly.", element);
+            // this is a fatal condition, because this multiset no longer reflects what the client puts into it
+            throw new IllegalStateException("Unexpected failure to append a new ElementTuple for element " + element);
         }
     }
 
@@ -178,6 +181,7 @@ public class NumericMultiset implements Multiset<Numeric> {
                     // there are no instances of this numeric left in the multiset
                     // therefore, we should remove the ElementTuple holding it
                     if (!internal.remove(t)) {
+                        // it's technically OK to still have an ElementTuple with a multiplicity of 0 hanging around
                         Logger.getLogger(NumericMultiset.class.getName())
                                 .log(Level.WARNING, "Failed to remove ElementTuple {0} from internal HashSet.", t);
                     }
@@ -205,7 +209,13 @@ public class NumericMultiset implements Multiset<Numeric> {
         while (iter.hasNext()) {
             Numeric element = iter.next();
             if (other.contains(element)) {
-                intersec.append(element);
+                if (other instanceof Multiset) {
+                    Multiset<Numeric> that = (Multiset<Numeric>) other;
+                    long count = Math.min(that.multiplicity(element), this.multiplicity(element));
+                    for (long k = 0L; k < count; k++) intersec.append(element);
+                } else {
+                    intersec.append(element);
+                }
             }
         }
         
@@ -216,12 +226,17 @@ public class NumericMultiset implements Multiset<Numeric> {
     public Set<Numeric> difference(Set<Numeric> other) {
         NumericMultiset diff = new NumericMultiset(this);
         
-        Iterator<Numeric> iter = other.iterator();
+        Iterator<Numeric> iter = this.iterator();
         while (iter.hasNext()) {
             Numeric element = iter.next();
-            // note we're checking the internal store, then removing from the copy
-            if (this.contains(element)) {
-                diff.remove(element);
+            if (other.contains(element)) {
+                if (other instanceof Multiset) {
+                    Multiset<Numeric> that = (Multiset<Numeric>) other;
+                    long count = that.multiplicity(element);
+                    for (long k = 0L; k < count; k++) diff.remove(element);
+                } else {
+                    diff.remove(element);
+                }
             }
         }
         
