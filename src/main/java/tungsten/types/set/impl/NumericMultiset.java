@@ -54,6 +54,7 @@ public class NumericMultiset implements Multiset<Numeric> {
         }
         
         public void decrement() {
+            if (multiplicity == 0L) throw new ArithmeticException("Cannot have negative multiplicity");
             multiplicity--;
         }
         
@@ -94,6 +95,14 @@ public class NumericMultiset implements Multiset<Numeric> {
                 return this.value.equals(that);
             }
             return false;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append('[').append(value).append("\u2009\u00D7\u2009");
+            buf.append(multiplicity).append(']');
+            return buf.toString();
         }
     }
     private final HashSet<ElementTuple> internal = new HashSet<>();
@@ -155,7 +164,8 @@ public class NumericMultiset implements Multiset<Numeric> {
         }
         // not found, so we need to add a brand new tuple to the set
         if (!internal.add(new ElementTuple(element))) {
-            Logger.getLogger(NumericMultiset.class.getName()).log(Level.FINER, "Attempted to append {0}, but multiset failed to add a new ElementTuple unexpectedly.", element);
+            Logger.getLogger(NumericMultiset.class.getName())
+                    .log(Level.FINER, "Attempted to append {0}, but multiset failed to add a new ElementTuple unexpectedly.", element);
         }
     }
 
@@ -169,7 +179,7 @@ public class NumericMultiset implements Multiset<Numeric> {
                     // therefore, we should remove the ElementTuple holding it
                     if (!internal.remove(t)) {
                         Logger.getLogger(NumericMultiset.class.getName())
-                                .log(Level.WARNING, "Failed to remove ElementTuple from internal HashSet.");
+                                .log(Level.WARNING, "Failed to remove ElementTuple {0} from internal HashSet.", t);
                     }
                 }
                 return;
