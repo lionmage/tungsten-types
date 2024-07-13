@@ -24,13 +24,16 @@ package tungsten.types.functions.impl;
  */
 
 import tungsten.types.Numeric;
+import tungsten.types.Range;
 import tungsten.types.functions.ArgMap;
 import tungsten.types.functions.MetaFunction;
 import tungsten.types.functions.NumericFunction;
+import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.RealType;
 
 import java.util.Arrays;
 
-import static tungsten.types.util.MathUtils.Re;
+import static tungsten.types.util.MathUtils.*;
 
 /**
  * A simple meta-function which curries the inputs of a {@link NumericFunction} and
@@ -60,19 +63,43 @@ public class Curry<T extends Numeric, R extends Numeric> extends MetaFunction<T,
     public NumericFunction<T, R> apply(NumericFunction<T, R> inputFunction) {
         final ArgMap<T> mappedArgs = mappedArgsView();
         // we must check that our curried values all fall within the input range of their respective argument
-        // TODO figure out how to detect when an argument is complex and check the range on the real and imaginary parts
-        if (! mappedArgs.keySet().stream().filter(argName -> inputFunction.inputRange(argName) != null)
-                .allMatch(argName -> inputFunction.inputRange(argName).contains(Re(mappedArgs.get(argName)))) ) {
-            String argName = mappedArgs.keySet().stream().filter(arg -> inputFunction.inputRange(arg) != null)
-                    .filter(arg -> inputFunction.inputRange(arg).contains(Re(mappedArgs.get(arg))))
+        if (! mappedArgs.keySet().stream()
+                .allMatch(argName -> isInRange(inputFunction, mappedArgs, argName)) ) {
+            String argName = mappedArgs.keySet().stream()
+                    .filter(arg -> !isInRange(inputFunction, mappedArgs, arg))
                     .findFirst().orElseThrow();
-            throw new IllegalArgumentException("Variable " + argName +
-                    " has a curry value that is out of range " + inputFunction.inputRange(argName));
+            StringBuilder message = new StringBuilder();
+            message.append("Variable ").append(argName).append(" has a curry value ").append(mappedArgs.get(argName));
+            message.append(" that is out of range");
+            // the range may be undefined for the root argument name, but it may be defined
+            // for e.g. the real component of a complex argument, therefore we're only
+            // bothering to report the range if we've found one for the root arg name
+            if (inputFunction.inputRange(argName) != null) {
+                message.append(' ').append(inputFunction.inputRange(argName));
+            }
+            throw new IllegalArgumentException(message.toString());
         }
         if (numberOfMappings >= inputFunction.arity() &&
                 mappedArgs.keySet().containsAll(Arrays.asList(inputFunction.expectedArguments()))) {
             return Const.getInstance(inputFunction.apply(mappedArgs));
         }
         return curry(inputFunction);
+    }
+
+    private boolean isInRange(NumericFunction<T, R> function, ArgMap<T> mappedArgs, String argName) {
+        Range<RealType> argRange = function.inputRange(argName);
+        final T value = mappedArgs.get(argName);
+        if (argRange == null && mappedArgs.get(argName) instanceof ComplexType) {
+            // check for re, im, arg, or mag
+            Range<RealType> reRange = function.inputRange(argName + ".re");
+            Range<RealType> imRange = function.inputRange(argName + ".im");
+            Range<RealType> magRange = function.inputRange(argName + ".mag");
+            Range<RealType> cplxArgRange = function.inputRange(argName + ".arg"); // to avoid confusion with argRange above
+            if (reRange != null && !reRange.contains(Re(value))) return false;
+            if (imRange != null && !imRange.contains(Im(value))) return false;
+            if (magRange != null && !magRange.contains(Re(value.magnitude()))) return false;
+            return cplxArgRange == null || cplxArgRange.contains(Arg(value));
+        }
+        return argRange == null || argRange.contains(Re(value));
     }
 }
