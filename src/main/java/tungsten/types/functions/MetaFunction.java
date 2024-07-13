@@ -64,7 +64,7 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
 
     public void addCurryMappings(Map<String, T> mappings) {
         if (mappings.keySet().stream().anyMatch(curryMap::containsKey)) {
-            throw new IllegalArgumentException("New curry mappings conflict with existing mappings.");
+            throw new IllegalArgumentException("New curry mappings conflict with existing mappings");
         }
         curryMap.putAll(mappings);
     }

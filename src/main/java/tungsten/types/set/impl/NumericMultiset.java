@@ -168,7 +168,8 @@ public class NumericMultiset implements Multiset<Numeric> {
                     // there are no instances of this numeric left in the multiset
                     // therefore, we should remove the ElementTuple holding it
                     if (!internal.remove(t)) {
-                        Logger.getLogger(NumericMultiset.class.getName()).log(Level.WARNING, "Failed to remove ElementTuple from internal HashSet.");
+                        Logger.getLogger(NumericMultiset.class.getName())
+                                .log(Level.WARNING, "Failed to remove ElementTuple from internal HashSet.");
                     }
                 }
                 return;
