@@ -38,6 +38,7 @@ import java.util.stream.Stream;
  * Implementation of {@link Multiset} for {@link Numeric} types.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class NumericMultiset implements Multiset<Numeric> {
     private class ElementTuple {
@@ -108,10 +109,7 @@ public class NumericMultiset implements Multiset<Numeric> {
     private final HashSet<ElementTuple> internal = new HashSet<>();
     
     public NumericMultiset(Collection<Numeric> source) {
-        Iterator<Numeric> iter = source.iterator();
-        while (iter.hasNext()) {
-            this.append(iter.next());
-        }
+        source.forEach(this::append);
     }
     
     /**
@@ -123,8 +121,16 @@ public class NumericMultiset implements Multiset<Numeric> {
      * Copy constructor.
      * @param multiset the multiset from which to copy
      */
-    public NumericMultiset(NumericMultiset multiset) {
-        this.internal.addAll(multiset.internal);
+    public NumericMultiset(Multiset<? extends Numeric> multiset) {
+        if (multiset instanceof NumericMultiset) {
+            HashSet<ElementTuple> argIntern = ((NumericMultiset) multiset).internal;
+            this.internal.addAll(argIntern);
+        } else {
+            // this should work fine as long as the multiset argument
+            // follows the convention of expanding multiples of an element
+            // in its iterator
+            multiset.forEach(this::append);
+        }
     }
 
     @Override
@@ -152,7 +158,7 @@ public class NumericMultiset implements Multiset<Numeric> {
 
     @Override
     public boolean contains(Numeric element) {
-        return internal.parallelStream().anyMatch(x -> x.value.equals(element) && x.multiplicity > 0L);
+        return internal.parallelStream().filter(x -> x.multiplicity > 0L).anyMatch(x -> x.value.equals(element));
     }
 
     @Override
@@ -193,10 +199,22 @@ public class NumericMultiset implements Multiset<Numeric> {
 
     @Override
     public Set<Numeric> union(Set<Numeric> other) {
+        if (!other.countable() || other.cardinality() < 0L) {
+            Logger.getLogger(NumericMultiset.class.getName()).log(Level.SEVERE,
+                    "Cannot obtain the union with supplied Set because it is not countable or is infinite.");
+            throw new ArithmeticException("Unable to compute union");
+        }
         NumericMultiset union = new NumericMultiset(this);
         Iterator<Numeric> iter = other.iterator();
         while (iter.hasNext()) {
-            union.append(iter.next());
+            if (other instanceof Multiset) {
+                Multiset<Numeric> that = (Multiset<Numeric>) other;
+                final Numeric value = iter.next();
+                long count = that.multiplicity(value);
+                for (long k = 0L; k < count; k++) union.append(value);
+            } else {
+                union.append(iter.next());
+            }
         }
         return union;
     }
@@ -205,17 +223,16 @@ public class NumericMultiset implements Multiset<Numeric> {
     public Set<Numeric> intersection(Set<Numeric> other) {
         NumericMultiset intersec = new NumericMultiset();
         
-        Iterator<Numeric> iter = internal.stream().map(x -> x.value).iterator();
+        Iterator<Numeric> iter = internal.stream().filter(x -> x.multiplicity > 0L)
+                .map(x -> x.value).filter(other::contains).iterator();
         while (iter.hasNext()) {
-            Numeric element = iter.next();
-            if (other.contains(element)) {
-                if (other instanceof Multiset) {
-                    Multiset<Numeric> that = (Multiset<Numeric>) other;
-                    long count = Math.min(that.multiplicity(element), this.multiplicity(element));
-                    for (long k = 0L; k < count; k++) intersec.append(element);
-                } else {
-                    intersec.append(element);
-                }
+            final Numeric element = iter.next();
+            if (other instanceof Multiset) {
+                Multiset<Numeric> that = (Multiset<Numeric>) other;
+                long count = Math.min(that.multiplicity(element), this.multiplicity(element));
+                for (long k = 0L; k < count; k++) intersec.append(element);
+            } else {
+                intersec.append(element);
             }
         }
         
@@ -228,7 +245,7 @@ public class NumericMultiset implements Multiset<Numeric> {
         
         Iterator<Numeric> iter = this.iterator();
         while (iter.hasNext()) {
-            Numeric element = iter.next();
+            final Numeric element = iter.next();
             if (other.contains(element)) {
                 if (other instanceof Multiset) {
                     Multiset<Numeric> that = (Multiset<Numeric>) other;
@@ -252,7 +269,7 @@ public class NumericMultiset implements Multiset<Numeric> {
             throw new CoercionException("Cannot coerce elements of NumericMultiset to " + clazz.getTypeName(), Numeric.class, clazz);
         }
         
-        return new Multiset<T>() {
+        return new Multiset<>() {
             @Override
             public long multiplicity(T element) {
                 return parent.multiplicity(element);
@@ -333,7 +350,7 @@ public class NumericMultiset implements Multiset<Numeric> {
             public Iterator<T> iterator() {
                 return parent.internal.stream().flatMap(ElementTuple::stream).map(this::mapper).iterator();
             }
-            
+
             private T mapper(Numeric value) {
                 try {
                     return (T) value.coerceTo(clazz);
@@ -349,5 +366,4 @@ public class NumericMultiset implements Multiset<Numeric> {
     public Iterator<Numeric> iterator() {
         return internal.stream().flatMap(ElementTuple::stream).iterator();
     }
-    
 }
