@@ -267,6 +267,38 @@ public class NumericMultiset implements Multiset<Numeric> {
         return diff;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o instanceof Set) {
+            if (o instanceof Multiset) {
+                Multiset<Numeric> multiset = (Multiset<Numeric>) o;
+                if (multiset.cardinality() != this.cardinality()) return false;
+                Iterator<Numeric> iter = internal.stream().filter(x -> x.multiplicity() > 0L)
+                        .map(ElementTuple::getValue).iterator();
+                while (iter.hasNext()) {
+                    Numeric element = iter.next();
+                    if (!multiset.contains(element) || multiset.multiplicity(element) != this.multiplicity(element)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return this.asSet().equals(o);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(internal);
+    }
+
+    @Override
+    public String toString() {
+        return internal.stream().map(ElementTuple::toString).collect(Collectors.joining(",\u2009", "{", "}"));
+    }
+
     /**
      * Generate a {@link Multiset} from this {@code NumericMultiset} with all
      * elements coerced to the given type. Note that the result is a read-write view
