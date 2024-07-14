@@ -361,6 +361,11 @@ public class NumericMultiset implements Multiset<Numeric> {
             }
 
             @Override
+            public boolean isOfType(Class<?> otherClazz) {
+                return otherClazz.isAssignableFrom(clazz);
+            }
+
+            @Override
             public Set<T> union(Set<T> other) {
                 Set<Numeric> temp = (Set<Numeric>) other;
                 Set<Numeric> intermediate = parent.union(temp);
@@ -409,7 +414,27 @@ public class NumericMultiset implements Multiset<Numeric> {
                     throw new IllegalStateException(ex);
                 }
             }
+
+            @Override
+            public String toString() {
+                return parent.toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(parent.internal, clazz);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return parent.equals(obj);
+            }
         };
+    }
+
+    @Override
+    public boolean isOfType(Class<?> clazz) {
+        return Numeric.class.isAssignableFrom(clazz);
     }
 
     @Override

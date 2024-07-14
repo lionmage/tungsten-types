@@ -48,11 +48,20 @@ import java.util.stream.Stream;
  */
 public class NumericSet implements Set<Numeric> {
     private final java.util.Set<Numeric> internal;
-    
+
+    /**
+     * A standard no-args constructor.
+     * The resulting {@code NumericSet} is empty but appendable.
+     */
     public NumericSet() {
         internal = new LinkedHashSet<>();
     }
-    
+
+    /**
+     * A constructor which takes any collection of {@code Numeric}
+     * objects.
+     * @param c the collection to ingest
+     */
     public NumericSet(Collection<? extends Numeric> c) {
         if (c instanceof java.util.Set) {
             // no need for extra object copying in this case
@@ -200,7 +209,7 @@ public class NumericSet implements Set<Numeric> {
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         Logger.getLogger(NumericSet.class.getName()).log(Level.SEVERE,
                                 "While dynamically instantiating UnionSet", e);
-                        throw new RuntimeException(e);
+                        throw new IllegalStateException("Fatal failure (should not have gotten here)", e);
                     } catch (InstantiationException e) {
                         throw new IllegalStateException("Unable to dynamically instantiate UnionSet", e);
                     }
@@ -211,14 +220,22 @@ public class NumericSet implements Set<Numeric> {
             @Override
             public Set<T> intersection(Set<T> other) {
                 java.util.Set<T> temp = elements.stream().filter(other::contains).collect(Collectors.toSet());
-                return (Set<T>) new NumericSet(temp);
+                try {
+                    return new NumericSet(temp).coerceTo(clazz);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While computing intersection", e);
+                }
             }
 
             @Override
             public Set<T> difference(Set<T> other) {
                 LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
                 temp.removeIf(other::contains);
-                return (Set<T>) new NumericSet(temp);
+                try {
+                    return new NumericSet(temp).coerceTo(clazz);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While computing difference", e);
+                }
             }
 
             @Override
@@ -233,7 +250,7 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public boolean isOfType(Class<?> test) {
-                return clazz.isAssignableFrom(test);
+                return test.isAssignableFrom(clazz);
             }
 
             @Override
