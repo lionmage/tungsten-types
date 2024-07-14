@@ -107,7 +107,14 @@ public class NumericMultiset implements Multiset<Numeric> {
     }
 
     private final HashSet<ElementTuple> internal = new HashSet<>();
-    
+
+    /**
+     * Construct a {@code NumericMultiset} using any {@link Collection}
+     * as a source of elements.  Note that collections with duplicate
+     * entries are expressly permitted, since the {@link Multiset} contract
+     * accommodates elements of varying multiplicities.
+     * @param source any {@code Collection<Numeric>}, can be empty
+     */
     public NumericMultiset(Collection<Numeric> source) {
         source.forEach(this::append);
     }
@@ -259,7 +266,18 @@ public class NumericMultiset implements Multiset<Numeric> {
         
         return diff;
     }
-    
+
+    /**
+     * Generate a {@link Multiset} from this {@code NumericMultiset} with all
+     * elements coerced to the given type. Note that the result is a read-write view
+     * where updates write through to the underlying {@code NumericMultiset}.
+     * This behavior may change in the future.
+     * @param clazz the {@code Class} representing the {@code Numeric} subtype of the returned {@code Multiset}
+     * @return a {@code Multiset<T>} containing all the elements of this {@code NumericMultiset}
+     *   coerced to the type represented by {@code clazz}
+     * @param <T> the {@link Numeric} subtype of the elements of the result
+     * @throws CoercionException if any elements of this {@code NumericMultiset} cannot be coerced to {@code T}
+     */
     public <T extends Numeric> Multiset<T> coerceTo(Class<T> clazz) throws CoercionException {
         final NumericMultiset parent = this;
         // first, check to see that all the elements of this multiset can be
