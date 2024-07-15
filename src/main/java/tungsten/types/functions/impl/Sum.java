@@ -27,12 +27,14 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
@@ -55,8 +57,7 @@ import java.util.stream.Stream;
  *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
-    private final Class<R> resultClass = (Class<R>) ((Class) ((ParameterizedType) this.getClass()
-                    .getGenericSuperclass()).getActualTypeArguments()[1]);
+    private final Class<R> resultClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     private final List<UnaryFunction<T, R>> terms = new ArrayList<>();
 
     public Sum(String argName) {

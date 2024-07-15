@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.IntegerType;
@@ -35,6 +36,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
@@ -54,8 +56,7 @@ import java.util.stream.Stream;
  * @param <R> the output parameter type
  */
 public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
-    private final Class<R> resultClass = (Class<R>) ((Class) ((ParameterizedType) this.getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1]);
+    private final Class<R> resultClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     private final List<UnaryFunction<T, R>> terms = new ArrayList<>();
 
 
@@ -182,7 +183,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             R value = safeCoerce(cval.orElseThrow());
             if (Zero.isZero(value)) return Const.getInstance(value);
             List<UnaryFunction<T, R>> cleaned = terms.stream().filter(f -> !Const.isConstEquivalent(f)).collect(Collectors.toList());
-            if (cleaned.size() == 0) return Const.getInstance(value);
+            if (cleaned.isEmpty()) return Const.getInstance(value);
             Product<T, R> p = new Product<>(getArgumentName());
             p.terms.addAll(cleaned);
             if (!One.isUnity(value)) {
