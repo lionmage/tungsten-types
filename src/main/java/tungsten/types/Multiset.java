@@ -37,11 +37,11 @@ public interface Multiset<T> extends Set<T> {
      * @param element the element to search for
      * @return a non-negative long integer value
      */
-    public long multiplicity(T element);
+    long multiplicity(T element);
     /**
      * Return a representation of this multiset as a {@link Set}.  The
      * resulting set has no duplicates.
      * @return the set equivalent to this multiset
      */
-    public Set<T> asSet();
+    Set<T> asSet();
 }
