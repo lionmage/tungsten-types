@@ -30,7 +30,7 @@ public class Reflexive<T extends Numeric> extends UnaryFunction<T, T> {
 
     @Override
     public T apply(ArgVector<T> arguments) {
-        T arg = arguments.elementAt(0L);
+        T arg = arguments.hasVariableName(getArgumentName()) ? arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         if (RealType.class.isAssignableFrom(clazz) && !inputRange(getArgumentName()).contains((RealType) arg)) {
             throw new IllegalArgumentException("Value " + arg + " is out of input range " + inputRange(getArgumentName()));
         }
