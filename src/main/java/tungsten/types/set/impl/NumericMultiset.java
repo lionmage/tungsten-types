@@ -362,7 +362,7 @@ public class NumericMultiset implements Multiset<Numeric> {
 
             @Override
             public boolean isOfType(Class<?> otherClazz) {
-                return otherClazz.isAssignableFrom(clazz);
+                return clazz.isAssignableFrom(otherClazz);
             }
 
             @Override
@@ -427,7 +427,11 @@ public class NumericMultiset implements Multiset<Numeric> {
 
             @Override
             public boolean equals(Object obj) {
-                return parent.equals(obj);
+                if (obj instanceof Set) {
+                    if (!((Set<?>) obj).isOfType(clazz)) return false;
+                    return parent.equals(obj);
+                }
+                return false;
             }
         };
     }

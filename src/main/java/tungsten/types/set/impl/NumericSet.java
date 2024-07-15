@@ -250,7 +250,7 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public boolean isOfType(Class<?> test) {
-                return test.isAssignableFrom(clazz);
+                return clazz.isAssignableFrom(test);
             }
 
             @Override
