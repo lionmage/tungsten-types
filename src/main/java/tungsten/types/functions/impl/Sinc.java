@@ -57,19 +57,27 @@ public class Sinc extends UnaryFunction<RealType, RealType> {
     /**
      * Obtain an instance of the normalized sinc function,
      * &fnof;(x) = sin(&pi;x)/&pi;x
+     *
      * @return the normalized sinc function
      */
     public UnaryFunction<RealType, RealType> obtainNormalized() {
         UnaryFunction<RealType, RealType> scaleByPi =
-                new Product<>(Const.getInstance(Pi.getInstance(mctx)),
+                new Product<>(getArgumentName(),
+                        Const.getInstance(Pi.getInstance(mctx)),
                         new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, RealType.class));
+        // I really don't like this cast, but the alternative is to declare that this
+        // method returns a UnaryFunction<? super RealType, RealType>, which implies that any
+        // Numeric could satisfy the conditions of the input. Anything that isn't a RealType
+        // would be a problem, so tell the world that our normalized function only takes a real.
+        // It's also worth noting that the non-normalized sinc function expects a real argument,
+        // so this is consistent.
         return (UnaryFunction<RealType, RealType>) this.composeWith(scaleByPi);
     }
 
     @Differentiable
     public UnaryFunction<RealType, RealType> diff() {
         return new Quotient<>(Sinc.this.getArgumentName(),
-                new Sum<>(new Cos(Sinc.this.getArgumentName(), mctx),
+                Sum.of(new Cos(Sinc.this.getArgumentName(), mctx),
                         new Sinc(Sinc.this.getArgumentName(), mctx).andThen(Negate.getInstance(RealType.class))),
                 new Reflexive<>(Sinc.this.getArgumentName(), RangeUtils.ALL_REALS, RealType.class)) {
             @Override
