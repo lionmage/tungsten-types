@@ -43,16 +43,12 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     final LinkedHashMap<String, T> args = new LinkedHashMap<>();
 
     public ArgVector(String[] argLabels, ArgMap<T> source) {
-        if (source.arity() < argLabels.length) throw new IllegalArgumentException("Mismatched arity.");
-        Arrays.stream(argLabels).forEachOrdered(label -> {
-            append(label, source.get(label));
-        });
+        if (source.arity() < argLabels.length) throw new IllegalArgumentException("Mismatched arity");
+        Arrays.stream(argLabels).forEachOrdered(label -> append(label, source.get(label)));
     }
 
     public ArgVector(String[] argLabels, ArgMap<T> source, T defaultValue) {
-        Arrays.stream(argLabels).forEachOrdered(label -> {
-            append(label, source.getOrDefault(label, defaultValue));
-        });
+        Arrays.stream(argLabels).forEachOrdered(label -> append(label, source.getOrDefault(label, defaultValue)));
     }
 
     public void append(String label, T value) {
@@ -109,13 +105,14 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         final String varLabel = labelForIndex(position);
         T oldval = args.replace(varLabel, element);
         if (oldval == null) {
-            Logger.getLogger(ArgVector.class.getName())
-                    .warning("Either there was no value set at index " + position +
-                            ", or else '" + varLabel + "' was never associated with any index.");
+            Logger.getLogger(ArgVector.class.getName()).log(Level.WARNING,
+                    "Either there was no value set at index {0}" +
+                            ", or else '{1}' was never associated with any index.",
+                    new Object[] {position, varLabel});
         } else {
-            Logger.getLogger(ArgVector.class.getName())
-                    .info("Successfully updated " + varLabel + " from " +
-                            oldval + " to " + element);
+            Logger.getLogger(ArgVector.class.getName()).log(Level.INFO,
+                    "Successfully updated {0} from {1} to {2}",
+                    new Object[] {varLabel, oldval, element});
         }
     }
 
@@ -244,7 +241,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public MathContext getMathContext() {
-        if (args.size() == 0) {
+        if (args.isEmpty()) {
             return MathContext.UNLIMITED;
         }
         return MathUtils.inferMathContext(args.values());
@@ -253,6 +250,6 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     @Override
     public String toString() {
         return args.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
-                .collect(Collectors.joining(", ", "<", ">"));
+                .collect(Collectors.joining(",\u2009", "\u27E8", "\u27E9"));
     }
 }
