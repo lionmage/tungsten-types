@@ -168,13 +168,13 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(rtnClazz) * 31;
+        return Objects.hashCode(rtnClazz) * 31 + Objects.hashCode(getArgumentName());
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Negate) {
-            Negate that = (Negate) obj;
+            Negate<?, ?> that = (Negate<?, ?>) obj;
             return this.rtnClazz.isAssignableFrom(that.rtnClazz);
         }
         return false;

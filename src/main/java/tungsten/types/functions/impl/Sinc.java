@@ -38,6 +38,7 @@ import tungsten.types.util.RangeUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Objects;
 
 /**
  * The sinc function, &fnof;(x) = sin(x)/x<br>
@@ -102,5 +103,24 @@ public class Sinc extends UnaryFunction<RealType, RealType> {
     public Range<RealType> inputRange(String argName) {
         if (getArgumentName().equals(argName)) return RangeUtils.ALL_REALS;
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Sinc sinc = (Sinc) o;
+        return Objects.equals(mctx, sinc.mctx) && Objects.equals(getArgumentName(), sinc.getArgumentName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mctx, getArgumentName());
+    }
+
+    @Override
+    public String toString() {
+        String arg = this.getComposedFunction().isPresent() ? getComposedFunction().get().toString() : getArgumentName();
+        return "sinc(" + arg + ")";
     }
 }

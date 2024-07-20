@@ -81,7 +81,7 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
     }
 
     public static Const<? super RealType, RealType> getConstEquivalent(UnaryFunction<?, ?> fn) {
-        if (!isConstEquivalent(fn)) throw new IllegalArgumentException("Argument is not constant-equivalent.");
+        if (!isConstEquivalent(fn)) throw new IllegalArgumentException("Argument is not constant-equivalent");
         try {
             if (fn instanceof Const) {
                 RealType realVal = (RealType) ((Const<?, ?>) fn).inspect().coerceTo(RealType.class);
@@ -131,7 +131,7 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
             try {
                 return new Const<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(resultClass));
             } catch (CoercionException e) {
-                throw new IllegalStateException("Unable to coerce zero to result type.", e);
+                throw new IllegalStateException("Unable to coerce zero to result type", e);
             }
         }
     }

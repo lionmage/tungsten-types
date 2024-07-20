@@ -65,4 +65,9 @@ public class Reflexive<T extends Numeric> extends UnaryFunction<T, T> {
         if (range == null) return RangeUtils.ALL_REALS;
         return range;
     }
+
+    @Override
+    public String toString() {
+        return getArgumentName();
+    }
 }

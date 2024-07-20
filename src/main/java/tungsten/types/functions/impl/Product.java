@@ -40,7 +40,6 @@ import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -161,10 +160,9 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     @Override
     public R apply(ArgVector<T> arguments) {
         try {
-            R result = (R) terms.parallelStream().map(f -> f.apply(arguments))
+            return (R) terms.parallelStream().map(f -> f.apply(arguments))
                     .map(Numeric.class::cast)
                     .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(resultClass);
-            return result;
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to coerce result to " + resultClass.getTypeName(), e);
         }
@@ -244,7 +242,22 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     @Override
     public String toString() {
-        return "\u220F\u2009\u0192\u2099(" + getArgumentName() + "), N = " + termCount();
+        final long termCount = termCount();
+        if (termCount == 2L) {
+            StringBuilder buf = new StringBuilder();
+            buf.append(terms.get(0));
+            if (terms.get(0) instanceof  Const && (terms.get(1) instanceof Pow || terms.get(1) instanceof Reflexive)) {
+                buf.append('\u2062'); // invisible times
+            } else {
+                char whitespace = '\u205F';  // U+205F medium mathematical space
+                if (terms.get(0) instanceof Const || terms.get(1) instanceof Const) whitespace = '\u2009';  // thin space
+                // U+22C5 dot operator
+                buf.append(whitespace).append('\u22C5').append(whitespace);
+            }
+            buf.append(terms.get(1));
+            return buf.toString();
+        }
+        return "\u220F\u2009\u0192\u2099(" + getArgumentName() + "), N = " + termCount;
     }
 
     @Override

@@ -38,7 +38,6 @@ import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.MathContext;
 import java.util.*;
 import java.util.logging.Level;
@@ -235,7 +234,12 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public String toString() {
-        return "\u2211\u2009\u0192\u2099(" + getArgumentName() + "), N = " + termCount();
+        final long termCount = termCount();
+        if (termCount == 2L) {
+            // U+205F = medium mathematical space
+            return terms.get(0) + "\u205F+\u205F" + terms.get(1);
+        }
+        return "\u2211\u2009\u0192\u2099(" + getArgumentName() + "), N = " + termCount;
     }
 
     @Override
