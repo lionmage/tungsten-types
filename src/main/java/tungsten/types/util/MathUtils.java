@@ -1252,7 +1252,7 @@ public class MathUtils {
     }
 
     private static RealType lnNewton(RealType x, MathContext mctx) {
-        Euler e = Euler.getInstance(mctx);
+        final Euler e = Euler.getInstance(mctx);
         BigDecimal xval = x.asBigDecimal();
         BigDecimal y0 = BigDecimal.ONE;
         BigDecimal y1;
@@ -1266,9 +1266,8 @@ public class MathUtils {
 
             y0 = y1;
         }
-        final RealImpl result = new RealImpl(y0, false);
+        final RealImpl result = new RealImpl(y0, mctx, false);
         result.setIrrational(true);
-        result.setMathContext(mctx);
         return result;
     }
 
@@ -1279,9 +1278,8 @@ public class MathUtils {
         for (int n = 1; n < mctx.getPrecision() * 17; n++) {
             sum = sum.add(computeNthTerm_ln(xfrac, n, compctx), compctx);
         }
-        final RealImpl result = new RealImpl(sum.round(mctx), false);
+        final RealImpl result = new RealImpl(sum.round(mctx), mctx, false);
         result.setIrrational(true);
-        result.setMathContext(mctx);
         return result;
     }
 
