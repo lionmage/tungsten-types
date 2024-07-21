@@ -1735,9 +1735,11 @@ public class MathUtils {
      * @return a {@link MathContext} constructed from the given arguments, or {@link MathContext#UNLIMITED} if none can be inferred from arguments
      */
     public static MathContext inferMathContext(Collection<? extends Numeric> args) {
-        int precision = args.stream().mapToInt(x -> x.getMathContext().getPrecision()).filter(x -> x > 0).min().orElse(-1);
+        int precision = args.stream().map(Numeric::getMathContext).mapToInt(MathContext::getPrecision)
+                .filter(x -> x > 0).min().orElse(-1);
         if (precision > 0) {
-            return new MathContext(precision, findMostCommonRoundingMode(args.stream().map(Numeric::getMathContext).collect(Collectors.toSet())));
+            RoundingMode mode = findMostCommonRoundingMode(args.stream().map(Numeric::getMathContext).collect(Collectors.toSet()));
+            return new MathContext(precision, mode);
         }
         return MathContext.UNLIMITED;
     }
