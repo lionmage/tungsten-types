@@ -1745,7 +1745,7 @@ public class MathUtils {
     }
 
     private static RoundingMode findMostCommonRoundingMode(Collection<MathContext> mathContexts) {
-        final Map<RoundingMode, Integer> counts = new HashMap<>();
+        final Map<RoundingMode, Integer> counts = new EnumMap<>(RoundingMode.class);
         mathContexts.forEach(ctx -> counts.put(ctx.getRoundingMode(), counts.getOrDefault(ctx.getRoundingMode(), 0) + 1));
         return counts.entrySet().stream().sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).map(Map.Entry::getKey)
                 .findFirst().orElse(RoundingMode.HALF_UP);
