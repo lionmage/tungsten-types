@@ -500,16 +500,13 @@ public class MathUtils {
      * @return the n<sup>th</sup> term of the final sum in our Stirling approximation
      */
     private static Numeric lnGamma_term(Numeric z, long n, BernoulliNumbers B, MathContext ctx) {
-        final RealType twoN = new RealImpl(BigDecimal.valueOf(n << 1L), ctx);
-        final IntegerType twoNminus1 = new IntegerImpl(BigInteger.valueOf(2L * n - 1L)) {
-            @Override
-            public MathContext getMathContext() {
-                return ctx;
-            }
-        };
+        final long twoN = n << 1L;
+        final RealType coeff = new RealImpl(BigDecimal.valueOf(twoN * (twoN - 1L)), ctx);
 
-        Numeric zToPower = z instanceof ComplexType ? computeIntegerExponent((ComplexType) z, twoNminus1) : computeIntegerExponent(z, twoNminus1);
-        return B.getB(n << 1L).divide(zToPower.multiply(twoN).multiply(twoNminus1)); // zToPower first so MathContext is preserved
+        Numeric zToPower = z instanceof ComplexType ?
+                computeIntegerExponent((ComplexType) z, twoN - 1L, ctx) :
+                computeIntegerExponent(Re(z), twoN - 1L, ctx);
+        return B.getB(twoN).divide(zToPower.multiply(coeff));
     }
 
     /**
