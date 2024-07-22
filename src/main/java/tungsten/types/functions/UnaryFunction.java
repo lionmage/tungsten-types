@@ -27,9 +27,9 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -94,7 +94,8 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
             @Override
             public R apply(ArgVector<T> arguments) {
-                T arg = arguments.elementAt(0L);
+                T arg = arguments.hasVariableName(getArgumentName()) ?
+                        arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
                 return originalFunction.apply(before.apply(arg));
             }
 
@@ -108,7 +109,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
             @Override
             public Range<RealType> inputRange(String argName) {
-                return before.inputRange(before.argumentName);
+                return before.inputRange(argName);
             }
         };
     }
@@ -127,9 +128,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     }
 
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
-        final Class<R2> rtnClass = (Class<R2>)
-                ((Class) ((ParameterizedType) after.getClass()
-                        .getGenericSuperclass()).getActualTypeArguments()[1]);
+        final Class<R2> rtnClass = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
 
         return new UnaryFunction<>(UnaryFunction.this.argumentName) {
             {
@@ -145,9 +144,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
             @Override
             public <R3 extends R2> UnaryFunction<T, R3> andThen(UnaryFunction<R2, R3> after) {
-                final Class<R3> r3Class = (Class<R3>)
-                        ((Class) ((ParameterizedType) after.getClass()
-                                .getGenericSuperclass()).getActualTypeArguments()[1]);
+                final Class<R3> r3Class = (Class<R3>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
                 if (MathUtils.inverseFunctionFor(composingFunction.getClass()) == after.getClass()) {
                     return originalFunction.forReturnType(r3Class);
                 }
@@ -170,7 +167,9 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
     @Override
     protected boolean checkArguments(ArgVector<T> arguments) {
-        return arguments.arity() == 1L && arguments.hasVariableName(argumentName);
+        // if the input vector doesn't have our expected argument by name,
+        // then at least ensure it has exactly 1 unambiguous value in it
+        return arguments.arity() == 1L || arguments.hasVariableName(argumentName);
     }
 
     @Override
@@ -180,10 +179,8 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
     @Override
     public <R2 extends Numeric> UnaryFunction<T, R2> forReturnType(Class<R2> clazz) {
-        final Class<R> rtnClass = (Class<R>)
-                ((Class) ((ParameterizedType) this.getClass()
-                        .getGenericSuperclass()).getActualTypeArguments()[1]);
-        if (clazz == rtnClass || clazz.isAssignableFrom(rtnClass)) {
+        final Class<R> rtnClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
+        if (rtnClass != null && (clazz == rtnClass || clazz.isAssignableFrom(rtnClass))) {
             // R and R2 are the same, or R2 is a supertype of R
             return (UnaryFunction<T, R2>) this;
         }
