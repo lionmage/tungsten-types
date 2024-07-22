@@ -26,12 +26,14 @@ package tungsten.types.functions.impl;
 import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.RangeUtils;
 
-import java.lang.reflect.ParameterizedType;
+import java.util.Objects;
 
 /**
  * A basic implementation of the exponential function &#x212F;<sup>x</sup> for
@@ -82,8 +84,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     @Override
     public <R2 extends RealType> UnaryFunction<RealType, R2> andThen(UnaryFunction<RealType, R2> after) {
         if (after instanceof NaturalLog) {
-            Class<R2> rtnClass = (Class<R2>) ((Class) ((ParameterizedType) after.getClass()
-                    .getGenericSuperclass()).getActualTypeArguments()[1]);
+            Class<R2> rtnClass = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
             if (rtnClass == null) rtnClass = (Class<R2>) RealType.class;
             return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, RealType.class).forReturnType(rtnClass);
         }
@@ -106,6 +107,19 @@ public class Exp extends UnaryFunction<RealType, RealType> {
         final UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
         // Note that if we got here, "this" refers to a composed function of Exp and inner, exactly what we want.
         return new Product<>(diffEngine.apply(inner), this);
+    }
+
+    @Override
+    public int hashCode() {
+        return 47 + Objects.hashCode(getArgumentName());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Exp) {
+            return Objects.equals(((Exp) obj).getArgumentName(), this.getArgumentName());
+        }
+        return false;
     }
 
     @Override

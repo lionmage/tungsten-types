@@ -66,7 +66,8 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
 
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
-        RealType arg = arguments.elementAt(0L);
+        RealType arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         final MathContext ctx = arguments.getMathContext() != null ? arguments.getMathContext() : arg.getMathContext();
         final Euler e = Euler.getInstance(ctx);
         RealType exponent = (RealType) arg.subtract(x0).divide(alpha).negate();

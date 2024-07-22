@@ -56,12 +56,19 @@ import java.util.Objects;
  */
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
-    private final Class<R> outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
+    private final Class<R> outputClazz;
     private final Numeric exponent;
 
     public Pow(long n) {
         super("x");
         exponent = new IntegerImpl(BigInteger.valueOf(n));
+        outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
+    }
+
+    public Pow(long n, Class<R> rtnType) {
+        super("x");
+        exponent = new IntegerImpl(BigInteger.valueOf(n));
+        outputClazz = rtnType;
     }
 
     public Pow(RationalType rationalExponent) {
@@ -71,10 +78,26 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         } else {
             exponent = rationalExponent;
         }
+        outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
+    }
+
+    public Pow(RationalType rationalExponent, Class<R> rtnType) {
+        super("x");
+        if (rationalExponent.isCoercibleTo(IntegerType.class)) {
+            exponent = rationalExponent.reduce().numerator();
+        } else {
+            exponent = rationalExponent;
+        }
+        outputClazz = rtnType;
     }
 
     public Pow(UnaryFunction<? super T, T> inner, Numeric exponent) {
         this(inner.expectedArguments()[0], exponent);
+        composedFunction = inner;
+    }
+
+    public Pow(UnaryFunction<? super T, T> inner, Numeric exponent, Class<R> rtnType) {
+        this(inner.expectedArguments()[0], exponent, rtnType);
         composedFunction = inner;
     }
 
@@ -87,11 +110,22 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             throw new IllegalArgumentException("Unsupported exponent type: " + exponent.getClass().getTypeName());
         }
         this.exponent = exponent;
+        this.outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
+    }
+
+    protected Pow(String argName, Numeric exponent, Class<R> rtnType) {
+        super(argName);
+        if (supportedExponentTypes.stream().noneMatch(t -> t.isAssignableFrom(exponent.getClass()))) {
+            throw new IllegalArgumentException("Unsupported exponent type: " + exponent.getClass().getTypeName());
+        }
+        this.exponent = exponent;
+        this.outputClazz = rtnType;
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
-        final T arg = arguments.elementAt(0L);
+        final T arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         MathContext ctx = arguments.getMathContext() != null ? arguments.getMathContext() : arg.getMathContext();
         NumericHierarchy h = NumericHierarchy.forNumericType(arg.getClass());
         if (h == null) throw new ArithmeticException("Unable to compute exponent of " + arg);
