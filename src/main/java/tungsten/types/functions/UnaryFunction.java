@@ -83,7 +83,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
      * is fed into the input of this function.
      *
      * @param before the function to compose with this one
-     * @return a new function that is the composition with this and {@code before}
+     * @return a new function that is the composition of {@code this} with {@code before}
      */
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
         return new UnaryFunction<>(before.argumentName) {
@@ -154,7 +154,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             @Override
             public Range<RealType> inputRange(String argName) {
                 if (!originalFunction.argumentName.equals(argName)) {
-                    throw new IllegalArgumentException("Argument " + argName + " does not exist for this function.");
+                    throw new IllegalArgumentException("Argument " + argName + " does not exist for this function");
                 }
                 return originalFunction.inputRange(originalFunction.argumentName);
             }
