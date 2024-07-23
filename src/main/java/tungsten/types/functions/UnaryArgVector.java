@@ -36,7 +36,7 @@ public class UnaryArgVector<T extends Numeric> extends ArgVector<T> {
 
     public UnaryArgVector(String argName, T value) {
         super(new String[] {argName}, new ArgMap<>(Collections.singletonMap(argName, value)));
-        if (argName == null || argName.length() == 0) {
+        if (argName == null || argName.isEmpty()) {
             throw new IllegalArgumentException("Argument name must not be empty");
         }
         this.argname = argName;  // unfortunately, this can't be set before super()
@@ -48,7 +48,7 @@ public class UnaryArgVector<T extends Numeric> extends ArgVector<T> {
 
     @Override
     public void append(String label, T value) {
-        if ((argname != null && !argname.equals(label)) || this.length() > 0L) {
+        if ((argname != null && !argname.equals(label)) || super.length() > 0L) {
             throw new UnsupportedOperationException("This vector cannot have more than 1 element, and it must be named " + argname);
         }
         super.append(label, value);
@@ -66,6 +66,16 @@ public class UnaryArgVector<T extends Numeric> extends ArgVector<T> {
                     "Failure during vector normalization", e);
             throw new ArithmeticException("Failed to normalize");
         }
+    }
+
+    @Override
+    public long length() {
+        return 1L;
+    }
+
+    @Override
+    public long arity() {
+        return 1L;
     }
 
     @Override
