@@ -24,9 +24,9 @@ package tungsten.types.functions;
  */
 
 import tungsten.types.Numeric;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,8 +53,7 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
      */
     public ArgMap(String init) {
         super();
-        final Class<T> clazz = (Class<T>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        final Class<T> clazz = (Class<T>) ClassTools.getTypeArguments(HashMap.class, getClass()).get(0);
         String stripped = init.strip();
         if (stripped.startsWith("[") && stripped.endsWith("]")) {
             stripped = stripped.substring(1, stripped.length() - 1);

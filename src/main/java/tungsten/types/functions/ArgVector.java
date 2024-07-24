@@ -248,6 +248,32 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (o instanceof ArgVector) {
+            ArgVector<?> other = (ArgVector<?>) o;
+            return Objects.equals(args, other.args);
+        } else if (o instanceof Vector) {
+            // for comparison with regular vectors, we only care about
+            // the actual elements and their ordering
+            Vector<?> other = (Vector<?>) o;
+            if (other.length() != this.length()) return false;
+            for (long k = 0L; k < length(); k++) {
+                if (!Objects.equals(this.elementAt(k), other.elementAt(k))) return false;
+            }
+            return true;
+        }
+        // any other case, return false
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(args, getElementType());
+    }
+
+    @Override
     public String toString() {
         return args.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining(",\u2009", "\u27E8", "\u27E9"));
