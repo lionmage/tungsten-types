@@ -31,6 +31,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ArgMap<T extends Numeric> extends HashMap<String, T> {
+    /**
+     * The regular expression used for splitting apart a string
+     * representation of a list of variable mappings into individual
+     * mappings.
+     */
     private static final String SPLIT_REGEX = "\\s*;\\s*";
 
     public ArgMap() {
@@ -63,6 +68,10 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
         if (stripped.startsWith("[") && stripped.endsWith("]")) {
             stripped = stripped.substring(1, stripped.length() - 1);
         }
+        parseMappings(stripped, clazz);
+    }
+
+    private void parseMappings(String stripped, Class<T> clazz) {
         String[] mappings = stripped.split(SPLIT_REGEX);
         for (String mapping : mappings) {
             int colonPos = mapping.indexOf(':');
@@ -96,14 +105,7 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
         if (stripped.startsWith("[") && stripped.endsWith("]")) {
             stripped = stripped.substring(1, stripped.length() - 1);
         }
-        String[] mappings = stripped.split(SPLIT_REGEX);
-        for (String mapping : mappings) {
-            int colonPos = mapping.indexOf(':');
-            if (colonPos < 1) throw new IllegalArgumentException("Bad mapping format: " + mapping);
-            final String varName = mapping.substring(0, colonPos).strip();
-            String strValue = mapping.substring(colonPos + 1);
-            put(varName, OptionalOperations.dynamicInstantiate(clazz, strValue));
-        }
+        parseMappings(stripped, clazz);
     }
 
     public long arity() {

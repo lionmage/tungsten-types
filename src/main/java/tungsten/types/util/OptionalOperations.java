@@ -96,14 +96,6 @@ public class OptionalOperations {
         }  catch (InstantiationException | IllegalAccessException | InvocationTargetException fatal) {
             throw new IllegalStateException("Fatal error while obtaining or using constructor for a Numeric subclass", fatal);
         } catch (NoSuchMethodException e) {
-            if (clazz.isAnnotationPresent(Constant.class)) {
-                // this is a constant, so throw an exception and inform the user
-                // that instantiateConstant() is what they need
-                Constant constAnnotation = clazz.getAnnotation(Constant.class);
-                throw new UnsupportedOperationException("Class " + clazz.getName() + " represents the constant " +
-                        constAnnotation.name() + " (" + constAnnotation.representation() + ") and should be " +
-                        "instantiated with instantiateConstant() instead");
-            }
             throw new IllegalArgumentException("No String-based constructor for class " + toInstantiate.getTypeName(), e);
         }
     }
