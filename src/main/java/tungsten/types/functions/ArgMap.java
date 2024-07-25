@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ArgMap<T extends Numeric> extends HashMap<String, T> {
+    private static final String SPLIT_REGEX = "\\s*;\\s*";
+
     public ArgMap() {
         super();
     }
@@ -61,7 +63,7 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
         if (stripped.startsWith("[") && stripped.endsWith("]")) {
             stripped = stripped.substring(1, stripped.length() - 1);
         }
-        String[] mappings = stripped.split("\\s*;\\s*");
+        String[] mappings = stripped.split(SPLIT_REGEX);
         for (String mapping : mappings) {
             int colonPos = mapping.indexOf(':');
             if (colonPos < 1) throw new IllegalArgumentException("Bad mapping format: " + mapping);
@@ -94,7 +96,7 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
         if (stripped.startsWith("[") && stripped.endsWith("]")) {
             stripped = stripped.substring(1, stripped.length() - 1);
         }
-        String[] mappings = stripped.split("\\s*;\\s*");
+        String[] mappings = stripped.split(SPLIT_REGEX);
         for (String mapping : mappings) {
             int colonPos = mapping.indexOf(':');
             if (colonPos < 1) throw new IllegalArgumentException("Bad mapping format: " + mapping);
