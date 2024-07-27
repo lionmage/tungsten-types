@@ -77,7 +77,7 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
             int colonPos = mapping.indexOf(':');
             if (colonPos < 1) throw new IllegalArgumentException("Bad mapping format: " + mapping);
             final String varName = mapping.substring(0, colonPos).strip();
-            String strValue = mapping.substring(colonPos + 1);
+            String strValue = mapping.substring(colonPos + 1).strip();
             put(varName, OptionalOperations.dynamicInstantiate(clazz, strValue));
         }
     }
