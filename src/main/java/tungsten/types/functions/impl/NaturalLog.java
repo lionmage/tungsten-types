@@ -28,6 +28,7 @@ import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
@@ -36,9 +37,9 @@ import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.RealInfinity;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -74,7 +75,8 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
             throw new IllegalArgumentException("Expected argument "
                     + getArgumentName() + " is not present in input " + arguments + " or is out of range.");
         }
-        final RealType arg = arguments.elementAt(0L);
+        final RealType arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
         return MathUtils.ln(intermediate);
     }
@@ -100,9 +102,8 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     @Override
     public <R2 extends RealType> UnaryFunction<RealType, R2> andThen(UnaryFunction<RealType, R2> after) {
         if (after instanceof Exp) {
-            Class<R2> rtnClass = (Class<R2>) ((Class) ((ParameterizedType) after.getClass()
-                    .getGenericSuperclass()).getActualTypeArguments()[1]);
-            if (rtnClass == null) rtnClass = (Class<R2>) RealType.class;
+            Class<R2> rtnClass = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
+            if (rtnClass == null) rtnClass = (Class<R2>) RealType.class; // a reasonable default
             return new Reflexive<>(getArgumentName(), lnRange, RealType.class).forReturnType(rtnClass);
         }
         return super.andThen(after);

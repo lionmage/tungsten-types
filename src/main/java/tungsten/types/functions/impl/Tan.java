@@ -31,7 +31,8 @@ public class Tan extends Quotient<RealType, RealType> implements Periodic {
 
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
-        RealType arg = arguments.elementAt(0L);
+        RealType arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
 
         try {
             return MathUtils.tan(arg);
