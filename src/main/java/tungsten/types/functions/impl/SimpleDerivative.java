@@ -63,7 +63,8 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         this.epsilon = (T) epsilon.magnitude();
         if (!epsilonRange.contains(epsilon)) {
             Logger.getLogger(getClass().getName()).log(Level.WARNING,
-                    "Epsilon value {0} is out of recommended range {1}", new Object[] {epsilon, epsilonRange});
+                    "Epsilon value {0} is out of recommended range {1}",
+                    new Object[] {epsilon, epsilonRange});
         }
     }
 
@@ -71,7 +72,9 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         super(argsToCurry);
         this.epsilon = (T) epsilon.magnitude();
         if (!epsilonRange.contains(epsilon)) {
-            Logger.getLogger(getClass().getName()).warning("Epsilon value is out of recommended range: " + epsilon);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                    "Epsilon value {0} is out of recommended range {1}",
+                    new Object[] {epsilon, epsilonRange});
         }
     }
 
@@ -161,23 +164,25 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
     }
 
     protected UnaryFunction<T, T> sumStrategy(Sum<T, T> summation) {
-        Sum<T, T> diffResult = new Sum<>();
+        final String argName = summation.expectedArguments()[0];
+        Sum<T, T> diffResult = new Sum<>(argName);
         summation.stream().map(this::apply).forEach(diffResult::appendTerm);
         return diffResult;
     }
 
     protected UnaryFunction<T, T> quotientStrategy(Quotient<T, T> quotient) {
         // f(x) = g(x)/h(x)
-        // f'(x) = (g'(x)h(x) - g(x)h'(x)) / (h(x) ^ 2)
+        // f'(x) = (g'(x)h(x) - g(x)h'(x)) / h(x)²
         UnaryFunction<T, T> numDiff = this.apply(quotient.getNumerator());
         UnaryFunction<T, T> denomDiff = this.apply(quotient.getDenominator());
         UnaryFunction<T, T> combinedDenom = quotient.getDenominator().andThen(new Pow<>(2L));
         List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, quotient.getClass());
         Class<T> clazz = argClasses.get(1) == null ?  (Class<T>) RealType.class : (Class<T>) argClasses.get(1);
+        final String argName = quotient.expectedArguments()[0];
         UnaryFunction<T, T> combinedNumerator =
-                new Sum<>(new Product<>(numDiff, quotient.getDenominator()),
-                        new Product<>(quotient.getNumerator(), denomDiff).andThen(Negate.getInstance(clazz)));
-        return new Quotient<>(combinedNumerator, combinedDenom).simplify();
+                new Sum<>(new Product<>(argName, numDiff, quotient.getDenominator()),
+                        new Product<>(argName, quotient.getNumerator(), denomDiff).andThen(Negate.getInstance(clazz)));
+        return new Quotient<>(argName, combinedNumerator, combinedDenom).simplify();
     }
 
     protected UnaryFunction<T, T> productStrategy(Product<T, T> product) {

@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.IntegerType;
@@ -34,14 +35,13 @@ import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.logging.Logger;
 
 public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
-    private final Class<R> outputClazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1]);
+    private final Class<R> outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
     private final UnaryFunction<T, R> numerator;
     private final UnaryFunction<T, R> denominator;
 
