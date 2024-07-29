@@ -38,6 +38,7 @@ import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
@@ -110,8 +111,8 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
                 Const<? super RealType, RealType> equiv = Const.getConstEquivalent(denominator);
                 if (One.isUnity(equiv.inspect())) return numerator;
                 if (Zero.isZero(equiv.inspect())) throw new ArithmeticException("Denominator of quotient reduces to zero");
-                R eqInR = (R) equiv.inspect().coerceTo(outputClazz);
-                return new Quotient<>(getArgumentName(), numerator, Const.getInstance(eqInR));
+                R eqInR = (R) equiv.inspect().inverse().coerceTo(outputClazz); // take the inverse so we can generate a product
+                return new Product<>(getArgumentName(), Const.getInstance(eqInR), numerator);
             }
         } catch (CoercionException e) {
             throw new IllegalStateException(e);
@@ -145,5 +146,26 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
             throw new IllegalArgumentException("Argument " + argName + " does not exist for this function");
         }
         return Range.chooseNarrowest(numerator.inputRange(argName), denominator.inputRange(argName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Quotient)) return false;
+        Quotient<?, ?> quotient = (Quotient<?, ?>) o;
+        return Objects.equals(outputClazz, quotient.outputClazz) && Objects.equals(numerator, quotient.numerator) && Objects.equals(denominator, quotient.denominator);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(outputClazz, numerator, denominator);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(numerator).append("\u205F\u2215\u205F"); // U+205F is medium mathematical space
+        sb.append(denominator);
+        return sb.toString();
     }
 }
