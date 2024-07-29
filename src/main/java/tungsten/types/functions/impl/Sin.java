@@ -236,7 +236,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         Optional<UnaryFunction<RealType, ? extends RealType>> encompassing = this.getComposingFunction();
         encompassing.ifPresent(f -> {
             if (f instanceof Pow) {
-                Pow<RealType, RealType> power = (Pow<RealType, RealType>) f;
+                Pow<?, ?> power = (Pow<?, ?>) f;
                 Numeric exponent = power.getExponent();
                 if (exponent instanceof IntegerType) {
                     int n = ((IntegerType) exponent).asBigInteger().intValueExact();
