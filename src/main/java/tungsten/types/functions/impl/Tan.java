@@ -13,6 +13,7 @@ import tungsten.types.util.RangeUtils;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.MathContext;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,5 +79,19 @@ public class Tan extends Quotient<RealType, RealType> implements Periodic {
         buf.append(')');
 
         return buf.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;  // super handles argument name
+        Tan tan = (Tan) o;
+        return Objects.equals(mctx, tan.mctx);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mctx);
     }
 }

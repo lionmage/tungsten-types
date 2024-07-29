@@ -46,6 +46,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -266,5 +267,18 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         final Pi pi = Pi.getInstance(mctx);
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), mctx);
         return (RealType) pi.multiply(two);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Sin sin = (Sin) o;
+        return Objects.equals(mctx, sin.mctx) && Objects.equals(getArgumentName(), sin.getArgumentName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mctx, getArgumentName());
     }
 }

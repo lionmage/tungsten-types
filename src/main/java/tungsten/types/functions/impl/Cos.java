@@ -46,6 +46,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -261,5 +262,18 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         final Pi pi = Pi.getInstance(mctx);
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), mctx);
         return (RealType) pi.multiply(two);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cos cos = (Cos) o;
+        return Objects.equals(mctx, cos.mctx) && Objects.equals(getArgumentName(), cos.getArgumentName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mctx, getArgumentName());
     }
 }

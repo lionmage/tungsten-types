@@ -153,12 +153,15 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
         if (this == o) return true;
         if (!(o instanceof Quotient)) return false;
         Quotient<?, ?> quotient = (Quotient<?, ?>) o;
-        return Objects.equals(outputClazz, quotient.outputClazz) && Objects.equals(numerator, quotient.numerator) && Objects.equals(denominator, quotient.denominator);
+        return Objects.equals(outputClazz, quotient.outputClazz) &&
+                Objects.equals(getArgumentName(), quotient.getArgumentName()) &&
+                Objects.equals(numerator, quotient.numerator) &&
+                Objects.equals(denominator, quotient.denominator);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(outputClazz, numerator, denominator);
+        return Objects.hash(outputClazz, numerator, denominator, getArgumentName());
     }
 
     @Override
