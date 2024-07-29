@@ -6,6 +6,8 @@ import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.MathUtils;
 
+import java.util.Objects;
+
 /**
  * A representation of a cubic spline in 2 dimensions, intended for curve-fitting and
  * other applications where cubic splines may be appropriate.  For now, the input
@@ -44,7 +46,8 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
         if (checkArguments(arguments)) {
-            RealType x = arguments.elementAt(0L);
+            RealType x = arguments.hasVariableName(getArgumentName()) ?
+                    arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
             RealType diff = (RealType) x.subtract(scope.getLowerBound()); // x - x0
             return (RealType) a.add(b.multiply(diff))
                     .add(c.multiply(MathUtils.computeIntegerExponent(diff, 2)))
@@ -58,5 +61,32 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
     public Range<RealType> inputRange(String argName) {
         if (getArgumentName().equals(argName)) return scope;
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CubicSpline2D)) return false;
+        CubicSpline2D that = (CubicSpline2D) o;
+        return Objects.equals(a, that.a) && Objects.equals(b, that.b) &&
+                Objects.equals(c, that.c) && Objects.equals(d, that.d) &&
+                Objects.equals(scope, that.scope);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(a, b, c, d, scope);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CubicSpline2D{");
+        sb.append("a=").append(a);
+        sb.append(", b=").append(b);
+        sb.append(", c=").append(c);
+        sb.append(", d=").append(d);
+        sb.append(" over range ").append(scope);
+        sb.append('}');
+        return sb.toString();
     }
 }
