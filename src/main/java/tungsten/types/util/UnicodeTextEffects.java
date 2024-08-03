@@ -80,7 +80,49 @@ public class UnicodeTextEffects {
         superscriptMap.put('n', "\u207F");
         superscriptMap.put('=', "\u207C");
         superscriptMap.put('\u221E', "\u1AB2"); // infinity superscript is a combining character
-        
+        superscriptMap.put('A', "ᴬ");
+        superscriptMap.put('B', "ᴮ");
+        superscriptMap.put('D', "ᴰ");
+        superscriptMap.put('E', "ᴱ");
+        superscriptMap.put('G', "ᴳ");
+        superscriptMap.put('H', "ᴴ");
+        superscriptMap.put('I', "ᴵ");
+        superscriptMap.put('J', "ᴶ");
+        superscriptMap.put('K', "ᴷ");
+        superscriptMap.put('L', "ᴸ");
+        superscriptMap.put('M', "ᴹ");
+        superscriptMap.put('N', "ᴺ");
+        superscriptMap.put('O', "ᴼ");
+        superscriptMap.put('P', "ᴾ");
+        superscriptMap.put('R', "ᴿ");
+        superscriptMap.put('T', "ᵀ");
+        superscriptMap.put('U', "ᵁ");
+        superscriptMap.put('V', "ⱽ");
+        superscriptMap.put('W', "ᵂ");
+        superscriptMap.put('a', "ᵃ");
+        superscriptMap.put('b', "ᵇ");
+        superscriptMap.put('c', "ᶜ");
+        superscriptMap.put('d', "ᵈ");
+        superscriptMap.put('e', "ᵉ");
+        superscriptMap.put('f', "ᶠ");
+        superscriptMap.put('g', "ᵍ");
+        superscriptMap.put('h', "ʰ");
+        superscriptMap.put('j', "ʲ");
+        superscriptMap.put('k', "ᵏ");
+        superscriptMap.put('l', "ˡ");
+        superscriptMap.put('m', "ᵐ");
+        superscriptMap.put('o', "ᵒ");
+        superscriptMap.put('p', "ᵖ");
+        superscriptMap.put('r', "ʳ");
+        superscriptMap.put('s', "ˢ");
+        superscriptMap.put('t', "ᵗ");
+        superscriptMap.put('u', "ᵘ");
+        superscriptMap.put('v', "ᵛ");
+        superscriptMap.put('w', "ʷ");
+        superscriptMap.put('x', "ˣ");
+        superscriptMap.put('y', "ʸ");
+        superscriptMap.put('z', "ᶻ");
+
         subscriptMap.put('-', "\u208B");
         subscriptMap.put('\u2212', "\u208B");  // Unicode minus
         subscriptMap.put('+', "\u208A");
