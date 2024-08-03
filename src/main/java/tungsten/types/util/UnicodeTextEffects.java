@@ -222,7 +222,7 @@ public class UnicodeTextEffects {
             }
             if (warnOnce && Character.isUpperCase(c)) {
                 Logger.getLogger(UnicodeTextEffects.class.getName()).log(Level.WARNING,
-                        "Input string {0} contains upper-case characters which have no subscript mapping.", source);
+                        "Input string \"{0}\" contains upper-case characters which have no subscript mapping.", source);
                 warnOnce = false;
             }
         }
