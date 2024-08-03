@@ -41,6 +41,8 @@ import java.math.BigInteger;
 import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
 /**
@@ -207,6 +209,7 @@ public class UnicodeTextEffects {
 
     public static String convertToSubscript(String source) {
         StringBuilder buf = new StringBuilder();
+        boolean warnOnce = true;
         
         for (Character c : source.toCharArray()) {
             if (Character.isDigit(c)) {
@@ -216,6 +219,11 @@ public class UnicodeTextEffects {
                 // add thinspace before combining characters
                 if (buf.length() > 0 && mapsToCombiningCharacter(c)) buf.append('\u2009');
                 buf.append(subscriptMap.get(c));
+            }
+            if (warnOnce && Character.isUpperCase(c)) {
+                Logger.getLogger(UnicodeTextEffects.class.getName()).log(Level.WARNING,
+                        "Input string {0} contains upper-case characters which have no subscript mapping.", source);
+                warnOnce = false;
             }
         }
         return buf.toString();
