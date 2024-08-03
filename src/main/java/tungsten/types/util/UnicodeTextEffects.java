@@ -138,6 +138,16 @@ public class UnicodeTextEffects {
         subscriptMap.put('p', "\u209A");
         subscriptMap.put('t', "\u209C");
         subscriptMap.put('\u221E', "\u035A"); // infinity subscript appears to be a combining character
+        subscriptMap.put('h', "ₕ");
+        subscriptMap.put('i', "ᵢ");
+        subscriptMap.put('\u2148', "ᵢ"); // complex i
+        subscriptMap.put('j', "ⱼ");
+        subscriptMap.put('l', "ₗ");
+        subscriptMap.put('m', "ₘ");
+        subscriptMap.put('r', "ᵣ");
+        subscriptMap.put('s', "ₛ");
+        subscriptMap.put('u', "ᵤ");
+        subscriptMap.put('v', "ᵥ");
         
         radicalMap.put(2, "\u221A");
         radicalMap.put(3, "\u221B");
