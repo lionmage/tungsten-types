@@ -38,6 +38,8 @@ import tungsten.types.util.rendering.matrix.cell.CellRenderingStrategy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
 import java.util.*;
@@ -713,7 +715,8 @@ public class UnicodeTextEffects {
         public String nOf(int n) { return String.valueOf(rep).repeat(n); }
 
         public RealType fillPercentage() {
-            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
+            final MathContext ctx = new MathContext(3, RoundingMode.HALF_UP);
+            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L), ctx);
             try {
                 return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
             } catch (CoercionException e) {
@@ -768,7 +771,8 @@ public class UnicodeTextEffects {
         }
 
         public RealType fillPercentage() {
-            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
+            final MathContext ctx = new MathContext(3, RoundingMode.HALF_UP);
+            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L), ctx);
             try {
                 return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
             } catch (CoercionException e) {
@@ -824,7 +828,8 @@ public class UnicodeTextEffects {
         }
 
         public RealType fillPercentage() {
-            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L));
+            final MathContext ctx = new MathContext(3, RoundingMode.HALF_UP);
+            final RealType oneHundred = new RealImpl(BigDecimal.valueOf(100L), ctx);
             try {
                 return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
             } catch (CoercionException e) {
