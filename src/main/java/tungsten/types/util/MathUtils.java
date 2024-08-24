@@ -4216,7 +4216,7 @@ public class MathUtils {
      */
     @Experimental
     public static Matrix<ComplexType> cos(Matrix<ComplexType> X) {
-        if (X.rows() != X.columns()) throw new IllegalArgumentException("cos() only valid for square matrices");
+        if (X.rows() != X.columns()) throw new IllegalArgumentException("cos() is only valid for square matrices");
         if (X instanceof DiagonalMatrix) {
             ComplexType[] elements = new ComplexType[(int) X.rows()];
             for (int i = 0; i < elements.length; i++) {
@@ -4244,7 +4244,7 @@ public class MathUtils {
      */
     @Experimental
     public static Matrix<ComplexType> sin(Matrix<ComplexType> X) {
-        if (X.rows() != X.columns()) throw new IllegalArgumentException("sin() only valid for square matrices");
+        if (X.rows() != X.columns()) throw new IllegalArgumentException("sin() is only valid for square matrices");
         if (X instanceof DiagonalMatrix) {
             ComplexType[] elements = new ComplexType[(int) X.rows()];
             for (int i = 0; i < elements.length; i++) {
@@ -4262,6 +4262,44 @@ public class MathUtils {
         Matrix<Numeric> lhs = (Matrix<Numeric>) exp(X.scale(i));
         Matrix<Numeric> rhs = (Matrix<Numeric>) exp(X.scale(negi));
         return new ComplexMatrixAdapter(lhs.subtract(rhs)).scale(denom);
+    }
+
+    /**
+     * Compute the arcsine of a matrix <strong>X</strong>.
+     * @param X a matrix with complex valued elements
+     * @return the result of computing arcsin(<strong>X</strong>)
+     * @since 0.4
+     */
+    @Experimental
+    public static Matrix<ComplexType> arcsin(Matrix<ComplexType> X) {
+        if (X.rows() != X.columns()) throw new IllegalArgumentException("arcsin() is only valid for square matrices");
+        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+                X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
+        final ComplexType i = ImaginaryUnit.getInstance(ctx);
+        final ComplexType negi = i.negate();
+        final IntegerType two = new IntegerImpl(BigInteger.TWO);
+        final Matrix<Numeric> innerTerm = new IdentityMatrix(X.rows(), ctx).subtract((Matrix<Numeric>) X.pow(two));
+        Matrix<ComplexType> intermediate = X.scale(i).add(new ComplexMatrixAdapter(sqrt(innerTerm)));
+        return new ComplexMatrixAdapter(ln(intermediate)).scale(negi);
+    }
+
+    /**
+     * Compute the arccosine of a matrix <strong>X</strong>.
+     * @param X a matrix with complex valued elements
+     * @return the result of computing arccos(<strong>X</strong>)
+     * @since 0.4
+     */
+    @Experimental
+    public static Matrix<ComplexType> arccos(Matrix<ComplexType> X) {
+        if (X.rows() != X.columns()) throw new IllegalArgumentException("arccos() is only valid for square matrices");
+        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+                X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
+        final ComplexType i = ImaginaryUnit.getInstance(ctx);
+        final ComplexType negi = i.negate();
+        final IntegerType two = new IntegerImpl(BigInteger.TWO);
+        final Matrix<Numeric> innerTerm = new IdentityMatrix(X.rows(), ctx).subtract((Matrix<Numeric>) X.pow(two));
+        Matrix<ComplexType> intermediate = X.add(new ComplexMatrixAdapter(sqrt(innerTerm)).scale(i));
+        return new ComplexMatrixAdapter(ln(intermediate)).scale(negi);
     }
 
     /**
