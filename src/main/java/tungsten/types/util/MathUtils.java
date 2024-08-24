@@ -4224,7 +4224,7 @@ public class MathUtils {
             return (ComplexType) exp.subtract(one).divide(exp.add(one));
         } catch (CoercionException ex) {
             // this should never happen, but if it does, throw a meaningful exception
-            throw new ArithmeticException("While computing tanh(" + z + "): " + ex.getMessage());
+            throw new IllegalStateException("While computing tanh(" + z + ")", ex);
         }
     }
 
