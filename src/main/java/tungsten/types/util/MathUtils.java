@@ -4087,7 +4087,8 @@ public class MathUtils {
     private static int calculateOptimumNumTerms(MathContext ctx, Function<Long, IntegerType> idxMapper) {
         final TrigTermCountKey key = new TrigTermCountKey(ctx, idxMapper);
         if (optimumTermCounts.containsKey(key)) return optimumTermCounts.get(key);
-        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO, "Cache miss for MathContext {0}; calculating optimum number of power series terms.", ctx);
+        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+                "Cache miss for MathContext {0}; calculating optimum number of power series terms.", ctx);
         final MathContext calcContext = new MathContext(ctx.getPrecision() * 2, ctx.getRoundingMode());
         final RealType realTwo = new RealImpl(decTWO, calcContext);
         final RealType maxError = (RealType) computeIntegerExponent(TEN, 1 - ctx.getPrecision(), calcContext).divide(realTwo);
@@ -4216,10 +4217,15 @@ public class MathUtils {
     public static ComplexType tanh(ComplexType z) {
         final RealType one = new RealImpl(BigDecimal.ONE, z.getMathContext());
         final RealType two = new RealImpl(decTWO, z.getMathContext());
-        ComplexType scaledArg = (ComplexType) z.multiply(two);
         final Euler e = Euler.getInstance(z.getMathContext());
-        ComplexType exp = e.exp(scaledArg);
-        return (ComplexType) exp.subtract(one).divide(exp.add(one));
+        try {
+            ComplexType scaledArg = (ComplexType) z.multiply(two).coerceTo(ComplexType.class);
+            ComplexType exp = e.exp(scaledArg);
+            return (ComplexType) exp.subtract(one).divide(exp.add(one));
+        } catch (CoercionException ex) {
+            // this should never happen, but if it does, throw a meaningful exception
+            throw new ArithmeticException("While computing tanh(" + z + "): " + ex.getMessage());
+        }
     }
 
     /**
