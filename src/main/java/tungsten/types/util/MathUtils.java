@@ -3998,7 +3998,7 @@ public class MathUtils {
 
     /**
      * Compute arccos(z), the inverse function of cos().
-     * Real input values in the range [-1,&nbsp;1] will generate a real-valued result.
+     * Real input values in the range [&minus;1,&nbsp;1] will generate a real-valued result.
      * @param z the argument, may be complex or real
      * @return the value of arccos(z), typically interpreted as an angle for real results
      */
@@ -4013,7 +4013,7 @@ public class MathUtils {
             final ComplexType one = (ComplexType) One.getInstance(z.getMathContext()).coerceTo(ComplexType.class);
             ComplexType term = (ComplexType) i.multiply(one.subtract(z.multiply(z)).sqrt()).add(z).coerceTo(ComplexType.class);
             Numeric result = negi.multiply(ln(term));
-            if (result instanceof ComplexType && result.isCoercibleTo(RealType.class)) {
+            if (result.isCoercibleTo(RealType.class)) {
                 // the result is a real, so return it as a RealType
                 return result.coerceTo(RealType.class);
             }
