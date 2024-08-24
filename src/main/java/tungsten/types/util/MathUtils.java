@@ -4225,7 +4225,7 @@ public class MathUtils {
             return new DiagonalMatrix<>(elements);
         }
         // main logic
-        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+        final MathContext ctx = X.getClass().isAnnotationPresent(Columnar.class) ?
                 X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
         final ComplexType i = ImaginaryUnit.getInstance(ctx);
         final ComplexType negi = i.negate();
@@ -4253,7 +4253,7 @@ public class MathUtils {
             return new DiagonalMatrix<>(elements);
         }
         // main logic
-        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+        final MathContext ctx = X.getClass().isAnnotationPresent(Columnar.class) ?
                 X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
         final ComplexType i = ImaginaryUnit.getInstance(ctx);
         final ComplexType negi = i.negate();
@@ -4273,7 +4273,7 @@ public class MathUtils {
     @Experimental
     public static Matrix<ComplexType> arcsin(Matrix<ComplexType> X) {
         if (X.rows() != X.columns()) throw new IllegalArgumentException("arcsin() is only valid for square matrices");
-        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+        final MathContext ctx = X.getClass().isAnnotationPresent(Columnar.class) ?
                 X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
         final ComplexType i = ImaginaryUnit.getInstance(ctx);
         final ComplexType negi = i.negate();
@@ -4292,7 +4292,7 @@ public class MathUtils {
     @Experimental
     public static Matrix<ComplexType> arccos(Matrix<ComplexType> X) {
         if (X.rows() != X.columns()) throw new IllegalArgumentException("arccos() is only valid for square matrices");
-        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+        final MathContext ctx = X.getClass().isAnnotationPresent(Columnar.class) ?
                 X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
         final ComplexType i = ImaginaryUnit.getInstance(ctx);
         final ComplexType negi = i.negate();
