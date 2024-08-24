@@ -4209,6 +4209,62 @@ public class MathUtils {
     }
 
     /**
+     * Compute the cosine of a square matrix <strong>X</strong>.
+     * @param X a matrix with complex valued elements
+     * @return the result of computing cos(<strong>X</strong>)
+     * @since 0.4
+     */
+    @Experimental
+    public static Matrix<ComplexType> cos(Matrix<ComplexType> X) {
+        if (X.rows() != X.columns()) throw new IllegalArgumentException("cos() only valid for square matrices");
+        if (X instanceof DiagonalMatrix) {
+            ComplexType[] elements = new ComplexType[(int) X.rows()];
+            for (int i = 0; i < elements.length; i++) {
+                elements[i] = cos(X.valueAt(i, i));
+            }
+            return new DiagonalMatrix<>(elements);
+        }
+        // main logic
+        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+                X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
+        final ComplexType i = ImaginaryUnit.getInstance(ctx);
+        final ComplexType negi = i.negate();
+        final RealType two = new RealImpl(decTWO, ctx);
+        final ComplexType half = new ComplexRectImpl((RealType) two.inverse());
+        Matrix<Numeric> lhs = (Matrix<Numeric>) exp(X.scale(i));
+        Matrix<Numeric> rhs = (Matrix<Numeric>) exp(X.scale(negi));
+        return new ComplexMatrixAdapter(lhs.add(rhs)).scale(half);
+    }
+
+    /**
+     * Compute the sine of a square matrix <strong>X</strong>.
+     * @param X a matrix with complex valued elements
+     * @return the result of computing sin(<strong>X</strong>)
+     * @since 0.4
+     */
+    @Experimental
+    public static Matrix<ComplexType> sin(Matrix<ComplexType> X) {
+        if (X.rows() != X.columns()) throw new IllegalArgumentException("sin() only valid for square matrices");
+        if (X instanceof DiagonalMatrix) {
+            ComplexType[] elements = new ComplexType[(int) X.rows()];
+            for (int i = 0; i < elements.length; i++) {
+                elements[i] = sin(X.valueAt(i, i));
+            }
+            return new DiagonalMatrix<>(elements);
+        }
+        // main logic
+        final MathContext ctx = X.getClass().isAnnotationPresent(Polar.class) ?
+                X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
+        final ComplexType i = ImaginaryUnit.getInstance(ctx);
+        final ComplexType negi = i.negate();
+        final RealType two = new RealImpl(decTWO, ctx);
+        final ComplexType denom = (ComplexType) i.multiply(two).inverse();
+        Matrix<Numeric> lhs = (Matrix<Numeric>) exp(X.scale(i));
+        Matrix<Numeric> rhs = (Matrix<Numeric>) exp(X.scale(negi));
+        return new ComplexMatrixAdapter(lhs.subtract(rhs)).scale(denom);
+    }
+
+    /**
      * The complex version of the hyperbolic tangent function.
      *
      * @param z a complex-valued argument
