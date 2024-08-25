@@ -120,7 +120,7 @@ public interface Matrix<T extends Numeric> {
 //        return Arrays.asList(isLower, isUpper).parallelStream()
 //                .<Boolean> map(p -> p.test(this))
 //                .anyMatch(x -> x.booleanValue());
-        // the naive version below might be easier to read and understand,
+        // the naïve version below might be easier to read and understand,
         // but for big matrices, you really want to do these checks in parallel
         // if you possibly can
 //        return isLowerTriangular() || isUpperTriangular();
