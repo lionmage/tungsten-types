@@ -122,7 +122,7 @@ public class ComplexMatrixAdapter implements Matrix<ComplexType> {
                 return (ComplexType) original.valueAt(row, col).add(addend.valueAt(row, col))
                         .coerceTo(ComplexType.class);
             } catch (CoercionException e) {
-                throw new IllegalStateException("While coercing scaled value to complex at row=" +
+                throw new IllegalStateException("While coercing value of sum to complex at row=" +
                         row + ", column=" + col, e);
             }
         });
