@@ -29,7 +29,6 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.IdentityMatrix;
 import tungsten.types.matrix.impl.ZeroMatrix;
 import tungsten.types.numerics.*;
-import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
@@ -313,13 +312,13 @@ public interface Matrix<T extends Numeric> {
             if (exponent.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
                 // even case
                 x = x.multiply(x);
-                exponent = exponent.shiftRight(1); // bit shift instead of division by 2
             } else {
                 // odd case
                 y = x.multiply(y);
                 x = x.multiply(x);
-                exponent = exponent.subtract(BigInteger.ONE).shiftRight(1);
+                // no need to perform subtraction here, bit shift does it all
             }
+            exponent = exponent.shiftRight(1); // bit shift instead of division by 2
         }
         return x.multiply(y);
     }
