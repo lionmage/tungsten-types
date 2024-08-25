@@ -4280,8 +4280,7 @@ public class MathUtils {
                 X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
         final ComplexType i = ImaginaryUnit.getInstance(ctx);
         final ComplexType negi = i.negate();
-        final IntegerType two = new IntegerImpl(BigInteger.TWO);
-        final Matrix<Numeric> innerTerm = new IdentityMatrix(X.rows(), ctx).subtract((Matrix<Numeric>) X.pow(two));
+        final Matrix<ComplexType> innerTerm = calcIminusA(X.multiply(X));
         Matrix<ComplexType> intermediate = X.scale(i).add(new ComplexMatrixAdapter(sqrt(innerTerm)));
         return new ComplexMatrixAdapter(ln(intermediate)).scale(negi);
     }
@@ -4301,8 +4300,7 @@ public class MathUtils {
                 X.getColumn(0L).getMathContext() : X.getRow(0L).getMathContext();
         final ComplexType i = ImaginaryUnit.getInstance(ctx);
         final ComplexType negi = i.negate();
-        final IntegerType two = new IntegerImpl(BigInteger.TWO);
-        final Matrix<Numeric> innerTerm = new IdentityMatrix(X.rows(), ctx).subtract((Matrix<Numeric>) X.pow(two));
+        final Matrix<ComplexType> innerTerm = calcIminusA(X.multiply(X));
         Matrix<ComplexType> intermediate = X.add(new ComplexMatrixAdapter(sqrt(innerTerm)).scale(i));
         return new ComplexMatrixAdapter(ln(intermediate)).scale(negi);
     }
