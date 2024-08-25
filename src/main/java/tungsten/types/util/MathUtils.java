@@ -4212,6 +4212,7 @@ public class MathUtils {
      * Compute the cosine of a square matrix <strong>X</strong>.
      * @param X a matrix with complex valued elements
      * @return the result of computing cos(<strong>X</strong>)
+     * @see <a href="https://en.wikipedia.org/wiki/Trigonometric_functions_of_matrices">the Wikipedia article</a>
      * @since 0.4
      */
     @Experimental
@@ -4240,6 +4241,7 @@ public class MathUtils {
      * Compute the sine of a square matrix <strong>X</strong>.
      * @param X a matrix with complex valued elements
      * @return the result of computing sin(<strong>X</strong>)
+     * @see <a href="https://en.wikipedia.org/wiki/Trigonometric_functions_of_matrices">the Wikipedia article</a>
      * @since 0.4
      */
     @Experimental
@@ -4268,6 +4270,7 @@ public class MathUtils {
      * Compute the arcsine of a matrix <strong>X</strong>.
      * @param X a matrix with complex valued elements
      * @return the result of computing arcsin(<strong>X</strong>)
+     * @see <a href="https://en.wikipedia.org/wiki/Trigonometric_functions_of_matrices">the Wikipedia article</a>
      * @since 0.4
      */
     @Experimental
@@ -4287,6 +4290,8 @@ public class MathUtils {
      * Compute the arccosine of a matrix <strong>X</strong>.
      * @param X a matrix with complex valued elements
      * @return the result of computing arccos(<strong>X</strong>)
+     * @see <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Logarithmic_forms">a Wikipedia
+     *   article</a> detailing the scalar version
      * @since 0.4
      */
     @Experimental
