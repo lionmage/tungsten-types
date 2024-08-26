@@ -115,15 +115,16 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
             if (!(row.elementAt(col) instanceof ComplexType)) continue;
 
             ComplexType value = (ComplexType) row.elementAt(col);
-            int width;
+            int width = 0;
             // real portion
             RealType real = value.real();
+            if (real.sign() == Sign.NEGATIVE) width++;  // this is a total kludge
             if (real.getClass().isAnnotationPresent(Constant.class)) {
                 StringBuilder buf = new StringBuilder();
                 precisionPat.matcher(real.toString()).appendReplacement(buf, "");
-                width = UnicodeTextEffects.computeCharacterWidth(buf);
+                width += UnicodeTextEffects.computeCharacterWidth(buf);
             } else {
-                width = UnicodeTextEffects.computeCharacterWidth(trimDecimalPlaces(real.toString()));
+                width += UnicodeTextEffects.computeCharacterWidth(trimDecimalPlaces(real.toString()));
             }
             // spaces, + or - separator
             width += 1;
@@ -217,5 +218,11 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
         }
 
         return buf.toString();
+    }
+
+    @Override
+    public String render(RowVector<? extends Numeric> row) {
+        String basic = CellRenderingStrategy.super.render(row);
+        return basic.replace(' ', '\u2002'); // replace space with en-space
     }
 }
