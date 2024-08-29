@@ -157,7 +157,7 @@ public class Pi implements RealType {
             case REAL:
                 return this;  // it's already a real
             case COMPLEX:
-                return new ComplexRectImpl(this, (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class));
+                return new ComplexRectImpl(this);
             default:
                 throw new CoercionException("Pi can only be coerced to real or complex",
                         this.getClass(), numtype);
@@ -371,8 +371,9 @@ public class Pi implements RealType {
      */
     public Object asType(Class<?> clazz) {
         if (CharSequence.class.isAssignableFrom(clazz)) {
-            if (clazz == StringBuilder.class) return new StringBuilder().append(value.toPlainString());
-            return value.toPlainString();
+            String decimalString = value.toPlainString();
+            if (clazz == StringBuilder.class) return new StringBuilder().append(decimalString);
+            return decimalString;
         }
         return RealType.super.asType(clazz);
     }
