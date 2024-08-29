@@ -195,7 +195,7 @@ public class Pi implements RealType {
             MathContext ctx = remult.getMathContext().getPrecision() == 0 ? mctx :
                     new MathContext(Math.min(remult.getMathContext().getPrecision(), mctx.getPrecision()));
             RealImpl real = new RealImpl(value.multiply(remult.asBigDecimal(), ctx), ctx, false);
-            real.setIrrational(true);
+            if (remult.asBigDecimal().compareTo(BigDecimal.ZERO) != 0) real.setIrrational(true);
             return real;
         }
         return multiplier.multiply(this);
