@@ -43,11 +43,11 @@ import static tungsten.types.util.UnicodeTextEffects.numericSuperscript;
 public abstract class MegaConstant<T extends Numeric> {
     protected static final char TIMES = '\u2062'; // invisible times
 
-    protected T value;
+    protected transient T value;
     protected Class<T> masqueradesAs;
     protected RationalType rationalCoefficient;
-    private final List<Numeric> constants = new ArrayList<>();
-    private final List<Long> exponents = new ArrayList<>();
+    protected final List<Numeric> constants = new ArrayList<>();
+    protected final List<Long> exponents = new ArrayList<>();
 
     public MegaConstant(Class<T> evaluatesAs, RationalType coefficient) {
         this.masqueradesAs = evaluatesAs;
@@ -63,7 +63,7 @@ public abstract class MegaConstant<T extends Numeric> {
     }
 
     /**
-     * Varargs constructor which assumes all component constants
+     * Varargs constructor that assumes all component constants
      * have an exponent of unity.
      * @param evaluateAs  the type we wish to evaluate as
      * @param coefficient the rational coefficient of this aggregate constant
@@ -76,11 +76,28 @@ public abstract class MegaConstant<T extends Numeric> {
         }
     }
 
+    protected boolean anyIrrational() {
+        return constants.stream().filter(RealType.class::isInstance)
+                .map(RealType.class::cast)
+                .anyMatch(RealType::isIrrational);
+    }
+
     protected void append(Numeric constant, long exponent) {
         if (exponent == 0L) return;  // zero exponent gives us unity
         if (constant.getClass().isAnnotationPresent(Constant.class)) {
-            constants.add(constant);
-            exponents.add(exponent);
+            if (constants.contains(constant)) {
+                // constant already exists, so add exponents
+                int index = constants.indexOf(constant);
+                exponents.set(index, exponents.get(index) + exponent);
+                if (exponents.get(index) == 0L) {
+                    // 0 exponent means these values canceled out
+                    constants.remove(index);
+                    exponents.remove(index);
+                }
+            } else {
+                constants.add(constant);
+                exponents.add(exponent);
+            }
         } else if (constant.isCoercibleTo(RationalType.class)) {
             try {
                 RationalType rationalConst = (RationalType) constant.coerceTo(RationalType.class);
@@ -100,6 +117,10 @@ public abstract class MegaConstant<T extends Numeric> {
         }
     }
 
+    protected void append(ConstantTuple tuple) {
+        append(tuple.getConstantValue(), tuple.getExponent());
+    }
+
     protected T calculate() {
         Numeric product = rationalCoefficient;
         for (int i = 0; i < constants.size(); i++) {
@@ -116,6 +137,32 @@ public abstract class MegaConstant<T extends Numeric> {
 
     public T getValue() {
         return value != null ? value : calculate();
+    }
+
+    public MegaConstant<T> combine(MegaConstant<T> other) {
+        if (other.masqueradesAs != this.masqueradesAs) throw new IllegalArgumentException("Cannot combine dissimilar types");
+        try {
+            return doCombine(other);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While combining " + this + " and " + other, e);
+        }
+    }
+
+    protected abstract MegaConstant<T> doCombine(MegaConstant<T> other) throws CoercionException;
+
+    public RationalType leadingCoefficient() {
+        return rationalCoefficient;
+    }
+
+    public List<ConstantTuple> innerView() {
+        if (constants.size() != exponents.size()) {
+            throw new IllegalStateException("Mismatch of constants/exponents sizes");
+        }
+        List<ConstantTuple> result = new ArrayList<>(constants.size());
+        for (int idx = 0; idx < constants.size(); idx++) {
+            result.add(new ConstantTuple(constants.get(idx), exponents.get(idx)));
+        }
+        return result;
     }
 
     public String toString() {
@@ -179,5 +226,27 @@ public abstract class MegaConstant<T extends Numeric> {
     @Override
     public int hashCode() {
         return Objects.hash(masqueradesAs, rationalCoefficient, constants, exponents);
+    }
+
+    public static class ConstantTuple {
+        private Numeric constantValue;
+        private long exponent;
+
+        public ConstantTuple(Numeric val, long exponent) {
+            this.constantValue = val;
+            this.exponent = exponent;
+        }
+
+        public Numeric getConstantValue() {
+            return constantValue;
+        }
+
+        public long getExponent() {
+            return exponent;
+        }
+
+        public void setExponent(long exponent) {
+            this.exponent = exponent;
+        }
     }
 }
