@@ -229,7 +229,7 @@ public abstract class MegaConstant<T extends Numeric> {
     }
 
     public static class ConstantTuple {
-        private Numeric constantValue;
+        private final Numeric constantValue;
         private long exponent;
 
         public ConstantTuple(Numeric val, long exponent) {
