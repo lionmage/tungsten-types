@@ -119,6 +119,9 @@ public class RealMegaConstant extends MegaConstant<RealType> implements RealType
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (multiplier instanceof RealMegaConstant) {
+            return (Numeric) this.combine((RealMegaConstant) multiplier);
+        }
         if (multiplier.isCoercibleTo(RationalType.class)) {
             try {
                 RationalType prodCoeff = (RationalType) rationalCoefficient.multiply(multiplier)
@@ -135,7 +138,7 @@ public class RealMegaConstant extends MegaConstant<RealType> implements RealType
 
     @Override
     public Numeric divide(Numeric divisor) {
-        if (divisor.isCoercibleTo(RationalType.class)) {
+        if (divisor.isCoercibleTo(RationalType.class) || divisor instanceof RealMegaConstant) {
             return this.multiply(divisor.inverse());
         }
         return getValue().divide(divisor);
