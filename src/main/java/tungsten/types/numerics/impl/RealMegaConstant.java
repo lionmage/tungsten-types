@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A real-valued mega constant.
+ * @since 0.4
+ */
 public class RealMegaConstant extends MegaConstant<RealType> implements RealType {
     public RealMegaConstant(RationalType coefficient) {
         super(RealType.class, coefficient);

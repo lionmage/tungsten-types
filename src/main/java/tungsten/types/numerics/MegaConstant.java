@@ -45,6 +45,7 @@ import static tungsten.types.util.UnicodeTextEffects.numericSuperscript;
  * constant value that is itself composed of fundamental
  * constants and has a rational coefficient.
  * @param <T> the type that this constant's value should present itself as
+ * @since 0.4
  */
 public abstract class MegaConstant<T extends Numeric> {
     protected static final char TIMES = '\u2062'; // invisible times

@@ -37,6 +37,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A complex-valued mega constant.
+ * @since 0.4
+ */
 public class ComplexMegaConstant extends MegaConstant<ComplexType> implements ComplexType {
     public ComplexMegaConstant(RationalType coefficient) {
         super(ComplexType.class, coefficient);
