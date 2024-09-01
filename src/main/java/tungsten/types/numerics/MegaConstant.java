@@ -40,6 +40,12 @@ import java.util.stream.IntStream;
 
 import static tungsten.types.util.UnicodeTextEffects.numericSuperscript;
 
+/**
+ * Abstract base class for a &ldquo;mega constant,&rdquo; a
+ * constant value that is itself composed of fundamental
+ * constants and has a rational coefficient.
+ * @param <T> the type that this constant's value should present itself as
+ */
 public abstract class MegaConstant<T extends Numeric> {
     protected static final char TIMES = '\u2062'; // invisible times
 
@@ -76,12 +82,23 @@ public abstract class MegaConstant<T extends Numeric> {
         }
     }
 
+    /**
+     * Determines if any component of this constant is an irrational value.
+     * @return true if this constant contains an irrational value
+     */
     protected boolean anyIrrational() {
         return constants.stream().filter(RealType.class::isInstance)
                 .map(RealType.class::cast)
                 .anyMatch(RealType::isIrrational);
     }
 
+    /**
+     * Append a constant value to this aggregate constant. Rational
+     * values (or values coercible to rational) and any {@link Numeric} instance that has the
+     * {@code @Constant} annotation is acceptable.
+     * @param constant the constant value to append
+     * @param exponent the power to which this constant must be raised
+     */
     protected void append(Numeric constant, long exponent) {
         if (exponent == 0L) return;  // zero exponent gives us unity
         if (constant.getClass().isAnnotationPresent(Constant.class)) {
@@ -115,6 +132,8 @@ public abstract class MegaConstant<T extends Numeric> {
         } else {
             throw new IllegalArgumentException(constant + " is not a valid constant");
         }
+        // reset the value cache
+        value = null;
     }
 
     protected void append(ConstantTuple tuple) {
@@ -139,6 +158,11 @@ public abstract class MegaConstant<T extends Numeric> {
         return value != null ? value : calculate();
     }
 
+    /**
+     * Combine two mega constants into a single mega constant.
+     * @param other the other mega constant to ingest
+     * @return the combined mega constant
+     */
     public MegaConstant<T> combine(MegaConstant<T> other) {
         if (other.masqueradesAs != this.masqueradesAs) throw new IllegalArgumentException("Cannot combine dissimilar types");
         try {
@@ -154,6 +178,11 @@ public abstract class MegaConstant<T extends Numeric> {
         return rationalCoefficient;
     }
 
+    /**
+     * Obtain a list view of the inner contents of this mega constant,
+     * with each pair of constant and exponent presented as a tuple.
+     * @return a {@code List<ConstantTuple>} containing all constants and their exponents
+     */
     public List<ConstantTuple> innerView() {
         if (constants.size() != exponents.size()) {
             throw new IllegalStateException("Mismatch of constants/exponents sizes");
