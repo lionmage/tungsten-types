@@ -201,7 +201,8 @@ public abstract class MegaConstant<T extends Numeric> {
                 .map(x -> -x).collect(Collectors.toList());
         StringBuilder buf = new StringBuilder();
         // numerator
-        if (!rationalCoefficient.numerator().asBigInteger().equals(BigInteger.ONE)) {
+        if (!rationalCoefficient.numerator().asBigInteger().equals(BigInteger.ONE) ||
+                numExponents.isEmpty()) {
             buf.append(rationalCoefficient.numerator());
             if (!numExponents.isEmpty()) buf.append(TIMES);
         }
