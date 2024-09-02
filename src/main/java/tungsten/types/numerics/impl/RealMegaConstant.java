@@ -102,6 +102,7 @@ public class RealMegaConstant extends MegaConstant<RealType> implements RealType
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
+        if (RealType.class.isAssignableFrom(numtype)) return this;
         return getValue().coerceTo(numtype);
     }
 
