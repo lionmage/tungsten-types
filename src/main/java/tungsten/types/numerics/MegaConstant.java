@@ -27,6 +27,7 @@ package tungsten.types.numerics;
 
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.Experimental;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.util.MathUtils;
@@ -35,6 +36,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,10 +50,13 @@ import static tungsten.types.util.UnicodeTextEffects.numericSuperscript;
  * @param <T> the type that this constant's value should present itself as
  * @since 0.4
  */
+@Experimental
 public abstract class MegaConstant<T extends Numeric> {
     protected static final char TIMES = '\u2062'; // invisible times
+    protected static final char DIVISION_SLASH = '\u2215'; // Division Slash
 
     protected transient T value;
+    private final Lock valueGuard = new ReentrantLock();
     protected Class<T> masqueradesAs;
     protected RationalType rationalCoefficient;
     protected final List<Numeric> constants = new ArrayList<>();
@@ -134,7 +140,12 @@ public abstract class MegaConstant<T extends Numeric> {
             throw new IllegalArgumentException(constant + " is not a valid constant");
         }
         // reset the value cache
-        value = null;
+        valueGuard.lock();
+        try {
+            value = null;
+        } finally {
+            valueGuard.unlock();
+        }
     }
 
     protected void append(ConstantTuple tuple) {
@@ -147,10 +158,13 @@ public abstract class MegaConstant<T extends Numeric> {
             IntegerType exponent = new IntegerImpl(BigInteger.valueOf(exponents.get(i)));
             product = product.multiply(MathUtils.computeIntegerExponent(constants.get(i), exponent));
         }
+        valueGuard.lock();
         try {
             value = (T) product.coerceTo(masqueradesAs);
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to coerce value to return type", e);
+        } finally {
+            valueGuard.unlock();
         }
         return value;
     }
@@ -215,7 +229,7 @@ public abstract class MegaConstant<T extends Numeric> {
         // denominator
         final boolean denomNotUnity = !rationalCoefficient.denominator().asBigInteger().equals(BigInteger.ONE);
         if (denomNotUnity && !denomExponents.isEmpty()) {
-            buf.append('\u2215'); // Division Slash
+            buf.append(DIVISION_SLASH);
         }
         if (denomNotUnity) {
             buf.append(rationalCoefficient.denominator());
