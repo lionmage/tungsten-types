@@ -141,11 +141,8 @@ public abstract class MegaConstant<T extends Numeric> {
         }
         // reset the value cache
         valueGuard.lock();
-        try {
-            value = null;
-        } finally {
-            valueGuard.unlock();
-        }
+        value = null;
+        valueGuard.unlock();
     }
 
     protected void append(ConstantTuple tuple) {
@@ -292,6 +289,19 @@ public abstract class MegaConstant<T extends Numeric> {
 
         public void setExponent(long exponent) {
             this.exponent = exponent;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ConstantTuple tuple = (ConstantTuple) o;
+            return exponent == tuple.exponent && Objects.equals(constantValue, tuple.constantValue);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(constantValue, exponent);
         }
     }
 }
