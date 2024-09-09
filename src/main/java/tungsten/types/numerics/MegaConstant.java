@@ -100,7 +100,7 @@ public abstract class MegaConstant<T extends Numeric> {
 
     /**
      * Append a constant value to this aggregate constant. Rational
-     * values (or values coercible to rational) and any {@link Numeric} instance that has the
+     * values (or values coercible to rational) or any {@link Numeric} instance that has the
      * {@code @Constant} annotation is acceptable.
      * @param constant the constant value to append
      * @param exponent the power to which this constant must be raised
