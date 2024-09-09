@@ -36,8 +36,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,7 +55,7 @@ public abstract class MegaConstant<T extends Numeric> {
     protected static final char DIVISION_SLASH = '\u2215'; // Division Slash
 
     protected transient T value;
-    private final Lock valueGuard = new ReentrantLock();
+    private final StampedLock valueGuard = new StampedLock();
     protected Class<T> masqueradesAs;
     protected RationalType rationalCoefficient;
     protected final List<Numeric> constants = new ArrayList<>();
@@ -140,9 +139,11 @@ public abstract class MegaConstant<T extends Numeric> {
             throw new IllegalArgumentException(constant + " is not a valid constant");
         }
         // reset the value cache
-        valueGuard.lock();
-        value = null;
-        valueGuard.unlock();
+        long stamp = valueGuard.tryWriteLock();
+        if (stamp != 0L) {
+            value = null;
+            valueGuard.unlockWrite(stamp);
+        }
     }
 
     protected void append(ConstantTuple tuple) {
@@ -155,19 +156,24 @@ public abstract class MegaConstant<T extends Numeric> {
             IntegerType exponent = new IntegerImpl(BigInteger.valueOf(exponents.get(i)));
             product = product.multiply(MathUtils.computeIntegerExponent(constants.get(i), exponent));
         }
-        valueGuard.lock();
+        long stamp = valueGuard.writeLock();
         try {
             value = (T) product.coerceTo(masqueradesAs);
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to coerce value to return type", e);
         } finally {
-            valueGuard.unlock();
+            valueGuard.unlockWrite(stamp);
         }
         return value;
     }
 
     public T getValue() {
-        return value != null ? value : calculate();
+        long stamp = valueGuard.readLock();
+        try {
+            return value != null ? value : calculate();
+        } finally {
+            valueGuard.unlockRead(stamp);
+        }
     }
 
     /**
