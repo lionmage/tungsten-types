@@ -32,8 +32,10 @@ import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +55,17 @@ public class RealMegaConstant extends MegaConstant<RealType> implements RealType
 
     public RealMegaConstant(RationalType coefficient, Numeric... constants) {
         super(RealType.class, coefficient, constants);
+    }
+
+    /**
+     * Convenience constructor that takes an integer value instead of
+     * a rational value as the leading coefficient.
+     * @param coefficient any integer value
+     * @param constants   zero or more constants with assumed exponents of one
+     */
+    public RealMegaConstant(IntegerType coefficient, Numeric... constants) {
+        this(new RationalImpl(coefficient.asBigInteger(), BigInteger.ONE, MathUtils.inferMathContext(Arrays.asList(constants))),
+                constants);
     }
 
     @Override

@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.StampedLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -155,6 +157,13 @@ public abstract class MegaConstant<T extends Numeric> {
         for (int i = 0; i < constants.size(); i++) {
             IntegerType exponent = new IntegerImpl(BigInteger.valueOf(exponents.get(i)));
             product = product.multiply(MathUtils.computeIntegerExponent(constants.get(i), exponent));
+        }
+        // Normally, we'd use tryConvertToWriteLock() to obtain a write lock, but that would
+        // involve passing state into this method. Calling tryUnlockRead() before writeLock()
+        // should have a similer effect.
+        if (valueGuard.tryUnlockRead()) {
+            Logger.getLogger(MegaConstant.class.getName()).log(Level.INFO,
+                    "Released read lock in order to update value cache.");
         }
         long stamp = valueGuard.writeLock();
         try {
