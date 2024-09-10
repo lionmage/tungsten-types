@@ -109,6 +109,9 @@ public abstract class MegaConstant<T extends Numeric> {
      */
     protected void append(Numeric constant, long exponent) {
         if (exponent == 0L) return;  // zero exponent gives us unity
+        if (!constant.isCoercibleTo(masqueradesAs)) {
+            throw new IllegalArgumentException(constant + " cannot masquerade as " + masqueradesAs.getName());
+        }
         if (constant.getClass().isAnnotationPresent(Constant.class)) {
             if (constants.contains(constant)) {
                 // constant already exists, so add exponents
@@ -152,21 +155,31 @@ public abstract class MegaConstant<T extends Numeric> {
         append(tuple.getConstantValue(), tuple.getExponent());
     }
 
-    protected T calculate() {
+    /**
+     * The main method to calculate the aggregate value of this mega constant.
+     * It is protected so subclasses can modify or replace its behavior.
+     * If a read lock has been acquired before calling this method, the caller
+     * must supply the stamp value as the sole argument; otherwise, {@code 0L}
+     * may be supplied.
+     *
+     * @param readStamp the stamp associated with a read lock, or zero if no read lock was acquired
+     * @return the calculated value of this mega constant
+     * @see StampedLock#tryConvertToWriteLock(long)
+     */
+    protected T calculate(long readStamp) {
         Numeric product = rationalCoefficient;
         for (int i = 0; i < constants.size(); i++) {
             IntegerType exponent = new IntegerImpl(BigInteger.valueOf(exponents.get(i)));
             product = product.multiply(MathUtils.computeIntegerExponent(constants.get(i), exponent));
         }
-        // Normally, we'd use tryConvertToWriteLock() to obtain a write lock, but that would
-        // involve passing state into this method. Calling tryUnlockRead() before writeLock()
-        // should have a similer effect.
-        if (valueGuard.tryUnlockRead()) {
-            Logger.getLogger(MegaConstant.class.getName()).log(Level.INFO,
-                    "Released read lock in order to update value cache.");
-        }
-        long stamp = valueGuard.writeLock();
+        long stamp = readStamp != 0L ? valueGuard.tryConvertToWriteLock(readStamp) : valueGuard.writeLock();
         try {
+            if (stamp == 0L) {
+                Logger.getLogger(MegaConstant.class.getName()).log(Level.INFO,
+                        "Failed to convert read lock to a write lock. Unlocking read lock and blocking on obtaining write lock.");
+                if (readStamp != 0L) valueGuard.unlockRead(readStamp);
+                stamp = valueGuard.writeLock();
+            }
             value = (T) product.coerceTo(masqueradesAs);
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to coerce value to return type", e);
@@ -179,9 +192,10 @@ public abstract class MegaConstant<T extends Numeric> {
     public T getValue() {
         long stamp = valueGuard.readLock();
         try {
-            return value != null ? value : calculate();
+            return value != null ? value : calculate(stamp);
         } finally {
-            valueGuard.unlockRead(stamp);
+            // calculate() might release the read lock, so do a basic check here before unlocking
+            if (valueGuard.isReadLocked()) valueGuard.unlockRead(stamp);
         }
     }
 
