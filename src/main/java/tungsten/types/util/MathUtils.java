@@ -562,7 +562,7 @@ public class MathUtils {
      * @param A a complex matrix
      * @return a real-valued matrix constructed from the real component of
      *   each complex value contained in {@code A}
-     * @see #reify(Matrix) for a stricter conversion
+     * @see #reify(Matrix)
      * @since 0.4
      */
     public static Matrix<RealType> stripImaginary(Matrix<ComplexType> A) {
@@ -2795,7 +2795,7 @@ public class MathUtils {
     }
 
     /**
-     * Convert a {@link Matrix<ComplexType>} C into a {@link Matrix<RealType>}.
+     * Convert a {@code Matrix<ComplexType>} C into a {@code Matrix<RealType>}.
      * All values in C must be coercible to {@link RealType} or an
      * {@link ArithmeticException} will be thrown.
      * @param C a matrix of {@link ComplexType} values that can be coerced to real
