@@ -30,9 +30,12 @@ import java.lang.annotation.*;
 /**
  * Annotation to denote certain {@link Matrix} implementations
  * as columnar stores (i.e., the data is stored as a set of columns
- * instead of a set of rows). 
+ * instead of a set of rows). Such matrices are also known as
+ * <em>column major</em>, and some math libraries prefer a column major
+ * layout.
  *
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
