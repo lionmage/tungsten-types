@@ -552,6 +552,75 @@ public class MathUtils {
     }
 
     /**
+     * Construct a matrix of real values from a complex matrix
+     * by extracting the real portion of each element and discarding
+     * the imaginary portion.<br>
+     * This method may be used in conjunction with {@link #isRealMatrix(Matrix, RealType)}
+     * for a more forgiving mechanism to extract a real matrix from a matrix
+     * of complex values whose elements have an imaginary component that is small
+     * but non-zero.
+     * @param A a complex matrix
+     * @return a real-valued matrix constructed from the real component of
+     *   each complex value contained in {@code A}
+     * @see #reify(Matrix) for a stricter conversion
+     * @since 0.4
+     */
+    public static Matrix<RealType> stripImaginary(Matrix<ComplexType> A) {
+        if (A.getClass().isAnnotationPresent(Columnar.class)) {
+            List<ColumnVector<RealType>> columns = new ArrayList<>();
+            LongStream.range(0L, A.columns()).mapToObj(A::getColumn).map(ColumnVector::stream)
+                    .map(s -> s.map(ComplexType::real).toArray(RealType[]::new))
+                    .map(ArrayColumnVector::new).forEachOrdered(columns::add);
+            return new ColumnarMatrix<>(columns);
+        }
+        // otherwise, process by rows
+        List<RowVector<RealType>> rows = new ArrayList<>();
+        LongStream.range(0L, A.rows()).mapToObj(A::getRow).map(RowVector::stream)
+                .map(s -> s.map(ComplexType::real).toArray(RealType[]::new))
+                .map(ArrayRowVector::new).forEachOrdered(rows::add);
+        return new BasicMatrix<>(rows);
+    }
+
+    /**
+     * Given a matrix of complex values, determine if all values
+     * are coercible to real &mdash; in other words, determine
+     * if all values have a zero imaginary component.
+     * @param A a matrix of complex values
+     * @return true if all values are reducible to real, false otherwise
+     * @since 0.4
+     */
+    public static boolean isRealMatrix(Matrix<ComplexType> A) {
+        for (long row = 0L; row < A.rows(); row++) {
+            for (long column = 0L; column < A.columns(); column++) {
+                if (!Zero.isZero(A.valueAt(row, column).imaginary())) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Given a matrix with complex values, determine if all values
+     * are &ldquo;close enough&rdquo; to being considered a real.
+     * The magnitude of the imaginary part of each element is
+     * compared to {@code epsilon}, which should be arbitrarily small.
+     * This test is less strict than that applied by {@link #isRealMatrix(Matrix)}.
+     * @param A       a matrix of complex values
+     * @param epsilon a threshold value for determining if imaginary components are sufficiently small
+     * @return true if all values are sufficiently close to being real, false otherwise
+     * @throws IllegalArgumentException if {@code epsilon} is outside the range (0,&nbsp;1)
+     * @since 0.4
+     */
+    public static boolean isRealMatrix(Matrix<ComplexType> A, RealType epsilon) {
+        if (!epsilonRange.contains(epsilon)) throw new IllegalArgumentException(epsilon + " is outside of range " + epsilonRange);
+        for (long row = 0L; row < A.rows(); row++) {
+            for (long column = 0L; column < A.columns(); column++) {
+                if (A.valueAt(row, column).imaginary().magnitude().compareTo(epsilon) >= 0) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Computes the Riemann zeta function &#x1D701;(s), where s can be any
      * {@link Numeric} value (including {@link ComplexType}). The logic is
      * optimized for certain specific arguments (e.g., even positive integers),
