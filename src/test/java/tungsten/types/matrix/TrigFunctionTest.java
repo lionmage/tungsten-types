@@ -70,14 +70,18 @@ public class TrigFunctionTest {
         Matrix<ComplexType> result = MathUtils.sin(A);
         System.out.println("\nsin(A):");
         System.out.println(formatMatrixForDisplay(result, (String) null, null));
+        assertTrue(MathUtils.isRealMatrix(result, epsilon), "sin(A) result should be a real matrix");
+        Matrix<RealType> cleaned = MathUtils.stripImaginary(result);
+        System.out.println("\nsin(A) as a real-valued matrix:");
+        System.out.println(formatMatrixForDisplay(cleaned, (String) null, null));
 
         RealType twoThirds = (RealType) two.divide(three);
-        assertTrue(areEqualToWithin(twoThirds, result.valueAt(0L, 0L).real(), epsilon));
-        assertTrue(areEqualToWithin(twoThirds.negate(), result.valueAt(0L, 1L).real(), epsilon));
+        assertTrue(areEqualToWithin(twoThirds, cleaned.valueAt(0L, 0L), epsilon));
+        assertTrue(areEqualToWithin(twoThirds.negate(), cleaned.valueAt(0L, 1L), epsilon));
         // without coercion, the following would give a rational value of 1/3
         RealType oneThird = (RealType) three.inverse().coerceTo(RealType.class);
-        assertTrue(areEqualToWithin(oneThird.negate(), result.valueAt(1L, 0L).real(), epsilon));
-        assertTrue(areEqualToWithin(oneThird, result.valueAt(1L, 1L).real(), epsilon));
+        assertTrue(areEqualToWithin(oneThird.negate(), cleaned.valueAt(1L, 0L), epsilon));
+        assertTrue(areEqualToWithin(oneThird, cleaned.valueAt(1L, 1L), epsilon));
 
         // this may differ from A if ln() has a different branch cut
         Matrix<ComplexType> A_asin = MathUtils.arcsin(result);
