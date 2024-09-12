@@ -759,7 +759,7 @@ public class MathUtils {
      * @return the magnitude of the error term, expressed as a real
      */
     private static RealType zetaE_mn(long n, long m, Numeric s, BernoulliNumbers bn) {
-        final RealType twoMplus1 = new RealImpl(new BigDecimal(2L * m + 1L), s.getMathContext(), true);
+        final RealType twoMplus1 = new RealImpl(BigDecimal.valueOf(2L * m + 1L), s.getMathContext(), true);
         final RealType sigma = Re(s);
         return s.add(twoMplus1).multiply(zetaT_kn(n, m + 1L, s, bn)).divide(sigma.add(twoMplus1)).magnitude();
     }
