@@ -4503,7 +4503,7 @@ public class MathUtils {
             RealType intermediate = (RealType) prod.coerceTo(RealType.class);
             return nthRoot(intermediate, n, ctx);
         } catch (CoercionException e) {
-            throw new ArithmeticException("Unable to compute nth root of sum: " + e.getMessage());
+            throw new ArithmeticException("Unable to compute nth root of product: " + e.getMessage());
         } catch (NoSuchElementException nse) {
             logger.log(Level.SEVERE,
                     "While computing {0}, no roots were found.", UnicodeTextEffects.radical(prod, x.length));
