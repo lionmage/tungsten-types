@@ -4486,16 +4486,28 @@ public class MathUtils {
      * @return the geometric mean of the values in {@code x}
      * @since 0.4
      */
-    public static RealType geometricMean(Numeric... x) {
+    public static Numeric geometricMean(Numeric... x) {
         final MathContext ctx = inferMathContext(Arrays.asList(x));
         // n is only used as the degree of a root, so no need to embed a MathContext in it
-        IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length));
+        final IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length));
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
 
+        Numeric prod = Arrays.stream(x).reduce(One.getInstance(ctx), Numeric::multiply);
         try {
-            RealType intermediate = (RealType) Arrays.stream(x).reduce(One.getInstance(ctx), Numeric::multiply).coerceTo(RealType.class);
+            if (prod instanceof ComplexType) {
+                logger.log(Level.INFO, "Computing geometric mean as a complex value.");
+                // this should grab the principal root from the set of nth roots
+                return ((ComplexType) prod).nthRoots(n).iterator().next();
+            }
+            logger.log(Level.FINE, "Treating {0} as a real value.", prod);
+            RealType intermediate = (RealType) prod.coerceTo(RealType.class);
             return nthRoot(intermediate, n, ctx);
         } catch (CoercionException e) {
             throw new ArithmeticException("Unable to compute nth root of sum: " + e.getMessage());
+        } catch (NoSuchElementException nse) {
+            logger.log(Level.SEVERE,
+                    "While computing {0}, no roots were found.", UnicodeTextEffects.radical(prod, x.length));
+            throw new IllegalStateException("Set of roots of degree " + n + " is empty", nse);
         }
     }
 
