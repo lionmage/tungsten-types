@@ -4488,7 +4488,7 @@ public class MathUtils {
      */
     public static RealType geometricMean(Numeric... x) {
         final MathContext ctx = inferMathContext(Arrays.asList(x));
-        // n is only used as an exponent, so no need to embed a MathContext in it
+        // n is only used as the degree of a root, so no need to embed a MathContext in it
         IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length));
 
         try {
