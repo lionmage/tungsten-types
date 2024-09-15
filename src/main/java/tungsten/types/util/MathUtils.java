@@ -4463,6 +4463,106 @@ public class MathUtils {
     }
 
     /**
+     * Compute the arithmetic mean of multiple values.
+     * @param x one or more values
+     * @return the arithmetic mean of the values in {@code x}
+     * @since 0.4
+     */
+    public static Numeric arithmeticMean(Numeric... x) {
+        final MathContext ctx = inferMathContext(Arrays.asList(x));
+        IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length)) {
+            @Override
+            public MathContext getMathContext() {
+                return ctx;
+            }
+        };
+
+        return Arrays.stream(x).reduce(ExactZero.getInstance(ctx), Numeric::add).divide(n);
+    }
+
+    /**
+     * Compute the geometric mean of multiple values.
+     * @param x one or more values
+     * @return the geometric mean of the values in {@code x}
+     * @since 0.4
+     */
+    public static RealType geometricMean(Numeric... x) {
+        final MathContext ctx = inferMathContext(Arrays.asList(x));
+        // n is only used as an exponent, so no need to embed a MathContext in it
+        IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length));
+
+        try {
+            RealType intermediate = (RealType) Arrays.stream(x).reduce(One.getInstance(ctx), Numeric::multiply).coerceTo(RealType.class);
+            return nthRoot(intermediate, n, ctx);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Unable to compute nth root of sum: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Compute the harmonic mean of multiple values.
+     * This is equivalent to the inverse of the arithmetic
+     * mean of the inverses of the values in {@code x}.
+     * @param x one or more values
+     * @return the harmonic mean of the values in {@code x}
+     * @since 0.4
+     */
+    public static Numeric harmonicMean(Numeric... x) {
+        final MathContext ctx = inferMathContext(Arrays.asList(x));
+        IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length)) {
+            @Override
+            public MathContext getMathContext() {
+                return ctx;
+            }
+        };
+
+        return n.divide(Arrays.stream(x).map(Numeric::inverse).reduce(ExactZero.getInstance(ctx), Numeric::add));
+    }
+
+    /**
+     * Given two values, compute their arithmetic geometric mean.
+     * @param x the first value
+     * @param y the second value
+     * @return the arithmetic geometric mean of {@code x} and {@code y}
+     * @since 0.4
+     */
+    public static Numeric arithmeticGeometricMean(Numeric x, Numeric y) {
+        final MathContext ctx = inferMathContext(List.of(x, y));
+        final RealType epsilon = computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
+        Numeric X = x;
+        Numeric Y = y;
+        while (absoluteDifference(X, Y).compareTo(epsilon) > 0) {
+            Numeric X1 = arithmeticMean(X, Y);
+            Numeric Y1 = geometricMean(X, Y);
+            X = X1;
+            Y = Y1;
+        }
+        // X and Y should converge to the same value, so return either
+        return X;
+    }
+
+    private static RealType absoluteDifference(Numeric a, Numeric b) {
+        Numeric rawDiff = a.subtract(b).magnitude();
+        try {
+            return (RealType) rawDiff.coerceTo(RealType.class);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Cannot compute real-valued absolute difference between " +
+                    a + " and " + b);
+        }
+    }
+
+    /**
+     * A convenient alias for {@link #arithmeticGeometricMean(Numeric, Numeric)}.
+     * @param x the first  value
+     * @param y the second value
+     * @return the arithmetic geometric mean of {@code x} and {@code y}
+     * @since 0.4
+     */
+    public static Numeric AGM(Numeric x, Numeric y) {
+        return arithmeticGeometricMean(x, y);
+    }
+
+    /**
      * Factory method that provides a comparator that works with
      * all {@link Numeric} subtypes that are comparable, even
      * distinctly different subtypes. This comparator also
