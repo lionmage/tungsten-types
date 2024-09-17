@@ -3045,7 +3045,7 @@ public class MathUtils {
      * Determine whether a matrix is positive definite.
      * @param M the matrix to check for positive definiteness
      * @return true if {@code M} is positive definite, false otherwise
-     * @see <a href="https://sites.math.northwestern.edu/~clark/285/2006-07/handouts/pos-def.pdf"></a>this handout</a>
+     * @see <a href="https://sites.math.northwestern.edu/~clark/285/2006-07/handouts/pos-def.pdf">this handout</a>
      *   by Professor Emeritus R.&nbsp;Clark Robinson at Northwestern University, Dept. of Mathematics
      */
     public static boolean isPositiveDefinite(Matrix<? extends Numeric> M) {
