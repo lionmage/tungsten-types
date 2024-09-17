@@ -30,6 +30,10 @@ import tungsten.types.util.OptionalOperations;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A mapping of argument names to values.
+ * @param <T> the type of values in this mapping
+ */
 public class ArgMap<T extends Numeric> extends HashMap<String, T> {
     /**
      * The regular expression used for splitting apart a string
@@ -108,6 +112,10 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
         parseMappings(stripped, clazz);
     }
 
+    /**
+     * Obtain the number of variable mappings.
+     * @return the count of variable mappings
+     */
     public long arity() {
         // size may not be accurate for very large maps, so do it this way
         return this.keySet().stream().count();
