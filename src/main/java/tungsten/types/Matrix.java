@@ -277,8 +277,10 @@ public interface Matrix<T extends Numeric> {
                 throw new IllegalStateException("While computing the Frobenius norm", e);
             }
         } else {
+            // use max norm
             Numeric maxValue = allValues
-                    .max(MathUtils.obtainGenericComparator()).orElseThrow();
+                    .max(MathUtils.obtainGenericComparator())
+                    .orElseThrow(() -> new ArithmeticException("Unable to compute max norm"));
             try {
                 return (RealType) maxValue.coerceTo(RealType.class);
             } catch (CoercionException e) {
