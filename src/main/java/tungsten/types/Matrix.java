@@ -66,6 +66,13 @@ public interface Matrix<T extends Numeric> {
 
     long columns();
     long rows();
+
+    /**
+     * Obtain the value at a given row and column.
+     * @param row    a row index
+     * @param column a column index
+     * @return the value at {@code row} and {@code column}
+     */
     T valueAt(long row, long column);
     T determinant();
     Matrix<? extends Numeric> inverse();
@@ -223,6 +230,14 @@ public interface Matrix<T extends Numeric> {
     
     Matrix<T> add(Matrix<T> addend);
     Matrix<T> multiply(Matrix<T> multiplier);
+
+    /**
+     * Given a scalar value, scale this matrix by that value.
+     * The resulting matrix consists of elements that are those
+     * of the original matrix multiplied by the scalar.
+     * @param scaleFactor a scalar value
+     * @return the scaled matrix
+     */
     Matrix<T> scale(T scaleFactor);
 
     /**

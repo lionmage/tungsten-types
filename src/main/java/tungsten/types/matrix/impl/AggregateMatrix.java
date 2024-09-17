@@ -60,7 +60,11 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     private T detCache;
     private long columns = -1, rows = -1;
     private final Matrix<T>[][] subMatrices;
-    
+
+    /**
+     * Construct a {@link Matrix} from a rectangular array of matrices.
+     * @param subMatrices a 2-dimensional array of matrices
+     */
     public AggregateMatrix(Matrix<T>[][] subMatrices) {
         // first, check that each row has matrices with the same number of rows
         for (int row = 0; row < subMatrices.length; row++) {
@@ -167,6 +171,13 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         }
     }
 
+    /**
+     * Given the row and column indices of a submatrix, return the
+     * submatrix.
+     * @param blockRow    the row index of the submatrix
+     * @param blockColumn the column index of the submatrix
+     * @return the submatrix corresponding to the row and column indices
+     */
     public Matrix<T> getSubMatrix(int blockRow, int blockColumn) {
         if (blockRow < 0 || blockRow > subMatrices.length - 1 ||
                 blockColumn < 0 || blockColumn > subMatrices[0].length - 1) {
@@ -175,10 +186,18 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         return subMatrices[blockRow][blockColumn];
     }
 
+    /**
+     * Obtain the number of submatrix rows.
+     * @return the number of submatrix rows
+     */
     public int subMatrixRows() {
         return subMatrices.length;
     }
 
+    /**
+     * Obtain the number of submatrix columns.
+     * @return the number of submatrix columns
+     */
     public int subMatrixColumns() {
         return subMatrices[0].length;
     }
