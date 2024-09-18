@@ -38,15 +38,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * A vector of named function arguments.
+ * @param <T> the type of the argument values
+ */
 public class ArgVector<T extends Numeric> implements Vector<T> {
     // a LinkedHashMap will maintain insertion order
     final LinkedHashMap<String, T> args = new LinkedHashMap<>();
 
+    /**
+     * Construct an argument vector with an array of argument names
+     * and a mapping from variable names to values.
+     * The order of arguments is determined by the order of the argument names.
+     * @param argLabels an array of argument names
+     * @param source    a mapping from argument names to values
+     */
     public ArgVector(String[] argLabels, ArgMap<T> source) {
         if (source.arity() < argLabels.length) throw new IllegalArgumentException("Mismatched arity");
         Arrays.stream(argLabels).forEachOrdered(label -> append(label, source.get(label)));
     }
 
+    /**
+     * Construct an argument vector with an array of argument names,
+     * a mapping from variable names to values, and a default value.
+     * The order of arguments is determined by the order of the argument names.
+     * Any argument name for which no mapping exists is assigned the default value.
+     * @param argLabels    an array of argument names
+     * @param source       a mapping from argument names to values
+     * @param defaultValue the default value for unspecified mappings
+     */
     public ArgVector(String[] argLabels, ArgMap<T> source, T defaultValue) {
         Arrays.stream(argLabels).forEachOrdered(label -> append(label, source.getOrDefault(label, defaultValue)));
     }
@@ -86,6 +106,10 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         return arity();
     }
 
+    /**
+     * Obtain the arity or dimension of this vector.
+     * @return the arity
+     */
     public long arity() {
         return args.keySet().stream().count();
     }
@@ -102,15 +126,16 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public void setElementAt(T element, long position) {
+        final Logger logger = Logger.getLogger(ArgVector.class.getName());
         final String varLabel = labelForIndex(position);
         T oldval = args.replace(varLabel, element);
         if (oldval == null) {
-            Logger.getLogger(ArgVector.class.getName()).log(Level.WARNING,
+            logger.log(Level.WARNING,
                     "Either there was no value set at index {0}" +
                             ", or else '{1}' was never associated with any index.",
                     new Object[] {position, varLabel});
         } else {
-            Logger.getLogger(ArgVector.class.getName()).log(Level.INFO,
+            logger.log(Level.INFO,
                     "Successfully updated {0} from {1} to {2}",
                     new Object[] {varLabel, oldval, element});
         }
