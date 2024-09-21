@@ -389,6 +389,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (rowIndex < 0L || rowIndex >= rows()) throw new IndexOutOfBoundsException("Row " + rowIndex + " does not exist");
         if (row.length() != columns()) throw new IllegalArgumentException("Provided RowVector must match column dimension");
         rows.set((int) rowIndex, row);
+        columnCache.clear();
     }
 
     public void updateColumn(long colIndex, ColumnVector<T> column) {
@@ -397,6 +398,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         for (long rowIdx = 0L; rowIdx < rows(); rowIdx++) {
             setValueAt(column.elementAt(rowIdx), rowIdx, colIndex);
         }
+        columnCache.put(colIndex, column);
     }
 
     /**
@@ -451,6 +453,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (row1 == row2) return; // NO-OP
         
         Collections.swap(this.rows, (int) row1, (int) row2);
+        columnCache.clear();
     }
 
     /**
@@ -467,6 +470,18 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
             List<T> elements = rows.get(rowIdx).stream().collect(Collectors.toCollection(ArrayList::new));
             Collections.swap(elements, (int) column1, (int) column2);
             rows.set(rowIdx, new ArrayRowVector<>(elements));
+        }
+        // swap elements in the column cache if both or either of the keys are mapped
+        if (columnCache.containsKey(column1) && columnCache.containsKey(column2)) {
+            ColumnVector<T> first = columnCache.get(column1);
+            columnCache.put(column1, columnCache.get(column2));
+            columnCache.put(column2, first);
+        } else if (columnCache.containsKey(column1)) {
+            columnCache.put(column2, columnCache.get(column1));
+            columnCache.remove(column1);
+        } else if (columnCache.containsKey(column2)) {
+            columnCache.put(column1, columnCache.get(column2));
+            columnCache.remove(column2);
         }
     }
 
