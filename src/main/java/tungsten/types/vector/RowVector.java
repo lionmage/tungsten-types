@@ -55,6 +55,9 @@ import java.util.stream.Stream;
  */
 public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<T> {
     private MathContext mctx;
+    /**
+     * The type of the elements of this vector.
+     */
     protected Class<T> elementType;
 
     protected RowVector() {
@@ -236,6 +239,14 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
     @Override
     public abstract ColumnVector<T> transpose();
 
+    /**
+     * Obtain a {@code Stream} of the elements of this vector.
+     * The encounter order of the elements should be identical
+     * to the order in which they are stored in the vector; more
+     * generally, elements are encountered in the order of their
+     * indices.
+     * @return a {@code Stream} of vector elements.
+     */
     public abstract Stream<T> stream();
 
     /**

@@ -54,6 +54,9 @@ import java.util.stream.Stream;
 @Columnar
 public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matrix<T> {
     private MathContext mctx;
+    /**
+     * The type of the elements of this vector.
+     */
     protected Class<T> elementType;
 
     protected ColumnVector() {
@@ -296,7 +299,15 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
         }
         throw new ArithmeticException("Inverse only applies to square matrices");
     }
-    
+
+    /**
+     * Obtain a {@code Stream} of the elements of this vector.
+     * The stream is guaranteed to return elements in the order
+     * in which they are stored in the vector; equivalently,
+     * the elements are returned in order of the indices of the
+     * elements.
+     * @return a {@code Stream} of vector elements
+     */
     public abstract Stream<T> stream();
 
     /**
