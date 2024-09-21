@@ -37,12 +37,12 @@ import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
-import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Basic concrete implementation of {@link Matrix}.
@@ -316,7 +316,15 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         }
         return byAdjoint;
     }
-    
+
+    /**
+     * Convert this matrix to a matrix of the given numeric type.
+     * Upconversions are explicitly permitted, whereas downconversions
+     * will result in an exception.
+     * @param clazz the desired target type
+     * @return a new matrix with elements of type {@code clazz}
+     * @param <R> the element type
+     */
     public <R extends Numeric> Matrix<R> upconvert(Class<R> clazz) {
         // first, check to make sure we can do this -- ensure R is a wider type than T
         NumericHierarchy targetType = NumericHierarchy.forNumericType(clazz);
@@ -344,13 +352,23 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         }
         return result;
     }
-    
+
+    /**
+     * Generate a matrix from this matrix with the given row removed.
+     * @param row the index of the row to remove
+     * @return the resulting matrix
+     */
     public BasicMatrix<T> removeRow(long row) {
         ArrayList<RowVector<T>> result = new ArrayList<>(rows);
         result.remove((int) row);
         return new BasicMatrix<>(result);
     }
-    
+
+    /**
+     * Generate a matrix from this matrix with the given column removed.
+     * @param column the index of the row to remove
+     * @return the resulting matrix
+     */
     public BasicMatrix<T> removeColumn(long column) {
         final Class<T> clazz = rows.get(0).getElementType();
         ArrayList<RowVector<T>> result = new ArrayList<>();
@@ -392,7 +410,14 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     public BasicMatrix<T> minor(long row, long column) {
         return this.removeRow(row).removeColumn(column);
     }
-    
+
+    /**
+     * Compute the cofactor matrix of this matrix.
+     * The cofactor matrix is formed from the cofactors of the original matrix.
+     * @return the cofactor matrix
+     * @see <a href="https://en.wikipedia.org/wiki/Minor_(linear_algebra)#Applications_of_minors_and_cofactors">the
+     *   Wikipedia article</a>
+     */
     public BasicMatrix<T> cofactor() {
         final Class<T> clazz = rows.get(0).getElementType();
         T[][] result = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) this.columns());
@@ -405,38 +430,44 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         }
         return new BasicMatrix<>(result);
     }
-    
+
+    /**
+     * Compute the adjoint, which is the transpose of
+     * the cofactor matrix for this matrix.
+     * @return the adjoint matrix
+     */
     public Matrix<T> adjoint() {
         return cofactor().transpose();
     }
-    
-    public Matrix<T> exchangeRows(long row1, long row2) {
+
+    /**
+     * Exchange two rows of this matrix.
+     * @param row1 the first row
+     * @param row2 the second row
+     */
+    public void exchangeRows(long row1, long row2) {
         if (row1 < 0L || row1 >= rows()) throw new IndexOutOfBoundsException("row1 must be within bounds 0 - " + (rows() - 1L));
         if (row2 < 0L || row2 >= rows()) throw new IndexOutOfBoundsException("row2 must be within bounds 0 - " + (rows() - 1L));
-        if (row1 == row2) return this; // NO-OP
+        if (row1 == row2) return; // NO-OP
         
-        final ArrayList<RowVector<T>> result = new ArrayList<>(this.rows);
-        Collections.swap(result, (int) row1, (int) row2);
-        return new BasicMatrix<>(result);
+        Collections.swap(this.rows, (int) row1, (int) row2);
     }
-    
-    public Matrix<T> exchangeColumns(long column1, long column2) {
+
+    /**
+     * Exchange two columns of this matrix.
+     * @param column1 the first column
+     * @param column2 the second column
+     */
+    public void exchangeColumns(long column1, long column2) {
         if (column1 < 0L || column1 >= columns()) throw new IndexOutOfBoundsException("column1 must be within bounds 0 - " + (columns() - 1L));
         if (column2 < 0L || column2 >= columns()) throw new IndexOutOfBoundsException("column2 must be within bounds 0 - " + (columns() - 1L));
-        if (column1 == column2) return this; // NO-OP
-        
-        final ArrayList<RowVector<T>> result = new ArrayList<>();
-        this.rows.forEach(rowVec -> {
-            ArrayList<T> row = new ArrayList<>((int) rowVec.length());
-            for (long column = 0L; column < columns(); column++) {
-                if (column == column1) row.add(rowVec.elementAt(column2));
-                else if (column == column2) row.add(rowVec.elementAt(column1));
-                else row.add(rowVec.elementAt(column));
-            }
-            result.add(new ListRowVector<>(row));
-        });
-        
-        return new BasicMatrix<>(result);
+        if (column1 == column2) return; // NO-OP
+
+        for (int rowIdx = 0; rowIdx < rows.size(); rowIdx++) {
+            List<T> elements = rows.get(rowIdx).stream().collect(Collectors.toCollection(ArrayList::new));
+            Collections.swap(elements, (int) column1, (int) column2);
+            rows.set(rowIdx, new ArrayRowVector<>(elements));
+        }
     }
 
     @Override
