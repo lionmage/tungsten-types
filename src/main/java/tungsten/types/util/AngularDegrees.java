@@ -174,6 +174,10 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
         return seconds;
     }
 
+    /**
+     * Obtain the decimal equivalent of this degree value.
+     * @return a real value equivalent to the DMS representation
+     */
     public RealType getDecimalDegrees() {
         return decDegrees;
     }

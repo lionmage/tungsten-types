@@ -42,10 +42,18 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
      */
     private static final String SPLIT_REGEX = "\\s*;\\s*";
 
+    /**
+     * Construct an empty argument map.
+     */
     public ArgMap() {
         super();
     }
 
+    /**
+     * Copy constructor.
+     * Useful for copying the mappings from another {@link Map} type.
+     * @param source a map of variable names to values
+     */
     public ArgMap(Map<String, T> source) {
         super(source);
     }

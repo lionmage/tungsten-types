@@ -147,7 +147,17 @@ public interface Vector<T extends Numeric> {
      * @return the value of the angle between these vectors in radians
      */
     RealType computeAngle(Vector<T> other);
-    
+
+    /**
+     * Obtain a {@link MathContext} that is descriptive of the elements of this vector.
+     * It is up to the individual implementation to determine or compute this value.
+     * An implementation may store a value separate from the elements, for example,
+     * or it may compute a {@code MathContext} from each of the elements.  A fast
+     * implementation might only look at the {@code MathContext} of the first element
+     * and return that.
+     * @return a {@code MathContext} suitable for use in calculations involving this vector
+     *   and its elements.
+     */
     MathContext getMathContext();
 
     /*
