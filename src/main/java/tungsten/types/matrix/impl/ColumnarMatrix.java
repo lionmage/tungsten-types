@@ -356,7 +356,13 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         
         Collections.swap(this.columns, (int) column1, (int) column2);
     }
-    
+
+    /**
+     * Exchange two rows of this matrix.
+     * Note that this is not an efficient operation since this matrix is column major.
+     * @param row1 the first row
+     * @param row2 the second row
+     */
     public void exchangeRows(long row1, long row2) {
         if (row1 < 0L || row1 >= rows()) throw new IndexOutOfBoundsException("row1 must be within bounds 0 - " + (rows() - 1L));
         if (row2 < 0L || row2 >= rows()) throw new IndexOutOfBoundsException("row2 must be within bounds 0 - " + (rows() - 1L));
