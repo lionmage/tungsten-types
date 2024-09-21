@@ -324,6 +324,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
      * @param clazz the desired target type
      * @return a new matrix with elements of type {@code clazz}
      * @param <R> the element type
+     * @throws ArithmeticException if upconversion is not supported
      */
     public <R extends Numeric> Matrix<R> upconvert(Class<R> clazz) {
         // first, check to make sure we can do this -- ensure R is a wider type than T

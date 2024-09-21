@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -267,6 +268,15 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         return new ArrayColumnVector<>(elementsToKeep);
     }
 
+    /**
+     * Obtain a matrix with elements of the specified type.
+     * Upconversion of types is supported; downconversion will result
+     * in an exception.
+     * @param clazz the desired target type
+     * @return a new matrix with elements of type {@code clazz}
+     * @param <R> the element type
+     * @throws ArithmeticException if upconversion is not supported
+     */
     public <R extends Numeric> Matrix<R> upconvert(Class<R> clazz) {
         // first, check to make sure we can do this -- ensure R is a wider type than T
         NumericHierarchy targetType = NumericHierarchy.forNumericType(clazz);
@@ -307,7 +317,12 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     public ColumnarMatrix<T> minor(long row, long column) {
         return this.removeColumn(column).removeRow(row);
     }
-    
+
+    /**
+     * Compute the cofactor matrix for this matrix.
+     * @return the cofactor matrix
+     * @see BasicMatrix#cofactor()
+     */
     public ColumnarMatrix<T> cofactor() {
         final Class<T> clazz = columns.get(0).getElementType();
         T[][] result = (T[][]) Array.newInstance(clazz, (int) this.rows(), columns.size());
@@ -320,38 +335,38 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         }
         return new ColumnarMatrix<>(result);
     }
-    
+
+    /**
+     * Compute the adjoint matrix for this matrix.
+     * @return the adjoint matrix
+     */
     public Matrix<T> adjoint() {
         return cofactor().transpose();
     }
-    
-    public Matrix<T> exchangeColumns(long column1, long column2) {
+
+    /**
+     * Exchange two columns of this matrix.
+     * @param column1 the first column
+     * @param column2 the second column
+     */
+    public void exchangeColumns(long column1, long column2) {
         if (column1 < 0L || column1 >= columns()) throw new IndexOutOfBoundsException("column1 must be within bounds 0 - " + (columns() - 1L));
         if (column2 < 0L || column2 >= columns()) throw new IndexOutOfBoundsException("column2 must be within bounds 0 - " + (columns() - 1L));
-        if (column1 == column2) return this; // NO-OP
+        if (column1 == column2) return; // NO-OP
         
-        ArrayList<ColumnVector<T>> result = new ArrayList<>(this.columns);
-        Collections.swap(result, (int) column1, (int) column2);
-        return new ColumnarMatrix<>(result);
+        Collections.swap(this.columns, (int) column1, (int) column2);
     }
     
-    public Matrix<T> exchangeRows(long row1, long row2) {
+    public void exchangeRows(long row1, long row2) {
         if (row1 < 0L || row1 >= rows()) throw new IndexOutOfBoundsException("row1 must be within bounds 0 - " + (rows() - 1L));
         if (row2 < 0L || row2 >= rows()) throw new IndexOutOfBoundsException("row2 must be within bounds 0 - " + (rows() - 1L));
-        if (row1 == row2) return this; // NO-OP
-        
-        final ArrayList<ColumnVector<T>> result = new ArrayList<>();
-        this.columns.forEach(colVec -> {
-            ArrayList<T> column = new ArrayList<>((int) colVec.length());
-            for (long row = 0L; row < rows(); row++) {
-                if (row == row1) column.add(colVec.elementAt(row2));
-                else if (row == row2) column.add(colVec.elementAt(row1));
-                else column.add(colVec.elementAt(row));
-            }
-            result.add(new ArrayColumnVector<>(column));
-        });
-        
-        return new ColumnarMatrix<>(result);
+        if (row1 == row2) return; // NO-OP
+
+        for (int colIdx = 0; colIdx < columns.size(); colIdx++) {
+            List<T> elements = columns.get(colIdx).stream().collect(Collectors.toCollection(ArrayList::new));
+            Collections.swap(elements, (int) row1, (int) row2);
+            columns.set(colIdx, new ArrayColumnVector<>(elements));
+        }
     }
     
     @Override
