@@ -144,6 +144,14 @@ public class ClassTools {
         return isAbstractType(clazz);
     }
 
+    /**
+     * Determine if a given {@code Class} represents an
+     * abstract type, a subtype of {@code Numeric} that is
+     * not integer, rational, real, or complex.
+     * @param clazz any subtype of {@code Numeric}
+     * @return true if {@code clazz} represents an abstract type
+     * @since 0.4
+     */
     public static boolean isAbstractType(Class<? extends Numeric> clazz) {
         return nonAbstractTypes.stream().noneMatch(naType -> naType.isAssignableFrom(clazz));
     }
@@ -212,6 +220,12 @@ public class ClassTools {
         return clazz.map(aClass -> (Class<T>) aClass).orElseGet(() -> (Class<T>) Numeric.class);
     }
 
+    /**
+     * Find all the classes contained in the specified package.
+     * @param packageName    the name of the package we wish to scan
+     * @param withAnnotation the annotation type that the classes must have
+     * @return a {@code List} of {@code Class} objects for the given package and annotation
+     */
     public static Collection<Class<?>> findClassesInPackage(String packageName, Class<? extends Annotation> withAnnotation) {
         InputStream stream = ClassLoader.getSystemClassLoader()
                 .getResourceAsStream(packageName.replaceAll("[.]", "/"));

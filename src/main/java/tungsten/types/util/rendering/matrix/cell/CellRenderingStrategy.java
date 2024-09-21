@@ -47,6 +47,12 @@ public interface CellRenderingStrategy {
      * @param maxWidth the maximum acceptable character width, or -1 for unlimited
      */
     void setMaxCellWidth(int maxWidth);
+
+    /**
+     * Returns the type of the matrix cell values
+     * that this rendering strategy is supposed to support.
+     * @return a subtype of {@code Numeric}
+     */
     Class<? extends Numeric> getElementType();
 
     /**
