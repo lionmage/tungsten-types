@@ -490,7 +490,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         if (One.isUnity(scaleFactor)) return this;
         BasicMatrix<T> scaled = new BasicMatrix<>();
         
-        rows.stream().map(rowVec -> rowVec.scale(scaleFactor)).forEach(scaled::append);
+        rows.stream().map(rowVec -> rowVec.scale(scaleFactor)).forEachOrdered(scaled::append);
         return scaled;
     }
     
