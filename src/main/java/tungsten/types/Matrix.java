@@ -76,7 +76,13 @@ public interface Matrix<T extends Numeric> {
     T valueAt(long row, long column);
     T determinant();
     Matrix<? extends Numeric> inverse();
-    
+
+    /**
+     * Test whether this matrix is upper triangular.
+     * @return true if this matrix is upper triangular, false otherwise
+     * @apiNote The default implementation checks whether the elements
+     *   in the lower triangle are all zero.
+     */
     default boolean isUpperTriangular() {
         if (columns() != rows()) return false;
         if (rows() == 1L) return false;  // singleton matrix can't really be either upper or lower triangular
@@ -88,7 +94,13 @@ public interface Matrix<T extends Numeric> {
         }
         return true;
     }
-    
+
+    /**
+     * Test whether this matrix is lower triangular.
+     * @return true if this matrix is lower triangular, false otherwise
+     * @apiNote The default implementation checks whether the elements
+     *   in the upper triangle are all zero.
+     */
     default boolean isLowerTriangular() {
         if (columns() != rows()) return false;
         if (rows() == 1L) return false;  // singleton matrix can't really be either upper or lower triangular
@@ -100,7 +112,17 @@ public interface Matrix<T extends Numeric> {
         }
         return true;
     }
-    
+
+    /**
+     * Determine whether this matrix is upper <em>or</em> lower
+     * triangular.
+     * @return true if this matrix satisfies the requirements for
+     *   upper or lower triangularity
+     * @apiNote Because the tests for triangularity can be slow or
+     *   computationally expensive, the default implementation
+     *   is multithreaded and checks both upper and lower triangles
+     *   simultaneously.
+     */
     default boolean isTriangular() {
         final ExecutorService executor = Executors.newFixedThreadPool(2);
         Callable<Boolean> isLower = this::isLowerTriangular;
@@ -288,7 +310,12 @@ public interface Matrix<T extends Numeric> {
             }
         }
     }
-    
+
+    /**
+     * Compute this matrix raised to an exponent.
+     * @param n the exponent
+     * @return a matrix that is this matrix raised to the {@code n}<sup>th</sup> power
+     */
     default Matrix<? extends Numeric> pow(Numeric n) {
         if (n instanceof RationalType) {
             RationalType exponent = (RationalType) n;
