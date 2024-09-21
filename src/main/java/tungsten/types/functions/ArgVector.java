@@ -71,6 +71,11 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         Arrays.stream(argLabels).forEachOrdered(label -> append(label, source.getOrDefault(label, defaultValue)));
     }
 
+    /**
+     * Append a name-value pair to this argument vector.
+     * @param label a variable name
+     * @param value the value bound to this variable
+     */
     public void append(String label, T value) {
         args.put(label, value);
     }
@@ -80,6 +85,12 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         return "arg" + length();
     }
 
+    /**
+     * Obtain the index for a given variable name.
+     * @param label a variable name
+     * @return the index of the bound variable
+     * @throws IllegalArgumentException if {@code label} does not correspond to a bound variable
+     */
     public long indexForLabel(String label) {
         long index = 0L;
         for (String toCheck : args.keySet()) {
@@ -89,10 +100,22 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         throw new IllegalArgumentException("No such element: " + label);
     }
 
+    /**
+     * Given an index, obtain the name of the variable bound at that index.
+     * @param index a non-negative index into this vector
+     * @return the name of the variable bound at {@code index}
+     * @throws IndexOutOfBoundsException if the index is negative or &ge;&nbsp;{@link #length()}
+     */
     public String labelForIndex(long index) {
-        return args.keySet().stream().skip(index).findFirst().orElseThrow();
+        if (index < 0L) throw new IndexOutOfBoundsException("index cannot be negative");
+        return args.keySet().stream().skip(index).findFirst().orElseThrow(() -> new IndexOutOfBoundsException("No vector element at idx=" + index));
     }
 
+    /**
+     * Obtain a {@code List} of all variable names bound within
+     * this argument vector.
+     * @return a {@code List<String>} of variable names
+     */
     public List<String> getElementLabels() {
         return new ArrayList<>(args.keySet());
     }
@@ -120,6 +143,11 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         return args.values().stream().skip(position).findFirst().orElseThrow(IndexOutOfBoundsException::new);
     }
 
+    /**
+     * Given a variable name, obtain the bound value.
+     * @param label a variable name
+     * @return the value bound to the named variable, or {@code null} if no binding exists
+     */
     public T forVariableName(String label) {
         return args.get(label);
     }
