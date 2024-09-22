@@ -72,3 +72,33 @@ include Groovy scripts and Categories in this project, but due to classpath limi
 with IntelliJ and its Gradle integration, I have decided to move Groovy-specific stuff
 into a [separate project](https://github.com/lionmage/tungsten-groovy).
 Methods to support Groovy operator overloading will remain.
+
+As of version 0.5, I am publishing packages to GitHub.  This library may be included in Maven
+dependencies with the following snippet:
+
+```Maven POM
+<dependency>
+  <groupId>tungsten</groupId>
+  <artifactId>tungsten-types</artifactId>
+  <version>0.5-SNAPSHOT</version>
+</dependency>
+```
+
+...or using Gradle:
+
+```Gradle
+dependencies {
+    implementation 'tungsten:tungsten-types'
+}
+// etc. etc.
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/lionmage/tungsten-types")
+        // for a public repo, reading should not require credentials
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+   }
+}
+```
