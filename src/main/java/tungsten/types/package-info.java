@@ -8,6 +8,7 @@
  *       (the latter of which is also known as a bag)</li>
  *     <li>{@link tungsten.types.Range} and {@link tungsten.types.NotchedRange} encapsulate ranges of values, and
  *       can be used for any {@link tungsten.types.Numeric} subtype that implements {@link java.lang.Comparable}</li>
+ *     <li>{@link tungsten.types.SteppedRange} is a {@code Range} that supports iteration</li>
  *     <li>{@link tungsten.types.Vector} maps directly onto the mathematical concept of a vector</li>
  *     <li>{@link tungsten.types.Matrix} represents a matrix in 2&nbsp;dimensions and provides default implementations
  *       of several common operations</li>
