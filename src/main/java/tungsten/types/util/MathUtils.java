@@ -1794,7 +1794,7 @@ public class MathUtils {
             return set.coerceTo(ComplexType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE, "NumericSet -> Set<ComplexType>", ex);
-            throw new IllegalStateException("We should never have gotten here!", ex);
+            throw new ArithmeticException("Unable to represent " + n + "th roots of unity as Set<ComplexType>");
         }
     }
 
