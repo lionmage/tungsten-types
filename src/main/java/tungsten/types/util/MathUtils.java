@@ -1752,7 +1752,7 @@ public class MathUtils {
 
         do {
             x0 = x1;
-            x1 = nminus1.multiply(x0, mctx).add(A.divide(x0.pow(nint - 1, mctx), mctx), mctx).divide(ncalc, mctx);
+            x1 = nminus1.multiply(x0, mctx).add(A.divide(x0.pow(nint - 1, mctx), mctx)).divide(ncalc, mctx);
             BigDecimal delta = x0.subtract(x1, mctx).abs();
             if (delta.compareTo(x0.ulp()) <= 0) break;  // to ensure we are not stuck in an infinite loop
         } while (x0.compareTo(x1) != 0);
