@@ -111,5 +111,28 @@ Lanczos.  However, I am disinclined to implement Lanczos for a few reasons:
 I have since settled on Weierstrass, which seems to have reasonable performance and generates results on
 par with previous best attempts.  This was made possible in part by implementing a
 very efficient algorithm for calculating the Euler-Mascheroni constant that produces as many digits of precision
-as we could possibly want.  There are tuning parameters available to increase accuracy and/or concurrency,
+as we could possibly want.  There are Weierstrass tuning parameters available to increase accuracy and/or concurrency,
 available as system properties that can be supplied at runtime.
+
+## The ln𝚪 implementation
+It's frequently more practical to interact with the natural log of the Gamma function, ln𝚪(z).
+The implementation can be found as `MathUtils.lnGamma()`.
+Using Stirling's approximation, we can obtain an arbitrarily accurate result for values of Re(z) > 0
+and |Arg(z)| < 𝜋, although
+Stirling's approximation itself only gives accurate results for Re(z) > T where T is some threshold value.
+In my implementation, I chose a default threshold of 7.  For values where Re(z) ≤ T, we compute ln𝚪(z + T)
+and then subtract off ln(k) for each unit-wide strip for k in [1, T].
+
+## The UnaryFunction implementation
+Since Stirling's approximation gives such good results for at least half of the complex plane,
+and since it is relatively quick to compute, a UnaryFunction implementation becomes practical.
+`Gamma` takes a `Numeric` and returns a `Numeric`, so it can consume all types and returns either a
+`RealType` or a `ComplexType`.  For Re(z) < 0, Gamma uses the reflection formula:
+
+𝚪(z)⋅𝚪(1 − z) = 𝜋/sin(𝜋z)
+
+Gamma in most cases computes exp(ln𝚪(z)), or in the case of reflection, exp(ln𝚪(1 - z)). For
+values of z where |Arg(z)| ≥ 𝜋 or Re(z) = 0, Gamma falls back to using `MathUtils.gamma(z)`.
+Negative integers and z = 0 will result in an `ArithmeticException` being thrown.  `Gamma` does not
+currently support native differentiation (none of its methods have the `@Differentiable` annotation),
+but numeric approximations of the derivative should behave well as long as 𝚪(z) is analytic near z.
