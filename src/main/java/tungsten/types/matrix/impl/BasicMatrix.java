@@ -65,7 +65,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
      */
     public BasicMatrix(T[][] source) {
         for (T[] rowArray : source) {
-            append(new ArrayRowVector<>(rowArray));
+            append(rowArray);
         }
     }
     
