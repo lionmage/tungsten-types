@@ -150,6 +150,8 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
             throw new UnsupportedOperationException("Comparison to " + o.getClass().getTypeName() + " is not supported");
         }
     }
+
+    public Sign sign() { return Sign.NEGATIVE; }
     
     @Override
     public boolean equals(Object o) {

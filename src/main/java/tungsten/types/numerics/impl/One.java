@@ -131,6 +131,8 @@ public class One implements Numeric, Comparable<Numeric> {
         return this;
     }
 
+    public Sign sign() { return Sign.POSITIVE; }
+
     @Override
     public Numeric negate() {
         return new IntegerImpl(BigInteger.ONE.negate()) {
