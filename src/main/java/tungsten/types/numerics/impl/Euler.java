@@ -319,6 +319,8 @@ public class Euler implements RealType {
 
     @Override
     public int compareTo(RealType o) {
+        if (MathUtils.isInfinity(o, Sign.POSITIVE)) return -1;
+        if (MathUtils.isInfinity(o, Sign.NEGATIVE)) return 1;
         return this.value.compareTo(o.asBigDecimal());
     }
 

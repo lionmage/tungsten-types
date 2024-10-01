@@ -283,6 +283,8 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public int compareTo(RealType realType) {
+        if (MathUtils.isInfinity(realType, Sign.POSITIVE)) return -1;
+        if (MathUtils.isInfinity(realType, Sign.NEGATIVE)) return 1;
         return value.compareTo(realType.asBigDecimal());
     }
 

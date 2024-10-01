@@ -29,6 +29,7 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -342,6 +343,8 @@ public class Pi implements RealType {
 
     @Override
     public int compareTo(RealType o) {
+        if (MathUtils.isInfinity(o, Sign.POSITIVE)) return -1;
+        if (MathUtils.isInfinity(o, Sign.NEGATIVE)) return 1;
         return value.compareTo(o.asBigDecimal());
     }
     

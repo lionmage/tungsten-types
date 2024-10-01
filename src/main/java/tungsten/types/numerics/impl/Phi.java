@@ -29,6 +29,7 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -234,6 +235,8 @@ public class Phi implements RealType {
 
     @Override
     public int compareTo(RealType realType) {
+        if (MathUtils.isInfinity(realType, Sign.POSITIVE)) return -1;
+        if (MathUtils.isInfinity(realType, Sign.NEGATIVE)) return 1;
         return value.compareTo(realType.asBigDecimal());
     }
 

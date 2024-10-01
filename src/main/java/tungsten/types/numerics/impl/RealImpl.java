@@ -28,6 +28,7 @@ import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
@@ -492,6 +493,8 @@ public class RealImpl implements RealType {
 
     @Override
     public int compareTo(RealType o) {
+        if (MathUtils.isInfinity(o, Sign.POSITIVE)) return -1;
+        if (MathUtils.isInfinity(o, Sign.NEGATIVE)) return 1;
         return val.compareTo(o.asBigDecimal());
     }
 
