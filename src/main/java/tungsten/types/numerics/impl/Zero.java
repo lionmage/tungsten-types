@@ -28,6 +28,7 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.Polar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -247,12 +248,8 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     @Override
     public int compareTo(Numeric o) {
         if (o instanceof One) return -1;
-        if (o instanceof PosInfinity) return -1;
-        if (o instanceof NegInfinity) return 1;
-        if (o instanceof RealInfinity) {
-            RealInfinity rei = (RealInfinity) o;
-            return rei.sign() == Sign.POSITIVE ? -1 : 1;
-        }
+        if (MathUtils.isInfinity(o, Sign.POSITIVE)) return -1;
+        if (MathUtils.isInfinity(o, Sign.NEGATIVE)) return 1;
         if (o instanceof Comparable) {
             try {
                 Comparable<Numeric> that = (Comparable<Numeric>) o;
