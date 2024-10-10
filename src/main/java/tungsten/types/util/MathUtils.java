@@ -208,6 +208,7 @@ public class MathUtils {
     }
 
     private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
+    private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
 
     private static void cacheFact(BigInteger n, BigInteger value) {
         // these bounds should prevent an ArithmeticException from being thrown
@@ -644,6 +645,7 @@ public class MathUtils {
             throw new ArithmeticException("\uD835\uDF01(s) is singular at s=\u221E");
         }
         final RealType two = new RealImpl(decTWO, s.getMathContext());
+        final Logger logger = Logger.getLogger(MathUtils.class.getName());
         if (s.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType intArg = (IntegerType) s.coerceTo(IntegerType.class);
@@ -663,6 +665,20 @@ public class MathUtils {
                     if ((n/2L + 1L) % 2L == 1L) result = result.negate();
                     return result;
                 } // there is really no good pattern for odd positive integers, so we'll fall through to the logic below
+            } catch (ArithmeticException ae) {
+                // if s does not fit in a long, just swallow and continue
+                final Comparator<Numeric> comparator = obtainGenericComparator();
+                final IntegerType upperLimit = new IntegerImpl(MAX_LONG);
+                final IntegerType lowerLimit = new IntegerImpl(MIN_LONG);
+                if (comparator.compare(s, upperLimit) > 0 || comparator.compare(s, lowerLimit) < 0) {
+                    logger.log(Level.WARNING,
+                            "Argument s={0} is outside the value range for a long; skipping shortcut calculations.", s);
+                } else {
+                    logger.log(Level.SEVERE,
+                            "Unexpected exception encountered while computing \uD835\uDF01(" + s + ")", ae);
+                    // rethrow the exception
+                    throw ae;
+                }
             } catch (CoercionException e) {
                 throw new ArithmeticException("While computing \uD835\uDF01(" + s + ") as an integer");
             }
@@ -670,11 +686,11 @@ public class MathUtils {
         // use the 1930-era Euler-Maclaurin algorithm to compute 𝜁(s)
         long n = Math.max(5L, s.getMathContext().getPrecision() / 3L); // was 10L; DECIMAL64 -> 5, DECIMAL128 -> 11
         long m = Math.max(7L, s.getMathContext().getPrecision() / 2L); // was 10L; DECIMAL64 -> 8, DECIMAL128 -> 17
-        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+        logger.log(Level.INFO,
                 "Computing \uD835\uDF01(s) using Euler-Maclaurin formula with n={0}, m={1}.",
                 new Object[] {n, m});
         BernoulliNumbers numbers = new BernoulliNumbers((int) (n * m) + 2, s.getMathContext());
-        Logger.getLogger(MathUtils.class.getName()).log(Level.INFO,
+        logger.log(Level.INFO,
                 "\uD835\uDF01({0}) error term = {1}", new Object[] {s, zetaE_mn(n, m, s, numbers)});
 
         Numeric finalTerm = LongStream.rangeClosed(1L, m).parallel()
