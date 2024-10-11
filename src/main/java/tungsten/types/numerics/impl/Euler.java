@@ -197,7 +197,7 @@ public class Euler implements RealType {
     }
 
     @Override
-    public Numeric inverse() {
+    public RealType inverse() {
         return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
             @Override
             public boolean isIrrational() {
@@ -271,6 +271,7 @@ public class Euler implements RealType {
         }
         if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return new RealImpl(BigDecimal.ONE, mctx);
         else if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) return this;
+        else if (x.asBigDecimal().compareTo(BigDecimal.ONE.negate()) == 0) return this.inverse();
 
         // otherwise compute the series
         final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());

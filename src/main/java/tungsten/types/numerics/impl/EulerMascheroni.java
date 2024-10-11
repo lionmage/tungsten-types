@@ -225,7 +225,7 @@ public class EulerMascheroni implements RealType {
     }
 
     @Override
-    public Numeric inverse() {
+    public RealType inverse() {
         return new RealImpl(BigDecimal.ONE.divide(value, mctx), mctx, false) {
             @Override
             public boolean isIrrational() {
