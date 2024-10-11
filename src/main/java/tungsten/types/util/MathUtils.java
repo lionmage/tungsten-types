@@ -208,7 +208,6 @@ public class MathUtils {
     }
 
     private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
-    private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
 
     private static void cacheFact(BigInteger n, BigInteger value) {
         // these bounds should prevent an ArithmeticException from being thrown
@@ -649,35 +648,26 @@ public class MathUtils {
         if (s.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType intArg = (IntegerType) s.coerceTo(IntegerType.class);
-                long n = intArg.asBigInteger().longValueExact();
-                BernoulliNumbers bn = new BernoulliNumbers(n > 1000L ? 1024 : (int) (Math.abs(n) + 2L), s.getMathContext());
+                if (RangeUtils.ALL_LONGS.contains(intArg)) {
+                    long n = intArg.asBigInteger().longValueExact();
+                    BernoulliNumbers bn = new BernoulliNumbers(n > 1000L ? 1024 : (int) (Math.abs(n) + 2L), s.getMathContext());
 
-                if (n <= 0L) {
-                    long posN = Math.abs(n);
-                    Numeric result = bn.getB(posN).divide(new IntegerImpl(BigInteger.valueOf(posN + 1L)));
-                    if (posN % 2L == 1L) result = result.negate();
-                    return result;
-                } else if (n % 2L == 0L) {
-                    // even positive integers
-                    RealType factor = (RealType) Pi.getInstance(s.getMathContext()).multiply(two);
-                    Numeric result = computeIntegerExponent(factor, 2L).multiply(bn.getB(n))
-                            .divide(two.multiply(factorial(intArg)));
-                    if ((n/2L + 1L) % 2L == 1L) result = result.negate();
-                    return result;
-                } // there is really no good pattern for odd positive integers, so we'll fall through to the logic below
-            } catch (ArithmeticException ae) {
-                // if s does not fit in a long, just swallow and continue
-                final Comparator<Numeric> comparator = obtainGenericComparator();
-                final IntegerType upperLimit = new IntegerImpl(MAX_LONG);
-                final IntegerType lowerLimit = new IntegerImpl(MIN_LONG);
-                if (comparator.compare(s, upperLimit) > 0 || comparator.compare(s, lowerLimit) < 0) {
-                    logger.log(Level.WARNING,
-                            "Argument s={0} is outside the value range for a long; skipping shortcut calculations.", s);
+                    if (n <= 0L) {
+                        long posN = Math.abs(n);
+                        Numeric result = bn.getB(posN).divide(new IntegerImpl(BigInteger.valueOf(posN + 1L)));
+                        if (posN % 2L == 1L) result = result.negate();
+                        return result;
+                    } else if (n % 2L == 0L) {
+                        // even positive integers
+                        RealType factor = (RealType) Pi.getInstance(s.getMathContext()).multiply(two);
+                        Numeric result = computeIntegerExponent(factor, 2L).multiply(bn.getB(n))
+                                .divide(two.multiply(factorial(intArg)));
+                        if ((n / 2L + 1L) % 2L == 1L) result = result.negate();
+                        return result;
+                    } // there is really no good pattern for odd positive integers, so we'll fall through to the logic below
                 } else {
-                    logger.log(Level.SEVERE,
-                            "Unexpected exception encountered while computing \uD835\uDF01(" + s + ")", ae);
-                    // rethrow the exception
-                    throw ae;
+                    logger.log(Level.WARNING,
+                            "Argument s={0} is outside the value range for a long; skipping shortcut calculations.", intArg);
                 }
             } catch (CoercionException e) {
                 throw new ArithmeticException("While computing \uD835\uDF01(" + s + ") as an integer");

@@ -55,6 +55,9 @@ import static tungsten.types.Range.BoundType;
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RangeUtils {
+    private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
+    private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
+
     private RangeUtils() {
         // to prevent instantiation
     }
@@ -65,6 +68,13 @@ public class RangeUtils {
     public static final Range<RealType> ALL_REALS =
             new Range<>(RealInfinity.getInstance(Sign.NEGATIVE, MathContext.UNLIMITED),
                     RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED), BoundType.EXCLUSIVE);
+    /**
+     * A range specifying all integer values that fit into (i.e., can be losslessly converted to)
+     * a {@code long}.  Any {@code IntegerType} value contained by this range can be safely
+     * converted to a {@code long} using {@code value.asBigInteger().longValueExact()}.
+     */
+    public static final Range<IntegerType> ALL_LONGS =
+            new Range<>(new IntegerImpl(MIN_LONG), new IntegerImpl(MAX_LONG), BoundType.INCLUSIVE);
 
     /**
      * Generate a range of (&minus;&pi;, &pi;] for the given {@link MathContext}.

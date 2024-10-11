@@ -233,9 +233,9 @@ public class Euler implements RealType {
     }
     
     private void calculate() {
-        BigDecimal value = BigDecimal.ZERO;
         // compute a few extra digits so we can round off later
-        MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
+        final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
+        BigDecimal value = BigDecimal.ZERO;
         for (int k = 0; k < mctx.getPrecision() / 2; k++) {
             value = value.add(computeKthTerm(k, compctx), compctx);
         }
@@ -273,8 +273,8 @@ public class Euler implements RealType {
         else if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) return this;
 
         // otherwise compute the series
+        final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
         BigDecimal sum = BigDecimal.ZERO;
-        MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
         for (int n = 0; n < mctx.getPrecision(); n++) {
             sum = sum.add(computeNthTerm(n, x, compctx), compctx);
         }
