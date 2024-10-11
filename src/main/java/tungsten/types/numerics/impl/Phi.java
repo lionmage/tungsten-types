@@ -130,6 +130,7 @@ public class Phi implements RealType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (subtrahend instanceof Phi) return ExactZero.getInstance(mctx);
         if (subtrahend instanceof ComplexType) {
             return subtrahend.negate().add(this);
         } else if (Zero.isZero(subtrahend)) {
@@ -155,6 +156,7 @@ public class Phi implements RealType {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (divisor instanceof Phi) return One.getInstance(mctx);
         if (divisor instanceof ComplexType) {
             return divisor.inverse().multiply(this);
         } else if (One.isUnity(divisor)) {
@@ -165,7 +167,7 @@ public class Phi implements RealType {
     }
 
     @Override
-    public Numeric inverse() {
+    public RealType inverse() {
         // recurrence relationship: 1/ϕ = ϕ - 1
         // this is cheaper (faster) than using division to compute the inverse
         // and arguably just as accurate
