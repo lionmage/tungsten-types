@@ -376,9 +376,7 @@ public class RealImpl implements RealType {
         BigDecimal bdinverse = BigDecimal.ONE.divide(val, mctx);
         if (exactness) {
             if (isIntegralValue()) {
-                final RationalImpl result = new RationalImpl(BigInteger.ONE, val.toBigIntegerExact(), exactness);
-                result.setMathContext(mctx);
-                return result;
+                return new RationalImpl(BigInteger.ONE, val.toBigIntegerExact(), mctx);
             }
             // not an integer, so check to see if division results in an
             // infinite repeating sequence
