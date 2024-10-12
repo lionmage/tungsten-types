@@ -213,6 +213,16 @@ public abstract class MegaConstant<T extends Numeric> {
         }
     }
 
+    /**
+     * Combine the contents of the given {@code MegaConstant} with this {@code MegaConstant}.
+     * The result is returned in a brand new {@code MegaConstant}, while {@code this} remains
+     * unaltered.<br>
+     * This method must be implemented by any concrete subclass.  The result should
+     * be equivalent to taking the product of {@code this} and {@code other}.
+     * @param other the mega constant to combine with this one
+     * @return the combined mega constant
+     * @throws CoercionException if a type coercion error occurs during this operation
+     */
     protected abstract MegaConstant<T> doCombine(MegaConstant<T> other) throws CoercionException;
 
     public RationalType leadingCoefficient() {
