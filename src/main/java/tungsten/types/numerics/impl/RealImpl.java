@@ -193,7 +193,7 @@ public class RealImpl implements RealType {
                 final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
                 return new ComplexRectImpl(this, zero, exact);
             case RATIONAL:
-                if (!irrational) {
+                if (!this.isIrrational()) {
                     return rationalize();
                 }
                 break;
