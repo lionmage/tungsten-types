@@ -118,6 +118,12 @@ public class Euler implements RealType {
             }
 
             @Override
+            public Numeric add(Numeric addend) {
+                if (addend instanceof Euler) return ExactZero.getInstance(mctx);
+                return super.add(addend);
+            }
+
+            @Override
             public String toString() {
                 return "\u2212\u212F";
             }
@@ -207,6 +213,12 @@ public class Euler implements RealType {
             @Override
             public Numeric inverse() {
                 return Euler.this;
+            }
+
+            @Override
+            public Numeric multiply(Numeric multiplier) {
+                if (multiplier instanceof Euler) return One.getInstance(mctx);
+                return super.multiply(multiplier);
             }
 
             @Override

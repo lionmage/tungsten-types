@@ -111,6 +111,12 @@ public class Phi implements RealType {
             }
 
             @Override
+            public Numeric add(Numeric addend) {
+                if (addend instanceof Phi) return ExactZero.getInstance(mctx);
+                return super.add(addend);
+            }
+
+            @Override
             public String toString() {
                 return "\u2212\u03D5";
             }
@@ -189,6 +195,12 @@ public class Phi implements RealType {
                     return Phi.this;
                 }
                 return super.add(addend);
+            }
+
+            @Override
+            public Numeric multiply(Numeric multiplier) {
+                if (multiplier instanceof Phi) return One.getInstance(mctx);
+                return super.multiply(multiplier);
             }
 
             @Override

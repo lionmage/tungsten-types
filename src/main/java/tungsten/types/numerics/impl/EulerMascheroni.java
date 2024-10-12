@@ -174,6 +174,12 @@ public class EulerMascheroni implements RealType {
             }
 
             @Override
+            public Numeric add(Numeric addend) {
+                if (addend instanceof EulerMascheroni) return ExactZero.getInstance(mctx);
+                return super.add(addend);
+            }
+
+            @Override
             public String toString() {
                 return "\u2212\uD835\uDEFE";
             }
@@ -235,6 +241,12 @@ public class EulerMascheroni implements RealType {
             @Override
             public Numeric inverse() {
                 return EulerMascheroni.this;
+            }
+
+            @Override
+            public Numeric multiply(Numeric multiplier) {
+                if (multiplier instanceof EulerMascheroni) return One.getInstance(mctx);
+                return super.multiply(multiplier);
             }
 
             @Override

@@ -119,6 +119,12 @@ public class Pi implements RealType {
             }
 
             @Override
+            public Numeric add(Numeric addend) {
+                if (addend instanceof Pi) return ExactZero.getInstance(mctx);
+                return super.add(addend);
+            }
+
+            @Override
             public String toString() {
                 return "\u2212\uD835\uDF0B";
             }
@@ -228,6 +234,12 @@ public class Pi implements RealType {
             @Override
             public Numeric inverse() {
                 return Pi.this;
+            }
+
+            @Override
+            public Numeric multiply(Numeric multiplier) {
+                if (multiplier instanceof Pi) return One.getInstance(mctx);
+                return super.multiply(multiplier);
             }
 
             @Override
