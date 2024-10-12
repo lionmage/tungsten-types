@@ -213,8 +213,8 @@ public class RealImpl implements RealType {
             return result;
         }
         final BigDecimal stripped = val.stripTrailingZeros();
-        IntegerImpl num = new IntegerImpl(stripped.unscaledValue(), exact);
-        IntegerImpl denom = new IntegerImpl(BigInteger.TEN.pow(stripped.scale()));
+        var num = new IntegerImpl(stripped.unscaledValue(), exact);
+        var denom = new IntegerImpl(BigInteger.TEN.pow(stripped.scale()));
         RationalType ratl = new RationalImpl(num, denom, mctx);
         return ratl.reduce();
     }
