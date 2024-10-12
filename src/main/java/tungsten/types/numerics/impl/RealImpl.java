@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.set.impl.NumericSet;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
@@ -34,6 +35,7 @@ import tungsten.types.util.UnicodeTextEffects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -238,10 +240,6 @@ public class RealImpl implements RealType {
             final RealImpl result = new RealImpl(sum, mctx, exactness);
             result.setIrrational(irrational);
             return result;
-            // the following is more concise, but not as performant
-            // convenience constructor preserves exactness
-//            RealType that = new RealImpl((IntegerType) addend);
-//            return this.add(that);
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
             if (iface == Numeric.class) {
@@ -252,7 +250,8 @@ public class RealImpl implements RealType {
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).add(addend);
             } catch (CoercionException ex) {
-                Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during real add.", ex);
+                Logger.getLogger(RealImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during real add.", ex);
             }
         }
         throw new UnsupportedOperationException("Addition operation unsupported");
@@ -263,9 +262,8 @@ public class RealImpl implements RealType {
         if (subtrahend instanceof RealType) {
             // corner case where both operands are real, to avoid intermediate object creation
             RealType that = (RealType) subtrahend;
-            RealImpl result = new RealImpl(val.subtract(that.asBigDecimal(), mctx), this.exact && that.isExact());
+            RealImpl result = new RealImpl(val.subtract(that.asBigDecimal(), mctx), mctx, this.exact && that.isExact());
             result.setIrrational(irrational || that.isIrrational());
-            result.setMathContext(mctx);
             return result;
         }
         return add(subtrahend.negate());
@@ -405,10 +403,6 @@ public class RealImpl implements RealType {
             try {
                 final RealType zero = (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
                 return new ComplexRectImpl(zero, (RealType) this.negate().sqrt().coerceTo(RealType.class));
-                // the following requires computing the magnitude and taking a square root twice each,
-                // which is inefficient since we know √(-x) = i√x
-//                ComplexRectImpl cplx = new ComplexRectImpl(this, zero, exact);
-//                return cplx.sqrt();
             } catch (CoercionException e) {
                 // we should NEVER get here
                 throw new IllegalStateException(e);
@@ -426,6 +420,18 @@ public class RealImpl implements RealType {
 
     @Override
     public Set<ComplexType> nthRoots(IntegerType n) {
+        if (n.asBigInteger().equals(BigInteger.TWO)) {
+            final Numeric root = this.sqrt();
+            try {
+                return new NumericSet(List.of(root, root.negate())).coerceTo(ComplexType.class);
+            } catch (CoercionException e) {
+                Logger.getLogger(RealImpl.class.getName()).log(Level.WARNING,
+                        "While generating the complex set of square roots of " + this, e);
+                Logger.getLogger(RealImpl.class.getName()).log(Level.WARNING,
+                        "Unable to generate a Set<ComplexType> from {0} and {1}; falling through to polar code.",
+                        new Object[] { root, root.negate() });
+            }
+        }
         final Pi pi = Pi.getInstance(mctx);
         final RealImpl zero = new RealImpl(BigDecimal.ZERO, mctx);
         ComplexPolarImpl polar = new ComplexPolarImpl(this.magnitude(), this.sign() == Sign.NEGATIVE ? pi : zero);
