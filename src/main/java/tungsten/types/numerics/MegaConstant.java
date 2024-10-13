@@ -30,6 +30,7 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.Experimental;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 
@@ -204,12 +205,14 @@ public abstract class MegaConstant<T extends Numeric> {
      * Obtain the exponent of a factor in this mega constant.
      * If the given factor is not present, a value of 0 is returned.
      * Currently, this method only understands integer factors
-     * and Numeric subtypes that have the {@code @Constant} annotation.
+     * and {@code Numeric} subtypes that have the {@code @Constant} annotation.
      * @param factor any {@code Numeric} instance
      * @return the exponent representing the factor's presence in this constant, or 0 if not present
+     * @since 0.5
      */
     public long factorsOf(Numeric factor) {
         if (factor.isCoercibleTo(IntegerType.class)) {
+            if (One.isUnity(factor)) throw new ArithmeticException("Unity is a universal factor");
             try {
                 IntegerType intfactor = (IntegerType) factor.coerceTo(IntegerType.class);
                 if (Zero.isZero(leadingCoefficient().numerator().modulus(intfactor))) {
