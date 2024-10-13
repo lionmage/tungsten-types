@@ -204,7 +204,7 @@ public abstract class MegaConstant<T extends Numeric> {
     /**
      * Obtain the exponent of a factor in this mega constant.
      * If the given factor is not present, a value of 0 is returned.
-     * Currently, this method only understands integer factors
+     * Currently, this method only understands positive integer factors
      * and {@code Numeric} subtypes that have the {@code @Constant} annotation.
      * @param factor any {@code Numeric} instance
      * @return the exponent representing the factor's presence in this constant, or 0 if not present
@@ -215,6 +215,7 @@ public abstract class MegaConstant<T extends Numeric> {
             if (One.isUnity(factor)) throw new ArithmeticException("Unity is a universal factor");
             try {
                 IntegerType intfactor = (IntegerType) factor.coerceTo(IntegerType.class);
+                if (intfactor.sign() != Sign.POSITIVE) throw new ArithmeticException("Only positive integers are supported");
                 if (Zero.isZero(leadingCoefficient().numerator().modulus(intfactor))) {
                     long count = 1L;
                     IntegerType reduced = (IntegerType) leadingCoefficient().numerator().divide(intfactor);
