@@ -30,6 +30,7 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.Experimental;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 
 import java.math.BigInteger;
@@ -197,6 +198,57 @@ public abstract class MegaConstant<T extends Numeric> {
             // calculate() might release the read lock, so do a basic check here before unlocking
             if (valueGuard.isReadLocked()) valueGuard.unlockRead(stamp);
         }
+    }
+
+    /**
+     * Obtain the exponent of a factor in this mega constant.
+     * If the given factor is not present, a value of 0 is returned.
+     * Currently, this method only understands integer factors
+     * and Numeric subtypes that have the {@code @Constant} annotation.
+     * @param factor any {@code Numeric} instance
+     * @return the exponent representing the factor's presence in this constant, or 0 if not present
+     */
+    public long factorsOf(Numeric factor) {
+        if (factor.isCoercibleTo(IntegerType.class)) {
+            try {
+                IntegerType intfactor = (IntegerType) factor.coerceTo(IntegerType.class);
+                if (Zero.isZero(leadingCoefficient().numerator().modulus(intfactor))) {
+                    long count = 1L;
+                    IntegerType reduced = (IntegerType) leadingCoefficient().numerator().divide(intfactor);
+                    while (Zero.isZero(reduced.modulus(intfactor))) {
+                        reduced = (IntegerType) reduced.divide(intfactor);
+                        count++;
+                    }
+
+                    return count;
+                } else if (Zero.isZero(leadingCoefficient().denominator().modulus(intfactor))) {
+                    // if we get factors in the denominator of the leading coefficient, return a negative value
+                    long count = -1L;
+                    IntegerType reduced = (IntegerType) leadingCoefficient().denominator().divide(intfactor);
+                    while (Zero.isZero(reduced.modulus(intfactor))) {
+                        reduced = (IntegerType) reduced.divide(intfactor);
+                        count--;
+                    }
+
+                    return count;
+                }
+            } catch (CoercionException e) {
+                Logger.getLogger(MegaConstant.class.getName()).log(Level.SEVERE,
+                        "Cannot coerce " + factor + " to IntegerType after coercibility check", e);
+                throw new ArithmeticException(factor + " is only pretending to be coercible to an integer");
+            }
+            return 0L; // we know we won't match an integer value anywhere else
+        }
+        // otherwise. we check the array of constants
+        for (int idx = 0; idx < constants.size(); idx++) {
+            // we just need to check if the constant class matches, so we're not comparing math contexts
+            if (constants.get(idx).getClass() == factor.getClass()) {
+                return exponents.get(idx);
+            }
+        }
+
+        // default value
+        return 0L;
     }
 
     /**
