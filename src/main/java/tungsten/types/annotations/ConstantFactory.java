@@ -54,6 +54,7 @@ public @interface ConstantFactory {
      * to {@link #argType()}.  The ordering of the array must match the order in
      * which method parameters are encountered, left-to-right.
      * @return the array of {@link Class}es describing the arguments of this annotated factory method in proper order
+     * @apiNote We currently assume that any {@code MathContext} will be the last argument for the factory method.
      */
     Class<?>[] argTypes() default {}; // note: clients/processors will need to test for arrayLength > 0
 

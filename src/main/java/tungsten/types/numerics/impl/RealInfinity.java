@@ -25,6 +25,8 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.Set;
+import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
@@ -51,6 +53,7 @@ import java.util.logging.Logger;
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
+@Constant(name = "real-infinity", representation = "\u221E")
 public class RealInfinity implements RealType {
     private static final String ERROR_INVALID_SIGN = "Infinity can only be positive or negative";
 
@@ -75,7 +78,8 @@ public class RealInfinity implements RealType {
         this.sign = sign;
         this.mctx = mathContext;
     }
-    
+
+    @ConstantFactory(argTypes = {Sign.class, MathContext.class}, returnType = RealType.class)
     public static RealType getInstance(Sign sign, MathContext mctx) {
         Map<MathContext, RealInfinity> cache = cacheMap.get(sign);
         lockMap.get(sign).lock();

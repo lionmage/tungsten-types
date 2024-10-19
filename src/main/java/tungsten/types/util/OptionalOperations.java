@@ -247,8 +247,8 @@ public class OptionalOperations {
                         }
                         return (R) m.invoke(null, mctx);
                     } else if (m.getParameterCount() == 2 &&
-                            MathContext.class.isAssignableFrom(m.getParameterTypes()[0]) &&
-                            Sign.class.isAssignableFrom(m.getParameterTypes()[1])) {
+                            MathContext.class.isAssignableFrom(m.getParameterTypes()[1]) && // MathContext should be the final parameter
+                            Sign.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (factoryAnno.argTypes().length != 2) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
                         }
