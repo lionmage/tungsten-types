@@ -30,6 +30,7 @@ import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
@@ -263,7 +264,7 @@ public class RealInfinity implements RealType {
             return (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class);
         } catch (CoercionException ex) {
             Logger.getLogger(RealInfinity.class.getName()).log(Level.SEVERE,
-                    "Unable to obtain a Real instance of Zero.", ex);
+                    "Unable to obtain a real instance of Zero.", ex);
             throw new IllegalStateException(ex);
         }
     }
@@ -288,15 +289,9 @@ public class RealInfinity implements RealType {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof RealInfinity) {
-            final RealInfinity that = (RealInfinity) o;
-            return this.sign == that.sign();
-        }
-        if (o instanceof PosInfinity) {
-            return this.sign == Sign.POSITIVE;
-        }
-        if (o instanceof NegInfinity) {
-            return this.sign == Sign.NEGATIVE;
+        if (o instanceof Numeric) {
+            Numeric that = (Numeric) o;
+            return MathUtils.isInfinity(that, this.sign);
         }
         return false;
     }

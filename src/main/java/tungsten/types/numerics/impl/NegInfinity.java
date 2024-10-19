@@ -28,6 +28,7 @@ import tungsten.types.annotations.Constant;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
 import java.math.MathContext;
@@ -138,12 +139,8 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
 
     @Override
     public int compareTo(Numeric o) {
-        if (o instanceof NegInfinity) return 0;
         if (o instanceof Comparable) {
-            if (o instanceof RealInfinity) {
-                final RealInfinity val = (RealInfinity) o;
-                if (val.sign() == Sign.NEGATIVE) return 0;
-            }
+            if (MathUtils.isInfinity(o, Sign.NEGATIVE)) return 0;
             // negative infinity is always less than any other value
             return -1;
         } else {
