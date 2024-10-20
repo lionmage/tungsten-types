@@ -32,7 +32,6 @@ import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
-import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -234,7 +233,7 @@ public class EulerTest {
         assertEquals(instance.asBigDecimal().negate(), result.asBigDecimal());
         result = result.negate();
         assertEquals(Sign.POSITIVE, result.sign());
-        assertEquals(instance.asBigDecimal(), result.asBigDecimal());
+        assertEquals(instance.asBigDecimal(), result.asBigDecimal(), "Negative of a negative should give the original value");
     }
 
     /**
@@ -261,12 +260,12 @@ public class EulerTest {
         Class<? extends Numeric> numtype = RealType.class;
         Euler instance = Euler.getInstance(MathContext.DECIMAL64);
         Numeric result = instance.coerceTo(numtype);
-        assertTrue(result instanceof RealType);
+        assertInstanceOf(RealType.class, result);
 
         numtype = RationalType.class;
         try {
             result = instance.coerceTo(numtype);
-            fail("We should not get here.  Coercion of Euler to RationalType should fail.");
+            fail("Coercion of Euler to RationalType should fail; obtained " + result);
         } catch (CoercionException e) {
             assertEquals(e.getTargetType(), numtype);
         }
