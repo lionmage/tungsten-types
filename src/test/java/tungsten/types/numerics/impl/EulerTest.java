@@ -280,6 +280,7 @@ public class EulerTest {
         Euler instance = Euler.getInstance(MathContext.DECIMAL128);
         Numeric result = instance.inverse();
         assertTrue(One.isUnity(result.multiply(instance)), "e * (1/e) should = 1");
+        assertEquals(instance, result.inverse(), "1/(1/e) should = e");
     }
 
     @Test
