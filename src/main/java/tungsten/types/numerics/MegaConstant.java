@@ -320,7 +320,7 @@ public abstract class MegaConstant<T extends Numeric> {
 
         // denominator
         final boolean denomNotUnity = !rationalCoefficient.denominator().asBigInteger().equals(BigInteger.ONE);
-        if (denomNotUnity && !denomExponents.isEmpty()) {
+        if (denomNotUnity || !denomExponents.isEmpty()) {
             buf.append(DIVISION_SLASH);
         }
         if (denomNotUnity) {
