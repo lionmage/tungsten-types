@@ -231,6 +231,7 @@ public class EulerTest {
         RealType result = instance.negate();
         assertEquals(Sign.NEGATIVE, result.sign());
         assertEquals(instance.asBigDecimal().negate(), result.asBigDecimal());
+        assertTrue(Zero.isZero(result.add(instance)), "x + (-x) should = 0");
         result = result.negate();
         assertEquals(Sign.POSITIVE, result.sign());
         assertEquals(instance.asBigDecimal(), result.asBigDecimal(), "Negative of a negative should give the original value");
