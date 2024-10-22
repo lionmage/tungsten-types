@@ -236,7 +236,7 @@ public class OptionalOperations {
                 final Method m = method.get();
                 Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
                         "Constant factory method {0} will be invoked on {1} to obtain {2}",
-                        new Object[]{m.getName(), type.getName(), constAnno.representation()});
+                        new Object[] { m.getName(), type.getName(), constAnno.representation() });
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {
@@ -287,7 +287,7 @@ public class OptionalOperations {
                 final Method m = method.get();
                 Logger.getLogger(OptionalOperations.class.getName()).log(Level.INFO,
                         "Constant factory method {0} will be invoked on {1} to obtain {2}",
-                        new Object[] {m.getName(), type.getName(), constAnno.representation()});
+                        new Object[] { m.getName(), type.getName(), constAnno.representation() });
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {

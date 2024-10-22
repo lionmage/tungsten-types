@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-@Constant(name = "real-infinity", representation = "\u221E")
+@Constant(name = "real-infinity", representation = Constant.USE_TOSTRING)
 public class RealInfinity implements RealType {
     private static final String ERROR_INVALID_SIGN = "Infinity can only be positive or negative";
 

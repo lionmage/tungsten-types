@@ -39,6 +39,26 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Constant {
+    /**
+     * A special &ldquo;magic value&rdquo; for use by the {@code representation}
+     * field of this annotation.
+     */
+    String USE_TOSTRING = "use_ToString";
+
+    /**
+     * The name by which an annotated constant may be referenced.
+     * @return a {@code String} representing a constant may be referenced
+     */
     String name();
+
+    /**
+     * The standard representation of an annotated constant.
+     * If {@code USE_TOSTRING}, the consumer of this annotation should instead use
+     * the result of calling {@code toString()} on an instance of
+     * the annotated class.
+     * @return a {@code String} containing an appropriate mathematical representation
+     *   of the annotated constant, or {@code USE_TOSTRING} if the constant's {@code toString()}
+     *   output should be used instead.
+     */
     String representation();
 }

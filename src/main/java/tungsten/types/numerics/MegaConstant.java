@@ -339,9 +339,10 @@ public abstract class MegaConstant<T extends Numeric> {
     private void buildConstRepresentation(StringBuilder buf, List<Numeric> constants, List<Long> exponents) {
         if (constants.size() != exponents.size()) throw new IllegalStateException("Mismatch between constants and exponents");
         for (int k = 0; k < constants.size(); k++) {
-            Constant constant = constants.get(k).getClass().getAnnotation(Constant.class);
-            if (constant == null) throw new IllegalStateException(constants.get(k) + " is not a constant");
-            buf.append(constant.representation());
+            Numeric cval = constants.get(k);
+            Constant constant = cval.getClass().getAnnotation(Constant.class);
+            if (constant == null) throw new IllegalStateException(cval + " is not a constant");
+            buf.append(constant.representation().equals(Constant.USE_TOSTRING) ? cval.toString() : constant.representation());
             int n = exponents.get(k).intValue();
             if (n > 1) buf.append(numericSuperscript(n));
             if (k < constants.size() - 1) buf.append(TIMES);
