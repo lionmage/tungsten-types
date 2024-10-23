@@ -78,7 +78,7 @@ public class PosInfinity implements Numeric, Comparable<Numeric> {
         if (numtype.isAssignableFrom(RealInfinity.class)) {
             return RealInfinity.getInstance(Sign.POSITIVE, mctx);
         }
-        throw new CoercionException("Can't coerce infinity to any other tungsten.types.Numeric type.", this.getClass(), numtype);
+        throw new CoercionException("Cannot coerce infinity to any other tungsten.types.Numeric type", this.getClass(), numtype);
     }
 
     @Override
