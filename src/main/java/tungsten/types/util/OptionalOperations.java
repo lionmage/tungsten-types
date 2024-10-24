@@ -252,7 +252,7 @@ public class OptionalOperations {
                         if (factoryAnno.argTypes().length != 2) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
                         }
-                        return (R) m.invoke(null, mctx, sign);
+                        return (R) m.invoke(null, sign, mctx);
                     } else {
                         throw new UnsupportedOperationException("instantiateConstant() cannot currently handle > 2 factory args");
                     }
