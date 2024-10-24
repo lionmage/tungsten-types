@@ -47,7 +47,7 @@ public @interface Constant {
 
     /**
      * The name by which an annotated constant may be referenced.
-     * @return a {@code String} representing a constant may be referenced
+     * @return a {@code String} representing a constant, suitable for textual reference
      */
     String name();
 
