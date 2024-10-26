@@ -2127,7 +2127,7 @@ public class MathUtils {
      * @param X a n&times;n matrix
      * @return the n&times;n matrix that is an approximation of &#x212f;<sup>X</sup>
      * @apiNote For upper triangular matrices larger than 4&times;4, we use
-     *   Parlett's method to compute the exponent.  For instances where the
+     *   Parlett's method to compute the exponential.  For instances where the
      *   series is computed, the returned {@code Matrix} implements a special
      *   version of {@link Matrix#determinant()} which takes advantage of
      *   an exponential identity (in terms of Tr(<strong>X</strong>)) for faster computation.

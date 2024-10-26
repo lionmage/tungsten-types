@@ -427,7 +427,10 @@ public class IntegerImpl implements IntegerType {
         } else if (val.equals(BigInteger.ZERO)) {
             throw new ArithmeticException("Cannot compute inverse of 0");
         }
-        return new RationalImpl(BigInteger.ONE, val, exact);
+        RationalImpl rational = new RationalImpl(BigInteger.ONE, val, exact);
+        // preserve MathContext
+        rational.setMathContext(this.getMathContext());
+        return rational;
     }
 
     /**
