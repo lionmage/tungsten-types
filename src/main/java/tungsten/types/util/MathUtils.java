@@ -2103,6 +2103,22 @@ public class MathUtils {
     }
 
     /**
+     * Compute the commutator [<strong>A</strong>,&nbsp;<strong>B</strong>] of two
+     * matrices, <strong>A</strong> and <strong>B</strong>.  If the result is the zero
+     * matrix, then <strong>A</strong> and <strong>B</strong> are said to commute.
+     * Owing to rounding errors, it may be best to take the {@link Matrix#norm() norm}
+     * of the result and compare it to some well-chosen &epsilon;.
+     * @param A the first matrix
+     * @param B the second matrix
+     * @return the value <strong>AB</strong>&minus;<strong>BA</strong>
+     * @param <T> the type of elements contained by <strong>A</strong> and <strong>B</strong>
+     * @since 0.5
+     */
+    public static <T extends Numeric> Matrix<T> commutator(Matrix<T> A, Matrix<T> B) {
+        return A.multiply(B).subtract(B.multiply(A));
+    }
+
+    /**
      * Compute &#x212f;<sup>X</sup> for a square matrix <strong>X</strong>.
      * Since the calculation is an infinite series, we only compute k terms,
      * where k is derived from the {@link MathContext} of the elements in {@code X}.
@@ -3531,7 +3547,7 @@ public class MathUtils {
     private static <T extends Numeric> Matrix<T> lambdaMatrix(long dimension, T lambda) {
         try {
             final T zero = (T) ExactZero.getInstance(lambda.getMathContext()).coerceTo(lambda.getClass());
-            return new ParametricMatrix<T>(dimension, dimension, (row, column) -> {
+            return new ParametricMatrix<>(dimension, dimension, (row, column) -> {
                 if (row.longValue() == column.longValue()) return lambda;
                 return zero;
             });
