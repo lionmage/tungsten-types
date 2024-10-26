@@ -858,9 +858,11 @@ public class MathUtils {
      * @return the value {@code x} rounded
      */
     public static RealType round(RealType x, MathContext ctx) {
+        // we're not really rounding infinity here, but returning an infinity with the appropriate precision
+        if (x instanceof RealInfinity) return RealInfinity.getInstance(x.sign(), ctx);
         if (x.getClass().isAnnotationPresent(Constant.class)) {
             String constantName = x.getClass().getAnnotation(Constant.class).name();
-            return OptionalOperations.instantiateConstant(constantName, ctx);
+            return (RealType) OptionalOperations.instantiateConstant(constantName, ctx);
         }
         BigDecimal value = x.asBigDecimal().round(ctx);
         return new RealImpl(value, ctx, false);
@@ -890,9 +892,10 @@ public class MathUtils {
      * @return the complex value z rounded
      */
     public static ComplexType round(ComplexType z, MathContext ctx) {
+        if (z instanceof PointAtInfinity) return z;  // the point at infinity has no MathContext
         if (z.getClass().isAnnotationPresent(Constant.class)) {
             String constantName = z.getClass().getAnnotation(Constant.class).name();
-            return OptionalOperations.instantiateConstant(constantName, ctx);
+            return (ComplexType) OptionalOperations.instantiateConstant(constantName, ctx);
         }
         if (z.getClass().isAnnotationPresent(Polar.class)) {
             return new ComplexPolarImpl(round(z.magnitude(), ctx), round(z.argument(), ctx), false);

@@ -165,9 +165,8 @@ public class OptionalOperations {
      * @param constName the name of the constant to instantiate
      * @param mctx      the {@link MathContext} to apply to the generated constant
      * @return a concrete instance of a constant
-     * @param <R> the {@code Numeric} subtype of the constant
      */
-    public static <R extends Numeric> R instantiateConstant(String constName, MathContext mctx) {
+    public static Numeric instantiateConstant(String constName, MathContext mctx) {
         Collection<Class<?>> constClasses =
                 ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
         for (Class<?> type : constClasses) {
@@ -185,12 +184,12 @@ public class OptionalOperations {
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {
-                        return (R) m.invoke(null);
+                        return (Numeric) m.invoke(null);
                     } else if (m.getParameterCount() == 1 && MathContext.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (factoryAnno.argTypes().length > 1) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
                         }
-                        return (R) m.invoke(null, mctx);
+                        return (Numeric) m.invoke(null, mctx);
                     } else if (m.getParameterCount() == 2 &&
                             MathContext.class.isAssignableFrom(m.getParameterTypes()[0]) &&
                             Sign.class.isAssignableFrom(m.getParameterTypes()[1])) {
@@ -220,9 +219,8 @@ public class OptionalOperations {
      * @param mctx      the {@code MathContext}
      * @param sign      the {@code Sign} of the constant
      * @return a concrete instance of the requested constant
-     * @param <R> the {@code Numeric} subtype of the constant
      */
-    public static <R extends Numeric> R instantiateConstant(String constName, MathContext mctx, Sign sign) {
+    public static Numeric instantiateConstant(String constName, MathContext mctx, Sign sign) {
         Collection<Class<?>> constClasses =
                 ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
         for (Class<?> type : constClasses) {
@@ -240,19 +238,19 @@ public class OptionalOperations {
                 ConstantFactory factoryAnno = m.getAnnotation(ConstantFactory.class);
                 try {
                     if (factoryAnno.noArgs()) {
-                        return (R) m.invoke(null);
+                        return (Numeric) m.invoke(null);
                     } else if (m.getParameterCount() == 1 && MathContext.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (factoryAnno.argTypes().length > 1) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
                         }
-                        return (R) m.invoke(null, mctx);
+                        return (Numeric) m.invoke(null, mctx);
                     } else if (m.getParameterCount() == 2 &&
                             MathContext.class.isAssignableFrom(m.getParameterTypes()[1]) && // MathContext should be the final parameter
                             Sign.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (factoryAnno.argTypes().length != 2) {
                             throw new IllegalStateException("Mismatch in method parameter count between annotation and declaration");
                         }
-                        return (R) m.invoke(null, sign, mctx);
+                        return (Numeric) m.invoke(null, sign, mctx);
                     } else {
                         throw new UnsupportedOperationException("instantiateConstant() cannot currently handle > 2 factory args");
                     }
@@ -270,9 +268,8 @@ public class OptionalOperations {
      * @param constName the name of the constant
      * @param arguments an argument list; may be null for invoking no-args factory methods
      * @return a concrete instance of a constant
-     * @param <R> the {@code Numeric} subtype of the constant
      */
-    public static <R extends Numeric> R instantiateConstant(String constName, Object... arguments) {
+    public static Numeric instantiateConstant(String constName, Object... arguments) {
         Collection<Class<?>> constClasses =
                 ClassTools.findClassesInPackage("tungsten.types.numerics.impl", Constant.class);
         for (Class<?> type : constClasses) {
@@ -294,7 +291,7 @@ public class OptionalOperations {
                         if (arguments != null && arguments.length > 0) {
                             throw new IllegalArgumentException("Factory method " + m.getName() + " requires no arguments");
                         }
-                        return (R) m.invoke(null);
+                        return (Numeric) m.invoke(null);
                     } else {
                         final int argLen = arguments == null ? 0 : arguments.length;
                         if (m.getParameterCount() != argLen) {
@@ -309,7 +306,7 @@ public class OptionalOperations {
                                 assert m.getParameterTypes()[k].isAssignableFrom(parameterTypes[k]);
                                 assert m.getParameterTypes()[k].isAssignableFrom(arguments[k].getClass());
                             }
-                            return (R) m.invoke(null, arguments);
+                            return (Numeric) m.invoke(null, arguments);
                         } else {
                             Logger.getLogger(OptionalOperations.class.getName()).log(Level.WARNING,
                                     "No arguments supplied to instantiateConstant(), nor are they " +
