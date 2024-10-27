@@ -410,10 +410,19 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric inverse() {
+        if (numerator.equals(BigInteger.ZERO)) throw new ArithmeticException("Cannot take inverse of 0");
         if (numerator.equals(BigInteger.ONE)) {
             if (mctx.getPrecision() == 0) return denominator();
             // otherwise construct an IntegerType which preserves the MathContext of this
             return new IntegerImpl(denominator, exact) {
+                @Override
+                public MathContext getMathContext() {
+                    return mctx;
+                }
+            };
+        } else if (numerator.equals(BigInteger.ONE.negate())) {
+            if (mctx.getPrecision() == 0) return denominator().negate();
+            return new IntegerImpl(denominator.negate(), exact) {
                 @Override
                 public MathContext getMathContext() {
                     return mctx;
