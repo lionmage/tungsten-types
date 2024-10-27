@@ -440,8 +440,7 @@ public class RationalImpl implements RationalType {
      * if the numerator and denominator are both perfect squares.
      *
      * @return the square root of this fraction
-     * @throws ArithmeticException if this fraction is negative, or
-     *   if type coercion fails during calculation
+     * @throws ArithmeticException if type coercion fails during calculation
      * @see IntegerImpl#sqrt()
      */
     @Override
