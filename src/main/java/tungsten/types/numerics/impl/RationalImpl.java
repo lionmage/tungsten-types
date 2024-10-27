@@ -439,7 +439,7 @@ public class RationalImpl implements RationalType {
     public Numeric sqrt() {
         if (sign() == Sign.NEGATIVE) {
             final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
-            return new ComplexRectImpl(zero, new RealImpl(this.asBigDecimal().negate().sqrt(mctx), mctx));
+            return new ComplexRectImpl(zero, new RealImpl(this.asBigDecimal().negate().sqrt(mctx), mctx, false));
         }
         final RationalType reduced = this.reduce();
         if (reduced.numerator().isPerfectSquare() && reduced.denominator().isPerfectSquare()) {
