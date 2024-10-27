@@ -59,6 +59,7 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
      * @return a new {@link RationalType} equivalent to this object
      */
     RationalType reduce();
+    boolean isReducible();
     @Override
     Numeric sqrt();
     Sign sign();

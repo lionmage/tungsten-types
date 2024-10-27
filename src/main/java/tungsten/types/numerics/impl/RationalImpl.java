@@ -480,7 +480,12 @@ public class RationalImpl implements RationalType {
             if (this.isExact() != that.isExact()) return false;
             // the following test is more "correct" but is slower
             if (RationalType.reduceForEqualityTest()) {
-                return this.reduce().equals(that.reduce());
+                if (this.isReducible()) {
+                    return this.reduce().equals(that);
+                }
+                if (that.isReducible()) {
+                    return this.equals(that.reduce());
+                }
             }
             // ... and this is the faster "good enough" test
             return numerator.equals(that.numerator().asBigInteger()) &&
@@ -499,6 +504,12 @@ public class RationalImpl implements RationalType {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isReducible() {
+        BigInteger gcd = numerator.gcd(denominator);
+        return gcd.compareTo(BigInteger.ONE) > 0;
     }
 
     @Override
