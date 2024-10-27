@@ -437,28 +437,28 @@ public class RationalImpl implements RationalType {
      */
     @Override
     public Numeric sqrt() {
-        if (sign() == Sign.NEGATIVE) {
-            final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
-            return new ComplexRectImpl(zero, new RealImpl(this.asBigDecimal().negate().sqrt(mctx), mctx, false));
-        }
         final RationalType reduced = this.reduce();
         if (reduced.numerator().isPerfectSquare() && reduced.denominator().isPerfectSquare()) {
             IntegerType numroot = reduced.numerator().sqrt();
             IntegerType denomroot = reduced.denominator().sqrt();
             return new RationalImpl(numroot, denomroot, mctx);
-        } else {
-            if (MathUtils.useBuiltInOperations()) {
-                return new RealImpl(this.asBigDecimal().sqrt(mctx), mctx, false);
+        } else if (MathUtils.useBuiltInOperations()) {
+            final BigDecimal intermediate = this.asBigDecimal().abs().sqrt(mctx);
+            if (sign() == Sign.NEGATIVE) {
+                final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
+                return new ComplexRectImpl(zero, new RealImpl(intermediate, mctx, false));
             }
-            try {
-                RealType realNum = (RealType) reduced.numerator().coerceTo(RealType.class);
-                RealType realDenom = (RealType) reduced.denominator().coerceTo(RealType.class);
-                OptionalOperations.setMathContext(realNum, mctx);
-                OptionalOperations.setMathContext(realDenom, mctx);
-                return realNum.sqrt().divide(realDenom.sqrt());
-            } catch (CoercionException e) {
-                throw new ArithmeticException("Exception thrown while taking sqrt of " + this);
-            }
+            return new RealImpl(intermediate, mctx, false);
+        }
+        // fall through to the general algorithm
+        try {
+            RealType realNum = (RealType) reduced.numerator().coerceTo(RealType.class);
+            RealType realDenom = (RealType) reduced.denominator().coerceTo(RealType.class);
+            OptionalOperations.setMathContext(realNum, mctx);
+            OptionalOperations.setMathContext(realDenom, mctx);
+            return realNum.sqrt().divide(realDenom.sqrt());
+        } catch (CoercionException e) {
+            throw new ArithmeticException("Exception thrown while taking sqrt of " + this);
         }
     }
     
