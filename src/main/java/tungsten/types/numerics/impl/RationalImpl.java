@@ -581,6 +581,10 @@ public class RationalImpl implements RationalType {
         if (MathUtils.isInfinity(operand, Sign.NEGATIVE)) {
             return this.sign() == Sign.POSITIVE ? PosZero.getInstance(getMathContext()) : NegZero.getInstance(getMathContext());
         } else if (MathUtils.isInfinity(operand, Sign.POSITIVE)) {
+            if (denominator.compareTo(numerator.abs()) > 0) {
+                if (this.sign() == Sign.POSITIVE) return PosZero.getInstance(getMathContext());
+                else throw new ArithmeticException("Negative rational raised to infinity does not converge");
+            }
             return RealInfinity.getInstance(this.sign(), getMathContext());
         }
         if (operand.isCoercibleTo(IntegerType.class)) {
