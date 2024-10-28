@@ -469,9 +469,7 @@ public class IntegerImpl implements IntegerType {
         }
         if (other instanceof IntegerType) {
             final IntegerType that = (IntegerType) other;
-            if (this.isExact() != that.isExact()) {
-                return false;
-            }
+            if (this.isExact() != that.isExact()) return false;
             return this.asBigInteger().equals(that.asBigInteger());
         } else if (other instanceof Numeric) {
             final Numeric that = (Numeric) other;
