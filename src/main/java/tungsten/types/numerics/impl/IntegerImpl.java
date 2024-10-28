@@ -234,7 +234,7 @@ public class IntegerImpl implements IntegerType {
                 // and handle the corner case where we had an odd exponent
                 intermediate = (IntegerType) intermediate.multiply(this);
             }
-            return expSign == Sign.NEGATIVE ? new RationalImpl(BigInteger.ONE, intermediate.asBigInteger(), this.isExact()) : intermediate;
+            return expSign == Sign.NEGATIVE ? intermediate.inverse() : intermediate;
         }
         if (expSign == Sign.NEGATIVE) {
             IntegerType negexp = exponent.negate();
@@ -350,10 +350,10 @@ public class IntegerImpl implements IntegerType {
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).subtract(subtrahend);
             } catch (CoercionException ex) {
-                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer add.", ex);
+                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer subtract.", ex);
             }
         }
-        throw new UnsupportedOperationException("Addition operation unsupported");
+        throw new UnsupportedOperationException("Subtraction operation unsupported");
     }
 
     @Override
