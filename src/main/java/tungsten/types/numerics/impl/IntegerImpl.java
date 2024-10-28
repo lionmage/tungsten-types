@@ -522,9 +522,14 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public IntegerType power(Numeric operand) {
-        if (operand instanceof IntegerType) {
-            BigInteger exponent = ((IntegerType) operand).asBigInteger();
-            return new IntegerImpl(val.pow(exponent.intValueExact()));
+        if (operand.isCoercibleTo(IntegerType.class)) {
+            try {
+                IntegerType converted = (IntegerType) operand.coerceTo(IntegerType.class);
+                BigInteger exponent = converted.asBigInteger();
+                return new IntegerImpl(val.pow(exponent.intValueExact()));
+            } catch (CoercionException e) {
+                throw new IllegalStateException("Failed to coerce " + operand, e);
+            }
         }
         throw new ArithmeticException("Unsupported exponent type");
     }
