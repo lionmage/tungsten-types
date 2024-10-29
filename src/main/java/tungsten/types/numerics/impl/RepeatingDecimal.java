@@ -115,6 +115,16 @@ public class RepeatingDecimal extends RationalImpl {
         setNumerator(num.divide(gcd));
         setMathContext(new MathContext(representation.length() - 1));
     }
+
+    /**
+     * Convenience constructor.
+     * @param representation the string representation of a repeating decimal
+     * @param position       the position at which the period begins after the decimal point, with
+     *                       0 denoting the first digit after the decimal point
+     */
+    public RepeatingDecimal(String representation, long position) {
+        this(representation, new IntegerImpl(BigInteger.valueOf(position)));
+    }
     
     /**
      * Gives the length in digits of the repeating sequence of digits
