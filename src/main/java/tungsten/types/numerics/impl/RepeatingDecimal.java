@@ -245,13 +245,11 @@ public class RepeatingDecimal extends RationalImpl {
         long exponent = 0L;
         do {
             BigInteger[] temp = denominator.divideAndRemainder(factor);
-            if (!temp[1].equals(BigInteger.ZERO)) {
-                break;
-            }
+            if (!temp[1].equals(BigInteger.ZERO)) break;
             exponent++;
             denominator = temp[0];
         } while (denominator.compareTo(BigInteger.ONE) > 0);
-        return new BigInteger[] {denominator, BigInteger.valueOf(exponent)};
+        return new BigInteger[] { denominator, BigInteger.valueOf(exponent) };
     }
 
     // see http://mathworld.wolfram.com/MultiplicativeOrder.html for definition of this function
