@@ -36,7 +36,10 @@ import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
+import tungsten.types.vector.ColumnVector;
+import tungsten.types.vector.RowVector;
 import tungsten.types.vector.impl.ArrayRowVector;
+import tungsten.types.vector.impl.ListRowVector;
 
 import java.lang.reflect.Array;
 import java.math.BigInteger;
@@ -177,14 +180,25 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
             try {
                 return (T) valueAt(row, column).add(addend.valueAt(row, column)).coerceTo(clazz);
             } catch (CoercionException e) {
-                throw new IllegalStateException("While computing the sum of a Jordan matrix and another", e);
+                throw new IllegalStateException("While computing the sum of a Jordan matrix and another matrix", e);
             }
         });
     }
 
     @Override
     public Matrix<T> multiply(Matrix<T> multiplier) {
-        return new BasicMatrix<>(this).multiply(multiplier);
+        if (this.columns() != multiplier.rows()) throw new IllegalArgumentException("Multiplier row count must match the column count of this matrix");
+        BasicMatrix<T> result = new BasicMatrix<>();
+        for (long row = 0L; row < rows(); row++) {
+            RowVector<T> ourRow = this.getRow(row);
+            ListRowVector<T> constructed = new ListRowVector<>(clazz);
+            for (long column = 0L; column < multiplier.columns(); column++) {
+                ColumnVector<T> otherColumn = multiplier.getColumn(column);
+                constructed.append(ourRow.dotProduct(otherColumn));
+            }
+            result.append(constructed);
+        }
+        return result;
     }
 
     @Override
