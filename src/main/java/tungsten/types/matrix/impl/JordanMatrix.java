@@ -46,6 +46,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * A representation of a Jordan matrix, a block-diagonal matrix
+ * whose blocks are characterized by an eigenvalue &lambda;<sub>k</sub> and
+ * a block size of n&times;n.
+ * @param <T> the {@code Numeric} subtype of the elements of this matrix
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @since 0.5
+ */
 public class JordanMatrix<T extends Numeric> implements Matrix<T> {
     private final Class<T> clazz;
     private T one, zero;
@@ -190,6 +198,11 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
                 .collect(Collectors.joining("\u205F\u2295\u205F"));
     }
 
+    /**
+     * A Jordan block is an n&times;n submatrix with elements
+     * &lambda; on the diagonal and 1 values on the superdiagonal;
+     * the matrix contains 0 values everywhere else.
+     */
     public class JordanBlock extends ParametricMatrix<T> {
         private final T lambda;
 
