@@ -44,6 +44,8 @@ import java.math.MathContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -153,7 +155,31 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public Matrix<T> add(Matrix<T> addend) {
-        return new BasicMatrix<>(this).add(addend);
+        if (this.rows() != addend.rows() || this.columns() != addend.columns()) {
+            throw new IllegalArgumentException("Dimension mismatch with addend");
+        }
+        try {
+            T[][] values = (T[][]) Array.newInstance(clazz, Math.toIntExact(rows()), Math.toIntExact(columns()));
+            for (int row = 0; row < (int) rows(); row++) {
+                for (int column = 0; column < (int) columns(); column++) {
+                    values[row][column] = (T) valueAt(row, column).add(addend.valueAt(row, column)).coerceTo(clazz);
+                }
+            }
+            return new BasicMatrix<>(values);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While adding a Jordan matrix to another matrix", e);
+        } catch (ArithmeticException ae) {
+            Logger.getLogger(JordanMatrix.class.getName()).log(Level.INFO,
+                    "Sum of Jordan matrix and addend is too large to fit inside a 2D array");
+        }
+        // fall-through in case the above fails
+        return new ParametricMatrix<>(rows(), columns(), (row, column) -> {
+            try {
+                return (T) valueAt(row, column).add(addend.valueAt(row, column)).coerceTo(clazz);
+            } catch (CoercionException e) {
+                throw new IllegalStateException("While computing the sum of a Jordan matrix and another", e);
+            }
+        });
     }
 
     @Override
