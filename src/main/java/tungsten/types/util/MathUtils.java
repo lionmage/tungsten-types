@@ -2115,6 +2115,8 @@ public class MathUtils {
      * @since 0.5
      */
     public static <T extends Numeric> Matrix<T> commutator(Matrix<T> A, Matrix<T> B) {
+        if (A.rows() != A.columns() || B.rows() != B.columns()) throw new ArithmeticException("A and B must be square");
+        if (A.rows() != B.rows()) throw new ArithmeticException("A and B must have the same dimensions");
         return A.multiply(B).subtract(B.multiply(A));
     }
 
