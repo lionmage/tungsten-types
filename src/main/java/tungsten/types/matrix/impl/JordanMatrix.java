@@ -57,6 +57,8 @@ import java.util.stream.Collectors;
  * a block size of n&times;n.
  * @param <T> the {@code Numeric} subtype of the elements of this matrix
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Jordan_matrix">the Wikipedia article</a> for
+ *   Jordan matrices
  * @since 0.5
  */
 public class JordanMatrix<T extends Numeric> implements Matrix<T> {
