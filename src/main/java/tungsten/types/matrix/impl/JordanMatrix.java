@@ -262,9 +262,7 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
             BasicMatrix<Numeric> result = new BasicMatrix<>();
             for (long row = 0L; row < rows(); row++) {
                 Numeric[] rowValues = new Numeric[(int) columns()];
-                for (int col = 0; col < row; col++) {
-                    rowValues[col] = zero;
-                }
+                Arrays.fill(rowValues, 0, (int) row, zero);  // all columns < row
                 // now compute the remainder of the row
                 for (long col = row; col < columns(); col++) {
                     long n = col - row + 1L;
