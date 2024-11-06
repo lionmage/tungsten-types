@@ -218,11 +218,7 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
     public boolean equals(Object obj) {
         if (obj instanceof JordanMatrix) {
             JordanMatrix<? extends Numeric> that = (JordanMatrix<? extends Numeric>) obj;
-            if (that.diagBlocks.length != this.diagBlocks.length) return false;
-            for (int k = 0; k < diagBlocks.length; k++) {
-                if (!that.diagBlocks[k].equals(this.diagBlocks[k])) return false;
-            }
-            return true;
+            return Arrays.equals(this.diagBlocks, that.diagBlocks);
         } else if (obj instanceof Matrix) {
             Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) obj;
             if (that.rows() != this.rows() || that.columns() != this.columns()) return false;
