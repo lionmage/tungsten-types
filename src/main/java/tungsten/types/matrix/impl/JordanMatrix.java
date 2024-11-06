@@ -113,10 +113,10 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
         int index = 0;
         JordanBlock block = diagBlocks[0];
         while (row >= block.rows() || column >= block.columns()) {
-            if (++index >= diagBlocks.length) break;
             row -= block.rows();
             column -= block.columns();
             if (row < 0L || column < 0L) break;
+            if (++index >= diagBlocks.length) break;
             block = diagBlocks[index];
         }
         if (row >= 0L && row < block.rows() && column >= 0L && column < block.columns()) {
