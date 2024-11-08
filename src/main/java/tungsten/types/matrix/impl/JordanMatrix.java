@@ -166,7 +166,10 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
      */
     public Set<T> eigenvalues() {
         NumericSet result = new NumericSet();
-        Arrays.stream(diagBlocks).map(JordanBlock::getLambda).forEachOrdered(result::append);
+        for (JordanBlock diagBlock : diagBlocks) {
+            T lambda = diagBlock.getLambda();
+            result.append(lambda);
+        }
 
         try {
             return result.coerceTo(clazz);
