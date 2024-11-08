@@ -27,6 +27,7 @@ package tungsten.types.matrix.impl;
 
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
@@ -34,6 +35,7 @@ import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.set.impl.NumericSet;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
 import tungsten.types.vector.ColumnVector;
@@ -156,6 +158,17 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
     public T trace() {
         return Arrays.stream(diagBlocks).map(Matrix::trace)
                 .reduce(zero, (x, y) -> (T) x.add(y));
+    }
+
+    public Set<T> eigenvalues() {
+        NumericSet result = new NumericSet();
+        Arrays.stream(diagBlocks).map(JordanBlock::getLambda).forEachOrdered(result::append);
+
+        try {
+            return result.coerceTo(clazz);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("Eigenvalues should all be " + clazz.getTypeName(), e);
+        }
     }
 
     @Override

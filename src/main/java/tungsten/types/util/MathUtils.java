@@ -3167,6 +3167,10 @@ public class MathUtils {
     public static Set<? extends Numeric> eigenvaluesOf(Matrix<? extends Numeric> M) {
         if (M.rows() != M.columns()) throw new IllegalArgumentException("Cannot compute eigenvalues for a non-square matrix");
         if (M.isTriangular()) {
+            if (M instanceof JordanMatrix) {
+                // a Jordan matrix can supply this result directly, and more efficiently
+                return ((JordanMatrix<? extends Numeric>) M).eigenvalues();
+            }
             // the values on the diagonal are the eigenvalues
             NumericSet diagonalElements = new NumericSet();
             LongStream.range(0L, M.rows()).mapToObj(idx -> M.valueAt(idx, idx)).forEach(diagonalElements::append);
