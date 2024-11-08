@@ -3479,7 +3479,7 @@ public class MathUtils {
     private static ColumnVector<? extends Numeric> columnVectorFrom(Vector<? extends Numeric> source) {
         final long THRESHOLD = 1_000L;
         List<Numeric> temp = new LinkedList<>();
-        LongStream.range(0L, source.length()).mapToObj(source::elementAt).forEach(temp::add);
+        LongStream.range(0L, source.length()).mapToObj(source::elementAt).forEachOrdered(temp::add);
         if (source.length() > THRESHOLD) return new ListColumnVector<>(temp);
         return new ArrayColumnVector<>(temp);
     }
