@@ -160,6 +160,10 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
                 .reduce(zero, (x, y) -> (T) x.add(y));
     }
 
+    /**
+     * Obtain a {@link Set} of eigenvalues for this Jordan matrix.
+     * @return a {@code Set} containing the unique eigenvalues for this matrix
+     */
     public Set<T> eigenvalues() {
         NumericSet result = new NumericSet();
         Arrays.stream(diagBlocks).map(JordanBlock::getLambda).forEachOrdered(result::append);
