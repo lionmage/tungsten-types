@@ -37,6 +37,7 @@ import java.math.MathContext;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.LongStream;
 
 /**
  * An Identity matrix (&#x1D7D9;) representation.
@@ -198,6 +199,14 @@ public class IdentityMatrix implements Matrix<Numeric> {
     @Override
     public boolean isTriangular() {
         return true;
+    }
+
+    public static boolean isIdentityMatrix(Matrix<? extends Numeric> matrix) {
+        if (matrix instanceof IdentityMatrix) return true;
+        if (matrix.rows() != matrix.columns()) return false;
+        if (!matrix.isLowerTriangular() || !matrix.isUpperTriangular()) return false;
+        return LongStream.range(0L, matrix.rows()).mapToObj(idx -> matrix.valueAt(idx, idx))
+                .allMatch(One::isUnity);
     }
 
     @Override
