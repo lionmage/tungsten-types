@@ -26,14 +26,18 @@
 package tungsten.types.matrix.impl;
 
 import org.junit.jupiter.api.Test;
+import tungsten.types.Matrix;
+import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JordanMatrixTest {
     RealType zero = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
@@ -73,5 +77,15 @@ public class JordanMatrixTest {
     public void eigenvalues() {
         Set<RealType> values = Set.of(five, three, two);
         assertEquals(values, jordan1.eigenvalues());
+    }
+
+    @Test
+    public void inverses() {
+        Matrix<? extends Numeric> inverse = jordan1.inverse();
+        Matrix<RealType> reInv = new BasicMatrix<>(inverse).upconvert(RealType.class);
+        Matrix<RealType> reIdent = new BasicMatrix<>(new IdentityMatrix(jordan1.rows(), MathContext.DECIMAL128))
+                .upconvert(RealType.class);
+        RealType epsilon = new RealImpl("0.000001", MathContext.DECIMAL128);
+        assertTrue(MathUtils.areEqualToWithin(reIdent, jordan1.multiply(reInv), epsilon));
     }
 }
