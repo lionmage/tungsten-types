@@ -36,6 +36,7 @@ import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.set.impl.NumericSet;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
 import tungsten.types.vector.ColumnVector;
@@ -70,7 +71,7 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
 
     public JordanMatrix(JordanBlock[] blocks) {
         this.diagBlocks = blocks;
-        clazz = (Class<T>) blocks[0].getLambda().getClass();
+        clazz = (Class<T>) ClassTools.getInterfaceTypeFor(blocks[0].getLambda().getClass());
         generateInternalValues();
     }
 
