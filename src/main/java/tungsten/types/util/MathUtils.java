@@ -2170,6 +2170,7 @@ public class MathUtils {
      * @param M any matrix
      * @return the vectorization of {@code M}
      * @param <T> the element type of the source matrix and the returned {@code ColumnVector}
+     * @since 0.5
      */
     public static <T extends Numeric> ColumnVector<T> vec(Matrix<T> M) {
         ListColumnVector<T> result = new ListColumnVector<>();  // Note: would be better with explicit Class<T> argument
