@@ -76,6 +76,11 @@ public class ComplexPolarImpl implements ComplexType {
         this.exact = exact;
     }
 
+    /**
+     * A convenience constructor for converting a real into a complex.
+     *
+     * @param realVal any real value to be converted
+     */
     public ComplexPolarImpl(RealType realVal) {
         this.modulus = realVal.magnitude();
         this.mctx = realVal.getMathContext();
@@ -189,7 +194,12 @@ public class ComplexPolarImpl implements ComplexType {
                 return false;
         }
     }
-    
+
+    /**
+     * Normalize the argument of this polar complex value
+     * to the range (&minus;&pi;, &pi;].
+     * @return the normalized polar argument
+     */
     protected RealType normalizeArgument() {
         if (argument instanceof Pi) {
             // special case where argument is exactly 𝞹

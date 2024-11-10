@@ -80,6 +80,10 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         args.put(label, value);
     }
 
+    /**
+     * Used to generate a variable name automatically for dynamically created mappings.
+     * @return a variable name based on the current size of the arg vector
+     */
     protected String nextArgName() {
         // if we get an unlabeled argument appended through the Vector API, generate a label
         return "arg" + length();
@@ -120,6 +124,12 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         return new ArrayList<>(args.keySet());
     }
 
+    /**
+     * Returns true if this arg vector contains a mapping
+     * for the given variable name.
+     * @param varLabel the variable name for which we are checking
+     * @return true if and only if there is a mapping present, false otherwise
+     */
     public boolean hasVariableName(String varLabel) {
         return args.containsKey(varLabel);
     }

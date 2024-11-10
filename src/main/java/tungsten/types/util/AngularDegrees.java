@@ -107,7 +107,10 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
     }
 
     private static final RealType DEGREES_IN_CIRCLE = new RealImpl(BigDecimal.valueOf(360L), DEFAULT_CONTEXT);
-    public static final Range<RealType> DECIMAL_DEGREE_RANGE = new Range<>(new RealImpl(BigDecimal.ZERO), Range.BoundType.INCLUSIVE,
+    /**
+     * The range of decimal degrees, 0&deg;&ndash;360&deg;.
+     */
+    public static final Range<RealType> DECIMAL_DEGREE_RANGE = new Range<>(new RealImpl(BigDecimal.ZERO, DEFAULT_CONTEXT), Range.BoundType.INCLUSIVE,
             DEGREES_IN_CIRCLE, Range.BoundType.EXCLUSIVE);
 
     /**
