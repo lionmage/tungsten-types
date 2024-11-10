@@ -2132,15 +2132,13 @@ public class MathUtils {
      * @since 0.5
      */
     public static Matrix<? extends Numeric> kroneckerProduct(Matrix<? extends Numeric> A, Matrix<? extends Numeric> B) {
-        int m = Math.toIntExact(A.rows());
-        int n = Math.toIntExact(A.columns());
-        // casting this here to avoid issues below
-        Matrix<Numeric> Bnum = (Matrix<Numeric>) B;
+        final int m = Math.toIntExact(A.rows());
+        final int n = Math.toIntExact(A.columns());
         Matrix<Numeric>[][] tiles = (Matrix<Numeric>[][]) new Matrix[m][n];
         for (int tileRow = 0; tileRow < m; tileRow++) {
             for (int tileCol = 0; tileCol < n; tileCol++) {
                 Numeric factor = A.valueAt(tileRow, tileCol);
-                tiles[tileRow][tileCol] = Bnum.scale(factor);
+                tiles[tileRow][tileCol] = ((Matrix<Numeric>) B).scale(factor);
             }
         }
         return new AggregateMatrix<>(tiles);
