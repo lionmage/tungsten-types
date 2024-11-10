@@ -2160,8 +2160,8 @@ public class MathUtils {
         if (B.rows() != B.columns()) throw new IllegalArgumentException("B must be square");
         final MathContext ctxa = A.getClass().isAnnotationPresent(Columnar.class) ? A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext();
         final MathContext ctxb = B.getClass().isAnnotationPresent(Columnar.class) ? B.getColumn(0L).getMathContext() : B.getRow(0L).getMathContext();
-        IdentityMatrix Ia = new IdentityMatrix(A.rows(), ctxa);
-        IdentityMatrix Ib = new IdentityMatrix(B.rows(), ctxb);
+        final IdentityMatrix Ia = new IdentityMatrix(A.rows(), ctxa);
+        final IdentityMatrix Ib = new IdentityMatrix(B.rows(), ctxb);
         return ((Matrix<Numeric>) kroneckerProduct(A, Ib)).add((Matrix<Numeric>) kroneckerProduct(Ia, B));
     }
 
