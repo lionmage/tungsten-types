@@ -2166,6 +2166,20 @@ public class MathUtils {
     }
 
     /**
+     * Obtain the vectorization of a matrix <strong>M</strong> by taking
+     * the columns of <strong>M</strong> and stacking them into a single
+     * column vector.
+     * @param M any matrix
+     * @return the vectorization of {@code M}
+     * @param <T> the element type of the source matrix and the returned {@code ColumnVector}
+     */
+    public static <T extends Numeric> ColumnVector<T> vec(Matrix<T> M) {
+        ListColumnVector<T> result = new ListColumnVector<>();  // Note: would be better with explicit Class<T> argument
+        LongStream.range(0L, M.columns()).mapToObj(M::getColumn).flatMap(ColumnVector::stream).forEachOrdered(result::append);
+        return result;
+    }
+
+    /**
      * Compute &#x212f;<sup>X</sup> for a square matrix <strong>X</strong>.
      * Since the calculation is an infinite series, we only compute k terms,
      * where k is derived from the {@link MathContext} of the elements in {@code X}.
