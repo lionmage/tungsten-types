@@ -2121,6 +2121,51 @@ public class MathUtils {
     }
 
     /**
+     * Compute the Kronecker product of two matrices, <strong>A</strong>&otimes;<strong>B</strong>.
+     * Given a matrix <strong>A</strong> of dimensions m&times;n and a matrix <strong>B</strong> of
+     * dimensions p&times;q, the resulting matrix <strong>A</strong>&otimes;<strong>B</strong> has
+     * dimensions mp&times;nq.
+     * @param A an arbitrary matrix
+     * @param B another arbitrary matrix
+     * @return a block matrix representing the Kronecker product of {@code A} and {@code B}
+     * @throws ArithmeticException if {@code A.rows() > Integer.MAX_VALUE} or {@code A.columns() > Integer.MAX_VALUE}
+     * @since 0.5
+     */
+    public static Matrix<? extends Numeric> kroneckerProduct(Matrix<? extends Numeric> A, Matrix<? extends Numeric> B) {
+        int m = Math.toIntExact(A.rows());
+        int n = Math.toIntExact(A.columns());
+        // casting this here to avoid issues below
+        Matrix<Numeric> Bnum = (Matrix<Numeric>) B;
+        Matrix<Numeric>[][] tiles = (Matrix<Numeric>[][]) new Matrix[m][n];
+        for (int tileRow = 0; tileRow < m; tileRow++) {
+            for (int tileCol = 0; tileCol < n; tileCol++) {
+                Numeric factor = A.valueAt(tileRow, tileCol);
+                tiles[tileRow][tileCol] = Bnum.scale(factor);
+            }
+        }
+        return new AggregateMatrix<>(tiles);
+    }
+
+    /**
+     * Compute the Kronecker sum of two matrices, <strong>A</strong>&oplus;<strong>B</strong>.
+     * This is defined as A&oplus;B&nbsp;=&nbsp;A&otimes;I<sub>m</sub>+&thinsp;I<sub>n</sub>&otimes;B, where
+     * I<sub>k</sub> is a k&times;k identity matrix.
+     * @param A an n&times;n matrix
+     * @param B an m&times;m matrix
+     * @return the Kronecker sum <strong>A</strong>&oplus;<strong>B</strong>
+     * @since 0.5
+     */
+    public static Matrix<? extends Numeric> kroneckerSum(Matrix<? extends Numeric> A, Matrix<? extends Numeric> B) {
+        if (A.rows() != A.columns()) throw new IllegalArgumentException("A must be square");
+        if (B.rows() != B.columns()) throw new IllegalArgumentException("B must be square");
+        final MathContext ctxa = A.getClass().isAnnotationPresent(Columnar.class) ? A.getColumn(0L).getMathContext() : A.getRow(0L).getMathContext();
+        final MathContext ctxb = B.getClass().isAnnotationPresent(Columnar.class) ? B.getColumn(0L).getMathContext() : B.getRow(0L).getMathContext();
+        IdentityMatrix Ia = new IdentityMatrix(A.rows(), ctxa);
+        IdentityMatrix Ib = new IdentityMatrix(B.rows(), ctxb);
+        return ((Matrix<Numeric>) kroneckerProduct(A, Ib)).add((Matrix<Numeric>) kroneckerProduct(Ia, B));
+    }
+
+    /**
      * Compute &#x212f;<sup>X</sup> for a square matrix <strong>X</strong>.
      * Since the calculation is an infinite series, we only compute k terms,
      * where k is derived from the {@link MathContext} of the elements in {@code X}.
