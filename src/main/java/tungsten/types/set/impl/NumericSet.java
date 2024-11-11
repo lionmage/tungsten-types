@@ -200,7 +200,11 @@ public class NumericSet implements Set<Numeric> {
                 if (other.countable() && other.cardinality() > 0L) {
                     LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
                     other.forEach(temp::add);
-                    return (Set<T>) new NumericSet(temp);
+                    try {
+                        return new NumericSet(temp).coerceTo(clazz);
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException("While computing union", e);
+                    }
                 }
                 if (Comparable.class.isAssignableFrom(clazz)) {
                     try {
