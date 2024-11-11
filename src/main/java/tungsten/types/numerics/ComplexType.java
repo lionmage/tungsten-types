@@ -59,6 +59,12 @@ public interface ComplexType extends Numeric {
      * @return the argument of the polar form of this complex number
      */
     RealType argument();
+    /**
+     * Compute the set of n<sup>th</sup> roots of
+     * this complex value.
+     * @param n the degree of the roots
+     * @return a {@code Set} of {@code n} roots, including the principal n<sup>th</sup> root
+     */
     Set<ComplexType> nthRoots(IntegerType n);
 
     /**

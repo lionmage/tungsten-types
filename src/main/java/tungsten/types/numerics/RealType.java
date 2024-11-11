@@ -46,6 +46,13 @@ public interface RealType extends Numeric, Comparable<RealType> {
     Sign sign();
     IntegerType floor();
     IntegerType ceil();
+    /**
+     * Calculate the set of n<sup>th</sup> roots
+     * of this real value.  The members of the set
+     * are complex.
+     * @param n the degree of the roots
+     * @return a {@code Set} of {@code n} roots, including the principal n<sup>th</sup> root
+     */
     Set<ComplexType> nthRoots(IntegerType n);
 
     /*

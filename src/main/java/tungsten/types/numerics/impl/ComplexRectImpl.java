@@ -143,6 +143,12 @@ public class ComplexRectImpl implements ComplexType {
         }
     }
 
+    /**
+     * Returns true if fast magnitude calculation for
+     * complex values is enabled.  This method checks
+     * the system property denoted by {@link #FAST_MAGNITUDE}.
+     * @return true if fast magnitude is enabled, false otherwise
+     */
     public static boolean isFastMagnitudeEnabled() {
         return Boolean.getBoolean(FAST_MAGNITUDE);
     }
