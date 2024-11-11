@@ -496,7 +496,8 @@ public class ComplexPolarImpl implements ComplexType {
     @Override
     public String toString() {
         // returns this complex number in angle notation
-        return modulus.toString() + " \u2220" + argument.toString();
+        // U+205F = medium mathematical space, U+2220 = angle symbol
+        return modulus.toString() + "\u205F\u2220" + argument.toString();
     }
 
     @Override
