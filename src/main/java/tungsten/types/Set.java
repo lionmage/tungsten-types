@@ -202,19 +202,6 @@ public interface Set<T> extends Iterable<T> {
 
             private T[] createNewArray(int size) {
                 return (T[]) Array.newInstance(elementType, size);
-//                final Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
-//                try {
-//                    Constructor<T[]> constructor = elementArrayType.getConstructor(int.class);
-//                    return constructor.newInstance(size);
-//                } catch (NoSuchMethodException e) {
-//                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
-//                            "Cannot dynamically obtain array constructor for type {0}", elementType);
-//                    throw new IllegalStateException(e);
-//                } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-//                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
-//                            "While dynamically instantiating an array of " + elementType.getTypeName(), e);
-//                    throw new IllegalStateException(e);
-//                }
             }
 
             @Override
