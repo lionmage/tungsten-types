@@ -25,11 +25,8 @@ package tungsten.types;
 
 import tungsten.types.set.impl.EmptySet;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Array;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
 /**
@@ -138,7 +135,7 @@ public interface Set<T> extends Iterable<T> {
     @SafeVarargs
     static <T> Set<T> of(T... elements) {
         if (elements.length == 0) return EmptySet.getInstance();
-        if (hasDuplicates(elements)) throw new IllegalArgumentException("Cannot construct a Set with duplicate elements.");
+        if (hasDuplicates(elements)) throw new IllegalArgumentException("Cannot construct a Set with duplicate elements");
         final Class<T> elementType = (Class<T>) elements.getClass().getComponentType();
 
         return new Set<>() {
@@ -154,7 +151,7 @@ public interface Set<T> extends Iterable<T> {
 
             @Override
             public boolean contains(T element) {
-                return Arrays.stream(elements).anyMatch(element::equals);
+                return Arrays.asList(elements).contains(element);
             }
 
             @Override
@@ -171,8 +168,7 @@ public interface Set<T> extends Iterable<T> {
             public Set<T> union(Set<T> other) {
                 if (other.cardinality() == 0L) return this;
                 if (other.countable() && other.cardinality() > 0L) {
-                    HashSet<T> union = new HashSet<>();
-                    Arrays.stream(elements).forEach(union::add);
+                    HashSet<T> union = new HashSet<>(Arrays.asList(elements));
                     StreamSupport.stream(other.spliterator(), false).forEach(union::add);
                     return Set.of(union.toArray(this::createNewArray));
                 }
@@ -205,19 +201,20 @@ public interface Set<T> extends Iterable<T> {
             }
 
             private T[] createNewArray(int size) {
-                final Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
-                try {
-                    Constructor<T[]> constructor = elementArrayType.getConstructor(int.class);
-                    return constructor.newInstance(size);
-                } catch (NoSuchMethodException e) {
-                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
-                            "Cannot dynamically obtain array constructor for type {0}", elementType);
-                    throw new IllegalStateException(e);
-                } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
-                            "While dynamically instantiating an array of " + elementType.getTypeName(), e);
-                    throw new IllegalStateException(e);
-                }
+                return (T[]) Array.newInstance(elementType, size);
+//                final Class<T[]> elementArrayType = (Class<T[]>) elements.getClass();
+//                try {
+//                    Constructor<T[]> constructor = elementArrayType.getConstructor(int.class);
+//                    return constructor.newInstance(size);
+//                } catch (NoSuchMethodException e) {
+//                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
+//                            "Cannot dynamically obtain array constructor for type {0}", elementType);
+//                    throw new IllegalStateException(e);
+//                } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+//                    Logger.getLogger(Set.class.getName()).log(Level.SEVERE,
+//                            "While dynamically instantiating an array of " + elementType.getTypeName(), e);
+//                    throw new IllegalStateException(e);
+//                }
             }
 
             @Override
