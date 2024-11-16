@@ -35,6 +35,9 @@ numeric types:
   * Specialized functions that show up a lot, such as 𝚪(z), ln𝚪(z) and 𝜁(s).
   * Multiple ways to compute exponents for all Numeric data types.
   * Methods for computing factorials, binomial coefficients, etc.
+  * Methods for obtaining pseudorandom values:
+    * evenly distributed over a given range
+    * as Gaussian noise from a thread-safe `Supplier` with a specified mean and standard deviation
 * There is preliminary support for data reduction and curve fitting.
 * Most `toString()` methods attempt to generate an accurate representation in standard mathematical notation using Unicode.
   * Constants render using the appropriate symbol.
