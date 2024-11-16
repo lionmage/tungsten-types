@@ -21,7 +21,9 @@ numeric types:
 * In addition to basic numeric types, vectors and matrices are fully supported.
   * Real, complex, integer, and generic vector types.
   * Several matrix structures supplied, including row-based, column-based, and fully parametric.
+  * Block matrices (including Jordan matrices) are fully supported.
   * Matrix exponential, logarithm, square root, and powers.
+  * Trigonometric operations on matrices (sin, cos, arcsin, arccos).
   * Matrix decomposition with (QR) and without (LU) pivoting.
 * Functions are supported:
   * Single- or multi-variate
@@ -30,10 +32,14 @@ numeric types:
 * A fairly complete set of (static method) functions are provided in MathUtils:
   * Implementations of trig functions such as sin, cos, and a highly optimized atan.
   * Hyperbolic functions sinh, cosh, tanh.
-  * Specialized functions that show up a lot, such as 𝚪(z) and 𝜁(s).
+  * Specialized functions that show up a lot, such as 𝚪(z), ln𝚪(z) and 𝜁(s).
   * Multiple ways to compute exponents for all Numeric data types.
   * Methods for computing factorials, binomial coefficients, etc.
 * There is preliminary support for data reduction and curve fitting.
+* Most `toString()` methods attempt to generate an accurate representation in standard mathematical notation using Unicode.
+  * Constants render using the appropriate symbol.
+  * Composed functions will make a best effort to render the composition symbolically.
+* There are Unicode tools for scrubbing inputs and for advanced rendering (e.g., rendering matrices).
 * The generated JAR file has no transitive dependencies whatsoever! Feel free to drop it into your project's lib folder as-is.
 * Javadoc and source JARs are generated as part of the build; at minimum, the Javadoc JAR is recommended for your IDE.
 
@@ -42,7 +48,7 @@ which adheres to the Unix philosophy that each application should only do
 one thing, and you should aggregate these apps together using e.g. shell
 scripts.  There's nothing wrong with this philosophy, except:
 * Performance can't be as good as a monolithic app designed for higher math.
-* The world isn't just Unix or Linux, and Windows ports can be problematic.
+* The world isn't just Unix or Linux, and Windows ports can be problematic.  Sage ports to Windows tend to lag behind other operating systems.
 * The JVM is ubiquitous at this point, so it is a desirable target.
 
 To this point, I was actually asked (during a job interview, no less) why
