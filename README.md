@@ -29,7 +29,7 @@ numeric types:
   * Single- or multi-variate
   * Basic functional building-blocks are provided with full composition possible
   * Symbolic and numeric differentiation are supported (currently, full support for unary functions only)
-* A fairly complete set of (static method) functions are provided in MathUtils:
+* A fairly complete set of (static method) functions are provided in `MathUtils`:
   * Implementations of trig functions such as sin, cos, and a highly optimized atan.
   * Hyperbolic functions sinh, cosh, tanh.
   * Specialized functions that show up a lot, such as 𝚪(z), ln𝚪(z) and 𝜁(s).
