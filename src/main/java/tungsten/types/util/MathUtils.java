@@ -1054,8 +1054,11 @@ public class MathUtils {
      * <br>This method is roughly analogous to {@link Random#nextGaussian()}
      * except that it returns a theoretically unending source of values
      * rather than a single value.  The algorithm used in that method is
-     * virtually identical to the one used here, except that more Gaussian noise
-     * values are cached in this version.
+     * virtually identical to the one used here, except:
+     * <ul>
+     *     <li>more Gaussian noise values are cached in this version</li>
+     *     <li>{@code nextGaussian()} assumes &mu;=0 and &sigma;=1</li>
+     * </ul>
      * <br>Best efforts have been made to make the resulting {@link Supplier}
      * thread-safe, should it be needed for e.g. a parallel
      * {@link java.util.stream.Stream stream}.
