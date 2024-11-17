@@ -1096,7 +1096,7 @@ public class MathUtils {
 
             private final RealType negtwo = new RealImpl("-2.0", ctx);
             private final RealType two = new RealImpl(decTWO, ctx);
-            private final One one = (One) One.getInstance(ctx);
+            private final RealType one = new RealImpl(BigDecimal.ONE, ctx);
             private final ExecutorService exec = Executors.newSingleThreadExecutor();
 
             private void generateValues(int n) {
