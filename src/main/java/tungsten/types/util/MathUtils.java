@@ -1069,7 +1069,10 @@ public class MathUtils {
      *   for this algorithm</a>
      */
     public static Supplier<RealType> gaussianNoise(RealType mu, RealType sigma) {
-        final int qsize = 8;  // this could be set dynamically
+        if (sigma.sign() != Sign.POSITIVE) throw new IllegalArgumentException("Standard deviation must be positive");
+        double dev = Math.log10(sigma.asBigDecimal().doubleValue());
+        if (dev < 0.0) dev = 0.0;  // filter out negatives when 0 < 𝜎 < 1
+        final int qsize = 8 + (int) dev;
         final MathContext ctx = inferMathContext(List.of(mu, sigma));
         final Random randSrc = new Random();
 
