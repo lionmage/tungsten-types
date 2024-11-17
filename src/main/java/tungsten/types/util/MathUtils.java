@@ -1049,7 +1049,7 @@ public class MathUtils {
      * Create a source of Gaussian noise, given the mean {@code mu} (&mu;)
      * and the standard deviation {@code sigma} (&sigma;).  The math context
      * of the resulting values is inferred from the arguments.  This method
-     * returns a {@link Supplier<RealType>} which includes its own source
+     * returns a {@code Supplier<RealType>} which includes its own source
      * of randomness, independent of any used elsewhere.
      * <br>This method is roughly analogous to {@link Random#nextGaussian()}
      * except that it returns a theoretically unending source of values
@@ -1066,7 +1066,7 @@ public class MathUtils {
      *   for this algorithm</a>
      */
     public static Supplier<RealType> gaussianNoise(RealType mu, RealType sigma) {
-        final int qsize = 8;  // this can be set dynamically
+        final int qsize = 8;  // this could be set dynamically
         final MathContext ctx = inferMathContext(List.of(mu, sigma));
         final Random randSrc = new Random();
 
@@ -1076,12 +1076,12 @@ public class MathUtils {
 
             @Override
             public RealType get() {
-                // this needs to be synchronized to avoid a deadlock
-                // without atomicity, we could have 2 threads A and B
+                // This needs to be synchronized to avoid a deadlock.
+                // Without atomicity, we could have 2 threads A and B
                 // both requesting a noise value with a queue of size = 1
                 // if A calls isEmpty() and then B calls isEmpty(), both returning false,
                 // B could snipe the last remaining entry in the queue and leave
-                // A expecting there to be something in the queue but blocking on take()
+                // A expecting there to be something in the queue but blocking on take().
                 synchronized (fifo) {
                     if (fifo.isEmpty()) generateValues(qsize);
                     try {
