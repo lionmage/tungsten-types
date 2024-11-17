@@ -1113,7 +1113,7 @@ public class MathUtils {
                     u = (RealType) random(ctx, randSrc).multiply(two).subtract(one);
                     v = (RealType) random(ctx, randSrc).multiply(two).subtract(one);
                     s = (RealType) u.multiply(u).add(v.multiply(v));
-                } while (Zero.isZero(s) || one.compareTo(s) <= 0);
+                } while (Zero.isZero(s) || s.compareTo(one) >= 0);
                 s = (RealType) ln(s).multiply(negtwo).divide(s).sqrt();
                 try {
                     fifo.put((RealType) mu.add(sigma.multiply(u).multiply(s)));
