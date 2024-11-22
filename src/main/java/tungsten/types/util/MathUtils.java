@@ -4133,7 +4133,7 @@ public class MathUtils {
      * @param x the x-axis coordinate, or for a complex value,
      *          the real component
      * @return the angle formed between the positive x-axis and
-     *   the vector (x,&nbsp;y)
+     *   the vector &#x27E8;x,&nbsp;y&#x27E9;
      */
     public static Numeric atan2(RealType y, RealType x) {
         final RealType two  = new RealImpl(decTWO, y.getMathContext());
