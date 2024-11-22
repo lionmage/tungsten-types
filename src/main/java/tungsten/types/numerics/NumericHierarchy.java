@@ -67,7 +67,7 @@ public enum NumericHierarchy {
                 retval = typeMap.get(iclass);
                 if (retval != null) break;
             }
-            // if there were no interfaces or we found no matches,
+            // if there were no interfaces, or we found no matches,
             // recurse up the class hierarchy
             if (interfaces.length == 0 || retval == null) {
                 if (clazz.getSuperclass() != null)

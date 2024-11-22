@@ -4028,6 +4028,7 @@ public class MathUtils {
      */
     public static IntegerType trunc(Numeric val) {
         NumericHierarchy hval = NumericHierarchy.forNumericType(val.getClass());
+        if (hval == null) throw new IllegalArgumentException("Cannot truncate values of " + val.getClass().getTypeName());
         switch (hval) {
             case RATIONAL:
                 IntegerType[] wholeAndFrac = ((RationalType) val).divideWithRemainder();
