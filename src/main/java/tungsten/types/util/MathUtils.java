@@ -3066,13 +3066,7 @@ public class MathUtils {
     public static boolean isNormal(Matrix<? extends Numeric> matrix) {
         if (matrix.rows() != matrix.columns()) return false;  // non-square matrices are non-normal
         Matrix<ComplexType> conjXpose = conjugateTranspose(matrix);
-        Matrix<ComplexType> inputAsCplx = new ParametricMatrix<>(matrix.rows(), matrix.columns(), (row, column) -> {
-            try {
-                return (ComplexType) matrix.valueAt(row, column).coerceTo(ComplexType.class);
-            } catch (CoercionException e) {
-                throw new ArithmeticException("Unable to coerce element at " + row + ", " + column);
-            }
-        });
+        Matrix<ComplexType> inputAsCplx = new ComplexMatrixAdapter(matrix);
         // IntelliJ (and probably other IDEs) will complain that equals() is between objects of
         // inconvertible types, but this is some high-grade horseshit owing to the way Java
         // implements generic type support.  Matrix<ComplexType> is not considered a subtype
@@ -3081,7 +3075,7 @@ public class MathUtils {
         // element-wise comparison using Numeric.equals()...
         // Ultimately, it's just easier to create a method ZeroMatrix.isZeroMatrix() which tests
         // the cell values for equality to zero.
-        return ZeroMatrix.isZeroMatrix(inputAsCplx.multiply(conjXpose).subtract(conjXpose.multiply(inputAsCplx)));
+        return ZeroMatrix.isZeroMatrix(commutator(conjXpose, inputAsCplx));
     }
 
     /**
@@ -3445,7 +3439,8 @@ public class MathUtils {
      * @param <T> the numeric type of the elements of {@code A} and {@code b}
      */
     public static <T extends Numeric> Matrix<T> gaussianElimination(Matrix<T> A, Vector<T> b, long j) {
-        if (j < 0L || j >= A.rows()) throw new IndexOutOfBoundsException("Index j must be between 0 and " + A.rows());
+        if (j < 0L || j >= A.rows()) throw new IndexOutOfBoundsException("Index j must be between 0 and " +
+                (A.rows() - 1L) + ", inclusive");
         if (A.columns() != A.rows()) throw new IllegalArgumentException("Matrix is non-square");
         if (A.rows() != b.length()) throw new IllegalArgumentException("Vector length must match rows of matrix");
         BasicMatrix<T> U = new BasicMatrix<>(A);
