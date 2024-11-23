@@ -101,7 +101,7 @@ public class RangeUtils {
      */
     public static Range<RealType> getGammaArgumentInstance() {
         // MathContext is chosen arbitrarily
-        final RealType pi = Pi.getInstance(MathContext.DECIMAL64);
+        final RealType pi = Pi.getInstance(MathContext.DECIMAL128);
         return new Range<>(pi.negate(), pi, BoundType.EXCLUSIVE);
     }
 
@@ -384,12 +384,12 @@ public class RangeUtils {
 
             @Override
             public void append(RealType element) {
-                throw new UnsupportedOperationException("Cannot append to this set.");
+                throw new UnsupportedOperationException("Cannot append to this set");
             }
 
             @Override
             public void remove(RealType element) {
-                throw new UnsupportedOperationException("Cannot remove elements from this set.");
+                throw new UnsupportedOperationException("Cannot remove elements from this set");
             }
 
             @Override
@@ -452,12 +452,12 @@ public class RangeUtils {
 
                     @Override
                     public void append(RealType element) {
-                        throw new UnsupportedOperationException("Cannot append to this set.");
+                        throw new UnsupportedOperationException("Cannot append to this set");
                     }
 
                     @Override
                     public void remove(RealType element) {
-                        throw new UnsupportedOperationException("Cannot remove elements from this set.");
+                        throw new UnsupportedOperationException("Cannot remove elements from this set");
                     }
 
                     @Override
@@ -497,7 +497,7 @@ public class RangeUtils {
                             //  both inclusion AND exclusion.
                         }
                         // this operation is non-commutative, so we can't try this in reverse
-                        throw new UnsupportedOperationException("Cannot currently compute difference with a non-discrete set.");
+                        throw new UnsupportedOperationException("Cannot currently compute difference with a non-discrete set");
                     }
 
                     @Override
