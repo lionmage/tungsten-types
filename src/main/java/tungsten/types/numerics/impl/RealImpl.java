@@ -432,9 +432,7 @@ public class RealImpl implements RealType {
                         new Object[] { root, root.negate() });
             }
         }
-        final Pi pi = Pi.getInstance(mctx);
-        final RealImpl zero = new RealImpl(BigDecimal.ZERO, mctx);
-        ComplexPolarImpl polar = new ComplexPolarImpl(this.magnitude(), this.sign() == Sign.NEGATIVE ? pi : zero);
+        ComplexPolarImpl polar = new ComplexPolarImpl(this);  // promote to complex
         return polar.nthRoots(n);
     }
     
