@@ -222,7 +222,7 @@ public class UnicodeTextEffects {
                 if (buf.length() > 0 && mapsToCombiningCharacter(c)) buf.append('\u2009');
                 buf.append(subscriptMap.get(c));
             }
-            if (warnOnce && Character.isUpperCase(c)) {
+            if (warnOnce && Character.isUpperCase(c) && !subscriptMap.containsKey(c)) {
                 Logger.getLogger(UnicodeTextEffects.class.getName()).log(Level.WARNING,
                         "Input string \"{0}\" contains upper-case characters which have no subscript mapping.", source);
                 warnOnce = false;
