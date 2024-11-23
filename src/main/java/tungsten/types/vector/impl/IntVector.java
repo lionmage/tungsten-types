@@ -123,12 +123,12 @@ public class IntVector implements Vector<IntegerType> {
         if (subtrahend.length() != this.length()) {
             throw new ArithmeticException("Subtrahend must have the same dimension as this vector");
         }
-        BigInteger[] sum = new BigInteger[elements.length];
+        BigInteger[] diff = new BigInteger[elements.length];
         for (int k = 0; k < subtrahend.length(); k++) {
-            sum[k] = elements[k].subtract(subtrahend.elementAt(k).asBigInteger());
+            diff[k] = elements[k].subtract(subtrahend.elementAt(k).asBigInteger());
         }
         final MathContext ctx = mctx.getPrecision() == 0 ? subtrahend.getMathContext() : mctx;
-        IntVector result = new IntVector(sum);
+        IntVector result = new IntVector(diff);
         result.setMathContext(ctx);
         return result;
     }
