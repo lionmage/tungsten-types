@@ -457,9 +457,9 @@ public class RealImpl implements RealType {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Zero) {
-            return ((Zero) o).isExact() == exact && this.asBigDecimal().compareTo(BigDecimal.ZERO) == 0;
+            return ((Zero) o).isExact() == exact && val.compareTo(BigDecimal.ZERO) == 0;
         } else if (o instanceof One) {
-            return exact && this.asBigDecimal().compareTo(BigDecimal.ONE) == 0;
+            return exact && val.compareTo(BigDecimal.ONE) == 0;
         }
         if (o instanceof RealType) {
             RealType that = (RealType) o;
