@@ -123,7 +123,7 @@ public class IntVector implements Vector<IntegerType> {
             throw new ArithmeticException("Addend must have the same dimension as this vector");
         }
         BigInteger[] sum = new BigInteger[elements.length];
-        for (int k = 0; k < addend.length(); k++) {
+        for (int k = 0; k < sum.length; k++) {
             sum[k] = elements[k].add(addend.elementAt(k).asBigInteger());
         }
         final MathContext ctx = mctx.getPrecision() == 0 ? addend.getMathContext() : mctx;
@@ -138,7 +138,7 @@ public class IntVector implements Vector<IntegerType> {
             throw new ArithmeticException("Subtrahend must have the same dimension as this vector");
         }
         BigInteger[] diff = new BigInteger[elements.length];
-        for (int k = 0; k < subtrahend.length(); k++) {
+        for (int k = 0; k < diff.length; k++) {
             diff[k] = elements[k].subtract(subtrahend.elementAt(k).asBigInteger());
         }
         final MathContext ctx = mctx.getPrecision() == 0 ? subtrahend.getMathContext() : mctx;
