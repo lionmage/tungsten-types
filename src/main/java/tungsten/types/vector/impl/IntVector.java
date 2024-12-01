@@ -55,16 +55,31 @@ public class IntVector implements Vector<IntegerType> {
         this.elements = elements;
     }
 
+    /**
+     * Initialize an IntVector with a given length and {@code MathContext}.
+     * All elements are initialized to 0.
+     * @param size the length of this vector
+     * @param ctx  the {@code MathContext} for this vector
+     */
     public IntVector(long size, MathContext ctx) {
         elements = new BigInteger[(int) size];
         Arrays.fill(elements, BigInteger.ZERO);
         this.mctx = ctx;
     }
 
+    /**
+     * Initialize an IntVector with a sequence of {@code long} values.
+     * @param elements one or more {@code Long} values
+     */
     public IntVector(Long... elements) {
         this.elements = Arrays.stream(elements).map(BigInteger::valueOf).toArray(BigInteger[]::new);
     }
 
+    /**
+     * Initialize an IntVector with a {@code List} of {@code IntegerType} values.
+     * The {@code MathContext} is inferred from the supplied {@code List<IntegerType>}.
+     * @param elements the elements of this vector, in order
+     */
     public IntVector(List<IntegerType> elements) {
         MathContext ctx = MathUtils.inferMathContext(elements);
         this.elements = elements.stream().map(IntegerType::asBigInteger).toArray(BigInteger[]::new);
