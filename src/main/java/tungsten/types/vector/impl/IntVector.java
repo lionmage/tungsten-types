@@ -29,7 +29,6 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.MathUtils;
 
@@ -202,7 +201,10 @@ public class IntVector implements Vector<IntegerType> {
 
     @Override
     public Vector<IntegerType> normalize() {
-        if (One.isUnity(this.magnitude())) return this;  // it's already a unit vector
+        // if it's already a unit vector, return self
+        if (Arrays.stream(elements).map(BigInteger::abs).filter(BigInteger.ONE::equals).count() == 1L) return this;
+        // the following is slower and involves computing a square root
+//        if (One.isUnity(this.magnitude())) return this;
         throw new UnsupportedOperationException("Cannot normalize this IntVector");
     }
 
