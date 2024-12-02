@@ -4176,10 +4176,16 @@ public class MathUtils {
             if (result.isCoercibleTo(RealType.class)) {
                 // the result is a real, so return it as a RealType
                 return result.coerceTo(RealType.class);
+            } else if (z instanceof RealType) {
+                // the result *should* be a real, so force it to return as a RealType
+                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                        "Result {0} has imaginary part {1} for arccos({2})",
+                        new Object[] { result, Im(result), z });
+                return Re(result);
             }
             return result;
         } catch (CoercionException e) {
-            throw new ArithmeticException("Type coercion error while computing ln(" + z + "): " + e.getMessage());
+            throw new ArithmeticException("Type coercion error while computing arccos(" + z + "): " + e.getMessage());
         }
     }
 
