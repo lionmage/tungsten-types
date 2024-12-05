@@ -377,7 +377,7 @@ public interface Matrix<T extends Numeric> {
         }
         if (subtrahend instanceof IdentityMatrix) {
             // optimized calculation of A-I
-            return MathUtils.calcAminusI(subtrahend);
+            return MathUtils.calcAminusI(this);
         }
         Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(subtrahend); // safer than subtrahend.valueAt(0L, 0L).getClass()
         final MathContext ctx = subtrahend.getClass().isAnnotationPresent(Columnar.class) ?
