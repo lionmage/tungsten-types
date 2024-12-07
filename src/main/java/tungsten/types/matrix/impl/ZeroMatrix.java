@@ -133,7 +133,7 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
             throw new ArithmeticException(INVERSE_ERROR);
         }
         if (Zero.isZero(n)) return new IdentityMatrix(rows(), mctx);
-        return this; // Zⁿ = Z for n != 0
+        return this; // Zⁿ = Z for n ≠ 0
     }
 
     @Override
@@ -150,5 +150,11 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
             return this.rows() == that.rows() && this.columns() == that.columns();
         }
         return super.equals(o);
+    }
+
+    @Override
+    public String toString() {
+        // return the symbol for the zero matrix with the dimensions
+        return "\uD835\uDFD8[" + rows() + '\u00D7' + columns() + ']'; // surrogate pair for 1D7D8
     }
 }
