@@ -375,7 +375,7 @@ public interface Matrix<T extends Numeric> {
             // A-0 = A
             return this;
         }
-        if (subtrahend instanceof IdentityMatrix) {
+        if (IdentityMatrix.isIdentityMatrix(subtrahend)) {
             // optimized calculation of A-I
             return MathUtils.calcAminusI(this);
         }
