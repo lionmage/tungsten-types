@@ -40,6 +40,7 @@ import java.math.MathContext;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ContinuedFraction implements RealType {
@@ -293,12 +294,20 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Arrays.hashCode(terms) + Objects.hash(repeatsFromIndex, mappingFunc, mctx);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (obj instanceof ContinuedFraction) {
+            ContinuedFraction that = (ContinuedFraction) obj;
+            if ((this.mappingFunc == null && that.mappingFunc != null) ||
+                    (this.mappingFunc != null && that.mappingFunc == null)) return false;
+            return Arrays.equals(this.terms, that.terms) &&
+                    this.repeatsFromIndex == that.repeatsFromIndex;
+        }
+
+        return obj.equals(this);
     }
 
     @Override
