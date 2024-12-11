@@ -28,10 +28,7 @@ package tungsten.types.numerics.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.*;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
@@ -43,7 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ContinuedFraction implements RealType {
-    private long[] terms;
+    private final long[] terms;
     private int repeatsFromIndex = -1;
     /**
      * For infinite continued fractions, takes
@@ -85,6 +82,14 @@ public class ContinuedFraction implements RealType {
             this.terms = terms.stream().mapToLong(Long::longValue).toArray();
         }
         this.mctx = num.getMathContext();
+    }
+
+    public ContinuedFraction(Long... terms) {
+        this.terms = Arrays.stream(terms).mapToLong(Long::longValue).toArray();
+    }
+
+    public ContinuedFraction(List<Long> terms) {
+        this.terms = terms.stream().mapToLong(Long::longValue).toArray();
     }
 
     private long floor(BigDecimal value) {
@@ -180,12 +185,49 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
-        return false;
+        if (numtype == Numeric.class) return true;
+        NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
+        switch (htype) {
+            case INTEGER:
+                return terms() == 1L;
+            case COMPLEX:
+            case REAL:
+            case RATIONAL:
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
-        return RealType.super.coerceTo(numtype);
+        if (numtype == Numeric.class) return this;
+        NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
+        switch (htype) {
+            case COMPLEX:
+                return new ComplexRectImpl(this);
+            case REAL:
+                return this;
+            case RATIONAL:
+                long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
+                return computeRationalValue(0, lastTerm);
+            case INTEGER:
+                if (terms() == 1L) return new IntegerImpl(BigInteger.valueOf(terms[0]));
+                throw new CoercionException("Continued fraction is not an integer", this.getClass(), numtype);
+            default:
+                throw new CoercionException("Unsupported coercion", this.getClass(), numtype);
+        }
+    }
+
+    private RationalType computeRationalValue(long k, long limit) {
+        RationalType a_k = new RationalImpl(termAt(k), 1L, mctx);
+        if (k == limit) return a_k;
+        Numeric nextTerm = computeRationalValue(k + 1L, limit).inverse();
+        try {
+            return (RationalType) a_k.add(nextTerm).coerceTo(RationalType.class);
+        } catch (CoercionException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
