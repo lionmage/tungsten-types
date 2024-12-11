@@ -37,11 +37,10 @@ import tungsten.types.util.UnicodeTextEffects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ContinuedFraction implements RealType {
     private long[] terms;
@@ -98,9 +97,51 @@ public class ContinuedFraction implements RealType {
     }
 
     protected ContinuedFraction(long[] terms, int repeatsFromIndex, Function<Long, Long> mappingFunc) {
-        this.terms = terms;
+        long[] cleanedTerms = annealZeros(terms);
+        if (!Arrays.equals(terms, cleanedTerms)) {
+            int zeroIndex = findValue(terms, 0L);
+            // 3 terms being combined into 1
+            if (repeatsFromIndex > zeroIndex) {
+                repeatsFromIndex -= 2;
+            }
+            if (mappingFunc != null) {
+                mappingFunc = mappingFunc.compose(n -> n + 2L);
+            }
+        }
+        this.terms = cleanedTerms;
         this.repeatsFromIndex = repeatsFromIndex;
         this.mappingFunc = mappingFunc;
+    }
+
+    private long[] annealZeros(long[] source) {
+        if (source.length == 1) return source;
+
+        ArrayList<Long> termList = new ArrayList<>();
+        for (int k = 1; k < source.length; k++) {
+            if (source[k] == 0L) {
+                long a = source[k - 1];
+                long b = source[++k];
+                termList.remove(termList.size() - 1);
+                termList.add(a + b);
+            } else {
+                termList.add(source[k]);
+            }
+        }
+        return termList.stream().mapToLong(Long::longValue).toArray();
+    }
+
+    private int findValue(long[] values, long value) {
+        int k = 0;
+        while (values[k] != value) {
+            k++;
+            if (k == values.length) {
+                Logger.getLogger(ContinuedFraction.class.getName()).log(Level.SEVERE,
+                        "Expected to find {0} in term array {1} but did not.",
+                        new Object[] { value, values });
+                throw new NoSuchElementException("Could not find term " + value);
+            }
+        }
+        return k;
     }
 
     public long termAt(long index) {
@@ -229,7 +270,7 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public BigDecimal asBigDecimal() {
-        long lastTerm = terms() < 0 ? mctx.getPrecision() : terms() - 1L;
+        long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
         return computeValue(0L, lastTerm);
     }
 
@@ -261,7 +302,7 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public Set<ComplexType> nthRoots(IntegerType n) {
-        return null;
+        return new RealImpl(asBigDecimal(), mctx).nthRoots(n);
     }
 
     @Override
@@ -282,6 +323,7 @@ public class ContinuedFraction implements RealType {
             else if (that.terms() > extent || that.terms() < 0L) return -1;
             return 0;
         }
+        // fall back to BigDecimal comparisons
         return asBigDecimal().compareTo(o.asBigDecimal());
     }
 
