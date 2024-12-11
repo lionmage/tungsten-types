@@ -117,6 +117,7 @@ public class ContinuedFraction implements RealType {
         if (source.length == 1) return source;
 
         ArrayList<Long> termList = new ArrayList<>();
+        termList.add(source[0]);
         for (int k = 1; k < source.length; k++) {
             if (source[k] == 0L) {
                 long a = source[k - 1];
@@ -131,7 +132,7 @@ public class ContinuedFraction implements RealType {
     }
 
     private int findValue(long[] values, long value) {
-        int k = 0;
+        int k = 1;
         while (values[k] != value) {
             k++;
             if (k == values.length) {
