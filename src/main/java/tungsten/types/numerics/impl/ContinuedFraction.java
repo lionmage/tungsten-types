@@ -88,7 +88,7 @@ public class ContinuedFraction implements RealType {
     }
 
     private long floor(BigDecimal value) {
-        long whole = value.longValueExact();
+        long whole = value.toBigInteger().longValueExact();
         if (value.signum() == -1 && value.stripTrailingZeros().scale() > 0) {
             // negative values that are non-integers need to be decremented
             whole = Math.decrementExact(whole);
