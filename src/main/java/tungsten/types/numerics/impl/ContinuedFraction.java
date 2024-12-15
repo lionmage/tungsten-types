@@ -309,6 +309,7 @@ public class ContinuedFraction implements RealType {
         long guess = sqrt(terms[0]);  // a₀
         if (terms() == 1L) {
             if (guess * guess == terms[0]) {
+                // if it's a perfect square, we're done
                 ContinuedFraction cf = new ContinuedFraction(guess);
                 cf.setMathContext(mctx);
                 return cf;
@@ -388,14 +389,12 @@ public class ContinuedFraction implements RealType {
     @Override
     public BigDecimal asBigDecimal() {
         long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
-        return computeValue(0L, lastTerm);
-    }
-
-    private BigDecimal computeValue(long k, long limit) {
-        BigDecimal a_k = BigDecimal.valueOf(termAt(k));
-        if (k == limit) return a_k;
-        BigDecimal nextTerm = BigDecimal.ONE.divide(computeValue(k + 1L, limit), mctx);
-        return a_k.add(nextTerm, mctx);
+        BigDecimal accum = BigDecimal.ZERO;
+        for (long k = lastTerm; k >= 0L; k--) {
+            BigDecimal prev = k != lastTerm ? BigDecimal.ONE.divide(accum, mctx) : BigDecimal.ZERO;
+            accum = BigDecimal.valueOf(termAt(k)).add(prev, mctx);
+        }
+        return accum;
     }
 
     @Override
