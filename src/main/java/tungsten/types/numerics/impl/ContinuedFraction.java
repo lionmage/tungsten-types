@@ -257,11 +257,35 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public Numeric add(Numeric addend) {
+        if (addend.isCoercibleTo(IntegerType.class)) {
+            try {
+                IntegerType value = (IntegerType) addend.coerceTo(IntegerType.class);
+                long primAddend = value.asBigInteger().longValueExact();
+                long[] sum = new long[terms.length];
+                sum[0] = terms[0] + primAddend;
+                System.arraycopy(terms, 1, sum, 1, terms.length - 1);
+                return new ContinuedFraction(sum, repeatsFromIndex, mappingFunc);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While adding an integer value: " + e.getMessage());
+            }
+        }
         return null;
     }
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (subtrahend.isCoercibleTo(IntegerType.class)) {
+            try {
+                IntegerType value = (IntegerType) subtrahend.coerceTo(IntegerType.class);
+                long primSubrahend = value.asBigInteger().longValueExact();
+                long[] diff = new long[terms.length];
+                diff[0] = terms[0] - primSubrahend;
+                System.arraycopy(terms, 1, diff, 1, terms.length - 1);
+                return new ContinuedFraction(diff, repeatsFromIndex, mappingFunc);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While subtracting an integer value: " + e.getMessage());
+            }
+        }
         return null;
     }
 
