@@ -170,7 +170,7 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public boolean isIrrational() {
-        return false;
+        return repeatsFromIndex >= 0 || mappingFunc != null;
     }
 
     @Override
@@ -180,7 +180,7 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public boolean isExact() {
-        return false;
+        return mappingFunc == null;
     }
 
     @Override
