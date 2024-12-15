@@ -481,7 +481,7 @@ public class ContinuedFraction implements RealType {
             StringBuilder buf2 = new StringBuilder();
             for (int k = extent; k < terms.length; k++) {
                 buf2.append(terms[k]);
-                if (k != terms.length - 1) buf.append(", ");
+                if (k != terms.length - 1) buf2.append(", ");
             }
             buf.append(", ").append(UnicodeTextEffects.overline(buf2.toString()));
         }
