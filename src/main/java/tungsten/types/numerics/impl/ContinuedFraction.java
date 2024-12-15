@@ -210,7 +210,7 @@ public class ContinuedFraction implements RealType {
                 return this;
             case RATIONAL:
                 long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
-                return computeRationalValue(0, lastTerm);
+                return computeRationalValue(0L, lastTerm);
             case INTEGER:
                 if (terms() == 1L) return new IntegerImpl(BigInteger.valueOf(terms[0]));
                 throw new CoercionException("Continued fraction is not an integer", this.getClass(), numtype);
@@ -233,9 +233,9 @@ public class ContinuedFraction implements RealType {
     @Override
     public RealType negate() {
         if (terms() == 1L) {
-            long[] singleTerm = new long[1];
-            singleTerm[0] = -terms[0];
-            return new ContinuedFraction(singleTerm, -1, null);
+            ContinuedFraction singleTerm = new ContinuedFraction(-terms[0]);
+            singleTerm.setMathContext(mctx);
+            return singleTerm;
         }
 
         long[] negValue = new long[terms.length + 1];
@@ -250,7 +250,9 @@ public class ContinuedFraction implements RealType {
             indexMapper = mappingFunc.compose(n -> n - 1L);
         }
 
-        return new ContinuedFraction(negValue, startRepeat, indexMapper);
+        ContinuedFraction cf = new ContinuedFraction(negValue, startRepeat, indexMapper);
+        cf.setMathContext(mctx);
+        return cf;
     }
 
     @Override
@@ -275,6 +277,7 @@ public class ContinuedFraction implements RealType {
 
     @Override
     public Numeric inverse() {
+        ContinuedFraction result;
         if (terms[0] == 0L) {
             long[] invTerms = Arrays.copyOfRange(terms, 1, terms.length);
             int cycleStart = repeatsFromIndex < 0 ? -1 : repeatsFromIndex - 1;
@@ -282,7 +285,7 @@ public class ContinuedFraction implements RealType {
             if (mappingFunc != null) {
                 nuMapper = mappingFunc.compose(n -> n + 1L);
             }
-            return new ContinuedFraction(invTerms, cycleStart, nuMapper);
+            result = new ContinuedFraction(invTerms, cycleStart, nuMapper);
         } else {
             // insert a 0
             long[] invTerms = new long[terms.length + 1];
@@ -293,14 +296,85 @@ public class ContinuedFraction implements RealType {
             if (mappingFunc != null) {
                 nuMapper = mappingFunc.compose(n -> n - 1L);
             }
-            return new ContinuedFraction(invTerms, cycleStart, nuMapper);
+            result = new ContinuedFraction(invTerms, cycleStart, nuMapper);
         }
+        result.setMathContext(mctx);
+        return result;
     }
 
     @Override
     public Numeric sqrt() {
-        return null;
+        if (sign() == Sign.NEGATIVE) return new RealImpl(asBigDecimal(), mctx).sqrt();
+
+        long guess = sqrt(terms[0]);  // a₀
+        if (terms() == 1L) {
+            if (guess * guess == terms[0]) {
+                ContinuedFraction cf = new ContinuedFraction(guess);
+                cf.setMathContext(mctx);
+                return cf;
+            }
+            // otherwise, expand the fraction
+            List<Long> nuterms = new ArrayList<>();
+            long ak;
+            long rk = 0L;  // r₀
+            long sk = 1L;  // s₀
+            do {
+                ak = (rk + guess) / sk; // aₖ = (rₖ + a₀) / sₖ
+                rk = ak * sk - rk;  // rₖ₊₁ = aₖsₖ - rₖ
+                sk = (terms[0] - rk * rk) / sk;  // sₖ₊₁ = (N - rₖ₊₁²) / sₖ
+                nuterms.add(ak);
+            } while (ak != 2L * guess);  // repeating sequence terminates with 2a₀
+            long[] a = nuterms.stream().mapToLong(Long::longValue).toArray();
+            ContinuedFraction result = new ContinuedFraction(a, findPalindromeStart(a), null);
+            result.setMathContext(mctx);
+            return result;
+        }
+        // TODO: need an algorithm to compute sqrt for an entire continued fraction
+        return new RealImpl(asBigDecimal(), mctx).sqrt();
     }
+
+    private int findPalindromeStart(long[] arr) {
+        if (arr.length < 2) return -1;
+
+        for (int k = 1; k < arr.length - 2; k++) {
+            long[] subarr = Arrays.copyOfRange(arr, k, arr.length - 1);
+            if (isPalindrome(subarr)) return k;
+        }
+        return arr.length - 1;
+    }
+
+    private boolean isPalindrome(long[] candidate) {
+        for (int i = 0; i <= candidate.length / 2; i++) {
+            if (candidate[i] != candidate[candidate.length - i - 1]) return false;
+        }
+
+        return true;
+    }
+
+    private long sqrt(long val) {
+        int bitLength = 63 - Long.numberOfLeadingZeros(val);
+        long div = 1L << (bitLength / 2);
+        long div2 = div;
+
+        while (true) {
+            long y = (div + (val / div)) >> 1L;
+            if (y == div || y == div2) {
+                long lowest = Math.min(div, div2);
+                return closestWithoutGoingOver(lowest, y, val);
+            }
+            div2 = div;
+            div = y;
+        }
+    }
+
+    private long closestWithoutGoingOver(long a, long b, long valSq) {
+        final long asquared = a * a;
+        if (asquared > valSq) return b;
+        final long bsquared = b * b;
+        if (bsquared > valSq) return a;
+        return (valSq - asquared) > (valSq - bsquared) ? b : a;
+    }
+
 
     @Override
     public MathContext getMathContext() {
