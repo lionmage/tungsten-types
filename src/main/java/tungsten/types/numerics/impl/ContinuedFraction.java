@@ -39,7 +39,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ContinuedFraction implements RealType {
+public class ContinuedFraction implements RealType, Iterable<Long> {
     private final long[] terms;
     private int repeatsFromIndex = -1;
     /**
@@ -512,5 +512,27 @@ public class ContinuedFraction implements RealType {
         if (mappingFunc != null) buf.append(", \u2026");
         buf.append(']');
         return buf.toString();
+    }
+
+    /**
+     * Obtain an iterator over the terms of this continued fraction.
+     * @return an iterator that returns a (possibly non-terminating) sequence of {@code Long} values
+     */
+    @Override
+    public Iterator<Long> iterator() {
+        return new Iterator<>() {
+            private long k = 0L;
+
+            @Override
+            public boolean hasNext() {
+                return terms() < 0L || k < terms();
+            }
+
+            @Override
+            public Long next() {
+                if (terms() > 0L && k >= terms()) return null;
+                return termAt(k++);
+            }
+        };
     }
 }
