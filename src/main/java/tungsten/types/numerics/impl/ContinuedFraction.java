@@ -29,6 +29,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
@@ -303,7 +304,9 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 long[] sum = new long[terms.length];
                 sum[0] = terms[0] + primAddend;
                 System.arraycopy(terms, 1, sum, 1, terms.length - 1);
-                return new ContinuedFraction(sum, repeatsFromIndex, mappingFunc);
+                ContinuedFraction result = new ContinuedFraction(sum, repeatsFromIndex, mappingFunc);
+                result.setMathContext(mctx);
+                return result;
             } catch (CoercionException e) {
                 throw new ArithmeticException("While adding an integer value: " + e.getMessage());
             }
@@ -320,7 +323,9 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 long[] diff = new long[terms.length];
                 diff[0] = terms[0] - primSubrahend;
                 System.arraycopy(terms, 1, diff, 1, terms.length - 1);
-                return new ContinuedFraction(diff, repeatsFromIndex, mappingFunc);
+                ContinuedFraction result = new ContinuedFraction(diff, repeatsFromIndex, mappingFunc);
+                result.setMathContext(mctx);
+                return result;
             } catch (CoercionException e) {
                 throw new ArithmeticException("While subtracting an integer value: " + e.getMessage());
             }
