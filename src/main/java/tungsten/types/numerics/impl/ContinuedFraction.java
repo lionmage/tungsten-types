@@ -92,6 +92,45 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         this.terms = terms.stream().mapToLong(Long::longValue).toArray();
     }
 
+    public ContinuedFraction(Iterator<Long> lterms, int cacheSize) {
+        if (cacheSize < 1) throw new IllegalArgumentException("Cache size must be a positive integer");
+        long[] tempTerms = new long[cacheSize];
+        int k = 0;
+        while (k < cacheSize && lterms.hasNext()) tempTerms[k++] = lterms.next();
+        if (k < cacheSize) {
+            this.terms = Arrays.copyOf(tempTerms, k);
+        } else {
+            this.terms = tempTerms;
+        }
+
+        if (lterms.hasNext()) {
+            // there are more terms in the iterator, so provide a function to access them
+            final long boundary = k;
+            this.mappingFunc = new Function<>() {
+                final List<Long> cache = new LinkedList<>();
+
+                @Override
+                public Long apply(Long index) {
+                    if (index == null) throw new IllegalArgumentException("Index must not be null");
+                    if (index - boundary < 0L) throw new IndexOutOfBoundsException("Index " + index + " < " + boundary);
+                    Long val = 0L;
+                    if (index - boundary < (long) cache.size()) {
+                        val =  cache.get((int) (index - boundary));
+                    } else {
+                        Logger.getLogger(ContinuedFraction.class.getName()).log(Level.INFO,
+                                "Can't find term {0} in cache; iterating over {1} terms and caching.",
+                                new Object[] { index, index - boundary - cache.size() });
+                        for (long kk = cache.size() + boundary; kk <= index && kk <= (long) Integer.MAX_VALUE; kk++) {
+                            val = lterms.next();
+                            cache.add(val);
+                        }
+                    }
+                    return val;
+                }
+            };
+        }
+    }
+
     private long floor(BigDecimal value) {
         long whole = value.toBigInteger().longValueExact();
         if (value.signum() == -1 && value.stripTrailingZeros().scale() > 0) {
