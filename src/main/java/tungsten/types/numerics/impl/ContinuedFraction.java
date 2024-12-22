@@ -29,7 +29,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
-import tungsten.types.util.MathUtils;
+import tungsten.types.util.GosperTermIterator;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
@@ -311,7 +311,16 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 throw new ArithmeticException("While adding an integer value: " + e.getMessage());
             }
         }
-        return null;
+
+        if (addend instanceof ContinuedFraction) {
+            ContinuedFraction rhs = (ContinuedFraction) addend;
+            Iterator<Long> result = GosperTermIterator.add(this.iterator(), rhs.iterator());
+            ContinuedFraction sum = new ContinuedFraction(result, 10);
+            sum.setMathContext(mctx);
+            return sum;
+        }
+
+        return addend.add(this);
     }
 
     @Override
@@ -330,17 +339,40 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 throw new ArithmeticException("While subtracting an integer value: " + e.getMessage());
             }
         }
-        return null;
+
+        if (subtrahend instanceof ContinuedFraction) {
+            ContinuedFraction rhs = (ContinuedFraction) subtrahend;
+            Iterator<Long> result = GosperTermIterator.subtract(this.iterator(), rhs.iterator());
+            ContinuedFraction difference = new ContinuedFraction(result, 10);
+            difference.setMathContext(mctx);
+            return difference;
+        }
+
+        return subtrahend.negate().add(this);
     }
 
     @Override
     public Numeric multiply(Numeric multiplier) {
-        return null;
+        if (multiplier instanceof ContinuedFraction) {
+            ContinuedFraction rhs = (ContinuedFraction) multiplier;
+            Iterator<Long> result = GosperTermIterator.multiply(this.iterator(), rhs.iterator());
+            ContinuedFraction product = new ContinuedFraction(result, 10);
+            product.setMathContext(mctx);
+            return product;
+        }
+        return multiplier.multiply(this);
     }
 
     @Override
     public Numeric divide(Numeric divisor) {
-        return null;
+        if (divisor instanceof ContinuedFraction) {
+            ContinuedFraction rhs = (ContinuedFraction) divisor;
+            Iterator<Long> result = GosperTermIterator.divide(this.iterator(), rhs.iterator());
+            ContinuedFraction product = new ContinuedFraction(result, 10);
+            product.setMathContext(mctx);
+            return product;
+        }
+        return divisor.inverse().multiply(this);
     }
 
     @Override
