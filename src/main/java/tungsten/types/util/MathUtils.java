@@ -1195,6 +1195,11 @@ public class MathUtils {
     public static RealType computeIntegerExponent(RealType x, long n, MathContext mctx) {
         if (n == 0L) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
         if (n == 1L) return x;
+        if (x instanceof ContinuedFraction) {
+            ContinuedFraction cfResult = ((ContinuedFraction) x).pow(n);
+            cfResult.setMathContext(mctx);
+            return cfResult;
+        }
         // if n falls within a certain integer range, delegate to BigDecimal.pow()
         if (useBuiltInOperations() && Math.abs(n) < MAX_INT_FOR_EXPONENT) {
             RealImpl real = new RealImpl(x.asBigDecimal().pow((int) n, mctx), mctx, x.isExact());

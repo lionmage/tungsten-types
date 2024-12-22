@@ -544,6 +544,18 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return (valSq - asquared) > (valSq - bsquared) ? b : a;
     }
 
+    public ContinuedFraction pow(long n) {
+        if (n == -1L) return (ContinuedFraction) this.inverse();
+        if (n == 0L) return new ContinuedFraction(1L);
+        if (n < 0L) return (ContinuedFraction) pow(-n).inverse();
+        if (n == 1L) return this;
+        // from this point, n is guaranteed > 1
+        Iterator<Long> oddTerm = n % 2L == 1L ? this.iterator() : null; // if n is odd, no need to decrement
+        ContinuedFraction intermediate = pow(n >> 1L);  // bit shift takes care of it all
+        Iterator<Long> evenTerms = GosperTermIterator.multiply(intermediate.iterator(), intermediate.iterator());
+        Iterator<Long> result = oddTerm != null ? GosperTermIterator.multiply(oddTerm, evenTerms) : evenTerms;
+        return new ContinuedFraction(result, mctx.getPrecision() + 1);
+    }
 
     @Override
     public MathContext getMathContext() {
