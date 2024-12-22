@@ -546,6 +546,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     /**
      * Compute {@code this}<sup>n</sup>, where n is an integer.
+     * Note: the caller should supply the {@code MathContext} for the result, if needed.
      * @param n the integral exponent
      * @return this continued fraction raised to the {@code n}<sup>th</sup> power
      */
