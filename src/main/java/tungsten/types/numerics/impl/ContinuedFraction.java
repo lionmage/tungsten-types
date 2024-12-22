@@ -30,6 +30,7 @@ import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.GosperTermIterator;
+import tungsten.types.util.RationalCFTermAdapter;
 import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
@@ -310,6 +311,16 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             } catch (CoercionException e) {
                 throw new ArithmeticException("While adding an integer value: " + e.getMessage());
             }
+        } else if (addend.isCoercibleTo(RationalType.class)) {
+            try {
+                RationalType rational = (RationalType) addend.coerceTo(RationalType.class);
+                Iterator<Long> result = GosperTermIterator.add(this.iterator(), new RationalCFTermAdapter(rational));
+                ContinuedFraction sum = new ContinuedFraction(result, 10);
+                sum.setMathContext(mctx);
+                return sum;
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While adding a rational value: " + e.getMessage());
+            }
         }
 
         if (addend instanceof ContinuedFraction) {
@@ -338,6 +349,16 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             } catch (CoercionException e) {
                 throw new ArithmeticException("While subtracting an integer value: " + e.getMessage());
             }
+        }  else if (subtrahend.isCoercibleTo(RationalType.class)) {
+            try {
+                RationalType rational = (RationalType) subtrahend.coerceTo(RationalType.class);
+                Iterator<Long> result = GosperTermIterator.subtract(this.iterator(), new RationalCFTermAdapter(rational));
+                ContinuedFraction diff = new ContinuedFraction(result, 10);
+                diff.setMathContext(mctx);
+                return diff;
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While subtracting a rational value: " + e.getMessage());
+            }
         }
 
         if (subtrahend instanceof ContinuedFraction) {
@@ -359,7 +380,18 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             ContinuedFraction product = new ContinuedFraction(result, 10);
             product.setMathContext(mctx);
             return product;
+        } else if (multiplier.isCoercibleTo(RationalType.class)) {
+            try {
+                RationalType rational = (RationalType) multiplier.coerceTo(RationalType.class);
+                Iterator<Long> result = GosperTermIterator.multiply(this.iterator(), new RationalCFTermAdapter(rational));
+                ContinuedFraction prod = new ContinuedFraction(result, 10);
+                prod.setMathContext(mctx);
+                return prod;
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While multipling a rational value: " + e.getMessage());
+            }
         }
+
         return multiplier.multiply(this);
     }
 
@@ -368,10 +400,21 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (divisor instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) divisor;
             Iterator<Long> result = GosperTermIterator.divide(this.iterator(), rhs.iterator());
-            ContinuedFraction product = new ContinuedFraction(result, 10);
-            product.setMathContext(mctx);
-            return product;
+            ContinuedFraction dividend = new ContinuedFraction(result, 10);
+            dividend.setMathContext(mctx);
+            return dividend;
+        } else if (divisor.isCoercibleTo(RationalType.class)) {
+            try {
+                RationalType rational = (RationalType) divisor.coerceTo(RationalType.class);
+                Iterator<Long> result = GosperTermIterator.divide(this.iterator(), new RationalCFTermAdapter(rational));
+                ContinuedFraction dividend = new ContinuedFraction(result, 10);
+                dividend.setMathContext(mctx);
+                return dividend;
+            } catch (CoercionException e) {
+                throw new ArithmeticException("While dividing by a rational value: " + e.getMessage());
+            }
         }
+
         return divisor.inverse().multiply(this);
     }
 
