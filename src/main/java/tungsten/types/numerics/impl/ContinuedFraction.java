@@ -482,6 +482,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 return cf;
             }
             // otherwise, expand the fraction
+            // The below liberally adapted from https://math.stackexchange.com/questions/265690/continued-fraction-of-a-square-root
             List<Long> nuterms = new ArrayList<>();
             long ak;
             long rk = 0L;  // r₀
