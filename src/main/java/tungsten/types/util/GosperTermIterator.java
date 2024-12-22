@@ -28,6 +28,15 @@ package tungsten.types.util;
 import java.util.Iterator;
 import java.util.Objects;
 
+/**
+ * An {@code Iterator} intended to consume the terms
+ * returned by two source iterators, performing various
+ * arithmetic functions using <a href="https://perl.plover.com/classes/cftalk/INFO/gosper.html">Gosper's algorithm</a>
+ * and returning terms of the result.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @see <a href="https://github.com/themadcreator/gosper-java/blob/master/src/org/numerics/continuedfranctionlong/GosperLongTermIterator.java">a sample
+ *   implementation of Gosper's algorithm</a>
+ */
 public class GosperTermIterator implements Iterator<Long> {
     private static class StateVector {
         private final long a, b, c, d, e, f, g, h;

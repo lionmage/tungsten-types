@@ -41,6 +41,19 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A continued fraction representation of a real number.
+ * This particular implementation uses the conventions of Simple Continued Fractions
+ * (i.e., all numerators are 1).  Each term is stored as a {@code long}, giving 64-bit
+ * signed integer precision for each term calculation.  It is tempting to use
+ * {@code BigInteger} instead (as is used for other {@code Numeric} implementations),
+ * but the <a href="https://en.m.wikipedia.org/wiki/Gauss%E2%80%93Kuzmin_distribution">Gauss-Kuzmin</a>
+ * distribution suggests that the probability we'd need a bigger representation for any given term is low.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @see <a href="https://r-knott.surrey.ac.uk/Fibonacci/cfINTRO.html">Continued Fractions &mdash; An introduction</a>
+ * @see <a href="https://cp-algorithms.com/algebra/continued-fractions.html">An article at Algorithms
+ *   for Competitive Programming</a>
+ */
 public class ContinuedFraction implements RealType, Iterable<Long> {
     private final long[] terms;
     private int repeatsFromIndex = -1;
@@ -94,6 +107,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         this.terms = terms.stream().mapToLong(Long::longValue).toArray();
     }
 
+    /**
+     * Constructs a continued fraction from an {@code Iterator} which
+     * returns a sequence of terms.
+     * @param lterms    an iterator which returns terms in sequential order
+     * @param cacheSize the maximum number of terms to store internally
+     */
     public ContinuedFraction(Iterator<Long> lterms, int cacheSize) {
         if (cacheSize < 1) throw new IllegalArgumentException("Cache size must be a positive integer");
         long[] tempTerms = new long[cacheSize];
@@ -191,6 +210,11 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return k;
     }
 
+    /**
+     * Given an index, return the term at that index.
+     * @param index the 0-based index of the desired term
+     * @return the term located at {@code index}
+     */
     public long termAt(long index) {
         if (index < 0L) throw new IndexOutOfBoundsException("Negative indices are not supported");
         if (index < terms.length) return terms[(int) index];

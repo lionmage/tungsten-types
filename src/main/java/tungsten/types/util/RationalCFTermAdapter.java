@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 /**
  * Given a rational value, this iterator extracts the terms
- * of a continued fraction and returns them sequentially.
+ * of a continued fraction representation and returns them sequentially.
  */
 public class RationalCFTermAdapter implements Iterator<Long> {
     private BigInteger num;
@@ -53,7 +53,8 @@ public class RationalCFTermAdapter implements Iterator<Long> {
         if (denom.equals(BigInteger.ZERO)) return null;
         BigInteger p = num.divide(denom);
 
-        BigInteger temp = denom;
+        var temp = denom;
+        // if p is 0, this merely inverts the original fraction
         denom = num.subtract(p.multiply(denom));
         num = temp;
 
