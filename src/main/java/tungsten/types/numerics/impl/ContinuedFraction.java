@@ -544,6 +544,11 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return (valSq - asquared) > (valSq - bsquared) ? b : a;
     }
 
+    /**
+     * Compute {@code this}<sup>n</sup>, where n is an integer.
+     * @param n the integral exponent
+     * @return this continued fraction raised to the {@code n}<sup>th</sup> power
+     */
     public ContinuedFraction pow(long n) {
         if (n == -1L) return (ContinuedFraction) this.inverse();
         if (n == 0L) return new ContinuedFraction(1L);
