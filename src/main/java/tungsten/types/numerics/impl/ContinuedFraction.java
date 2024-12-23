@@ -144,6 +144,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                         for (long kk = cache.size() + boundary; kk <= index && kk <= (long) Integer.MAX_VALUE; kk++) {
                             val = lterms.next();
                             if (val != null) cache.add(val);
+                            else break;
                         }
                     }
                     return val;
