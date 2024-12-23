@@ -725,4 +725,20 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             }
         };
     }
+
+    /*
+     The following section provides factory methods that produce various constants.
+     */
+
+    public static ContinuedFraction phi(MathContext ctx) {
+        ContinuedFraction phi = new ContinuedFraction(new long[] {1L, 1L}, 1, null);
+        phi.setMathContext(ctx);
+        return phi;
+    }
+
+    public static ContinuedFraction euler(MathContext ctx) {
+        ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1, n -> (n + 1L)%3L == 0L ? (n + 1L) * 2L / 3L : 1L);
+        e.setMathContext(ctx);
+        return e;
+    }
 }
