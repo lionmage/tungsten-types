@@ -718,7 +718,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             public Long next() {
                 if (terms() > 0L && k >= terms()) return null;
                 long term = termAt(k++);
-                if (k > 0L && term == 0L) return null;
+                // since k has advanced, compare with 1 instead of 0
+                if (k > 1L && term == 0L) return null;
                 return term;
             }
         };
