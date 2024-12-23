@@ -229,6 +229,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         throw new IndexOutOfBoundsException("No term present at " + index);
     }
 
+    /**
+     * Return the number of terms in this continued fraction, if known.
+     * @return the number of terms, or -1 if the number is indeterminate
+     */
     public long terms() {
         if (repeatsFromIndex >= 0 || mappingFunc != null) return -1L;
         return terms.length;
@@ -267,7 +271,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
-        if (numtype == Numeric.class) return this;
+        if (numtype == Numeric.class) {
+            if (terms() == 1L) {
+                if (terms[0] == 0L) return ExactZero.getInstance(mctx);
+                if (terms[0] == 1L) return One.getInstance(mctx);
+            }
+            return this;
+        }
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
         switch (htype) {
             case COMPLEX:
@@ -652,7 +662,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(terms) + Objects.hash(repeatsFromIndex, mappingFunc, mctx);
+        return Arrays.hashCode(terms) + 7 * Objects.hash(repeatsFromIndex, mappingFunc, mctx);
     }
 
     @Override
