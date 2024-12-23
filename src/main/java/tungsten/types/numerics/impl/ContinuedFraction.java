@@ -499,8 +499,20 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             result.setMathContext(mctx);
             return result;
         }
-        // TODO: need an algorithm to compute sqrt for an entire continued fraction
-        return new RealImpl(asBigDecimal(), mctx).sqrt();
+        // use Newton's method iterations
+        ContinuedFraction prev = new ContinuedFraction(guess);  // initial guess
+        prev.setMathContext(mctx);
+        final ContinuedFraction half = new ContinuedFraction(0L, 2L);
+        half.setMathContext(mctx);
+        final int bailout = mctx.getPrecision() / 2 + 1;  // a total hack
+        for (int iter = 0; iter < bailout; iter++) {
+            Iterator<Long> quotient = GosperTermIterator.divide(this.iterator(), prev.iterator());
+            Iterator<Long> sum = GosperTermIterator.add(prev.iterator(), quotient);
+            Iterator<Long> avg = GosperTermIterator.multiply(half.iterator(), sum);
+            prev = new ContinuedFraction(avg, iter + 1);
+        }
+        prev.setMathContext(mctx);
+        return prev; // was: new RealImpl(asBigDecimal(), mctx).sqrt();
     }
 
     private int findPalindromeStart(long[] arr) {
