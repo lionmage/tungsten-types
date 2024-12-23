@@ -143,7 +143,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                                 new Object[] { index, index - boundary - cache.size() });
                         for (long kk = cache.size() + boundary; kk <= index && kk <= (long) Integer.MAX_VALUE; kk++) {
                             val = lterms.next();
-                            cache.add(val);
+                            if (val != null) cache.add(val);
                         }
                     }
                     return val;
@@ -223,7 +223,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             return terms[(int) ((index - repeatsFromIndex) % period + repeatsFromIndex)];
         }
         if (mappingFunc != null) {
-            return mappingFunc.apply(index);
+            Long mapping = mappingFunc.apply(index);
+            return mapping == null ? 0L : mapping;
         }
         throw new IndexOutOfBoundsException("No term present at " + index);
     }
@@ -575,6 +576,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     @Override
     public BigDecimal asBigDecimal() {
         long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
+        while (termAt(lastTerm) == 0L && lastTerm > 0L) lastTerm--;
         BigDecimal accum = BigDecimal.ZERO;
         for (long k = lastTerm; k >= 0L; k--) {
             BigDecimal prev = k != lastTerm ? BigDecimal.ONE.divide(accum, mctx) : BigDecimal.ZERO;
@@ -693,7 +695,9 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             @Override
             public Long next() {
                 if (terms() > 0L && k >= terms()) return null;
-                return termAt(k++);
+                long term = termAt(k++);
+                if (k > 0L && term == 0L) return null;
+                return term;
             }
         };
     }
