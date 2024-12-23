@@ -13,6 +13,7 @@ numeric types:
 * There is a distinction between rational and irrational numbers.
 * Numerics that are actually comparable implement the Comparable interface.
 * Full support for complex numbers in both polar and rectangular form.
+* Simple continued fractions are supported and may be freely mixed with other numeric types.
 * There is implicit coercion during most math operations, as well as explicit coercion available to the developer.
 * There are representations of infinity:
   * Abstract representations of positive and negative infinity
