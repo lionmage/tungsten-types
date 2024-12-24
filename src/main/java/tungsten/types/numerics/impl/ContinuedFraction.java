@@ -731,18 +731,34 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      The following section provides factory methods that produce various constants.
      */
 
+    /**
+     * Generate a continued fraction representation of &#x03D5; (phi),
+     * the Golden Ratio.
+     * @param ctx the {@code MathContext} to use for this constant
+     * @return the value of &#x03D5; as a continued fraction
+     */
     public static ContinuedFraction phi(MathContext ctx) {
         ContinuedFraction phi = new ContinuedFraction(new long[] {1L, 1L}, 1, null);
         phi.setMathContext(ctx);
         return phi;
     }
 
+    /**
+     * Generate a continued fraction representation of &#x212f;, Euler's number.
+     * @param ctx the {@code MathContext} to use for this constant
+     * @return the value of &#x212f; as a continued fraction
+     */
     public static ContinuedFraction euler(MathContext ctx) {
         ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1, n -> (n + 1L)%3L == 0L ? (n + 1L) * 2L / 3L : 1L);
         e.setMathContext(ctx);
         return e;
     }
 
+    /**
+     * Generate a continued fraction representation of &pi;.
+     * @param ctx the {@code MathContext} to use for this constant
+     * @return an approximation of &pi;, the accuracy of which is governed by {@code ctx}
+     */
     public static ContinuedFraction pi(MathContext ctx) {
         Iterator<Long> accum = new RationalCFTermAdapter(piTerm(0L, ctx));
         for (long k = 1L; k < (long) ctx.getPrecision() + 1L; k++) {
