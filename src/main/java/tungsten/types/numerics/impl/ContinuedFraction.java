@@ -30,6 +30,7 @@ import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.GosperTermIterator;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.RationalCFTermAdapter;
 import tungsten.types.util.UnicodeTextEffects;
 
@@ -740,5 +741,23 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1, n -> (n + 1L)%3L == 0L ? (n + 1L) * 2L / 3L : 1L);
         e.setMathContext(ctx);
         return e;
+    }
+
+    public static ContinuedFraction pi(MathContext ctx) {
+        Iterator<Long> accum = new RationalCFTermAdapter(piTerm(0L, ctx));
+        for (long k = 1L; k < (long) ctx.getPrecision() + 1L; k++) {
+            accum = GosperTermIterator.add(accum, new RationalCFTermAdapter(piTerm(k, ctx)));
+        }
+        ContinuedFraction pi = new ContinuedFraction(accum, ctx.getPrecision()/2 + 3);
+        pi.setMathContext(ctx);
+        return pi;
+    }
+
+    private static RationalType piTerm(long k, MathContext ctx) {
+        IntegerType denom = MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(2L * k + 1L)));
+        IntegerType pwr2 = (IntegerType) new IntegerImpl(BigInteger.TWO).pow(new IntegerImpl(BigInteger.valueOf(k + 1L)));
+        IntegerType kfact = MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(k)));
+        IntegerType num = (IntegerType) kfact.multiply(kfact).multiply(pwr2);
+        return new RationalImpl(num, denom, ctx);
     }
 }
