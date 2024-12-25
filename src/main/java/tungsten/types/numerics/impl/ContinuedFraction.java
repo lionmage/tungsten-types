@@ -762,7 +762,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * @return the value of &#x212f; as a continued fraction
      */
     public static ContinuedFraction euler(MathContext ctx) {
-        ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1, n -> (n + 1L)%3L == 0L ? (n + 1L) * 2L / 3L : 1L);
+        ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1, n -> (n + 1L)%3L == 0L ? 2L * (n + 1L) / 3L : 1L);
         e.setMathContext(ctx);
         return e;
     }
