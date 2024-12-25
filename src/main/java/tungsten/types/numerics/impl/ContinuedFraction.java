@@ -521,7 +521,14 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             Iterator<Long> quotient = GosperTermIterator.divide(this.iterator(), prev.iterator());
             Iterator<Long> sum = GosperTermIterator.add(prev.iterator(), quotient);
             Iterator<Long> avg = GosperTermIterator.multiply(half.iterator(), sum);
-            prev = new ContinuedFraction(avg, iter + 1);
+            prev = new ContinuedFraction(avg, iter + 1) {
+                @Override
+                public boolean isExact() {
+                    // override the default behavior here since square roots
+                    // computed using Newton's method iterations are seldom exact
+                    return false;
+                }
+            };
         }
         prev.setMathContext(mctx);
         return prev; // was: new RealImpl(asBigDecimal(), mctx).sqrt();
@@ -751,7 +758,19 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * @return the value of &#x03D5; as a continued fraction
      */
     public static ContinuedFraction phi(MathContext ctx) {
-        ContinuedFraction phi = new ContinuedFraction(new long[] {1L, 1L}, 1, null);
+        ContinuedFraction phi = new ContinuedFraction(new long[] {1L, 1L}, 1, null) {
+            @Override
+            public Numeric subtract(Numeric subtrahend) {
+                if (subtrahend instanceof Phi) return ExactZero.getInstance(getMathContext());
+                return super.subtract(subtrahend);
+            }
+
+            @Override
+            public Numeric divide(Numeric divisor) {
+                if (divisor instanceof Phi) return One.getInstance(getMathContext());
+                return super.divide(divisor);
+            }
+        };
         phi.setMathContext(ctx);
         return phi;
     }
@@ -762,7 +781,20 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * @return the value of &#x212f; as a continued fraction
      */
     public static ContinuedFraction euler(MathContext ctx) {
-        ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1, n -> (n + 1L)%3L == 0L ? 2L * (n + 1L) / 3L : 1L);
+        ContinuedFraction e = new ContinuedFraction(new long[] {2L}, -1,
+                n -> (n + 1L)%3L == 0L ? 2L * (n + 1L) / 3L : 1L) {
+            @Override
+            public Numeric subtract(Numeric subtrahend) {
+                if (subtrahend instanceof Euler) return ExactZero.getInstance(getMathContext());
+                return super.subtract(subtrahend);
+            }
+
+            @Override
+            public Numeric divide(Numeric divisor) {
+                if (divisor instanceof Euler) return One.getInstance(getMathContext());
+                return super.divide(divisor);
+            }
+        };
         e.setMathContext(ctx);
         return e;
     }
