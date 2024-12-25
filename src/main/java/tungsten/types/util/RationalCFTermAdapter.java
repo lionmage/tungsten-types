@@ -29,6 +29,8 @@ import tungsten.types.numerics.RationalType;
 
 import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Given a rational value, this iterator extracts the terms
@@ -41,11 +43,13 @@ public class RationalCFTermAdapter implements Iterator<Long> {
     public RationalCFTermAdapter(RationalType rational) {
         num = rational.numerator().asBigInteger();
         denom = rational.denominator().asBigInteger();
+        Logger.getLogger(RationalCFTermAdapter.class.getName())
+                .log(Level.FINE, "Created a continued fraction term adapter for {0}.", rational);
     }
 
     @Override
     public boolean hasNext() {
-        return denom.equals(BigInteger.ZERO);
+        return !denom.equals(BigInteger.ZERO);
     }
 
     @Override
