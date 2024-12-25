@@ -599,14 +599,27 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public BigDecimal asBigDecimal() {
-        long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
-        while (termAt(lastTerm) == 0L && lastTerm > 0L) lastTerm--;
+        long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;  // initial guess
+        lastTerm = lastViableTerm(lastTerm);  // refine the guess
         BigDecimal accum = BigDecimal.ZERO;
         for (long k = lastTerm; k >= 0L; k--) {
+            if (k != lastTerm  && accum.compareTo(BigDecimal.ZERO) == 0) {
+                Logger.getLogger(ContinuedFraction.class.getName())
+                        .log(Level.WARNING, "Encountered unexpected 0 term; k = {0}, last term = {1}.",
+                                new Object[] { k, lastTerm });
+            }
             BigDecimal prev = k != lastTerm ? BigDecimal.ONE.divide(accum, mctx) : BigDecimal.ZERO;
             accum = BigDecimal.valueOf(termAt(k)).add(prev, mctx);
         }
         return accum;
+    }
+
+    private long lastViableTerm(long lastTerm) {
+        long updated = lastTerm;
+        for (long index = lastTerm; index > 0L; index--) {
+            if (termAt(index) == 0L) updated = index - 1L;
+        }
+        return updated;
     }
 
     @Override
