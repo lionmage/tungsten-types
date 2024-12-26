@@ -81,7 +81,7 @@ public class GosperTermIterator implements Iterator<Long> {
                     .append(a).append(",\u2009")
                     .append(b).append(",\u2009")
                     .append(c).append(",\u2009")
-                    .append(d).append(";\u2009")
+                    .append(d).append(";\u2009") // segregate into groups of 4
                     .append(e).append(",\u2009")
                     .append(f).append(",\u2009")
                     .append(g).append(",\u2009")
@@ -101,6 +101,12 @@ public class GosperTermIterator implements Iterator<Long> {
         this.state = state;
     }
 
+    /**
+     * Create an {@code Iterator} to perform the addition of two continued fractions.
+     * @param x the iterator over the terms of the first operand
+     * @param y the iterator over the terms of the second operand
+     * @return the sum of {@code x} and {@code y} as an iterator over terms
+     */
     public static Iterator<Long> add(Iterator<Long> x, Iterator<Long> y) {
         final StateVector s = new StateVector(
                 0L, 1L, 1L, 0L,
@@ -108,6 +114,12 @@ public class GosperTermIterator implements Iterator<Long> {
         return new GosperTermIterator(x, y, s);
     }
 
+    /**
+     * Create an {@code Iterator} to subtract two continued fractions.
+     * @param x the iterator over the terms of the first operand
+     * @param y the iterator over the terms of the second operand
+     * @return the difference of {@code x} and {@code y} as an iterator over terms
+     */
     public static Iterator<Long> subtract(Iterator<Long> x, Iterator<Long> y) {
         final StateVector s = new StateVector(
                 0L, 1L, -1L, 0L,
@@ -115,6 +127,12 @@ public class GosperTermIterator implements Iterator<Long> {
         return new GosperTermIterator(x, y, s);
     }
 
+    /**
+     * Create an {@code Iterator} to perform the multiplication of two continued fractions.
+     * @param x the iterator over the terms of the first operand
+     * @param y the iterator over the terms of the second operand
+     * @return the product of {@code x} and {@code y} as an iterator over terms
+     */
     public static Iterator<Long> multiply(Iterator<Long> x, Iterator<Long> y) {
         final StateVector s = new StateVector(
                 0L, 0L, 0L, 1L,
@@ -122,6 +140,12 @@ public class GosperTermIterator implements Iterator<Long> {
         return new GosperTermIterator(x, y, s);
     }
 
+    /**
+     * Create an {@code Iterator} to divide two continued fractions.
+     * @param x the iterator over the terms of the first operand
+     * @param y the iterator over the terms of the second operand
+     * @return the quotient of {@code x} and {@code y} as an iterator over terms
+     */
     public static Iterator<Long> divide(Iterator<Long> x, Iterator<Long> y) {
         final StateVector s = new StateVector(
                 0L, 1L, 0L, 0L,
@@ -169,11 +193,14 @@ public class GosperTermIterator implements Iterator<Long> {
     }
 
     private boolean isDone() {
-        final Long n0 = divide(state.a, state.e);
-        final Long n1 = divide(state.b, state.f);
-        final Long n2 = divide(state.c, state.g);
-        final Long n3 = divide(state.d, state.h);
-        return (n0 == null && n1 == null && n2 == null && n3 == null);
+//        final Long n0 = divide(state.a, state.e);
+//        final Long n1 = divide(state.b, state.f);
+//        final Long n2 = divide(state.c, state.g);
+//        final Long n3 = divide(state.d, state.h);
+//        return n0 == null && n1 == null && n2 == null && n3 == null;
+        // this can be simplified, and in the process made faster since we don't
+        // actually need to divide
+        return state.e == 0L && state.f == 0L && state.g == 0L && state.h == 0L;
     }
 
     private void outputStateR(long r) {
