@@ -193,13 +193,7 @@ public class GosperTermIterator implements Iterator<Long> {
     }
 
     private boolean isDone() {
-//        final Long n0 = divide(state.a, state.e);
-//        final Long n1 = divide(state.b, state.f);
-//        final Long n2 = divide(state.c, state.g);
-//        final Long n3 = divide(state.d, state.h);
-//        return n0 == null && n1 == null && n2 == null && n3 == null;
-        // this can be simplified, and in the process made faster since we don't
-        // actually need to divide
+        // simplified, and without unnecessary division
         return state.e == 0L && state.f == 0L && state.g == 0L && state.h == 0L;
     }
 
