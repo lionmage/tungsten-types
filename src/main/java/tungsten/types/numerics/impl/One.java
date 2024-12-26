@@ -267,6 +267,10 @@ public class One implements Numeric, Comparable<Numeric> {
                     final RationalType rational = (RationalType) val;
                     return rational.numerator().equals(rational.denominator());
                 case REAL:
+                    if (val instanceof ContinuedFraction) {
+                        ContinuedFraction cf = (ContinuedFraction) val;
+                        return cf.terms() == 1L && cf.termAt(0L) == 1L;
+                    }
                     return ((RealType) val).asBigDecimal().compareTo(BigDecimal.ONE) == 0;
                 case COMPLEX:
                     final ComplexType that = (ComplexType) val;

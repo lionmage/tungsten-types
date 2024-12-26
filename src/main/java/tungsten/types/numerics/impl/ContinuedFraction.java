@@ -335,6 +335,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public Numeric add(Numeric addend) {
+        if (Zero.isZero(addend)) return this;
         if (addend.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType value = (IntegerType) addend.coerceTo(IntegerType.class);
@@ -373,6 +374,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (Zero.isZero(subtrahend)) return this;
         if (subtrahend.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType value = (IntegerType) subtrahend.coerceTo(IntegerType.class);
@@ -411,6 +413,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (One.isUnity(multiplier)) return this;
         if (multiplier instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) multiplier;
             Iterator<Long> result = GosperTermIterator.multiply(this.iterator(), rhs.iterator());
@@ -434,6 +437,9 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public Numeric divide(Numeric divisor) {
+        if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
+        if (One.isUnity(divisor)) return this;
+        if (divisor.equals(this)) return One.getInstance(mctx);
         if (divisor instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) divisor;
             Iterator<Long> result = GosperTermIterator.divide(this.iterator(), rhs.iterator());

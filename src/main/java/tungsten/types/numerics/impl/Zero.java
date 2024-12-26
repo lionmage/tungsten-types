@@ -227,6 +227,10 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
                 case RATIONAL:
                     return isZero(((RationalType) val).numerator());
                 case REAL:
+                    if (val instanceof ContinuedFraction) {
+                        ContinuedFraction cf = (ContinuedFraction) val;
+                        return cf.terms() == 1L && cf.termAt(0L) == 0L;
+                    }
                     return ((RealType) val).asBigDecimal().compareTo(BigDecimal.ZERO) == 0;
                 case COMPLEX:
                     final ComplexType that = (ComplexType) val;
