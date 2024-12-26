@@ -144,7 +144,7 @@ public class GosperTermIterator implements Iterator<Long> {
      * Create an {@code Iterator} to divide two continued fractions.
      * @param x the iterator over the terms of the first operand
      * @param y the iterator over the terms of the second operand
-     * @return the quotient of {@code x} and {@code y} as an iterator over terms
+     * @return the quotient {@code x}&#x2215;{@code y} as an iterator over terms
      */
     public static Iterator<Long> divide(Iterator<Long> x, Iterator<Long> y) {
         final StateVector s = new StateVector(
