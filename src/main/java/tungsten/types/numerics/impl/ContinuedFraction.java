@@ -443,16 +443,16 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (divisor instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) divisor;
             Iterator<Long> result = GosperTermIterator.divide(this.iterator(), rhs.iterator());
-            ContinuedFraction dividend = new ContinuedFraction(result, 10);
-            dividend.setMathContext(mctx);
-            return dividend;
+            ContinuedFraction quotient = new ContinuedFraction(result, 10);
+            quotient.setMathContext(mctx);
+            return quotient;
         } else if (divisor.isCoercibleTo(RationalType.class)) {
             try {
                 RationalType rational = (RationalType) divisor.coerceTo(RationalType.class);
                 Iterator<Long> result = GosperTermIterator.divide(this.iterator(), new RationalCFTermAdapter(rational));
-                ContinuedFraction dividend = new ContinuedFraction(result, 10);
-                dividend.setMathContext(mctx);
-                return dividend;
+                ContinuedFraction quotient = new ContinuedFraction(result, 10);
+                quotient.setMathContext(mctx);
+                return quotient;
             } catch (CoercionException e) {
                 throw new ArithmeticException("While dividing by a rational value: " + e.getMessage());
             }
