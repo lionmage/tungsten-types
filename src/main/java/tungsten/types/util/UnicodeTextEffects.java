@@ -468,7 +468,7 @@ public class UnicodeTextEffects {
      */
     public static int computeCharacterWidth(CharSequence source, int startInclusive, int endExclusive) {
         if (endExclusive < startInclusive) {
-            throw new IndexOutOfBoundsException("Start index must be <= end index");
+            throw new IndexOutOfBoundsException("Start index must be \u2264 end index");
         } else if (endExclusive == startInclusive) {
             return 0;  // avoids a potential exception for a corner case, and executes fast
         }
