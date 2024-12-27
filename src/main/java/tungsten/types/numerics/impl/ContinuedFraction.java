@@ -704,7 +704,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public IntegerType ceil() {
-        if (terms.length == 1) return new IntegerImpl(BigInteger.valueOf(terms[0]));
+        if (terms() == 1L) return new IntegerImpl(BigInteger.valueOf(terms[0]));
         return new IntegerImpl(BigInteger.valueOf(terms[0] + 1L));
     }
 
