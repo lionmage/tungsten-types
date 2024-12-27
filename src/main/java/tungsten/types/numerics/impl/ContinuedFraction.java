@@ -154,6 +154,55 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         }
     }
 
+    /**
+     * A string-based constructor which takes a representation of a continued fraction.
+     * The expected format of the string is [a<sub>0</sub>; a<sub>1</sub>, a<sub>2</sub>, &hellip;, a<sub>n</sub>]
+     * where a<sub>0</sub> is the whole number portion and every a<sub>k</sub> is an integer term.
+     * <br>If the continued fraction contains a repeating sequence, the first term of the repeated
+     * sequence can be prefixed with the ^&nbsp;(caret) character.
+     * @param init the {@code String} containing a specification for the desired continued fraction
+     */
+    public ContinuedFraction(String init) {
+        int start = init.indexOf('[');
+        int end = init.lastIndexOf(']');
+        if (start == -1 || end == -1 || end < start) {
+            throw new IllegalArgumentException("Incorrect format");
+        }
+        // unwrapping and scrubbing
+        String effective = init.substring(start + 1, end).strip().replace('\u2212', '-');
+        int semi = effective.indexOf(';');
+        if (semi == -1) throw new IllegalArgumentException("No semicolon after whole part");
+        long whole = Long.parseLong(init.substring(0, semi).stripTrailing());
+        String fractional = effective.substring(semi + 1).stripLeading();
+        String[] fracTerms = fractional.split("\\s*,\\s*");
+        terms = new long[fracTerms.length + 1];
+        terms[0] = whole;
+        for (int i = 0; i < fracTerms.length; i++) {
+            if (fracTerms[i].charAt(0) == '^') {
+                if (repeatsFromIndex > 0) {
+                    // can only specify a single index from which to begin a repeated sequence
+                    throw new IllegalArgumentException("Found a start index for repeats at " + (i + 1) +
+                            " but one was already specified at " + repeatsFromIndex);
+                }
+                // this denotes the first term in a repeating sequence
+                repeatsFromIndex = i + 1;
+                fracTerms[i] = fracTerms[i].substring(1).stripLeading();
+            }
+            terms[i + 1] = Long.parseLong(fracTerms[i]);
+        }
+    }
+
+    /**
+     * A string-based constructor which takes a representation of a continued fraction and
+     * a {@code MathContext}.
+     * @param init the {@code String} containing a specification for the desired continued fraction
+     * @param mctx the initial {@code MathContext} of this continued fraction
+     */
+    public ContinuedFraction(String init, MathContext mctx) {
+        this(init);
+        this.mctx = mctx;
+    }
+
     private long floor(BigDecimal value) {
         long whole = value.toBigInteger().longValueExact();
         if (value.signum() == -1 && value.stripTrailingZeros().scale() > 0) {
