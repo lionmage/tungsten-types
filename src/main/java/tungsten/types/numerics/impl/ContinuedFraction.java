@@ -172,9 +172,14 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         String effective = init.substring(start + 1, end).strip().replace('\u2212', '-');
         int semi = effective.indexOf(';');
         if (semi == -1) throw new IllegalArgumentException("No semicolon after whole part");
-        long whole = Long.parseLong(init.substring(0, semi).stripTrailing());
+        long whole = Long.parseLong(effective.substring(0, semi).stripTrailing());
         String fractional = effective.substring(semi + 1).stripLeading();
         String[] fracTerms = fractional.split("\\s*,\\s*");
+        if (fracTerms.length == 1 && fracTerms[0].isBlank()) {
+            // if there's nothing between the semicolon (;) and right bracket (])
+            terms = new long[] { whole };
+            return;
+        }
         terms = new long[fracTerms.length + 1];
         terms[0] = whole;
         for (int i = 0; i < fracTerms.length; i++) {
