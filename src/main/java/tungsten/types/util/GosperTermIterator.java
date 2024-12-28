@@ -36,6 +36,7 @@ import java.util.Objects;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://github.com/themadcreator/gosper-java/blob/master/src/org/numerics/continuedfranctionlong/GosperLongTermIterator.java">a sample
  *   implementation of Gosper's algorithm</a>
+ * @since 0.5
  */
 public class GosperTermIterator implements Iterator<Long> {
     private static class StateVector {

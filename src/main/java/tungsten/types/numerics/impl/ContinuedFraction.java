@@ -54,6 +54,7 @@ import java.util.logging.Logger;
  * @see <a href="https://r-knott.surrey.ac.uk/Fibonacci/cfINTRO.html">Continued Fractions &mdash; An introduction</a>
  * @see <a href="https://cp-algorithms.com/algebra/continued-fractions.html">An article at Algorithms
  *   for Competitive Programming</a>
+ * @since 0.5
  */
 public class ContinuedFraction implements RealType, Iterable<Long> {
     private final long[] terms;

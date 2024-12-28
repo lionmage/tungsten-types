@@ -35,6 +35,10 @@ import java.util.logging.Logger;
 /**
  * Given a rational value, this iterator extracts the terms
  * of a continued fraction representation and returns them sequentially.
+ * @apiNote If the quotient of the rational value does not fit into a {@code long},
+ *   the {@code hasNext()} method will throw an {@link ArithmeticException}.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @since 0.5
  */
 public class RationalCFTermAdapter implements Iterator<Long> {
     private BigInteger num;
