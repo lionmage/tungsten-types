@@ -86,7 +86,7 @@ public class GosperTermIterator implements Iterator<Long> {
                     .append(e).append(",\u2009")
                     .append(f).append(",\u2009")
                     .append(g).append(",\u2009")
-                    .append(h).append(",\u2009")
+                    .append(h)
                     .append('\u27E9');
             return buf.toString();
         }
