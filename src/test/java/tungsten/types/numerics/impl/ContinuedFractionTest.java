@@ -27,6 +27,8 @@ package tungsten.types.numerics.impl;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
+import tungsten.types.Numeric;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.ANSITextEffects;
 
@@ -59,5 +61,23 @@ public class ContinuedFractionTest {
 //        System.out.println( ANSITextEffects.highlightSection(pistr, 0, diffpos, ANSITextEffects.Effect.BOLD));
         System.out.println("Showing digits in common: " +
                 ANSITextEffects.highlightSelection(pistr, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
+    }
+
+    @Test
+    public void testSqrt() {
+        ContinuedFraction cf22 = new ContinuedFraction(22L);
+        Numeric root22 = cf22.sqrt();
+        assertInstanceOf(ContinuedFraction.class, root22);
+        ContinuedFraction cfroot22 = (ContinuedFraction) root22;
+        assertEquals(4, cfroot22.termAt(0L));
+        assertEquals(8L, cfroot22.termAt(6L));
+        assertEquals(2L, cfroot22.termAt(2L));
+
+        ContinuedFraction cf82 = new ContinuedFraction(82L);
+        Numeric root82 = cf82.sqrt();
+        assertInstanceOf(ContinuedFraction.class, root82);
+        ContinuedFraction cfroot82 = (ContinuedFraction) root82;
+        assertEquals(9L, cfroot82.termAt(0L));
+        assertEquals(18L, cfroot82.termAt(1L));
     }
 }
