@@ -780,7 +780,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 buf2.append(terms[k]);
                 if (k != terms.length - 1) buf2.append(", ");
             }
-            buf.append(", ").append(UnicodeTextEffects.overline(buf2.toString()));
+            if (extent > 1) buf.append(", ");
+            buf.append(UnicodeTextEffects.overline(buf2.toString()));
         }
         if (mappingFunc != null) buf.append(", \u2026");
         buf.append(']');
