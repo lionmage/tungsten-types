@@ -79,5 +79,20 @@ public class ContinuedFractionTest {
         ContinuedFraction cfroot82 = (ContinuedFraction) root82;
         assertEquals(9L, cfroot82.termAt(0L));
         assertEquals(18L, cfroot82.termAt(1L));
+
+        RealType val = new RealImpl("9.7", MathContext.DECIMAL128);
+        ContinuedFraction cfVal = new ContinuedFraction(val);
+        cfVal.setMathContext(MathContext.DECIMAL128);
+        System.out.println("For 9.7, CF is " + cfVal);
+
+        Numeric root = cfVal.sqrt();
+        assertInstanceOf(ContinuedFraction.class, root);
+        Numeric decRoot = val.sqrt();
+        String target = ((RealType) decRoot).asBigDecimal().toPlainString();
+        String generated = ((RealType) root).asBigDecimal().toPlainString();
+        int diffPos = ANSITextEffects.findFirstDifference(target, generated);
+        assertTrue(diffPos > 8);
+        System.out.println("With highlighted digits: " +
+                ANSITextEffects.highlightSelection(generated, 0, diffPos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
     }
 }

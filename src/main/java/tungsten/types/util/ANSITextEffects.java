@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 /**
  * A collection of utility methods for rendering text in select styles
  * and colors.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @since 0.5
  */
 public class ANSITextEffects {
     private static final char ESCAPE = '\u001b';

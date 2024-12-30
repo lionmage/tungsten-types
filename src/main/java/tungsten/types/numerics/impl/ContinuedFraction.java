@@ -85,7 +85,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             final int precision = num.getMathContext().getPrecision() == 0 ?
                     termValue.precision() : num.getMathContext().getPrecision();
             final MathContext ctx = new MathContext(precision, num.getMathContext().getRoundingMode());
-            final BigDecimal epsilon = BigDecimal.TEN.pow(1 - precision, ctx);
+            final BigDecimal epsilon = BigDecimal.TEN.pow(3 - precision, ctx);
+            Logger.getLogger(ContinuedFraction.class.getName()).log(Level.INFO,
+                    "Obtaining continued fraction for {0} with precision = {1}, \uD835\uDF00 = {2}",
+                    new Object[] { num, precision, epsilon.toPlainString() });
             BigDecimal frac;
             List<Long> terms = new LinkedList<>();
 
@@ -210,8 +213,9 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     }
 
     private long floor(BigDecimal value) {
-        long whole = value.toBigInteger().longValueExact();
-        if (value.signum() == -1 && value.stripTrailingZeros().scale() > 0) {
+        BigDecimal stripped = value.stripTrailingZeros();
+        long whole = stripped.toBigInteger().longValueExact();
+        if (value.signum() == -1 && stripped.scale() > 0) {
             // negative values that are non-integers need to be decremented
             whole = Math.decrementExact(whole);
         }
