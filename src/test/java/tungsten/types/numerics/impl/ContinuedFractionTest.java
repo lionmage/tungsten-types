@@ -95,4 +95,14 @@ public class ContinuedFractionTest {
         System.out.println("With highlighted digits: " +
                 ANSITextEffects.highlightSelection(generated, 0, diffPos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
     }
+
+    @Test
+    public void parsing() {
+        final String source = " [ 9 ; 3,2,  4 ]  ";  // screwy formatting
+        ContinuedFraction fromString = new ContinuedFraction(source, MathContext.DECIMAL128);
+        assertEquals(9L, fromString.termAt(0L));
+        assertEquals(4L, fromString.terms());
+        System.out.println("From parsed string: " + fromString);
+        assertEquals("[9; 3, 2, 4]", fromString.toString());
+    }
 }
