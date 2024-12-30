@@ -32,6 +32,7 @@ import tungsten.types.Numeric;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.ANSITextEffects;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
 
 public class ContinuedFractionTest {
@@ -112,6 +113,16 @@ public class ContinuedFractionTest {
         assertEquals(3L, sqrt15.termAt(0L));
         assertEquals(6L, sqrt15.termAt(8L));  // indexing into the repeating section
         assertEquals(1L, sqrt15.termAt(9L));
+
+        BigDecimal decimalRoot = sqrt15.asBigDecimal();
+        System.out.println("As BigDecimal: " + decimalRoot.toPlainString());
+        // the name of the following variable is aspirational
+        BigDecimal fifteen = decimalRoot.pow(2, MathContext.DECIMAL64);
+        System.out.println("(\u221A15)\u00B2=" + fifteen.toPlainString());
+        BigDecimal error = BigDecimal.valueOf(15L).subtract(fifteen, MathContext.DECIMAL64).abs();
+        System.out.println("Absolute error: " + error);
+        final BigDecimal epsilon = BigDecimal.TEN.pow(-12, MathContext.DECIMAL64);
+        assertTrue(epsilon.compareTo(error) > 0);
         // the following section is currently (and mysteriously) broken
 //        ContinuedFraction square = sqrt15.pow(2L);
 //        square.setMathContext(MathContext.DECIMAL64);
