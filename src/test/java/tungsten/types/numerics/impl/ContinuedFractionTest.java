@@ -104,5 +104,18 @@ public class ContinuedFractionTest {
         assertEquals(4L, fromString.terms());
         System.out.println("From parsed string: " + fromString);
         assertEquals("[9; 3, 2, 4]", fromString.toString());
+
+        final String source2 = " [3; ^1, 6]";  // √15
+        ContinuedFraction sqrt15 = new ContinuedFraction(source2, MathContext.DECIMAL64);
+        System.out.println("\u221A15 = " + sqrt15);
+        assertEquals(-1L, sqrt15.terms());
+        assertEquals(3L, sqrt15.termAt(0L));
+        assertEquals(6L, sqrt15.termAt(8L));  // indexing into the repeating section
+        assertEquals(1L, sqrt15.termAt(9L));
+        // the following section is currently (and mysteriously) broken
+//        ContinuedFraction square = sqrt15.pow(2L);
+//        square.setMathContext(MathContext.DECIMAL64);
+//        System.out.println("Square is " + square);
+//        assertEquals(15L, square.termAt(0L));
     }
 }
