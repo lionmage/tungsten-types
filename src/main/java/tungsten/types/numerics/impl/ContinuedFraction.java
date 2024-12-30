@@ -143,9 +143,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                     if (index - boundary < (long) cache.size()) {
                         val =  cache.get((int) (index - boundary));
                     } else {
-                        Logger.getLogger(ContinuedFraction.class.getName()).log(Level.INFO,
-                                "Cannot find term {0} in cache; iterating over {1} terms and caching.",
-                                new Object[] { index, index - boundary - cache.size() });
+                        long numTerms = index - boundary - cache.size();
+                        if (numTerms > 0L) {
+                            Logger.getLogger(ContinuedFraction.class.getName()).log(Level.INFO,
+                                    "Cannot find term {0} in cache; iterating over {1} terms and caching.",
+                                    new Object[] {index, numTerms});
+                        }
                         for (long kk = cache.size() + boundary; kk <= index && kk <= (long) Integer.MAX_VALUE; kk++) {
                             val = lterms.next();
                             if (val != null) cache.add(val);
