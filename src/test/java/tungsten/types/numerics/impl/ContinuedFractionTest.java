@@ -123,7 +123,8 @@ public class ContinuedFractionTest {
         System.out.println("Absolute error: " + error);
         final BigDecimal epsilon = BigDecimal.TEN.pow(-12, MathContext.DECIMAL64);
         assertTrue(epsilon.compareTo(error) > 0);
-        // the following section is currently (and mysteriously) broken
+        // the following section is currently broken, because the square roots
+        // of integers are a worst-case scenario for multiplying continued fractions
 //        ContinuedFraction square = sqrt15.pow(2L);
 //        square.setMathContext(MathContext.DECIMAL64);
 //        System.out.println("Square is " + square);
