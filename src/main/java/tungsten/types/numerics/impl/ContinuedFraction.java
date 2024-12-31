@@ -659,9 +659,16 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     /**
      * Compute {@code this}<sup>n</sup>, where n is an integer.
-     * Note: the caller should supply the {@code MathContext} for the result, if needed.
+     * The caller should supply the {@code MathContext} for the result, if needed.
      * @param n the integral exponent
      * @return this continued fraction raised to the {@code n}<sup>th</sup> power
+     * @apiNote For certain &ldquo;difficult&rdquo; continued fractions, such as
+     *   the square roots of non-square integers, Gosper's algorithm fails at
+     *   multiplication.  Since this method operates by the repeated application
+     *   of {@link GosperTermIterator#multiply(Iterator, Iterator)}, it is possible
+     *   for the a<sub>0</sub> term of the result to be negative when it should not be.
+     *   For non-negative continued fractions, a negative value in a<sub>0</sub>
+     *   returned by this method is an obvious indication of failure.
      */
     public ContinuedFraction pow(long n) {
         if (n == -1L) return (ContinuedFraction) this.inverse();
