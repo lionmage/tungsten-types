@@ -484,6 +484,15 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             ContinuedFraction rhs = (ContinuedFraction) multiplier;
             Iterator<Long> result = GosperTermIterator.multiply(this.iterator(), rhs.iterator());
             ContinuedFraction product = new ContinuedFraction(result, 10);
+            if (this.sign() == rhs.sign() && product.termAt(0L) < 0L) {
+                // If a₀ < 0 but the multiplicands are of the same sign (product should be positive),
+                // Gosper's algorithm has failed.  We need to recover.
+                Logger.getLogger(ContinuedFraction.class.getName()).log(Level.WARNING,
+                        "Obtained a negative a₀ for the product of {0} and {1}. Recovering with RealImpl.",
+                        new Object[] { this, rhs });
+                BigDecimal decProduct = this.asBigDecimal().multiply(rhs.asBigDecimal(), mctx);
+                return new RealImpl(decProduct, mctx, false);
+            }
             product.setMathContext(mctx);
             return product;
         } else if (multiplier.isCoercibleTo(RationalType.class)) {
