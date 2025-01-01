@@ -493,6 +493,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     @Override
     public Numeric multiply(Numeric multiplier) {
         if (One.isUnity(multiplier)) return this;
+        if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
         if (multiplier instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) multiplier;
             Iterator<Long> result = GosperTermIterator.multiply(this.iterator(), rhs.iterator());
