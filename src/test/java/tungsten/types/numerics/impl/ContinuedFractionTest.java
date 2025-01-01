@@ -146,5 +146,7 @@ public class ContinuedFractionTest {
         assertEquals(7L, fman.termAt(13L));
         assertEquals(117L, fman.termAt(10L));
         System.out.println("Freiman's constant computed as: " + fman);
+        // this constant has a very long period
+        assertEquals(fman.termAt(5L), fman.termAt(66759L));
     }
 }
