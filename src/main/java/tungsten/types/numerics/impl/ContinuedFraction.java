@@ -925,4 +925,26 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         IntegerType num = (IntegerType) kfact.multiply(kfact).multiply(pwr2);
         return new RationalImpl(num, denom, ctx);
     }
+
+    /**
+     * Generate a continued fraction representation of Freiman's constant.
+     * This constant is a quadratic irrational and arises in the theory of continued fractions.
+     * @param ctx the {@code MathContext} to use for this constant
+     * @return a continued fraction representation of Freiman's constant
+     * @see <a href="https://mathoverflow.net/questions/457086/simple-continued-fraction-of-freimans-constant">this
+     *   question on MathOverflow</a>
+     */
+    public static ContinuedFraction freiman(MathContext ctx) {
+        ContinuedFraction denom = new ContinuedFraction(491993569L);
+        ContinuedFraction numA = new ContinuedFraction(2221564096L);
+        ContinuedFraction numB = new ContinuedFraction(283748L);
+        // we know that we'll get a ContinuedFraction back for taking the square root of an integer
+        ContinuedFraction numC = (ContinuedFraction) new ContinuedFraction(462L).sqrt();
+        Iterator<Long> num = GosperTermIterator.add(numA.iterator(),
+                GosperTermIterator.multiply(numB.iterator(), numC.iterator()));
+        Iterator<Long> quotient = GosperTermIterator.divide(num, denom.iterator());
+        ContinuedFraction freiman = new ContinuedFraction(quotient, ctx.getPrecision()/2 + 1);
+        freiman.setMathContext(ctx);
+        return freiman;
+    }
 }
