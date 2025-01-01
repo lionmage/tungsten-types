@@ -130,4 +130,21 @@ public class ContinuedFractionTest {
 //        System.out.println("Square is " + square);
 //        assertEquals(15L, square.termAt(0L));
     }
+
+    @Test
+    public void irrationalRoots() {
+        Numeric root = new ContinuedFraction(462L).sqrt();
+        assertInstanceOf(ContinuedFraction.class, root);
+        ContinuedFraction cfroot = (ContinuedFraction) root;
+        assertEquals(21L, cfroot.termAt(0L));
+        assertEquals(cfroot.termAt(1L), cfroot.termAt(3L));
+        assertEquals(cfroot.termAt(2L), cfroot.termAt(6L));
+
+        // this appears to be a torture test for Gosper's algorithm
+        ContinuedFraction fman = ContinuedFraction.freiman(MathContext.DECIMAL128);
+        assertEquals(16L, fman.termAt(14L));
+        assertEquals(7L, fman.termAt(13L));
+        assertEquals(117L, fman.termAt(10L));
+        System.out.println("Freiman's constant computed as: " + fman);
+    }
 }
