@@ -737,7 +737,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * no indication of repetition, nor does it have a mapping function.
      * Used in conjuction with {@link #coerceTo(Class)} with an argument
      * of {@code RationalType.class}, a convergent can be generated.
-     * @param terms the number <em>N</em> of terms to keep
+     * @param nterms the number <em>N</em> of terms to keep
      * @return a continued fraction consisting of the first <em>N</em> terms of this
      *   continued fraction
      * @apiNote The argument is an {@code int} since we want the generated continued
@@ -745,15 +745,15 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * @see #computeRationalValue(long, long) the implementation of the algorithm to generate
      *   a rational from a continued fraction
      */
-    public ContinuedFraction trimTo(int terms) {
-        if (terms < 1) throw new IllegalArgumentException("Trimmed CF must have at least 1 term");
-        if (terms() > 0L && terms() < (long) terms) throw new IllegalArgumentException("Not enough source terms");
-        if (terms < this.terms.length) {
+    public ContinuedFraction trimTo(int nterms) {
+        if (nterms < 1) throw new IllegalArgumentException("Trimmed CF must have at least 1 term");
+        if (terms() > 0L && terms() < (long) nterms) throw new IllegalArgumentException("Not enough source terms");
+        if (nterms < this.terms.length) {
             // efficient path
-            return new ContinuedFraction(Arrays.copyOf(this.terms, terms), -1, null);
+            return new ContinuedFraction(Arrays.copyOf(this.terms, nterms), -1, null);
         }
         long[] trimmedTerms = StreamSupport.stream(this.spliterator(), false)
-                .limit(terms).mapToLong(Long::longValue).toArray();
+                .limit(nterms).mapToLong(Long::longValue).toArray();
         return new ContinuedFraction(trimmedTerms, -1, null);
     }
 
