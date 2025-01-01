@@ -41,6 +41,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.StreamSupport;
 
 /**
  * A continued fraction representation of a real number.
@@ -715,6 +716,28 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             if (termAt(index) == 0L) updated = index - 1L;
         }
         return updated;
+    }
+
+    /**
+     * Truncate this continued fraction to create a new continued fraction
+     * with exactly <em>N</em> terms.  The newly created fraction has
+     * no indication of repetition, nor does it have a mapping function.
+     * Used in conjuction with {@link #coerceTo(Class)} with an argument
+     * of {@code RationalType.class}, a convergent can be generated.
+     * @param terms the number <em>N</em> of terms to keep
+     * @return a continued fraction consisting of the first <em>N</em> terms of this
+     *   continued fraction
+     * @apiNote The argument is an {@code int} since we want the generated continued
+     *   fraction to fit all its terms into an array.
+     * @see #computeRationalValue(long, long) the implementation of the algorithm to generate
+     *   a rational from a continued fraction
+     */
+    public ContinuedFraction trimTo(int terms) {
+        if (terms < 1) throw new IllegalArgumentException("Trimmed CF must have at least 1 term");
+        if (terms() > 0L && terms() < (long) terms) throw new IllegalArgumentException("Not enough source terms");
+        long[] trimmedTerms = StreamSupport.stream(this.spliterator(), false)
+                .limit(terms).mapToLong(Long::longValue).toArray();
+        return new ContinuedFraction(trimmedTerms, -1, null);
     }
 
     @Override
