@@ -331,8 +331,9 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 return terms() == 1L;
             case COMPLEX:
             case REAL:
-            case RATIONAL:
                 return true;
+            case RATIONAL:
+                return !isIrrational();
             default:
                 return false;
         }
@@ -354,6 +355,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             case REAL:
                 return this;
             case RATIONAL:
+                if (isIrrational()) throw new CoercionException("Continued fraction is irrational", this.getClass(), numtype);
                 long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
                 return computeRationalValue(0L, lastTerm);
             case INTEGER:
