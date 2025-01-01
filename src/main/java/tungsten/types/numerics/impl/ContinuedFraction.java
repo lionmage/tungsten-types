@@ -356,7 +356,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 return this;
             case RATIONAL:
                 if (isIrrational()) throw new CoercionException("Continued fraction is irrational", this.getClass(), numtype);
-                long lastTerm = terms() < 0L ? mctx.getPrecision() : terms() - 1L;
+                long lastTerm = terms() < 0L ? lastViableTerm(mctx.getPrecision()) : terms() - 1L;
                 return computeRationalValue(0L, lastTerm);
             case INTEGER:
                 if (terms() == 1L) return new IntegerImpl(BigInteger.valueOf(terms[0]));
@@ -615,7 +615,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             };
         }
         prev.setMathContext(mctx);
-        return prev; // was: new RealImpl(asBigDecimal(), mctx).sqrt();
+        return prev;
     }
 
     private int findPalindromeStart(long[] arr) {
