@@ -407,6 +407,11 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (Zero.isZero(addend)) return this;
         if (addend instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) addend;
+            if (rhs.terms() == 1L) {
+                long[] simpleSum = Arrays.copyOf(this.terms, this.terms.length);
+                simpleSum[0] += rhs.termAt(0L);
+                return new ContinuedFraction(simpleSum, repeatsFromIndex, mappingFunc);
+            }
             Iterator<Long> result = GosperTermIterator.add(this.iterator(), rhs.iterator());
             ContinuedFraction sum = new ContinuedFraction(result, 10);
             sum.setMathContext(mctx);
@@ -446,6 +451,11 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (Zero.isZero(subtrahend)) return this;
         if (subtrahend instanceof ContinuedFraction) {
             ContinuedFraction rhs = (ContinuedFraction) subtrahend;
+            if (rhs.terms() == 1L) {
+                long[] simpleDiff = Arrays.copyOf(this.terms, this.terms.length);
+                simpleDiff[0] -= rhs.termAt(0L);
+                return new ContinuedFraction(simpleDiff, repeatsFromIndex, mappingFunc);
+            }
             Iterator<Long> result = GosperTermIterator.subtract(this.iterator(), rhs.iterator());
             ContinuedFraction difference = new ContinuedFraction(result, 10);
             difference.setMathContext(mctx);
