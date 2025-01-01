@@ -371,7 +371,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         try {
             return (RationalType) a_k.add(nextTerm).coerceTo(RationalType.class);
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("While computing a rational approximation, k = " + k, e);
         }
     }
 
