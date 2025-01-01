@@ -632,7 +632,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     private int findPalindromeStart(long[] arr) {
         if (arr.length < 2) return -1;
 
-        for (int k = 1; k < arr.length - 2; k++) {
+        for (int k = 1; k <= arr.length - 2; k++) {
             long[] subarr = Arrays.copyOfRange(arr, k, arr.length - 1);
             if (isPalindrome(subarr)) return k;
         }
