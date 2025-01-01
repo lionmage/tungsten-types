@@ -735,6 +735,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public ContinuedFraction trimTo(int terms) {
         if (terms < 1) throw new IllegalArgumentException("Trimmed CF must have at least 1 term");
         if (terms() > 0L && terms() < (long) terms) throw new IllegalArgumentException("Not enough source terms");
+        if (terms < this.terms.length) {
+            // efficient path
+            return new ContinuedFraction(Arrays.copyOf(this.terms, terms), -1, null);
+        }
         long[] trimmedTerms = StreamSupport.stream(this.spliterator(), false)
                 .limit(terms).mapToLong(Long::longValue).toArray();
         return new ContinuedFraction(trimmedTerms, -1, null);
