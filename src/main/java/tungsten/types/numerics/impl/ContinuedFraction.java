@@ -517,7 +517,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 prod.setMathContext(mctx);
                 return prod;
             } catch (CoercionException e) {
-                throw new ArithmeticException("While multipling a rational value: " + e.getMessage());
+                throw new ArithmeticException("While multiplying a rational value: " + e.getMessage());
             }
         }
 
