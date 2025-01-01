@@ -403,6 +403,14 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     @Override
     public Numeric add(Numeric addend) {
         if (Zero.isZero(addend)) return this;
+        if (addend instanceof ContinuedFraction) {
+            ContinuedFraction rhs = (ContinuedFraction) addend;
+            Iterator<Long> result = GosperTermIterator.add(this.iterator(), rhs.iterator());
+            ContinuedFraction sum = new ContinuedFraction(result, 10);
+            sum.setMathContext(mctx);
+            return sum;
+        }
+
         if (addend.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType value = (IntegerType) addend.coerceTo(IntegerType.class);
@@ -428,20 +436,20 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             }
         }
 
-        if (addend instanceof ContinuedFraction) {
-            ContinuedFraction rhs = (ContinuedFraction) addend;
-            Iterator<Long> result = GosperTermIterator.add(this.iterator(), rhs.iterator());
-            ContinuedFraction sum = new ContinuedFraction(result, 10);
-            sum.setMathContext(mctx);
-            return sum;
-        }
-
         return addend.add(this);
     }
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
         if (Zero.isZero(subtrahend)) return this;
+        if (subtrahend instanceof ContinuedFraction) {
+            ContinuedFraction rhs = (ContinuedFraction) subtrahend;
+            Iterator<Long> result = GosperTermIterator.subtract(this.iterator(), rhs.iterator());
+            ContinuedFraction difference = new ContinuedFraction(result, 10);
+            difference.setMathContext(mctx);
+            return difference;
+        }
+
         if (subtrahend.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType value = (IntegerType) subtrahend.coerceTo(IntegerType.class);
@@ -465,14 +473,6 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             } catch (CoercionException e) {
                 throw new ArithmeticException("While subtracting a rational value: " + e.getMessage());
             }
-        }
-
-        if (subtrahend instanceof ContinuedFraction) {
-            ContinuedFraction rhs = (ContinuedFraction) subtrahend;
-            Iterator<Long> result = GosperTermIterator.subtract(this.iterator(), rhs.iterator());
-            ContinuedFraction difference = new ContinuedFraction(result, 10);
-            difference.setMathContext(mctx);
-            return difference;
         }
 
         return subtrahend.negate().add(this);
