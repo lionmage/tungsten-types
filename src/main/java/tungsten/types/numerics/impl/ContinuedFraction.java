@@ -58,6 +58,12 @@ import java.util.stream.StreamSupport;
  * @since 0.5
  */
 public class ContinuedFraction implements RealType, Iterable<Long> {
+    /**
+     * System property governing whether repeated sections are rendered in brackets.
+     * If not present or false, the default behavior is to use an overline (vinculum).
+     */
+    public static final String REPEAT_IN_BRACKETS = "tungsten.types.numerics.ContinuedFraction.repeatInBrackets";
+
     private final long[] terms;
     private int repeatsFromIndex = -1;
     /**
@@ -828,6 +834,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return obj.equals(this);
     }
 
+    protected boolean useAngleBracketsForRepeating() {
+        return Boolean.getBoolean(REPEAT_IN_BRACKETS);
+    }
+
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -844,7 +854,11 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 if (k != terms.length - 1) buf2.append(", ");
             }
             if (extent > 1) buf.append(", ");
-            buf.append(UnicodeTextEffects.overline(buf2.toString()));
+            if (useAngleBracketsForRepeating()) {
+                buf.append('\u27E8').append(buf2).append('\u27E9');
+            } else {
+                buf.append(UnicodeTextEffects.overline(buf2.toString()));
+            }
         }
         if (mappingFunc != null) buf.append(", \u2026");
         buf.append(']');
