@@ -23,6 +23,7 @@ import java.math.MathContext;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tungsten.types.util.UnicodeTextEffects.formatMatrixForDisplay;
+import static tungsten.types.util.UnicodeTextEffects.vectorNameForDisplay;
 
 public class MatrixValidationTest {
     RealType zero = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
@@ -138,8 +139,8 @@ public class MatrixValidationTest {
         IntVector b = new IntVector(1L, 5L, 6L);
         b.setMathContext(MathContext.DECIMAL64);
 
-        System.out.println("a\u20D7 = " + a); // U+20D7 is the combining over-arrow
-        System.out.println("b\u20D7 = " + b);
+        System.out.println(vectorNameForDisplay("a") + " = " + a);
+        System.out.println(vectorNameForDisplay("b") + " = " + b);
 
         CauchyMatrix<RationalType, IntegerType> cm = new CauchyMatrix<>(a, b, RationalType.class);
 
@@ -176,9 +177,9 @@ public class MatrixValidationTest {
         System.out.println("test multiply 2 took " + (end - start) + " ms");
 
         System.out.println("\nResult 1:");
-        System.out.println(formatMatrixForDisplay(result1, (String) null, (String) null));
+        System.out.println(formatMatrixForDisplay(result1, null, (String) null));
         System.out.println("\nResult 2:");
-        System.out.println(formatMatrixForDisplay(result2, (String) null, (String) null));
+        System.out.println(formatMatrixForDisplay(result2, null, (String) null));
 
         RealType epsilon = new RealImpl("0.001", MathContext.DECIMAL32);
         assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),

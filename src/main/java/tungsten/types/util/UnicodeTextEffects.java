@@ -417,6 +417,11 @@ public class UnicodeTextEffects {
         romanDigits.put(1, "\u2160");  // I
     }
 
+    public static String vectorNameForDisplay(String name) {
+        if (name == null || name.isBlank()) return "";
+        return name.strip() + '\u20D7'; // U+20D7 is the combining over-arrow
+    }
+
     /**
      * Render the supplied value in Roman numerals.
      * @param number    the value to render
