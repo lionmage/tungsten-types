@@ -103,6 +103,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 long current = floor(termValue);
                 terms.add(current);
                 frac = termValue.subtract(BigDecimal.valueOf(current));
+                if (frac.compareTo(BigDecimal.ZERO) == 0) break;  // for safety (avoiding division by 0)
                 termValue = BigDecimal.ONE.divide(frac, ctx);  // inverse of fractional part
             } while (frac.compareTo(epsilon) > 0);
 
@@ -515,6 +516,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             }
             product.setMathContext(mctx);
             return product;
+        } else if (multiplier instanceof RealType) {
+            // it's a real but not a CF
+            ContinuedFraction cf = new ContinuedFraction((RealType) multiplier);
+            Logger.getLogger(ContinuedFraction.class.getName()).log(Level.FINE,
+                    "Converted decimal multiplier {0} into {1}.", new Object[] { multiplier, cf });
+            return this.multiply(cf);
         } else if (multiplier.isCoercibleTo(RationalType.class)) {
             try {
                 RationalType rational = (RationalType) multiplier.coerceTo(RationalType.class);
@@ -541,6 +548,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             ContinuedFraction quotient = new ContinuedFraction(result, 10);
             quotient.setMathContext(mctx);
             return quotient;
+        } else if (divisor instanceof RealType) {
+            // the divisor is a real but not a CF
+            ContinuedFraction cf = new ContinuedFraction((RealType) divisor);
+            Logger.getLogger(ContinuedFraction.class.getName()).log(Level.FINE,
+                    "Converted decimal divisor {0} into {1}.", new Object[] { divisor, cf });
+            return this.divide(cf);
         } else if (divisor.isCoercibleTo(RationalType.class)) {
             try {
                 RationalType rational = (RationalType) divisor.coerceTo(RationalType.class);
