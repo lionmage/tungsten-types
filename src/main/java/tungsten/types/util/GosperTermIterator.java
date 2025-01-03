@@ -160,9 +160,9 @@ public class GosperTermIterator implements Iterator<Long> {
         return Math.abs(a - b);
     }
 
-    private static Long divide(Long num, Long den) {
-        if (den == 0L) return null;
-        return num / den;
+    private static Long divide(Long num, Long denom) {
+        if (denom == 0L) return null;
+        return num / denom;
     }
 
     private static int compare(Long a, Long b) {
