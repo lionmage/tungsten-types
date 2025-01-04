@@ -428,6 +428,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (addend.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType value = (IntegerType) addend.coerceTo(IntegerType.class);
+                if (terms() == 1L && value.asBigInteger().abs().bitLength() > 63) {
+                    // if the magnitude of the addend is too large, try to return an IntegerImpl
+                    return value.add(new IntegerImpl(BigInteger.valueOf(terms[0])));
+                }
                 long primAddend = value.asBigInteger().longValueExact();
                 long[] sum = new long[terms.length];
                 sum[0] = terms[0] + primAddend;
@@ -472,6 +476,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (subtrahend.isCoercibleTo(IntegerType.class)) {
             try {
                 IntegerType value = (IntegerType) subtrahend.coerceTo(IntegerType.class);
+                if (terms() == 1L && value.asBigInteger().abs().bitLength() > 63) {
+                    // if the magnitude of the subtrahend is too big, try to return an IntegerImpl
+                    return new IntegerImpl(BigInteger.valueOf(terms[0])).subtract(value);
+                }
                 long primSubrahend = value.asBigInteger().longValueExact();
                 long[] diff = new long[terms.length];
                 diff[0] = terms[0] - primSubrahend;
