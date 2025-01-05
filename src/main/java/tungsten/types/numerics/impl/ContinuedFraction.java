@@ -257,6 +257,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         termList.add(source[0]);
         for (int k = 1; k < source.length; k++) {
             if (source[k] == 0L) {
+                if (k == source.length - 1) break; // if the last term is 0, just drop it
                 long a = source[k - 1];
                 long b = source[++k];
                 termList.remove(termList.size() - 1);
@@ -608,7 +609,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public Numeric sqrt() {
         if (sign() == Sign.NEGATIVE) return new RealImpl(asBigDecimal(), mctx).sqrt();
 
-        long guess = sqrt(terms[0]);  // a₀
+        final long guess = sqrt(terms[0]);  // a₀
         if (terms() == 1L) {
             if (guess * guess == terms[0]) {
                 // if it's a perfect square, we're done
