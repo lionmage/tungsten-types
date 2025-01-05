@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  * A collection of utility methods for rendering text in select styles
  * and colors.
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @see <a href="https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797">ANSI Escape Sequences</a>
  * @since 0.5
  */
 public class ANSITextEffects {
