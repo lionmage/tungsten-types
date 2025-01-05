@@ -59,7 +59,7 @@ import java.util.stream.StreamSupport;
  */
 public class ContinuedFraction implements RealType, Iterable<Long> {
     /**
-     * System property governing whether repeated sections are rendered in brackets.
+     * System property governing whether repeated sections are rendered in angle brackets.
      * If not present or false, the default behavior is to use an overline (vinculum).
      */
     public static final String REPEAT_IN_BRACKETS = "tungsten.types.numerics.ContinuedFraction.repeatInBrackets";
@@ -70,6 +70,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * For infinite continued fractions, takes
      * an index value and produces the value of
      * the term at that index.
+     * Note: this function is not required to produce
+     * valid values for indices {@code < terms.length}.
      */
     private Function<Long, Long> mappingFunc;
     private MathContext mctx = MathContext.UNLIMITED;
