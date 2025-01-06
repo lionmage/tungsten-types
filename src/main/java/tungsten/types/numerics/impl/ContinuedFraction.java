@@ -778,7 +778,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public ContinuedFraction trimTo(int nterms) {
         if (nterms < 1) throw new IllegalArgumentException("Trimmed CF must have at least 1 term");
         if (terms() > 0L && terms() < (long) nterms) throw new IllegalArgumentException("Not enough source terms");
-        if (nterms < this.terms.length) {
+        if (nterms <= this.terms.length) {
             // efficient path
             return new ContinuedFraction(Arrays.copyOf(this.terms, nterms), -1, null);
         }
