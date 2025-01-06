@@ -80,6 +80,11 @@ public class NegZero extends Zero {
     }
 
     @Override
+    public Numeric negate() {
+        return PosZero.getInstance(mctx);
+    }
+
+    @Override
     public Sign sign() {
         return Sign.NEGATIVE;
     }

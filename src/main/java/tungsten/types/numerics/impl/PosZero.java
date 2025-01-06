@@ -75,6 +75,11 @@ public class PosZero extends Zero {
     }
 
     @Override
+    public Numeric negate() {
+        return NegZero.getInstance(mctx);
+    }
+
+    @Override
     public boolean isExact() {
         return false;
     }

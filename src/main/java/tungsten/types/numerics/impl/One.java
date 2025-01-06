@@ -158,6 +158,11 @@ public class One implements Numeric, Comparable<Numeric> {
         if (Zero.isZero(addend)) return this;
         if (isArgumentRealOrCplx(addend)) {
             if (addend instanceof RealType) {
+                if (addend instanceof ContinuedFraction) {
+                    ContinuedFraction cf = (ContinuedFraction) addend;
+                    ContinuedFraction one = new ContinuedFraction(1L);
+                    return cf.add(one);
+                }
                 // small optimization
                 RealType that = (RealType) addend;
                 return new RealImpl(BigDecimal.ONE.add(that.asBigDecimal(), mctx), mctx, that.isExact());
@@ -174,6 +179,11 @@ public class One implements Numeric, Comparable<Numeric> {
         if (Zero.isZero(subtrahend)) return this;
         if (isArgumentRealOrCplx(subtrahend)) {
             if (subtrahend instanceof RealType) {
+                if (subtrahend instanceof ContinuedFraction) {
+                    ContinuedFraction cf = (ContinuedFraction) subtrahend;
+                    ContinuedFraction one = new ContinuedFraction(1L);
+                    return one.subtract(cf);
+                }
                 // small optimization
                 RealType that = (RealType) subtrahend;
                 return new RealImpl(BigDecimal.ONE.subtract(that.asBigDecimal(), mctx), mctx, that.isExact());
