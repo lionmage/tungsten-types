@@ -91,7 +91,7 @@ dependencies with the following snippet:
 <dependency>
   <groupId>tungsten</groupId>
   <artifactId>tungsten-types</artifactId>
-  <version>0.5-SNAPSHOT</version>
+  <version>0.5</version>
 </dependency>
 ```
 
