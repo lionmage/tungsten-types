@@ -727,6 +727,32 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return new ContinuedFraction(result, mctx.getPrecision() + 1);
     }
 
+    /**
+     * Compute the n<sup>th</sup> root of {@code this}, where n is an integer value.
+     * @param n the degree of the root to be computed
+     * @return the n<sup>th</sup> root as a continued fraction
+     * @since 0.6
+     */
+    public ContinuedFraction nthRoot(long n) {
+        if (n < 2L) throw new IllegalArgumentException("Roots of degree < 2 not supported");
+        final RationalType fracCoeff = new RationalImpl(n - 1L, n, mctx);
+        Iterator<Long> AdivnIter = GosperTermIterator.divide(this.iterator(),
+                new ContinuedFraction(n).iterator());
+        final ContinuedFraction Adivn = new ContinuedFraction(AdivnIter, 5);
+
+        ContinuedFraction xk = Adivn;  // initial estimate
+        for (int i = 0; i < mctx.getPrecision() + Math.min(n, 5L); i++) {
+            Iterator<Long> termA = GosperTermIterator.multiply(xk.iterator(),
+                    new RationalCFTermAdapter(fracCoeff));
+            Iterator<Long> termB = GosperTermIterator.multiply(Adivn.iterator(),
+                    xk.pow(-n + 1L).iterator());  // inverse of n - 1 exponent
+            Iterator<Long> sum = GosperTermIterator.add(termA, termB);
+            xk = new ContinuedFraction(sum, i);
+        }
+        xk.setMathContext(mctx);
+        return xk;
+    }
+
     @Override
     public MathContext getMathContext() {
         return mctx;
@@ -1024,5 +1050,24 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         ContinuedFraction freiman = new ContinuedFraction(quotient, ctx.getPrecision()/2 + 1);
         freiman.setMathContext(ctx);
         return freiman;
+    }
+
+    /*
+     Methods for Groovy operator overloading follow.
+     */
+
+    @Override
+    public RealType power(Numeric operand) {
+        if (operand instanceof IntegerType) {
+            long exponent = ((IntegerType) operand).asBigInteger().longValueExact();
+            return this.nthRoot(exponent);
+        } else if (operand instanceof RationalType) {
+            RationalType exponent = (RationalType) operand;
+            long p = exponent.numerator().asBigInteger().longValueExact();
+            long q = exponent.denominator().asBigInteger().longValueExact();
+            ContinuedFraction afterPow = this.pow(p);
+            return afterPow.nthRoot(q);
+        }
+        return RealType.super.power(operand);
     }
 }

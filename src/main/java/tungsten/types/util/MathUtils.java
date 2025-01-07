@@ -1742,6 +1742,10 @@ public class MathUtils {
      */
     public static RealType nthRoot(RealType a, IntegerType n, MathContext mctx) {
         if (n.sign() != Sign.POSITIVE) throw new IllegalArgumentException("Degree of root must be positive");
+        if (a instanceof ContinuedFraction) {
+            return ((ContinuedFraction) a).nthRoot(n.asBigInteger().longValueExact());
+        }
+
         final BigDecimal A = a.asBigDecimal();
         if (A.compareTo(BigDecimal.ZERO) == 0) {
             try {
