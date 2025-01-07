@@ -741,7 +741,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         final ContinuedFraction Adivn = new ContinuedFraction(AdivnIter, 5);
 
         ContinuedFraction xk = Adivn;  // initial estimate
-        for (int i = 0; i < mctx.getPrecision() + Math.min(n, 5L); i++) {
+        for (int i = 1; i < mctx.getPrecision() + Math.min(n, 7L); i++) {
             Iterator<Long> termA = GosperTermIterator.multiply(xk.iterator(),
                     new RationalCFTermAdapter(fracCoeff));
             Iterator<Long> termB = GosperTermIterator.multiply(Adivn.iterator(),
