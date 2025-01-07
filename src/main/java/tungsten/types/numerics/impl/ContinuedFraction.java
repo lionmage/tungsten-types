@@ -987,6 +987,18 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 if (divisor instanceof Euler) return One.getInstance(getMathContext());
                 return super.divide(divisor);
             }
+
+            @Override
+            public ContinuedFraction nthRoot(long n) {
+                if (n < 2L) throw new IllegalArgumentException("Degree of root must be ≥ 2");
+                return new ContinuedFraction(new long[] {1L}, -1,
+                        k -> (k - 1L)%3L == 0L ? rootTerm(k, n) : 1L);
+            }
+
+            private long rootTerm(long k, long n) {
+                long coeff = k - (k - 1L)/3L;
+                return coeff * n - 1L;
+            }
         };
         e.setMathContext(ctx);
         return e;
