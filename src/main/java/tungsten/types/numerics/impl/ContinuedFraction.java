@@ -1060,12 +1060,15 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public RealType power(Numeric operand) {
         if (operand instanceof IntegerType) {
             long exponent = ((IntegerType) operand).asBigInteger().longValueExact();
-            return this.nthRoot(exponent);
+            ContinuedFraction result = this.pow(exponent);
+            result.setMathContext(mctx);
+            return result;
         } else if (operand instanceof RationalType) {
             RationalType exponent = (RationalType) operand;
             long p = exponent.numerator().asBigInteger().longValueExact();
             long q = exponent.denominator().asBigInteger().longValueExact();
             ContinuedFraction afterPow = this.pow(p);
+            afterPow.setMathContext(mctx);
             return afterPow.nthRoot(q);
         }
         return RealType.super.power(operand);
