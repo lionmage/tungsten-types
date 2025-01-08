@@ -40,10 +40,23 @@ import java.util.stream.Collectors;
  */
 public class ANSITextEffects {
     private static final char ESCAPE = '\u001b';
+    /**
+     * The set of supported text styles.
+     */
     public static final EnumSet<Effect> STYLES = EnumSet.of(Effect.BOLD, Effect.ITALIC, Effect.UNDERLINE);
+    /**
+     * The set of all supported colors, both foreground and background.
+     */
     public static final EnumSet<Effect> COLORS = EnumSet.complementOf(STYLES);
+    /**
+     * The set of all background colors.
+     */
     public static final EnumSet<Effect> BACKGROUND_COLORS =
             EnumSet.of(Effect.BG_CYAN, Effect.BG_YELLOW, Effect.BG_GREEN, Effect.DEFAULT_BACKGROUND);
+    /**
+     * The set of all reset commands.  These commands reset whatever effect has previously
+     * been applied.
+     */
     public static final EnumSet<Effect> RESET_COMMANDS = EnumSet.of(Effect.DEFAULT_COLOR,
             Effect.DEFAULT_BACKGROUND, Effect.RESET);
 

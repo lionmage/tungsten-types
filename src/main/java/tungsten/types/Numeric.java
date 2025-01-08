@@ -33,8 +33,32 @@ import java.math.MathContext;
  *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public interface Numeric {
+    /**
+     * Is this numeric object exact?  Typically, this
+     * would depend on whether this object is an exact
+     * representation, or whether it is subject to
+     * e.g. measurement error.  This attribute is
+     * intended to be analogous to the concept of
+     * exactness in LISP-like languages (e.g., Scheme).
+     * @return true if this object represents an exact value, false otherwise
+     */
     boolean isExact();
+
+    /**
+     * Determines whether this object can be coerced to
+     * the indicated numeric subtype.
+     * @param numtype the target numeric subtype
+     * @return true if this object is coercible, false otherwise
+     */
     boolean isCoercibleTo(Class<? extends Numeric> numtype);
+
+    /**
+     * Attempt to coerce this object to the supplied subtype.
+     * @param numtype the desired numeric subtype
+     * @return this numeric object, coerced to a class implementing {@code numtype}
+     * @throws CoercionException if the coercion cannot be attempted for any reason,
+     *   or if coercion fails
+     */
     default Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (numtype == Numeric.class) return this;
         throw new CoercionException("coerceTo() not implemented for " +
@@ -59,11 +83,21 @@ public interface Numeric {
     Numeric divide(Numeric divisor);
     Numeric inverse();
     Numeric sqrt();
-    
+
+    /**
+     * Obtain the {@link MathContext} associated with this numeric object.
+     * The {@code MathContext} governs the number of significant digits
+     * for all basic operations as well as the rounding mode.
+     * The precision of the {@code MathContext} may not reflect the
+     * actual number of digits of this object's value, but is rather
+     * &ldquo;aspirational&rdquo; and places an upper limit on the
+     * precision of computed results.
+     * @return the {@code MathContext} associated with this numeric object
+     */
     MathContext getMathContext();
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     default Numeric plus(Numeric operand) {
         return this.add(operand);
