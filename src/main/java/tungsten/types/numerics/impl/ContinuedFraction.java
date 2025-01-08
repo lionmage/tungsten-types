@@ -735,6 +735,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      */
     public ContinuedFraction nthRoot(long n) {
         if (n < 2L) throw new IllegalArgumentException("Roots of degree < 2 not supported");
+        if (n % 2L == 0L && this.sign() == Sign.NEGATIVE) throw new ArithmeticException("Cannot compute a real-valued " + n + "th root of " + this);
         final RationalType fracCoeff = new RationalImpl(n - 1L, n, mctx);
         Iterator<Long> AdivnIter = GosperTermIterator.divide(this.iterator(),
                 new ContinuedFraction(n).iterator());
