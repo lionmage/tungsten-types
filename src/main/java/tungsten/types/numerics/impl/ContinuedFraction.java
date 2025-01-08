@@ -1100,4 +1100,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         }
         return RealType.super.power(operand);
     }
+
+    public Long getAt(int k) {
+        if (k < 0) {
+            if (terms() < 0L) throw new IndexOutOfBoundsException("Cannot use a negative index with an infinite continued fraction");
+            return termAt(terms() + k);
+        }
+        return termAt(k);
+    }
 }
