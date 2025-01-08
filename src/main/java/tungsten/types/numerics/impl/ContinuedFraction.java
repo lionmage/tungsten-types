@@ -1001,6 +1001,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
              * @return a continued fraction representation of the {@code n}<sup>th</sup> root of Euler's number
              * @see <a href="https://en.wikipedia.org/wiki/Simple_continued_fraction#Regular_patterns_in_continued_fractions">this
              *   article at Wikipedia detailing continued fractions with regular patterns</a>
+             * @since 0.6
              */
             @Override
             public ContinuedFraction nthRoot(long n) {

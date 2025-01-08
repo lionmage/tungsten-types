@@ -27,8 +27,6 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.util.MathUtils;
 
-import java.math.MathContext;
-
 /**
  * Interface for all implementations of complex numbers.
  *
@@ -78,7 +76,7 @@ public interface ComplexType extends Numeric {
     }
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     default ComplexType power(Numeric operand) {
         return MathUtils.generalizedExponent(this, operand, getMathContext());
