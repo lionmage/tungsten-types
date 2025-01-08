@@ -151,4 +151,16 @@ public class ContinuedFractionTest {
         assertEquals(fman.termAt(5L), fman.termAt(repeatStart));
         assertEquals(fman.termAt(18L), fman.termAt(repeatStart + 13L));
     }
+
+    @Test
+    public void nthRoot() {
+        ContinuedFraction f = new ContinuedFraction(34L);
+        f.setMathContext(MathContext.DECIMAL128);
+        var root = f.nthRoot(5L);
+        System.out.println("5th root of 34: " + root);
+        String decString = root.asBigDecimal().toPlainString();
+        System.out.println("In decimal notation: " + decString);
+        // value obtained from https://en.wikipedia.org/wiki/Nth_root#Using_Newton's_method
+        assertTrue(decString.startsWith("2.024397458499885042510817245541"));
+    }
 }
