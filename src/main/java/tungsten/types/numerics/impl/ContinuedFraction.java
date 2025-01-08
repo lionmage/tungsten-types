@@ -988,6 +988,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 return super.divide(divisor);
             }
 
+            /**
+             * Compute &#x212f;<sup>1/n</sup>, where n is a positive integer &ge;&nbsp;2.
+             * @param n the degree of the root to be computed
+             * @return a continued fraction representation of the {@code n}<sup>th</sup> root of Euler's number
+             * @see <a href="https://en.wikipedia.org/wiki/Simple_continued_fraction#Regular_patterns_in_continued_fractions">this
+             *   article at Wikipedia detailing continued fractions with regular patterns</a>
+             */
             @Override
             public ContinuedFraction nthRoot(long n) {
                 if (n < 2L) throw new IllegalArgumentException("Degree of root must be ≥ 2");
