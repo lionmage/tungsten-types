@@ -1097,6 +1097,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             long q = exponent.denominator().asBigInteger().longValueExact();
             ContinuedFraction afterPow = this.pow(p);
             afterPow.setMathContext(mctx);
+            if (q == 1L) return afterPow;
             return afterPow.nthRoot(q);
         }
         return RealType.super.power(operand);
