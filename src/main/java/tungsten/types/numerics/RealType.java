@@ -33,7 +33,8 @@ import java.math.BigInteger;
 /**
  * General interface for types representing real values.
  *
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public interface RealType extends Numeric, Comparable<RealType> {
     boolean isIrrational();
@@ -56,14 +57,17 @@ public interface RealType extends Numeric, Comparable<RealType> {
     Set<ComplexType> nthRoots(IntegerType n);
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
+
     default RealType power(Numeric operand) {
         return MathUtils.generalizedExponent(this, operand, getMathContext());
     }
+
     default RealType positive() {
         return magnitude();
     }
+
     default Object asType(Class<?> clazz) {
         if (BigDecimal.class.isAssignableFrom(clazz)) {
             return this.asBigDecimal();

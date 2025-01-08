@@ -30,7 +30,8 @@ import tungsten.types.util.MathUtils;
 /**
  * Interface for all implementations of complex numbers.
  *
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public interface ComplexType extends Numeric {
     /**
@@ -45,6 +46,11 @@ public interface ComplexType extends Numeric {
     ComplexType negate();
     @Override
     ComplexType inverse();
+
+    /**
+     * Compute the complex conjugate of this complex value.
+     * @return the complex conjugate of {@code this}
+     */
     ComplexType conjugate();
     RealType real();
     RealType imaginary();
