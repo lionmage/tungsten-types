@@ -988,6 +988,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 return super.divide(divisor);
             }
 
+            @Override
+            public Numeric sqrt() {
+                ContinuedFraction root = nthRoot(2L);
+                root.setMathContext(getMathContext());
+                return root;
+            }
+
             /**
              * Compute &#x212f;<sup>1/n</sup>, where n is a positive integer &ge;&nbsp;2.
              * @param n the degree of the root to be computed
