@@ -2801,8 +2801,8 @@ public class MathUtils {
      * the n<sup>th</sup> root for diagonal and upper-triangular matrices; in the latter
      * case, this method delegates to {@link #parlett(Function, Matrix) Parlett's method}.
      * @param A    the matrix for which to compute the n<sup>th</sup> root
-     * @param root an integer value of the order of the root
-     * @return the matrix result, A<sup>1/root</sup>
+     * @param root an integer value of the degree of the root
+     * @return the matrix result, {@code A}<sup>1/{@code root}</sup>
      */
     public static Matrix<? extends Numeric> nthRoot(Matrix<? extends Numeric> A, IntegerType root) {
         if (root.asBigInteger().equals(BigInteger.TWO)) return sqrt(A);
@@ -2815,7 +2815,7 @@ public class MathUtils {
                 }
             } catch (CoercionException e) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "While computing nth root of a diagonal matrix", e);
+                        "While computing the nth root of a diagonal matrix", e);
                 throw new ArithmeticException("Error computing " + root + "th root of a diagonal matrix");
             }
             return new DiagonalMatrix<>(elements);
@@ -3500,7 +3500,7 @@ public class MathUtils {
      * @param <T> the type of U and the result
      */
     public static <T extends Numeric> Vector<T> backSubstitution(Matrix<T> U, Vector<? super T> c) {
-        if (U.rows() != c.length()) throw new IllegalArgumentException("Matrix U must have the same number of rows as elements in Vector c");
+        if (U.rows() != c.length()) throw new IllegalArgumentException("Matrix U must have the same number of rows as elements in c\u20d7");
         if (U.rows() != U.columns() || !U.isUpperTriangular()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
         final Class<T> clazz = U.getRow(0L).getElementType(); // U is upper-triangular, so row 0 should consist of all non-zero elements
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
@@ -3527,7 +3527,7 @@ public class MathUtils {
                 x.setElementAt(value, i);
             } catch (CoercionException fatal) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "While computing the " + i + "th element of x for Ux = c, c = " + c, fatal);
+                        "While computing the " + i + "th element of x\u20d7 for Ux\u20d7 = c\u20d7, c\u20d7 = " + c, fatal);
                 throw new ArithmeticException("Coercion error while computing " + i + "th element of solution vector");
             }
         }
