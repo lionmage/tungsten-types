@@ -8,26 +8,55 @@ import tungsten.types.numerics.RealType;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * An abstract representation of a polynomial term.
+ * @param <T> the type of the argument or arguments (variables) of this term
+ * @param <R> the return type of this term, i.e., the {@code Numeric} type of the result of evaluation
+ */
 public abstract class Term<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final Map<String, Range<RealType>> rangeMap = new TreeMap<>();
     protected final List<String> varNames;
     protected final Class<R> rtnClazz;
 
+    /**
+     * Instantiate a term with no arguments (variables) and
+     * a given return type.
+     * @param clazz the return type of this term
+     */
     protected Term(Class<R> clazz) {
         varNames = Collections.emptyList();
         rtnClazz = clazz;
     }
 
+    /**
+     * Instantiate a term with a set of known variable names but no bindings.
+     *
+     * @param variableNames a collection of the variable names used by this term
+     * @param clazz         the return type of this term
+     */
     protected Term(Collection<String> variableNames, Class<R> clazz) {
         varNames = new ArrayList<>(variableNames);
         rtnClazz = clazz;
     }
 
+    /**
+     * Instantiate a term with a set of known variable names and mappings for the
+     * input ranges for each variable.
+     *
+     * @param variableNames a collection of variable names
+     * @param inputRanges   a {@code Map} of variable names to {@code Range}s
+     * @param clazz         the return type of this term
+     */
     protected Term(Collection<String> variableNames, Map<String, Range<RealType>> inputRanges, Class<R> clazz) {
         this(variableNames, clazz);
         varNames.stream().forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
     }
 
+    /**
+     * Convenience constructor using varargs to specify variable names.
+     * @param clazz         the return type of this term
+     * @param variableNames the variable name or names for this term
+     */
     protected Term(Class<R> clazz, String... variableNames) {
         final List<String> vars = Arrays.asList(variableNames);
         HashSet<String> tester = new HashSet<>();
@@ -38,6 +67,13 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
         this.rtnClazz = clazz;
     }
 
+    /**
+     * Convenience constructor using varargs to specify variable names and
+     * a mapping of variable names to input ranges.
+     * @param clazz         the return type of this term
+     * @param inputRanges   the {@code Map} of variable names to {@code Range}s of input
+     * @param variableNames the variable name or names for this term
+     */
     protected Term(Class<R> clazz, Map<String, Range<RealType>> inputRanges, String... variableNames) {
         this(clazz, variableNames);
         // only copy the ranges that apply
@@ -65,10 +101,18 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
 
     public abstract Term<T, R> scale(R multiplier);
 
+    /**
+     * Determines whether this term is a constant term.
+     * @return true if this term is constant, false otherwise
+     */
     public boolean isConstant() {
         return arity() == 0L;
     }
 
+    /**
+     * Obtain the numeric coefficient of this term.
+     * @return the coefficient
+     */
     public abstract R coefficient();
 
     @Override
@@ -108,6 +152,10 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
         return Objects.hash(rangeMap, varNames);
     }
 
+    /**
+     * Obtain the return type of this term.
+     * @return the return type
+     */
     public Class<R> getReturnClass() {
         return rtnClazz;
     }

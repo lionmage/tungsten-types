@@ -10,9 +10,9 @@ import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,7 +26,7 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
     private final R value;
 
     public ConstantTerm(R init) {
-        super((Class<R>) init.getClass());
+        super((Class<R>) ClassTools.getInterfaceTypeFor(init.getClass()));
         value = init;
     }
 
@@ -46,9 +46,13 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
             return this;
         }
         if (multiplier instanceof ConstantTerm) {
-            return new ConstantTerm<>((R) value.multiply(multiplier.coefficient()));
+            try {
+                R prod = (R) value.multiply(multiplier.coefficient()).coerceTo(getReturnClass());
+                return new ConstantTerm<>(prod);
+            } catch (CoercionException e) {
+                throw new ArithmeticException("Unable to compute the product of two constants");
+            }
         }
-        // TODO add a few other special cases?
 
         // default behavior is to make use of commutativity
         return multiplier.multiply(this);
@@ -76,12 +80,11 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
 
     @Differentiable
     public Term<T, R> differentiate(String varName) {
-        final Class<R> clazz = (Class<R>) ((Class) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[1]);  // class for R
+        final Class<R> clazz = getReturnClass();
         try {
             return new ConstantTerm<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(clazz));
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("While differentiating a constant term", e);
         }
     }
 
