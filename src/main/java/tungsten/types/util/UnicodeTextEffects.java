@@ -704,7 +704,7 @@ public class UnicodeTextEffects {
         // Otherwise, pick a random subset of rows and inspect only those.
         LongStream indexStream = M.rows() <= 10L ? LongStream.range(0L, M.rows()) :
                 MathUtils.randomIndexPermutation(M.rows(), M.rows() <= 30L ? M.rows() / 2L : M.rows() / 3L).stream().mapToLong(Long::longValue);
-        Matrix<? extends Numeric> finalM = M;
+        final Matrix<? extends Numeric> finalM = M;
         indexStream.forEach(k -> strategy.inspect(finalM.getRow(k)));
         // now assemble the thing
         StringBuilder buf = new StringBuilder();
@@ -791,7 +791,7 @@ public class UnicodeTextEffects {
             try {
                 return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
             } catch (CoercionException e) {
-                throw new IllegalStateException(e);
+                throw new IllegalStateException("While obtaining fill percentage", e);
             }
         }
 
@@ -847,7 +847,7 @@ public class UnicodeTextEffects {
             try {
                 return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
             } catch (CoercionException e) {
-                throw new IllegalStateException(e);
+                throw new IllegalStateException("While obtaining fill percentage", e);
             }
         }
 
@@ -904,7 +904,7 @@ public class UnicodeTextEffects {
             try {
                 return (RealType) oneHundred.multiply(value).coerceTo(RealType.class);
             } catch (CoercionException e) {
-                throw new IllegalStateException(e);
+                throw new IllegalStateException("While obtaining fill percentage", e);
             }
         }
 
