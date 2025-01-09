@@ -417,6 +417,12 @@ public class UnicodeTextEffects {
         romanDigits.put(1, "\u2160");  // I
     }
 
+    /**
+     * Format a vector name for display.  By default, this takes
+     * the form of an over-arrow.
+     * @param name the variable name representing a vector
+     * @return the variable name decorated with an over-arrow
+     */
     public static String vectorNameForDisplay(String name) {
         if (name == null || name.isBlank()) return "";
         return name.strip() + '\u20D7'; // U+20D7 is the combining over-arrow
@@ -485,14 +491,33 @@ public class UnicodeTextEffects {
         return width;
     }
 
+    /**
+     * Compute the character width of an entire character sequence.
+     * @param source a Unicode character sequence
+     * @return the calculated character width of the specified character sequence
+     */
     public static int computeCharacterWidth(CharSequence source) {
         return computeCharacterWidth(source, 0, source.length());
     }
 
+    /**
+     * Compute the character width of a character sequence, starting at the specified
+     * position and continuing to the end of the sequence.
+     * @param source a Unicode character sequence
+     * @param start  the start position (0-based)
+     * @return the calculated character width of the specified sequence, beginning at {@code start}
+     */
     public static int computeCharacterWidth(CharSequence source, int start) {
         return computeCharacterWidth(source, start, source.length());
     }
 
+    /**
+     * Given a {@link StringBuilder} containing a representation of a decimal fraction,
+     * trim the {@code StringBuilder} to the given number of fractional digits.
+     * @param buffer        a {@code StringBuilder} containing a decimal value representation
+     * @param decPointIndex the position of a decimal point in this representation
+     * @param N             the number of fractional digits to allow
+     */
     public static void trimToNFractionDigits(StringBuilder buffer, int decPointIndex, int N) {
         if (buffer.length() < decPointIndex) {
             throw new IllegalArgumentException("Decimal point index must be \u2264 buffer length");
@@ -515,6 +540,14 @@ public class UnicodeTextEffects {
         }
     }
 
+    /**
+     * Similar to {@link #trimToNFractionDigits(StringBuilder, int, int)} but
+     * finds the position of the decimal point itself and does not mutate any
+     * of its arguments.
+     * @param original a {@code String} containing a representation of a decimal fraction
+     * @param N        the number of decimal fraction digits to allow
+     * @return a {@code String} containing a decimal value with only {@code N} fractional digits
+     */
     public static String trimToNFractionDigits(String original, int N) {
         final char DEC_POINT = DecimalFormatSymbols.getInstance().getDecimalSeparator();
         int decPointIdx = original.indexOf(DEC_POINT);
@@ -538,6 +571,13 @@ public class UnicodeTextEffects {
 
     private static final RationalType ONE = new RationalImpl(BigInteger.ONE, BigInteger.ONE);
 
+    /**
+     * Format a rational value as a proper fraction.  Whole values are separated from
+     * the reduced fraction part, and the two parts are separated by the invisible plus
+     * glyph.
+     * @param frac any rational value
+     * @return a {@code String} representing {@code frac}
+     */
     public static String properFractionForDisplay(RationalType frac) {
         if (frac.magnitude().compareTo(ONE) < 0) return frac.toString();
 
@@ -558,6 +598,14 @@ public class UnicodeTextEffects {
         return buf.toString();
     }
 
+    /**
+     * Format a function name for proper display.
+     * @param fname           the name of the function; if {@code null}, uses &fnof;
+     * @param derivativeOrder the order of the derivative applied to the function; 0 is the function itself
+     * @param preferPrimes    if {@code true}, prefer the use of primes instead of numeric subscripts
+     * @param argumentNames   one or more argument names
+     * @return a representation of the specified function
+     */
     public static String functionNameForDisplay(String fname, int derivativeOrder, boolean preferPrimes, String... argumentNames) {
         if (derivativeOrder < 0) throw new IllegalArgumentException("Order of derivative must be a non-negative integer");
         StringBuilder buf = new StringBuilder();
@@ -598,6 +646,13 @@ public class UnicodeTextEffects {
         return buf.toString();
     }
 
+    /**
+     * Format the given matrix in a manner suitable for display.
+     * @param M           the {@code Matrix} to render
+     * @param superscript a numeric superscript, can be null
+     * @param subscript   a numeric subscript, can be null
+     * @return a {@code String} containing a multi-line formatted representation of {@code M}
+     */
     public static String formatMatrixForDisplay(Matrix<? extends Numeric> M, Numeric superscript, Numeric subscript) {
         String sup = null;
         String sub = null;
@@ -614,6 +669,17 @@ public class UnicodeTextEffects {
         return formatMatrixForDisplay(M, sup, sub);
     }
 
+    /**
+     * Format the given matrix in a manner suitable for display.
+     * The supplied {@code superscript} and {@code subscript} arguments
+     * are included as-is; if you want these to render in the
+     * appropriate size and font, consider using {@link #convertToSuperscript(String)}
+     * and {@link #convertToSubscript(String)}, respectively, to convert plaintext.
+     * @param M           the {@code Matrix} to render
+     * @param superscript a superscript, can be null
+     * @param subscript   a subscript, can be null
+     * @return a {@code String} containing a multi-line formatted representation of {@code M}
+     */
     public static String formatMatrixForDisplay(Matrix<? extends Numeric> M, String superscript, String subscript) {
         Class<? extends Numeric> elementType = OptionalOperations.findTypeFor(M);
         NumericHierarchy htype = NumericHierarchy.forNumericType(elementType);
