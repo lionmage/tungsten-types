@@ -11,6 +11,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.UnicodeTextEffects;
@@ -24,11 +25,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * A representation of a polynomial term.  This implementation
+ * supports integer exponents and multiple variables.
+ * @param <T> the numeric type consumed by this term
+ * @param <R> the result type for this term
+ */
 public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     private static final char DOT_OPERATOR = '\u22C5';
     private final Map<String, Long> powers = new TreeMap<>();
     private R coeff;
 
+    /**
+     * Instantiate a polynomial term given a list of variable names, a corresponding list
+     * of exponents, and the numeric return type for this term.
+     * @param variableNames a list of variables participating in this term
+     * @param exponents     a list of integral exponents; must be the same length as {@code variableNames}
+     * @param rtnClass      the numeric type of the result computed by this term
+     */
     public PolyTerm(List<String> variableNames, List<Long> exponents, Class<R> rtnClass) {
         super(variableNames, rtnClass);
         if (variableNames.size() != exponents.size()) {
@@ -39,14 +53,27 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         }
     }
 
+    /**
+     * Instantiate a polynomial term given a coefficient, a list of variable names,
+     * and a corresponding list of exponents.
+     * The return type of this term is inferred from {@code coefficient}.
+     * @param coefficient   a multiplicative coefficient applied in the calculation of this term
+     * @param variableNames a list of variables participating in this term
+     * @param exponents     a list of integral exponents; must be the same length as {@code variableNames}
+     */
     public PolyTerm(R coefficient, List<String> variableNames, List<Long> exponents) {
-        this(variableNames, exponents, (Class<R>) coefficient.getClass());
+        this(variableNames, exponents, (Class<R>) ClassTools.getInterfaceTypeFor(coefficient.getClass()));
         this.coeff = coefficient;
     }
 
     private static final Pattern coeffPattern = Pattern.compile("^\\s*([+-]?\\d+[./]?\\d*)\\s?");
     private static final Pattern varPattern = Pattern.compile("(\\w+)\\^([+-]?\\d+)\\s?");
 
+    /**
+     * Instantiate a term by parsing a {@code String} representing it.
+     * @param init     the textual string representing this polynomial term
+     * @param rtnClass the return type of this term
+     */
     public PolyTerm(String init, Class<R> rtnClass) {
         super(Collections.emptyList(), rtnClass); // force superclass to instantiate a usable collection
         int startOfVars = 0;
@@ -96,7 +123,8 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         LinkedHashSet<String> combinedArgs = new LinkedHashSet<>(varNames);
         boolean hasNewArgs = combinedArgs.addAll(Arrays.asList(multiplier.expectedArguments()));
         if (hasNewArgs) {
-            Logger.getLogger(PolyTerm.class.getName()).info("Combined polynomial term has " + combinedArgs.size() + " arguments.");
+            Logger.getLogger(PolyTerm.class.getName()).log(Level.INFO,
+                    "Combined polynomial term has {0} arguments.", combinedArgs.size());
         }
         HashMap<String, Long> combinedExponents = new HashMap<>(powers);
         for (String varName : multiplier.expectedArguments()) {
@@ -117,7 +145,8 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         final IntegerType funExponent = (IntegerType) func.getExponent();  // will throw a ClassCastException if exponent is rational
         boolean hasNewArgs = combinedArgs.add(funArg);
         if (hasNewArgs) {
-            Logger.getLogger(PolyTerm.class.getName()).info("Combined polynomial term has " + combinedArgs.size() + " arguments.");
+            Logger.getLogger(PolyTerm.class.getName()).log(Level.INFO,
+                    "Combined polynomial term has {0} arguments.", combinedArgs.size());
         }
         HashMap<String, Long> combinedExponents = new HashMap<>(powers);
         combinedExponents.put(funArg, this.order(funArg) + funExponent.asBigInteger().longValueExact());
@@ -136,6 +165,13 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         return new PolyTerm<>((R) coefficient().multiply(multiplier), varNames, exponents);
     }
 
+    /**
+     * Checks if the supplied polynomial term has the same general signature as this one.
+     * This means that the two terms have the same arity, the same named variables,
+     * and for each variable, the same exponent.
+     * @param other the other polynomial term for comparison
+     * @return true if the two terms have the same signature
+     */
     public boolean hasMatchingSignature(PolyTerm<T, R> other) {
         // ensure the variables match up
         if (Arrays.mismatch(this.expectedArguments(), other.expectedArguments()) >= 0) return false;
@@ -188,17 +224,22 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     @Differentiable
     public Term<T, R> differentiate(String argName) {
         long order = order(argName);
-        R dcoeff = (R) coefficient().multiply(new IntegerImpl(BigInteger.valueOf(order)));
-        List<String> dargs = new ArrayList<>(varNames);
-        TreeMap<String, Long> dpowers = new TreeMap<>(powers);
-        if (--order == 0) {
-            dargs.remove(argName);
-            dpowers.remove(argName);
-        } else {
-            dpowers.replace(argName, order);
+        try {
+            R dcoeff = (R) coefficient().multiply(new IntegerImpl(BigInteger.valueOf(order)))
+                    .coerceTo(getReturnClass());
+            List<String> dargs = new ArrayList<>(varNames);
+            TreeMap<String, Long> dpowers = new TreeMap<>(powers);
+            if (--order == 0) {
+                dargs.remove(argName);
+                dpowers.remove(argName);
+            } else {
+                dpowers.replace(argName, order);
+            }
+            List<Long> temp = dargs.stream().map(dpowers::get).collect(Collectors.toList());
+            return new PolyTerm<>(dcoeff, dargs, temp);
+        } catch (CoercionException e) {
+            throw new IllegalStateException("While differentiating a PolyTerm", e);
         }
-        List<Long> temp = dargs.stream().map(dpowers::get).collect(Collectors.toList());
-        return new PolyTerm<>(dcoeff, dargs, temp);
     }
 
     @Override
