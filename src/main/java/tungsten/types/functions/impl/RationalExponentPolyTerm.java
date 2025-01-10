@@ -8,10 +8,8 @@ import tungsten.types.functions.Term;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.One;
-import tungsten.types.numerics.impl.RationalImpl;
-import tungsten.types.numerics.impl.Zero;
+import tungsten.types.numerics.impl.*;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
 
@@ -28,6 +26,13 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     private final Map<String, RationalType> powers = new TreeMap<>();
     private R coeff;
 
+    /**
+     * Instantiate a polynomial term with a list of variable names, a list of rational exponents,
+     * and the return type of this term.
+     * @param variableNames the names of the variables consumed by this term
+     * @param exponents     a list of rational exponents; must be the same length as {@code variableNames}
+     * @param rtnClass      the return type of this term
+     */
     public RationalExponentPolyTerm(List<String> variableNames, List<RationalType> exponents, Class<R> rtnClass) {
         super(variableNames, rtnClass);
         if (variableNames.size() != exponents.size()) {
@@ -38,11 +43,23 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         }
     }
 
+    /**
+     * Instantiate a polynomial term given a coefficient, a list of variable names,
+     * and a corresponding list of exponents.
+     * The return type of this term is inferred from {@code coefficient}.
+     * @param coefficient   a multiplicative coefficient applied in the calculation of this term
+     * @param variableNames a list of variables participating in this term
+     * @param exponents     a list of rational exponents; must be the same length as {@code variableNames}
+     */
     public RationalExponentPolyTerm(R coefficient, List<String> variableNames, List<RationalType> exponents) {
-        this(variableNames, exponents, (Class<R>) coefficient.getClass());
+        this(variableNames, exponents, (Class<R>) ClassTools.getInterfaceTypeFor(coefficient.getClass()));
         this.coeff = coefficient;
     }
 
+    /**
+     * Copy constructor.
+     * @param toCopy the polynomial term to copy
+     */
     public RationalExponentPolyTerm(PolyTerm<T, R> toCopy) {
         super(toCopy.getReturnClass(), toCopy.expectedArguments());
         this.coeff = toCopy.coefficient();
@@ -54,6 +71,11 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     private static final Pattern coeffPattern = Pattern.compile("^\\s*([+-]?\\d+[./]?\\d*)\\s?");
     private static final Pattern varPattern = Pattern.compile("(\\w+)\\^([+-]?\\d+/\\d+)\\s?");
 
+    /**
+     * Instantiate a term by parsing a {@code String} representing it.
+     * @param init     the textual string representing this polynomial term
+     * @param rtnClass the return type of this term
+     */
     public RationalExponentPolyTerm(String init, Class<R> rtnClass) {
         super(Collections.emptyList(), rtnClass); // force superclass to instantiate a usable collection
         int startOfVars = 0;
@@ -161,6 +183,13 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         return new RationalExponentPolyTerm<>((R) coefficient().multiply(multiplier), varNames, listOfExponents);
     }
 
+    /**
+     * Checks if the supplied polynomial term has the same general signature as this one.
+     * This means that the two terms have the same arity, the same named variables,
+     * and for each variable, the same exponent.
+     * @param other the other polynomial term for comparison
+     * @return true if the two terms have the same signature
+     */
     public boolean hasMatchingSignature(RationalExponentPolyTerm<T, R> other) {
         // ensure the variables match up
         if (Arrays.mismatch(this.expectedArguments(), other.expectedArguments()) >= 0) return false;
@@ -192,7 +221,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
             List<RationalType> temp = dargs.stream().map(dpowers::get).collect(Collectors.toList());
             return new RationalExponentPolyTerm<>(dcoeff, dargs, temp);
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("While differentiating a RationalExponentialPolyTerm", e);
         }
     }
 
@@ -212,10 +241,15 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         return exponentFor(varName).floor().asBigInteger().longValueExact();
     }
 
+    /**
+     * Obtain the exponent for a given variable in this term.
+     * @param varName the variable name
+     * @return the rational exponent corresponding to the given {@code varName}
+     */
     public RationalType exponentFor(String varName) {
         try {
             return powers.getOrDefault(varName,
-                    (RationalType) One.getInstance(MathContext.UNLIMITED).coerceTo(RationalType.class));
+                    (RationalType) ExactZero.getInstance(MathContext.UNLIMITED).coerceTo(RationalType.class));
         } catch (CoercionException e) {
             throw new IllegalStateException("Error while trying to coerce zero", e);
         }
