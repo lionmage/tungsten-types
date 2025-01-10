@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final List<Term<T, R>> terms = new ArrayList<>();
     // TODO may need to make rtnClass non-final and create constructors that explicitly take a Class<R> argument
-    private final Class<R> rtnClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
+    protected final Class<R> rtnClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
 
     protected Polynomial(List<Term<T, R>> supplied) {
         terms.addAll(supplied);
@@ -148,7 +148,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         } else if (alienFunc instanceof Reflexive) {
             this.add(new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]), List.of(1L), rtnClass));
         }
-        // TODO add additional cases as-needed
+        // add additional cases as-needed
 
         // if we can't handle the supplied function, throw an exception
         throw new IllegalArgumentException("This polynomial does not know how to handle function " + alienFunc +
@@ -261,11 +261,9 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
 
     /**
      * Generate a polynomial identical to this one, but with the terms
-     * ordered according to the exponent of the given variable.
-     * <br>
-     * The ordering is from the highest exponent in {@code varName to the
+     * ordered according to the exponent of the given variable.<br>
+     * The ordering is from the highest exponent in {@code varName} to the
      * lowest.
-     * }
      * @param varName the name of the variable to use for sorting terms
      * @return the reordered polynomial
      */

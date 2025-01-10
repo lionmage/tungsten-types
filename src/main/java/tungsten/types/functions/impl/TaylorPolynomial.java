@@ -1,6 +1,7 @@
 package tungsten.types.functions.impl;
 
 import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.Proxable;
 import tungsten.types.functions.Term;
 import tungsten.types.functions.UnaryArgVector;
@@ -12,7 +13,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class TaylorPolynomial<T extends Numeric, R extends Numeric> extends Polynomial<T, R> {
+public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>, R extends Numeric> extends Polynomial<T, R> {
     private final String argname;
     private final T diffAround;
     protected final UnaryFunction<T, R> f0;
@@ -22,15 +23,15 @@ public abstract class TaylorPolynomial<T extends Numeric, R extends Numeric> ext
         this.argname = argName;
         this.f0 = original;
         this.diffAround = differentiableAround;
-        // the first term is f(a0) and is a constant
+        // the first term is f(a₀) and is a constant
         final R f0_a0;
         if (original instanceof Proxable) {
-            var proxyfunc = ((Proxable) original).obtainProxy();
+            var proxyfunc = ((Proxable<T, R>) original).obtainProxy();
             f0_a0 = (R) proxyfunc.apply(differentiableAround);
         } else {
             f0_a0 = original.apply(differentiableAround);
         }
-        super.add(new ConstantTerm<T, R>(f0_a0));
+        super.add(new ConstantTerm<>(f0_a0));
     }
 
     protected TaylorPolynomial(TaylorPolynomial<T, R> toCopy, List<Term<T, R>> computedTerms) {
@@ -50,20 +51,25 @@ public abstract class TaylorPolynomial<T extends Numeric, R extends Numeric> ext
      * @return the function &fnof;(x &minus; a<sub>0</sub>) evaluated for the given x
      */
     public R apply(T input) {
-        T translated = (T) input.subtract(diffAround);  // x - a0
+        T translated = (T) input.subtract(diffAround);  // x - a₀
         return super.apply(new UnaryArgVector<>(argname, translated));
     }
 
     private void generateNthTerm(long n) {
         if (countTerms() - 1L >= n) return;  // we already generated the requested term
-        R coeff = (R) f_n(n).apply(diffAround).divide(MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(n))));
-        PolyTerm<T, R> nterm = new PolyTerm<>(coeff, List.of(argname), List.of(n));
-        super.add(nterm);
+        try {
+            R coeff = (R) f_n(n).apply(diffAround)
+                    .divide(MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(n)))).coerceTo(rtnClass);
+            PolyTerm<T, R> nterm = new PolyTerm<>(coeff, List.of(argname), List.of(n));
+            super.add(nterm);
+        } catch (CoercionException e) {
+            throw new ArithmeticException("While computing the " + n + "th term of a Taylor Polynomial: " + e.getMessage());
+        }
     }
 
     @Override
     public TaylorPolynomial<T, R> firstN(long N) {
-        return new TaylorPolynomial<T, R>(this, termStream().limit(N).collect(Collectors.toList())) {
+        return new TaylorPolynomial<>(this, termStream().limit(N).collect(Collectors.toList())) {
             @Override
             protected UnaryFunction<T, R> f_n(long n) {
                 return TaylorPolynomial.this.f_n(n);
@@ -71,6 +77,11 @@ public abstract class TaylorPolynomial<T extends Numeric, R extends Numeric> ext
         };
     }
 
+    /**
+     * Obtain a Taylor polynomial with exactly n terms.
+     * @param n the desired number of terms
+     * @return a Taylor polynomial with {@code n} terms
+     */
     public TaylorPolynomial<T, R> getForNTerms(long n) {
         if (n < countTerms() - 1) {
             return firstN(n);
