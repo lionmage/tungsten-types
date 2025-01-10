@@ -16,6 +16,7 @@ import tungsten.types.util.OptionalOperations;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -159,7 +160,8 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         final Numeric funExponent = func.getExponent();
         boolean hasNewArgs = combinedArgs.add(funArg);
         if (hasNewArgs) {
-            Logger.getLogger(RationalExponentPolyTerm.class.getName()).info("Combined polynomial term has " + combinedArgs.size() + " arguments.");
+            Logger.getLogger(RationalExponentPolyTerm.class.getName()).log(Level.INFO,
+                    "Combined polynomial term has {0} arguments.", combinedArgs.size());
         }
         HashMap<String, RationalType> combinedExponents = new HashMap<>(powers);
         try {

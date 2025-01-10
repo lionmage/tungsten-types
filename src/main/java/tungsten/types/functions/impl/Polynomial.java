@@ -13,11 +13,11 @@ import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
@@ -28,8 +28,8 @@ import java.util.stream.Stream;
 
 public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final List<Term<T, R>> terms = new ArrayList<>();
-    private final Class<R> rtnClass = (Class<R>) ((Class) ((ParameterizedType) getClass()
-            .getGenericSuperclass()).getActualTypeArguments()[1]);
+    // TODO may need to make rtnClass non-final and create constructors that explicitly take a Class<R> argument
+    private final Class<R> rtnClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
 
     protected Polynomial(List<Term<T, R>> supplied) {
         terms.addAll(supplied);
@@ -185,11 +185,13 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                     List.of(1L), rtnClass);
             return this.multiply(term);
         }
-        // TODO implement a few more sane cases
+        // we can add more cases here as necessary
         throw new UnsupportedOperationException("Currently unable to handle a foreign function of type " +
                 alienFunc.getClass().getTypeName());
     }
 
+    // UnaryFunction is another one of those classes that has issues when supplying type arguments under
+    // certain conditions.  This compiles, but gets flagged for raw use of a parameterized class.
     private static final List<Class<? extends UnaryFunction>> supported = List.of(Const.class, Pow.class);
 
     private Term<T, R> termFromProd(Product<T, R> product) {
@@ -199,6 +201,8 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         try {
             R coeff = (R) product.stream().filter(Const.class::isInstance).map(Const.class::cast)
                     .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(rtnClass);
+            // Fortunately, we don't need the arg type or return type of Pow here, but it really
+            // bothers me that even Pow<?, ?> causes issues.  Still haven't found a good solution.
             List<Pow> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
                     .collect(Collectors.toList());  // Trying to make this a List<Pow<T, R>> or a List<Pow<?, ?>> causes build issues
             List<String> varNames = subterms.stream().map(f -> f.expectedArguments()[0]).collect(Collectors.toList());
@@ -249,6 +253,10 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         return new Polynomial<>(nTerms);
     }
 
+    /**
+     * Obtain a {@link Stream} of {@code Term}s for this polynomial
+     * @return a stream consisting of the terms of this polynomial
+     */
     protected Stream<Term<T, R>> termStream() { return terms.stream(); }
 
     /**
@@ -267,6 +275,10 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         return new Polynomial<>(sortedTerms);
     }
 
+    /**
+     * Obtain a count of the terms in this polynomial.
+     * @return the number of terms in this polynomial
+     */
     public long countTerms() {
         return terms.stream().count();
     }
@@ -276,6 +288,13 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         return getUniqueArgnames().stream().count();
     }
 
+    /**
+     * Compute the order of a given variable in this polynomial.
+     * The order is the maximum exponent of this variable across
+     * all terms.
+     * @param argName the name of the variable
+     * @return the order of this variable, or 0 if it does not occur
+     */
     public long order(String argName) {
         return terms.stream().mapToLong(t -> t.order(argName)).max().orElse(0L);
     }
