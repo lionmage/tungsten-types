@@ -25,11 +25,21 @@ import java.util.Objects;
 public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     private final R value;
 
+    /**
+     * Construct a constant polynomial term with a given value.
+     * @param init the numeric value of this constant term
+     */
     public ConstantTerm(R init) {
         super((Class<R>) ClassTools.getInterfaceTypeFor(init.getClass()));
         value = init;
     }
 
+    /**
+     * Construct a constant polynomial term given a {@code String}
+     * representation of the constant and the numeric type.
+     * @param init  the value of this constant term
+     * @param clazz the type of this constant term
+     */
     public ConstantTerm(String init, Class<R> clazz) {
         super(clazz);
         value = OptionalOperations.dynamicInstantiate(clazz, init);
