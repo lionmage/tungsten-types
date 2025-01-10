@@ -52,11 +52,12 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
 
     @Override
     public Term<T, R> multiply(Term<T, R> multiplier) {
-        if (Zero.isZero(value)) {
-            return this;
-        }
+        if (Zero.isZero(value)) return this;
+        if (One.isUnity(value)) return multiplier;
         if (multiplier instanceof ConstantTerm) {
             try {
+                if (Zero.isZero(multiplier.coefficient())) return multiplier;
+                if (One.isUnity(multiplier.coefficient())) return this;
                 R prod = (R) value.multiply(multiplier.coefficient()).coerceTo(getReturnClass());
                 return new ConstantTerm<>(prod);
             } catch (CoercionException e) {
