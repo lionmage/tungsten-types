@@ -39,6 +39,7 @@ import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
@@ -50,13 +51,15 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
         super(argName);
         String numArg = numerator.expectedArguments()[0];
         if (!numArg.equals(argName)) {
-            Logger.getLogger(getClass().getTypeName())
-                    .warning("Mapping Quotient arg " + argName + " to numerator arg " + numArg);
+            Logger.getLogger(Quotient.class.getName()).log(Level.WARNING,
+                            "Mapping Quotient arg {0} to numerator arg {1}.",
+                            new Object[] { argName, numArg });
         }
         String denomArg = denominator.expectedArguments()[0];
         if (!denomArg.equals(argName)) {
-            Logger.getLogger(getClass().getTypeName())
-                    .warning("Mapping Quotient arg " + argName + " to denominator arg " + denomArg);
+            Logger.getLogger(getClass().getTypeName()).log(Level.WARNING,
+                            "Mapping Quotient arg {0} to denominator arg {1}.",
+                            new Object[] { argName, denomArg });
         }
         this.numerator = numerator;
         this.denominator = denominator;
@@ -115,7 +118,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
                 return new Product<>(getArgumentName(), Const.getInstance(eqInR), numerator);
             }
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("While simplifying a quotient with a constant", e);
         }
         if (numerator instanceof Pow && denominator instanceof Pow) {
             Numeric numExponent = ((Pow<T, R>) numerator).getExponent();
