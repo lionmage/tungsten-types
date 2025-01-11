@@ -79,6 +79,11 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
         return RangeUtils.ALL_REALS;
     }
 
+    /**
+     * Obtain the centroid for the transition from 0 to 1,
+     * typically denoted x<sub>0</sub>.
+     * @return the centroid of this function's output
+     */
     public RealType getCentroid() {
         return x0;
     }

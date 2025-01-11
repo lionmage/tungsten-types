@@ -46,7 +46,7 @@ public class Reflexive<T extends Numeric> extends UnaryFunction<T, T> {
         try {
             return Const.getInstance((T) One.getInstance(MathContext.UNLIMITED).coerceTo(clazz));
         } catch (CoercionException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("While obtaining the derivative", e);
         }
     }
 
