@@ -95,6 +95,14 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         appendTerm(second);
     }
 
+    /**
+     * Returns a {@code Product} of two unary functions.
+     * @param first  the first unary function
+     * @param second the second unary function
+     * @return the product of {@code first} and {@code second}
+     * @param <T> the input parameter type
+     * @param <R> the output parameter type
+     */
     public static <T extends Numeric, R extends Numeric> Product<T, R> of(UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
         final String argName1 = first.expectedArguments()[0];
         final String argName2 = second.expectedArguments()[0];
@@ -102,6 +110,11 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         return new Product<>(argName, first, second);
     }
 
+    /**
+     * Append a term to this product, consolidating constants
+     * and flattening products.
+     * @param term the unary function to append
+     */
     public void appendTerm(UnaryFunction<T, R> term) {
         if (term instanceof Const && termCount() > 0L) {
             final Const<T, R> cterm = (Const<T, R>) term;
@@ -153,6 +166,10 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         return p3;
     }
 
+    /**
+     * Obtain the count of terms in this product.
+     * @return the count of terms
+     */
     public long termCount() {
         return stream().count();
     }
@@ -232,10 +249,18 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
                 .reduce(RangeUtils.ALL_REALS, Range::chooseNarrowest);
     }
 
+    /**
+     * Return a stream of the terms in this product.
+     * @return
+     */
     public Stream<UnaryFunction<T, R>> stream() {
         return terms.stream();
     }
 
+    /**
+     * Return a parallel stream of the terms in this product.
+     * @return
+     */
     public Stream<UnaryFunction<T, R>> parallelStream() {
         return terms.parallelStream();
     }
