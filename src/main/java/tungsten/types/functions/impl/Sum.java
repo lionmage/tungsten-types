@@ -88,6 +88,14 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         terms.addAll(init);
     }
 
+    /**
+     * Returns a {@code Sum} of two unary function terms.
+     * @param first  the first term
+     * @param second the second term
+     * @return the sum of {@code first} and {@code second}
+     * @param <T> the input type
+     * @param <R> the output type
+     */
     public static <T extends Numeric, R extends Numeric> Sum<T, R> of(UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
         final String argName1 = first.expectedArguments()[0];
         final String argName2 = second.expectedArguments()[0];
@@ -98,6 +106,10 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         return sum;
     }
 
+    /**
+     * Append a term to this sum, consolidating as appropriate.
+     * @param term the unary function to add
+     */
     public void appendTerm(UnaryFunction<T, R> term) {
         if (term instanceof Const && termCount() > 0L) {
             final Const<T, R> cterm = (Const<T, R>) term;
@@ -167,7 +179,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 }
             }
         }
-        if (combinerMap.size() > 0) {
+        if (!combinerMap.isEmpty()) {
             Logger.getLogger(Sum.class.getName()).log(Level.INFO,
                     "Found {0} terms out of {1} that can be combined.",
                     new Object[] {combinerMap.size(), terms.size()});
@@ -201,6 +213,10 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         return this;
     }
 
+    /**
+     * Returns the count of terms in this sum.
+     * @return the count of terms
+     */
     public long termCount() {
         return stream().count();
     }
@@ -224,10 +240,18 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 .reduce(RangeUtils.ALL_REALS, Range::chooseNarrowest);
     }
 
+    /**
+     * Obtain a {@code Stream} of terms in this sum.
+     * @return a stream of unary functions
+     */
     public Stream<UnaryFunction<T, R>> stream() {
         return terms.stream();
     }
 
+    /**
+     * Obtain a parallel {@code Stream} of the terms in this sum.
+     * @return a parallel stream of unary functions
+     */
     public Stream<UnaryFunction<T, R>> parallelStream() {
         return terms.parallelStream();
     }
