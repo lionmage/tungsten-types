@@ -59,18 +59,31 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     private final Class<R> outputClazz;
     private final Numeric exponent;
 
+    /**
+     * Constructor which takes a {@code long} exponent.
+     * @param n the exponent
+     */
     public Pow(long n) {
         super("x");
         exponent = new IntegerImpl(BigInteger.valueOf(n));
         outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     }
 
+    /**
+     * Constructor which takes a {@code long} exponent and an explicit return type.
+     * @param n       the exponent
+     * @param rtnType the return type of this function
+     */
     public Pow(long n, Class<R> rtnType) {
         super("x");
         exponent = new IntegerImpl(BigInteger.valueOf(n));
         outputClazz = rtnType;
     }
 
+    /**
+     * Constructor which takes a {@code RationalType} exponent.
+     * @param rationalExponent the exponent
+     */
     public Pow(RationalType rationalExponent) {
         super("x");
         if (rationalExponent.isCoercibleTo(IntegerType.class)) {
@@ -81,6 +94,11 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     }
 
+    /**
+     * Constructor which takes a {@code RationalType} exponent and an explicit return type.
+     * @param rationalExponent the exponent
+     * @param rtnType          the return type of this function
+     */
     public Pow(RationalType rationalExponent, Class<R> rtnType) {
         super("x");
         if (rationalExponent.isCoercibleTo(IntegerType.class)) {
@@ -91,11 +109,26 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         outputClazz = rtnType;
     }
 
+    /**
+     * Constructor that takes a function to compose with this function.
+     * The composed function is called first, and its result is then
+     * exponentiated.
+     * @param inner    the function to compose
+     * @param exponent the exponent for this function
+     */
     public Pow(UnaryFunction<? super T, T> inner, Numeric exponent) {
         this(inner.expectedArguments()[0], exponent);
         composedFunction = inner;
     }
 
+    /**
+     * Constructor that takes a function to compose with this function.
+     * The composed function is called first, and its result is then
+     * exponentiated.
+     * @param inner    the function to compose
+     * @param exponent the exponent for this function
+     * @param rtnType  the return type for this function
+     */
     public Pow(UnaryFunction<? super T, T> inner, Numeric exponent, Class<R> rtnType) {
         this(inner.expectedArguments()[0], exponent, rtnType);
         composedFunction = inner;
@@ -148,6 +181,10 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         }
     }
 
+    /**
+     * Obtain the exponent of this function.
+     * @return the exponent
+     */
     public Numeric getExponent() {
         return exponent;
     }
@@ -294,7 +331,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public int hashCode() {
-        return Objects.hash(exponent, outputClazz);
+        return Objects.hash(getArgumentName(), exponent, outputClazz);
     }
 
     @Override
