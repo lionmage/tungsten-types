@@ -48,7 +48,7 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
         if (checkArguments(arguments)) {
             RealType x = arguments.hasVariableName(getArgumentName()) ?
                     arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
-            RealType diff = (RealType) x.subtract(scope.getLowerBound()); // x - x0
+            RealType diff = (RealType) x.subtract(scope.getLowerBound()); // x - x₀
             return (RealType) a.add(b.multiply(diff))
                     .add(c.multiply(MathUtils.computeIntegerExponent(diff, 2)))
                     .add(d.multiply(MathUtils.computeIntegerExponent(diff, 3)));
@@ -80,7 +80,8 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CubicSpline2D{");
+        final StringBuilder sb = new StringBuilder();
+        sb.append("CubicSpline2D{");
         sb.append("a=").append(a);
         sb.append(", b=").append(b);
         sb.append(", c=").append(c);

@@ -51,6 +51,12 @@ import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * The cosine function for real-valued inputs.
+ * This implementation has a set of pre-computed values for
+ * certain magic angles, and is treated as periodic.  Aside from a table of fixed
+ * values, this function delegates to {@link MathUtils#cos(RealType)}.
+ */
 public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType>, Periodic {
     private final MathContext mctx;
     private final Range<RealType> internalRange;

@@ -52,7 +52,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A function that implements sin(x) for real-valued inputs.
+ * A function that implements sine for real-valued inputs.
+ * This implementation has a set of pre-computed values for
+ * certain magic angles, and is treated as periodic.  Aside from a table of fixed
+ * values, this function delegates to {@link MathUtils#sin(RealType)}.
  */
 public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType>, Periodic {
     private final MathContext mctx;
