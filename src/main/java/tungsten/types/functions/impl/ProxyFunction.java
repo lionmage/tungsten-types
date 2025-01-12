@@ -30,7 +30,6 @@ import static tungsten.types.util.MathUtils.Re;
  */
 public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
     private final Class<R> outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
-    private final Range<T> epsilonRange;
     private final Map<T, R> valueMap;
     private final T epsilon;
 
@@ -44,6 +43,7 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
      */
     public ProxyFunction(String argName, Map<T, R> source, T epsilon) {
         super(argName);
+        Range<T> epsilonRange;
         try {
             Class<T> inputClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(0);
             epsilonRange = new Range<>((T) ExactZero.getInstance(epsilon.getMathContext()).coerceTo(inputClazz),
