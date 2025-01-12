@@ -18,14 +18,29 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A function that implements tangent for real-valued inputs.
+ * This function delegates to {@link MathUtils#tan(RealType)} for
+ * calculation, and delegates to {@link Quotient} for
+ * computing a derivative and for the purposes of composition.
+ */
 public class Tan extends Quotient<RealType, RealType> implements Periodic {
     private final MathContext mctx;
 
+    /**
+     * Constructor that takes a variable name and a {@code MathContext}.
+     * @param argName the variable name
+     * @param mctx    a {@code MathContext} that determines accuracy
+     */
     public Tan(String argName, MathContext mctx) {
         super(argName, new Sin(argName, mctx), new Cos(argName, mctx));
         this.mctx = mctx;
     }
 
+    /**
+     * Constructor that takes a {@code MathContext}.
+     * @param mctx the {@code MathContext} governing accuracy
+     */
     public Tan(MathContext mctx) {
         this(MathUtils.THETA, mctx);
     }

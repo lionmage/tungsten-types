@@ -282,6 +282,6 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
 
     @Override
     public int hashCode() {
-        return Objects.hash(mctx, getArgumentName());
+        return Objects.hash(super.hashCode(), mctx, getArgumentName());
     }
 }
