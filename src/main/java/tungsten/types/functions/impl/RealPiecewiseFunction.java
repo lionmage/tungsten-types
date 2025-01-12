@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * A real-valued piecewise function.  The {@code epsilon} argument serves two functions:
+ * A real-valued piecewise function.  The {@code epsilon} argument serves two purposes:
  * to support differentiation, and to be used in smoothing transitions between functions.
  * For {@link SmoothingType#SIGMOID}, the {@code alpha} parameter can override this.
  */
@@ -52,21 +52,44 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
     List<Range<RealType>> transitionZones = Collections.emptyList();
     List<Sigmoid> sigmoids = Collections.emptyList();
 
+    /**
+     * Given a variable name and an &#x1D700; value, create an unpopulated
+     * real-valued piecewise function.
+     * @param argName the variable name, the argument to this function
+     * @param epsilon the &#x1D700; value
+     */
     public RealPiecewiseFunction(String argName, RealType epsilon) {
         super(argName);
         this.epsilon = epsilon;
     }
 
+    /**
+     * Construct a real-valued piecewise function given an &#x1D700; value.
+     * @param epsilon the &#x1D700; value to use
+     */
     public RealPiecewiseFunction(RealType epsilon) {
         super();
         this.epsilon = epsilon;
     }
 
+    /**
+     * Given a variable name, an &#x1D700; value, and a smoothing type, construct an empty
+     * real-valued piecewise function.
+     * @param argName   the variable name that represents this function's argument
+     * @param epsilon   the &#x1D700; value to apply
+     * @param smoothing the type of smoothing to apply to this function
+     */
     public RealPiecewiseFunction(String argName, RealType epsilon, SmoothingType smoothing) {
         this(argName, epsilon);
         this.smoothing = smoothing;
     }
 
+    /**
+     * Given an &#x1D700; value and a smoothing type, construct an empty
+     * real-valued piecewise function.
+     * @param epsilon   the &#x1D700; value to apply
+     * @param smoothing the type of smoothing to apply to this function
+     */
     public RealPiecewiseFunction(RealType epsilon, SmoothingType smoothing) {
         this(epsilon);
         this.smoothing = smoothing;
@@ -120,8 +143,8 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         if (smoothing != SmoothingType.SIGMOID) {
             // I originally intended to throw an IllegalStateException here, but alpha can be
             // useful for swamping epsilon, so a warning will suffice for now.
-            Logger.getLogger(RealPiecewiseFunction.class.getName())
-                    .warning("Alpha value mainly applies when smoothing = SIGMOID; currently smoothing = " + smoothing);
+            Logger.getLogger(RealPiecewiseFunction.class.getName()).log(Level.WARNING,
+                    "Alpha value mainly applies when smoothing = SIGMOID; currently smoothing = {0}.", smoothing);
         }
         if (alpha.sign() != Sign.POSITIVE) {
             throw new IllegalArgumentException("Alpha must be a positive value.");
@@ -150,12 +173,12 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         boolean hasChanged = smoothing != this.smoothing;
         this.smoothing = smoothing;
         if (alpha != null && smoothing == SmoothingType.SIGMOID) {
-            Logger.getLogger(RealPiecewiseFunction.class.getName())
-                    .warning("Potential stale \uD835\uDEFC value: " + alpha);
+            Logger.getLogger(RealPiecewiseFunction.class.getName()).log(Level.WARNING,
+                    "Potential stale \uD835\uDEFC value: {0}", alpha);
         }
         if (hasChanged && smoothing != SmoothingType.NONE) {
-            Logger.getLogger(RealPiecewiseFunction.class.getName())
-                            .info("Computing transition zones for smoothing type " + smoothing);
+            Logger.getLogger(RealPiecewiseFunction.class.getName()).log(Level.INFO,
+                    "Computing transition zones for smoothing type {0}.", smoothing);
             computeTransitionZones();
         }
     }
@@ -227,8 +250,8 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         });
 
         if (!result.checkAggregateBounds()) {
-            Logger.getLogger(RealPiecewiseFunction.class.getName()).log(Level.WARNING,
-                    "Bounds check failed for derived piecewise function.");
+            Logger.getLogger(RealPiecewiseFunction.class.getName())
+                    .warning("Bounds check failed for derived piecewise function.");
         }
         return result;
     }

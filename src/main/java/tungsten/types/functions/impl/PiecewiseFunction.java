@@ -13,18 +13,42 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * A piecewise function that contains other functions, each of which has a specific range
+ * of application.  The function does range checking so that coincident ranges are not
+ * allowed.  Ideally, all ranges are contiguous, though points of singularity are allowed.
+ * Two adjacent ranges which both have {@link tungsten.types.Range.BoundType#EXCLUSIVE}
+ * at their shared bound would mean that bound is considered a singularity.
+ * @param <T> the input type for this function
+ * @param <R> the return type for this function
+ */
 public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
     private final Map<Range<T>, UnaryFunction<T, R>> internalMap = new HashMap<>();
     private boolean boundsChecked = false;
 
+    /**
+     * Default constructor.  This will create an empty piecewise function
+     * with a variable name of &ldquo;x&rdquo;.
+     */
     public PiecewiseFunction() {
         super("x");
     }
 
+    /**
+     * Constructor which takes a variable name.
+     * @param argName the name of the argument to this piecewise function
+     */
     public PiecewiseFunction(String argName) {
         super(argName);
     }
 
+    /**
+     * Append a function that will be evaluated over any input values
+     * that fall within the given range.
+     * @param range the {@code Range} over which the function is valid
+     * @param func  the function that is applied for values within {@code range}
+     * @throws IllegalArgumentException if any existing function's range contains {@code range}
+     */
     public void addFunctionForRange(Range<T> range, UnaryFunction<T, R> func) {
         if (internalMap.keySet().parallelStream().anyMatch(r -> r.contains(range))) {
             throw new IllegalArgumentException("Range " + range + " is a subset of an existing range");
@@ -101,6 +125,10 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
         }
     }
 
+    /**
+     * Obtain a read-only view of the internal map of ranges to their functions.
+     * @return an unmodifiable {@code Map<Range, UnaryFunction>}
+     */
     protected Map<Range<T>, UnaryFunction<T, R>> viewOfFunctionMap() {
         return Collections.unmodifiableMap(internalMap);
     }
