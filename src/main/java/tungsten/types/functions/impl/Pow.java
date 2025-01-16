@@ -62,7 +62,10 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     /**
      * Constructor which takes a {@code long} exponent.
      * @param n the exponent
+     * @deprecated Since {@link ClassTools#getTypeArguments(Class, Class)} is unreliable,
+     *   it is recommended to use {@link #Pow(long, Class)} instead.
      */
+    @Deprecated(since = "0.6")
     public Pow(long n) {
         super("x");
         exponent = new IntegerImpl(BigInteger.valueOf(n));
@@ -83,7 +86,10 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     /**
      * Constructor which takes a {@code RationalType} exponent.
      * @param rationalExponent the exponent
+     * @deprecated Since {@link ClassTools#getTypeArguments(Class, Class)} is unreliable,
+     *   it is recommended to use {@link #Pow(RationalType, Class)} instead.
      */
+    @Deprecated(since = "0.6")
     public Pow(RationalType rationalExponent) {
         super("x");
         if (rationalExponent.isCoercibleTo(IntegerType.class)) {
@@ -264,9 +270,9 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             // create a new instance of Pow with a merged exponent
             Pow<? super T, R> pow;
             if (expProd instanceof RationalType) {
-                pow = new Pow<>((RationalType) expProd);
+                pow = new Pow<>((RationalType) expProd, outputClazz);
             } else {
-                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
+                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact(), outputClazz);
             }
             return pow;
         }
@@ -292,9 +298,9 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             // create a new instance of Pow with a merged exponent
             Pow<T, R2> pow;
             if (expProd instanceof RationalType) {
-                pow = new Pow<>((RationalType) expProd);
+                pow = new Pow<>((RationalType) expProd, myOutputClazz);
             } else {
-                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact());
+                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact(), myOutputClazz);
             }
             return pow;
         } else if (NaturalLog.class.isAssignableFrom(after.getClass())) {
