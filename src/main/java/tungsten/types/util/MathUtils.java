@@ -1299,6 +1299,11 @@ public class MathUtils {
      * @return the natural logarithm of {@code x}
      */
     public static RealType ln(RealType x, MathContext mctx) {
+        if (x instanceof ContinuedFraction) {
+            ContinuedFraction result = log((ContinuedFraction) x, ContinuedFraction.euler(mctx));
+            result.setMathContext(mctx);
+            return result;
+        }
         if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) {
             return new RealImpl(BigDecimal.ZERO, mctx, x.isExact());
         }
@@ -1448,6 +1453,12 @@ public class MathUtils {
      * @return the logarithm of {@code x} in {@code base}
      */
     public static RealType log(RealType x, RealType base, MathContext mctx) {
+        if (x instanceof ContinuedFraction) {
+            // if base is already a continued fraction, this will just perform a shallow copy
+            ContinuedFraction result = log((ContinuedFraction) x, new ContinuedFraction(base));
+            result.setMathContext(mctx);
+            return result;
+        }
         final RealType one = new RealImpl(BigDecimal.ONE, mctx);
         if (base.compareTo(one) <= 0) throw new ArithmeticException("Cannot compute log with base " + base);
         if (x.equals(base)) return one;
@@ -1455,6 +1466,44 @@ public class MathUtils {
         // determined that you need at least 8 extra decimal places to get a value that rounds correctly
         // otherwise, you get things like log₂(1024) = 9.9999... instead of 10.0
         return round((RealType) ln(x, compCtx).divide(ln(base, compCtx)), mctx);
+    }
+
+    /**
+     * Compute the general logarithm log<sub>b</sub>(x) for continued
+     * fractions <em>x</em> and <em>b</em>.  Note: callers should supply
+     * a {@code MathContext} for the result.
+     * @param x    the continued fraction for which we wish to take a logarithm
+     * @param base the base of the logarithm, also expressed as a continued fraction
+     * @return the logarithm of {@code x} in {@code base} in the form of a continued fraction
+     * @since 0.6
+     * @see <a href="https://medium.com/@omer.kasdarma/the-curious-world-of-simple-continued-fractions-part-iii-the-logarithm-48b09fc09d76">
+     *     The Curious World of Simple Continued Fractions — Part III: The Logarithm</a> by Ömer Kaşdarma
+     */
+    public static ContinuedFraction log(ContinuedFraction x, ContinuedFraction base) {
+        final ContinuedFraction one = new ContinuedFraction(1L);
+        List<Long> logTerms = new ArrayList<>();
+        ContinuedFraction b = base;
+        ContinuedFraction n = x;
+        while (b.compareTo(one) > 0) {
+            long count = 0L;
+            while (n.compareTo(b) >= 0) {
+                Iterator<Long> quotient = GosperTermIterator.divide(n.iterator(), b.iterator());
+                n = new ContinuedFraction(quotient, 5);
+                count++;
+            }
+            logTerms.add(count);
+            // swap n and b, then continue reduction by division
+            var temp = n;
+            n = b;
+            b = temp;
+        }
+
+        return new ContinuedFraction(logTerms) {
+            @Override
+            public boolean isExact() {
+                return false;
+            }
+        };
     }
 
     /**
