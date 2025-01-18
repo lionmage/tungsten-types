@@ -143,6 +143,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     private static final List<Class<? extends Numeric>> supportedExponentTypes =
             List.of(IntegerType.class, RationalType.class);
 
+    @Deprecated(since = "0.6")
     protected Pow(String argName, Numeric exponent) {
         super(argName);
         if (supportedExponentTypes.stream().noneMatch(t -> t.isAssignableFrom(exponent.getClass()))) {
