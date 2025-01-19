@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import tungsten.types.Numeric;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.ANSITextEffects;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -167,5 +168,33 @@ public class ContinuedFractionTest {
         int diffpos = ANSITextEffects.findFirstDifference(reduced, decString);
         System.out.println("With highlighted digits: " +
                 ANSITextEffects.highlightSelection(decString, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_YELLOW));
+    }
+
+    @Test
+    public void logarithms() {
+        ContinuedFraction cf1 = new ContinuedFraction(5L, 5L);  // 5.2
+        cf1.setMathContext(MathContext.DECIMAL128);
+
+        final ContinuedFraction two = new ContinuedFraction(2L);
+        two.setMathContext(MathContext.DECIMAL128);
+
+        ContinuedFraction lg = MathUtils.log(cf1, two);
+        System.out.println("CF for log\u2082 of " + cf1 + " is " + lg);
+        lg.setMathContext(MathContext.DECIMAL128);
+        final String lgExpected = "2.37851162325373";  // to 15 decimal places
+        String lgComputed = lg.asBigDecimal().toPlainString();
+        int lgDiff = ANSITextEffects.findFirstDifference(lgExpected, lgComputed);
+        assertTrue(lgDiff > 14);
+        System.out.println("lg(5.2): " +
+                ANSITextEffects.highlightSelection(lgComputed, 0, lgDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_GREEN));
+
+        ContinuedFraction ln = MathUtils.log(cf1, ContinuedFraction.euler(MathContext.DECIMAL128));
+        ln.setMathContext(MathContext.DECIMAL128);
+        final String lnExpected = "1.648658625587382";  // to 15 decimal places
+        String lnComputed = ln.asBigDecimal().toPlainString();
+        int lnDiff = ANSITextEffects.findFirstDifference(lnExpected, lnComputed);
+        assertTrue(lnDiff > 14);
+        System.out.println("ln(5.2): " +
+                ANSITextEffects.highlightSelection(lnComputed, 0, lnDiff, ANSITextEffects.Effect.ITALIC, ANSITextEffects.Effect.BG_YELLOW));
     }
 }
