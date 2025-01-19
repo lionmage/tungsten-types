@@ -1487,10 +1487,17 @@ public class MathUtils {
         while (b.compareTo(one) > 0) {
             long count = 0L;
             while (n.compareTo(b) >= 0) {
+                if (candidateForBailout(n, 5)) {
+                    Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                            "At iteration {0}: n = {1}; b = {2}",
+                            new Object[] { count + 1L, n, b });
+                    break;
+                }
                 Iterator<Long> quotient = GosperTermIterator.divide(n.iterator(), b.iterator());
                 n = new ContinuedFraction(quotient, 5);
                 count++;
             }
+            if (count == 0L && !logTerms.isEmpty()) break;
             logTerms.add(count);
             // swap n and b, then continue reduction by division
             var temp = n;
@@ -1504,6 +1511,11 @@ public class MathUtils {
                 return false;
             }
         };
+    }
+
+    private static boolean candidateForBailout(ContinuedFraction cf, int limit) {
+        return StreamSupport.stream(cf.spliterator(), false).skip(1L).limit(limit)
+                .anyMatch(term -> term == null || term < 0L);
     }
 
     /**
