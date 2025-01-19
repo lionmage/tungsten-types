@@ -1480,6 +1480,8 @@ public class MathUtils {
      *     The Curious World of Simple Continued Fractions — Part III: The Logarithm</a> by Ömer Kaşdarma
      */
     public static ContinuedFraction log(ContinuedFraction x, ContinuedFraction base) {
+        if (x.sign() == Sign.NEGATIVE) throw new ArithmeticException("Cannot compute log of " + x);
+
         final ContinuedFraction one = new ContinuedFraction(1L);
         List<Long> logTerms = new ArrayList<>();
         ContinuedFraction b = base;
