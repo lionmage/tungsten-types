@@ -196,5 +196,17 @@ public class ContinuedFractionTest {
         assertTrue(lnDiff > 14);
         System.out.println("ln(5.2): " +
                 ANSITextEffects.highlightSelection(lnComputed, 0, lnDiff, ANSITextEffects.Effect.ITALIC, ANSITextEffects.Effect.BG_YELLOW));
+
+        ContinuedFraction thousandth = new ContinuedFraction(0L, 1000L);  // 0.001
+        thousandth.setMathContext(MathContext.DECIMAL128);
+        final String thouExpected = "-6.907755278982137";
+        ContinuedFraction thouLG = MathUtils.log(thousandth, ContinuedFraction.euler(MathContext.DECIMAL128));
+        thouLG.setMathContext(MathContext.DECIMAL128);
+        assertEquals(-7L, thouLG.termAt(0L));
+        String thouComputed = thouLG.asBigDecimal().toPlainString();
+        int thouDiff = ANSITextEffects.findFirstDifference(thouExpected, thouComputed);
+        assertTrue(thouDiff > 14);
+        System.out.println("ln(0.001): " +
+                ANSITextEffects.highlightSelection(thouComputed, 0, thouDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
     }
 }

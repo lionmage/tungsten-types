@@ -1488,16 +1488,25 @@ public class MathUtils {
         ContinuedFraction n = x;
         while (b.compareTo(one) > 0) {
             long count = 0L;
-            while (n.compareTo(b) >= 0) {
-                if (candidateForBailout(n, 5)) {
-                    Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
-                            "At iteration {0}: n = {1}; b = {2}",
-                            new Object[] { count + 1L, n, b });
-                    break;
+            if (n.compareTo(one) < 0 && logTerms.isEmpty()) {
+                // x is in the range (0, 1] so we have a negative logarithm
+                while (n.compareTo(one) < 0) {
+                    Iterator<Long> product = GosperTermIterator.multiply(n.iterator(), b.iterator());
+                    n = new ContinuedFraction(product, 5);
+                    count--;
                 }
-                Iterator<Long> quotient = GosperTermIterator.divide(n.iterator(), b.iterator());
-                n = new ContinuedFraction(quotient, 5);
-                count++;
+            } else {
+                while (n.compareTo(b) >= 0) {
+                    if (candidateForBailout(n, 5)) {
+                        Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                                "At iteration {0}: n = {1}; b = {2}",
+                                new Object[]{count + 1L, n, b});
+                        break;
+                    }
+                    Iterator<Long> quotient = GosperTermIterator.divide(n.iterator(), b.iterator());
+                    n = new ContinuedFraction(quotient, 5);
+                    count++;
+                }
             }
             if (count == 0L && !logTerms.isEmpty()) break;
             logTerms.add(count);
