@@ -101,7 +101,7 @@ public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>
      * @return a Taylor polynomial with {@code n} terms
      */
     public TaylorPolynomial<T, R> getForNTerms(long n) {
-        if (n < countTerms() - 1) {
+        if (n < countTerms() - 1L) {
             return firstN(n);
         }
         for (long i = countTerms(); i <= n; i++) {
