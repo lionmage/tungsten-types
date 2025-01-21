@@ -21,13 +21,13 @@ public class Reflexive<T extends Numeric> extends UnaryFunction<T, T> {
     final Class<T> clazz;
 
     public Reflexive(String argName, Range<RealType> range, Class<T> forClass) {
-        super(argName);
+        super(argName, forClass);
         this.range = range;
         this.clazz = forClass;
     }
 
     public Reflexive(Class<T> forClass) {
-        super("x");
+        super("x", forClass);
         this.clazz = forClass;
         this.range = RangeUtils.ALL_REALS;
     }
@@ -64,6 +64,11 @@ public class Reflexive<T extends Numeric> extends UnaryFunction<T, T> {
     public Range<RealType> inputRange(String argName) {
         if (range == null) return RangeUtils.ALL_REALS;
         return range;
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        return clazz;
     }
 
     @Override

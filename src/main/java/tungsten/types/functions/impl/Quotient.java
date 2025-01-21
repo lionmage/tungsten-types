@@ -43,12 +43,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
-    private final Class<R> outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
     private final UnaryFunction<T, R> numerator;
     private final UnaryFunction<T, R> denominator;
 
     public Quotient(String argName, UnaryFunction<T, R> numerator, UnaryFunction<T, R> denominator) {
-        super(argName);
+        super(argName, numerator.getReturnType());
         String numArg = numerator.expectedArguments()[0];
         if (!numArg.equals(argName)) {
             Logger.getLogger(Quotient.class.getName()).log(Level.WARNING,
@@ -75,7 +74,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
         if (Zero.isZero(denomResult)) throw new ArithmeticException("Divide by zero encountered");
         R numResult = numerator.apply(arguments);
         try {
-            return (R) numResult.divide(denomResult).coerceTo(outputClazz);
+            return (R) numResult.divide(denomResult).coerceTo(getReturnType());
         } catch (CoercionException e) {
             throw new IllegalStateException(e);
         }
@@ -100,13 +99,13 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
                 Const<? super RealType, RealType> numEq = Const.getConstEquivalent(numerator);
                 Const<? super RealType, RealType> denEq = Const.getConstEquivalent(denominator);
                 if (Zero.isZero(denEq.inspect())) throw new ArithmeticException("Division by zero while reducing quotient");
-                R qVal = (R) numEq.inspect().divide(denEq.inspect()).coerceTo(outputClazz);
+                R qVal = (R) numEq.inspect().divide(denEq.inspect()).coerceTo(getReturnType());
                 return Const.getInstance(qVal);
             }
             if (numIsConst) {
                 Const<? super RealType, RealType> equiv = Const.getConstEquivalent(numerator);
-                if (One.isUnity(equiv.inspect())) return denominator.andThen(new Pow<>(-1L));
-                R eqInR = (R) equiv.inspect().coerceTo(outputClazz);
+                if (One.isUnity(equiv.inspect())) return denominator.andThen(new Pow<>(-1L, getReturnType()));
+                R eqInR = (R) equiv.inspect().coerceTo(getReturnType());
                 if (Zero.isZero(eqInR)) return Const.getInstance(eqInR);
                 return new Quotient<>(getArgumentName(), Const.getInstance(eqInR), denominator);
             }
@@ -114,7 +113,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
                 Const<? super RealType, RealType> equiv = Const.getConstEquivalent(denominator);
                 if (One.isUnity(equiv.inspect())) return numerator;
                 if (Zero.isZero(equiv.inspect())) throw new ArithmeticException("Denominator of quotient reduces to zero");
-                R eqInR = (R) equiv.inspect().inverse().coerceTo(outputClazz); // take the inverse so we can generate a product
+                R eqInR = (R) equiv.inspect().inverse().coerceTo(getReturnType()); // take the inverse so we can generate a product
                 return new Product<>(getArgumentName(), Const.getInstance(eqInR), numerator);
             }
         } catch (CoercionException e) {
@@ -124,11 +123,11 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
             Numeric numExponent = ((Pow<T, R>) numerator).getExponent();
             Numeric denomExponent = ((Pow<T, R>) denominator).getExponent();
             Numeric diffExponent = numExponent.subtract(denomExponent);
-            if (Zero.isZero(diffExponent)) return Const.getInstance(OptionalOperations.dynamicInstantiate(outputClazz, "1"));
+            if (Zero.isZero(diffExponent)) return Const.getInstance(OptionalOperations.dynamicInstantiate(getReturnType(), "1"));
             if (diffExponent instanceof IntegerType) {
-                return new Pow<>(((IntegerType) diffExponent).asBigInteger().longValueExact());
+                return new Pow<>(((IntegerType) diffExponent).asBigInteger().longValueExact(), getReturnType());
             }
-            return new Pow<>((RationalType) diffExponent);
+            return new Pow<>((RationalType) diffExponent, getReturnType());
         }
 
         // If all else fails, return this
@@ -152,11 +151,27 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
     }
 
     @Override
+    public Class<T> getArgumentType() {
+        Class<T> clazz = numerator.getArgumentType();
+        if (clazz == null) clazz = denominator.getArgumentType();
+        if (clazz == null) throw new IllegalStateException("No discernible argument type");
+        if (clazz != denominator.getArgumentType()) {
+            Logger.getLogger(Quotient.class.getName()).log(Level.WARNING,
+                    "Numerator arg type = {0}, denominator arg type = {1}",
+                    new Object[] { numerator.getArgumentType().getTypeName(), denominator.getArgumentType().getTypeName() });
+            clazz = (Class<T>) OptionalOperations.findCommonType(numerator.getArgumentType(), denominator.getArgumentType());
+            Logger.getLogger(Quotient.class.getName()).log(Level.INFO,
+                    "Using common type {0}", clazz.getTypeName());
+        }
+        return clazz;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Quotient)) return false;
         Quotient<?, ?> quotient = (Quotient<?, ?>) o;
-        return Objects.equals(outputClazz, quotient.outputClazz) &&
+        return Objects.equals(getReturnType(), quotient.getReturnType()) &&
                 Objects.equals(getArgumentName(), quotient.getArgumentName()) &&
                 Objects.equals(numerator, quotient.numerator) &&
                 Objects.equals(denominator, quotient.denominator);
@@ -164,7 +179,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
 
     @Override
     public int hashCode() {
-        return Objects.hash(outputClazz, numerator, denominator, getArgumentName());
+        return Objects.hash(getReturnType(), numerator, denominator, getArgumentName());
     }
 
     @Override

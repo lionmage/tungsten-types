@@ -29,17 +29,19 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
     /**
      * Default constructor.  This will create an empty piecewise function
      * with a variable name of &ldquo;x&rdquo;.
+     * @param rtnType the return type of this piecewise function
      */
-    public PiecewiseFunction() {
-        super("x");
+    public PiecewiseFunction(Class<R> rtnType) {
+        super("x", rtnType);
     }
 
     /**
      * Constructor which takes a variable name.
      * @param argName the name of the argument to this piecewise function
+     * @param rtnType the return type of this function
      */
-    public PiecewiseFunction(String argName) {
-        super(argName);
+    public PiecewiseFunction(String argName, Class<R> rtnType) {
+        super(argName, rtnType);
     }
 
     /**
@@ -47,11 +49,15 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
      * that fall within the given range.
      * @param range the {@code Range} over which the function is valid
      * @param func  the function that is applied for values within {@code range}
-     * @throws IllegalArgumentException if any existing function's range contains {@code range}
+     * @throws IllegalArgumentException if any existing function's range contains {@code range},
+     *   or if the return type of {@code func} does not match that of this piecewise function
      */
     public void addFunctionForRange(Range<T> range, UnaryFunction<T, R> func) {
         if (internalMap.keySet().parallelStream().anyMatch(r -> r.contains(range))) {
             throw new IllegalArgumentException("Range " + range + " is a subset of an existing range");
+        }
+        if (!getReturnType().isAssignableFrom(func.getReturnType())) {
+            throw new IllegalArgumentException("Return type of function does not match " + getReturnType().getTypeName());
         }
         internalMap.put(range, func);
         boundsChecked = false;  // mappings have changed, so force a re-check before using this function again
@@ -123,6 +129,23 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
         } catch (CoercionException e) {
             throw new IllegalStateException("Could not coerce bounds to real", e);
         }
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        Iterator<UnaryFunction<T, R>> iter = internalMap.values().iterator();
+        Class<T> result = iter.next().getArgumentType();
+        while (iter.hasNext()) {
+            Class<T> toCheck = iter.next().getArgumentType();
+            if (toCheck != result) {
+                Logger.getLogger(PiecewiseFunction.class.getName()).log(Level.WARNING,
+                        "Mismatch in argument types: {0} vs. {1}",
+                        new Object[] { result.getTypeName(), toCheck.getTypeName() });
+                // prefer the superclass/superinterface
+                if (toCheck.isAssignableFrom(result)) result = toCheck;
+            }
+        }
+        return result;
     }
 
     /**

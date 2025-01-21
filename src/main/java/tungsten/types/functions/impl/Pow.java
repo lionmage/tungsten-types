@@ -56,7 +56,6 @@ import java.util.Objects;
  */
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
-    private final Class<R> outputClazz;
     private final Numeric exponent;
 
     /**
@@ -69,7 +68,6 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     public Pow(long n) {
         super("x");
         exponent = new IntegerImpl(BigInteger.valueOf(n));
-        outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     }
 
     /**
@@ -78,9 +76,8 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
      * @param rtnType the return type of this function
      */
     public Pow(long n, Class<R> rtnType) {
-        super("x");
+        super("x", rtnType);
         exponent = new IntegerImpl(BigInteger.valueOf(n));
-        outputClazz = rtnType;
     }
 
     /**
@@ -97,7 +94,6 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         } else {
             exponent = rationalExponent;
         }
-        outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     }
 
     /**
@@ -106,13 +102,12 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
      * @param rtnType          the return type of this function
      */
     public Pow(RationalType rationalExponent, Class<R> rtnType) {
-        super("x");
+        super("x", rtnType);
         if (rationalExponent.isCoercibleTo(IntegerType.class)) {
             exponent = rationalExponent.reduce().numerator();
         } else {
             exponent = rationalExponent;
         }
-        outputClazz = rtnType;
     }
 
     /**
@@ -150,16 +145,14 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             throw new IllegalArgumentException("Unsupported exponent type: " + exponent.getClass().getTypeName());
         }
         this.exponent = exponent;
-        this.outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     }
 
     protected Pow(String argName, Numeric exponent, Class<R> rtnType) {
-        super(argName);
+        super(argName, rtnType);
         if (supportedExponentTypes.stream().noneMatch(t -> t.isAssignableFrom(exponent.getClass()))) {
             throw new IllegalArgumentException("Unsupported exponent type: " + exponent.getClass().getTypeName());
         }
         this.exponent = exponent;
-        this.outputClazz = rtnType;
     }
 
     @Override
@@ -173,15 +166,15 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             final T intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
             switch (h) {
                 case COMPLEX:
-                    return (R) MathUtils.generalizedExponent((ComplexType) intermediate, exponent, ctx).coerceTo(outputClazz);
+                    return (R) MathUtils.generalizedExponent((ComplexType) intermediate, exponent, ctx).coerceTo(getReturnType());
                 case REAL:
                     if (exponent instanceof ComplexType) {
-                        return (R) MathUtils.generalizedExponent((RealType) intermediate, (ComplexType) exponent, ctx).coerceTo(outputClazz);
+                        return (R) MathUtils.generalizedExponent((RealType) intermediate, (ComplexType) exponent, ctx).coerceTo(getReturnType());
                     }
-                    return (R) MathUtils.generalizedExponent((RealType) intermediate, exponent, ctx).coerceTo(outputClazz);
+                    return (R) MathUtils.generalizedExponent((RealType) intermediate, exponent, ctx).coerceTo(getReturnType());
                 default:
                     RealType coerced = (RealType) intermediate.coerceTo(RealType.class);
-                    return (R) MathUtils.generalizedExponent(coerced, exponent, ctx).coerceTo(outputClazz);
+                    return (R) MathUtils.generalizedExponent(coerced, exponent, ctx).coerceTo(getReturnType());
             }
         } catch (CoercionException e) {
             throw new ArithmeticException("Type incompatibility while computing exponent");
@@ -225,7 +218,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         final Class<T> myArgClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
         final Numeric diffExponent = exponent.subtract(ONE);
         try {
-            final R coeff = (R) exponent.coerceTo(outputClazz);
+            final R coeff = (R) exponent.coerceTo(getReturnType());
             UnaryFunction<T, R> outerdiff;
             if (Zero.isZero(diffExponent)) outerdiff = Const.getInstance(coeff);
             else if (diffExponent instanceof RationalType) {
@@ -241,7 +234,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                     UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
                     return (UnaryFunction<T, R>) new Product<>(getArgumentName(),
                             (UnaryFunction<RealType, RealType>) outerdiff.composeWith((UnaryFunction<? super T, T>) inner),
-                            innerdiff).forReturnType(outputClazz);
+                            innerdiff).forReturnType(getReturnType());
                 } else {
                     throw new UnsupportedOperationException("Differentiation of inner function not supported for type " + myArgClazz.getTypeName());
                 }
@@ -259,21 +252,21 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             Numeric expProd = ((Pow<? super T, T>) before).getExponent().multiply(exponent);
             if (Zero.isZero(expProd)) {
                 try {
-                    return Const.getInstance((R) One.getInstance(MathContext.UNLIMITED).coerceTo(outputClazz));
+                    return Const.getInstance((R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnType()));
                 } catch (CoercionException e) {
                     throw new RuntimeException(e);
                 }
             } else if (One.isUnity(expProd)) {
                 final Class<T> myArgClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
 
-                return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, myArgClazz).forReturnType(outputClazz);
+                return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, myArgClazz).forReturnType(getReturnType());
             }
             // create a new instance of Pow with a merged exponent
             Pow<? super T, R> pow;
             if (expProd instanceof RationalType) {
-                pow = new Pow<>((RationalType) expProd, outputClazz);
+                pow = new Pow<>((RationalType) expProd, getReturnType());
             } else {
-                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact(), outputClazz);
+                pow = new Pow<>(((IntegerType) expProd).asBigInteger().longValueExact(), getReturnType());
             }
             return pow;
         }
@@ -282,7 +275,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
-        final Class<R2> myOutputClazz = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
+        final Class<R2> myOutputClazz = after.getReturnType();
         if (after instanceof Pow) {
             final Pow<R, R2> afterPow = (Pow<R, R2>) after;
             Numeric expProd = this.exponent.multiply(afterPow.getExponent());
@@ -323,6 +316,15 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     }
 
     @Override
+    public Class<T> getArgumentType() {
+        if (getComposedFunction().isPresent()) {
+            return getComposedFunction().get().getReturnType();
+        }
+        // the following may return null or fail altogether
+        return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+    }
+
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         getComposedFunction().ifPresentOrElse(f -> buf.append('(').append(f).append(')'),
@@ -338,15 +340,15 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public int hashCode() {
-        return Objects.hash(getArgumentName(), exponent, outputClazz);
+        return Objects.hash(getArgumentName(), exponent, getReturnType());
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Pow) {
-            Class<? extends Numeric> otherReturnType = ((Pow<?, ?>) obj).outputClazz;
-            if (otherReturnType != null && this.outputClazz != null) {
-                if (!outputClazz.isAssignableFrom(otherReturnType)) return false;
+            Class<? extends Numeric> otherReturnType = ((Pow<?, ?>) obj).getReturnType();
+            if (otherReturnType != null && this.getReturnType() != null) {
+                if (!getReturnType().isAssignableFrom(otherReturnType)) return false;
             }
             Numeric otherExponent = ((Pow<?, ?>) obj).getExponent();
             return this.exponent.equals(otherExponent);

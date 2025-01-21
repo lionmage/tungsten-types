@@ -56,23 +56,22 @@ import java.util.stream.Stream;
  *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
-    private final Class<R> resultClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     private final List<UnaryFunction<T, R>> terms = new ArrayList<>();
 
-    public Sum(String argName) {
-        super(argName);
+    public Sum(String argName, Class<R> rtnType) {
+        super(argName, rtnType);
     }
 
     @SafeVarargs
     public Sum(UnaryFunction<T, R>... sumOf) {
-        super("x");
+        super("x", sumOf[0].getReturnType());
         Arrays.stream(sumOf).filter(f -> !(f instanceof Const)).forEach(terms::add);
         // combine all const terms into one
         try {
             R sumOfConstants = (R) Arrays.stream(sumOf).filter(Const.class::isInstance)
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add)
-                    .coerceTo(resultClass);
+                    .coerceTo(getReturnType());
             if (!Zero.isZero(sumOfConstants)) terms.add(Const.getInstance(sumOfConstants));
         } catch (CoercionException e) {
             throw new IllegalArgumentException("Constant sum cannot be coerced to function return type", e);
@@ -100,7 +99,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         final String argName1 = first.expectedArguments()[0];
         final String argName2 = second.expectedArguments()[0];
         String argName = argName1.equals(argName2) ? argName1 : "x";
-        Sum<T, R> sum = new Sum<>(argName);
+        Sum<T, R> sum = new Sum<>(argName, first.getReturnType());
         sum.appendTerm(first);
         sum.appendTerm(second);
         return sum;
@@ -118,7 +117,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 R sumOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
                         .reduce(cterm.inspect(), Numeric::add)
-                        .coerceTo(resultClass);
+                        .coerceTo(getReturnType());
                 terms.removeIf(Const.class::isInstance);
                 if (!Zero.isZero(sumOfConstants)) terms.add(Const.getInstance(sumOfConstants));
             } catch (CoercionException e) {
@@ -143,14 +142,14 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
      */
     public static <T extends Numeric, R extends Numeric> Sum<T, R> combineTerms(Sum<T, R> s1, Sum<T, R> s2) {
         final String argName = s1.getArgumentName().equals(s2.getArgumentName()) ? s1.getArgumentName() : "x";
-        Sum<T, R> s3 = new Sum<>(argName);
+        Sum<T, R> s3 = new Sum<>(argName, s1.getReturnType());
         s3.terms.addAll(s1.terms);
         s3.terms.addAll(s2.terms);
         try {
             R sumOfConstants = (R) s3.parallelStream().filter(Const.class::isInstance)
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add)
-                    .coerceTo(s1.resultClass);
+                    .coerceTo(s1.getReturnType());
             s3.terms.removeIf(Const.class::isInstance);
             if (!Zero.isZero(sumOfConstants)) s3.terms.add(Const.getInstance(sumOfConstants));
         } catch (CoercionException e) {
@@ -185,7 +184,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                     new Object[] {combinerMap.size(), terms.size()});
             List<UnaryFunction<T, R>> combinedTerms = new ArrayList<>();
             combinerMap.keySet().forEach(idx -> {
-                R coeff = OptionalOperations.dynamicInstantiate(resultClass, combinerMap.get(idx).size() + 1);
+                R coeff = OptionalOperations.dynamicInstantiate(getReturnType(), combinerMap.get(idx).size() + 1);
                 // coeff could theoretically be 1 if the combiner map entry has an empty list,
                 // but that means something broke -- so fail fast
                 if (One.isUnity(coeff)) throw new IllegalStateException("Fatal error combining terms");
@@ -204,7 +203,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             Logger.getLogger(Sum.class.getName()).log(Level.INFO,
                     "Found {0} unexpanded Sum terms out of {1} \u2014 flattening.",
                     new Object[] { stream().filter(Sum.class::isInstance).count(), terms.size() });
-            Sum<T, R> flattened = new Sum<>(getArgumentName());
+            Sum<T, R> flattened = new Sum<>(getArgumentName(), getReturnType());
             stream().forEach(flattened::appendTerm);  // letting appendTerm() do all the hard work here
             return flattened;
         }
@@ -227,9 +226,9 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         try {
             return (R) terms.parallelStream().map(f -> f.apply(arguments))
                     .map(Numeric.class::cast)
-                    .reduce(ExactZero.getInstance(ctx), Numeric::add).coerceTo(resultClass);
+                    .reduce(ExactZero.getInstance(ctx), Numeric::add).coerceTo(getReturnType());
         } catch (CoercionException e) {
-            throw new IllegalStateException("Unable to coerce result to " + resultClass.getTypeName() +
+            throw new IllegalStateException("Unable to coerce result to " + getReturnType().getTypeName() +
                     " for the given arguments " + arguments, e);
         }
     }
@@ -238,6 +237,22 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     public Range<RealType> inputRange(String argName) {
         return terms.parallelStream().map(f -> f.inputRange(argName))
                 .reduce(RangeUtils.ALL_REALS, Range::chooseNarrowest);
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        Iterator<UnaryFunction<T, R>> iter = terms.iterator();
+        Class<T> result = iter.next().getArgumentType();
+        while (iter.hasNext()) {
+            Class<T> altArgType = iter.next().getArgumentType();
+            if (altArgType != result) {
+                Logger.getLogger(Product.class.getName()).log(Level.WARNING,
+                        "Mismatched arg types: {0} vs. {1}",
+                        new Object[] { altArgType.getTypeName(), result.getTypeName() });
+                if (altArgType.isAssignableFrom(result)) result = altArgType;
+            }
+        }
+        return result;
     }
 
     /**
@@ -268,7 +283,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public int hashCode() {
-        return Objects.hash(getArgumentName(), terms, resultClass);
+        return Objects.hash(getArgumentName(), terms, getReturnType());
     }
 
     @Override
@@ -277,7 +292,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             Sum<?, ?> other = (Sum<?, ?>) obj;
             if (!getArgumentName().equals(other.getArgumentName())) return false;
             if (termCount() != other.termCount()) return false;
-            if (!resultClass.isAssignableFrom(other.resultClass)) return false;
+            if (!getReturnType().isAssignableFrom(other.getReturnType())) return false;
             return parallelStream().allMatch(other.terms::contains);
         }
         return false;

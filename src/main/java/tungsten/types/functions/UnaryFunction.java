@@ -43,7 +43,14 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     protected UnaryFunction<R, ? extends R> composingFunction;
     private UnaryFunction<T, R> originalFunction;
 
+    @Deprecated(since = "0.6")
     protected UnaryFunction(String varName) {
+        super((Class<R>) ClassTools.getTypeArguments(NumericFunction.class, UnaryFunction.class).get(1));
+        this.argumentName = varName;
+    }
+
+    protected UnaryFunction(String varName, Class<R> rtnType) {
+        super(rtnType);
         this.argumentName = varName;
     }
 
@@ -86,7 +93,7 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
      * @return a new function that is the composition of {@code this} with {@code before}
      */
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
-        return new UnaryFunction<>(before.argumentName) {
+        return new UnaryFunction<>(before.argumentName, getReturnType()) {
             {
                 originalFunction = UnaryFunction.this;
                 composedFunction = before;
@@ -111,6 +118,11 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             public Range<RealType> inputRange(String argName) {
                 return before.inputRange(argName);
             }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return UnaryFunction.this.getArgumentType();
+            }
         };
     }
 
@@ -128,9 +140,9 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
     }
 
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
-        final Class<R2> rtnClass = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
+        final Class<R2> rtnClass = after.getReturnType();
 
-        return new UnaryFunction<>(UnaryFunction.this.argumentName) {
+        return new UnaryFunction<>(UnaryFunction.this.argumentName, rtnClass) {
             {
                 originalFunction = UnaryFunction.this;
                 // TODO see if we can do this a better way
@@ -158,6 +170,11 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
                 }
                 return originalFunction.inputRange(originalFunction.argumentName);
             }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return UnaryFunction.this.getArgumentType();
+            }
         };
     }
 
@@ -179,13 +196,13 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
 
     @Override
     public <R2 extends Numeric> UnaryFunction<T, R2> forReturnType(Class<R2> clazz) {
-        final Class<R> rtnClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
+        final Class<R> rtnClass = getReturnType();
         if (rtnClass != null && (clazz == rtnClass || clazz.isAssignableFrom(rtnClass))) {
             // R and R2 are the same, or R2 is a supertype of R
             return (UnaryFunction<T, R2>) this;
         }
 
-        return new UnaryFunction<>(argumentName) {
+        return new UnaryFunction<>(argumentName, clazz) {
             @Override
             public R2 apply(ArgVector<T> arguments) {
                 try {
@@ -199,6 +216,11 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             @Override
             public Range<RealType> inputRange(String argName) {
                 return UnaryFunction.this.inputRange(argName);
+            }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return UnaryFunction.this.getArgumentType();
             }
         };
     }

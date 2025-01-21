@@ -42,6 +42,8 @@ import tungsten.types.util.RangeUtils;
 
 import java.math.MathContext;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,17 +57,16 @@ import java.util.stream.Stream;
  * @param <R> the output parameter type
  */
 public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Simplifiable {
-    private final Class<R> resultClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(1);
     private final List<UnaryFunction<T, R>> terms = new ArrayList<>();
 
 
-    public Product(String argName) {
-        super(argName);
+    public Product(String argName, Class<R> rtnType) {
+        super(argName, rtnType);
     }
 
     @SafeVarargs
     public Product(UnaryFunction<T, R>... productOf) {
-        super("x");
+        super("x", productOf[0].getReturnType());
         Arrays.stream(productOf).filter(Product.class::isInstance).forEach(this::appendTerm);
         Arrays.stream(productOf).filter(f -> !(f instanceof Product)).filter(f -> !(f instanceof Const)).forEach(terms::add);
         // combine all const terms into one
@@ -73,7 +74,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             R prodOfConstants = (R) Arrays.stream(productOf).filter(Const.class::isInstance)
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply)
-                    .coerceTo(resultClass);
+                    .coerceTo(getReturnType());
             if (!One.isUnity(prodOfConstants)) terms.add(Const.getInstance(prodOfConstants));
         } catch (CoercionException e) {
             throw new IllegalArgumentException("Constant product cannot be coerced to function return type", e);
@@ -90,7 +91,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
      * @param second  the second function in the product
      */
     public Product(String argName, UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
-        super(argName);
+        super(argName, first.getReturnType());
         appendTerm(first);
         appendTerm(second);
     }
@@ -123,7 +124,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
                 R prodOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
                         .reduce(cterm.inspect(), Numeric::multiply)
-                        .coerceTo(resultClass);
+                        .coerceTo(getReturnType());
                 terms.removeIf(Const.class::isInstance);
                 if (Zero.isZero(prodOfConstants)) terms.clear();  // zero renders all other terms irrelevant
                 if (!One.isUnity(prodOfConstants)) terms.add(Const.getInstance(prodOfConstants));
@@ -149,14 +150,14 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
      */
     public static <T extends Numeric, R extends Numeric> Product<T, R> combineTerms(Product<T, R> p1, Product<T, R> p2) {
         final String argName = p1.getArgumentName().equals(p2.getArgumentName()) ? p1.getArgumentName() : "x";
-        Product<T, R> p3 = new Product<>(argName);
+        Product<T, R> p3 = new Product<>(argName, p1.getReturnType());
         p3.terms.addAll(p1.terms);
         p3.terms.addAll(p2.terms);
         try {
             R prodOfConstants = (R) p3.parallelStream().filter(Const.class::isInstance)
                     .map(Const.class::cast).map(Const::inspect)
                     .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply)
-                    .coerceTo(p1.resultClass != null ? p1.resultClass : p2.resultClass);
+                    .coerceTo(p1.getReturnType() != null ? p1.getReturnType() : p2.getReturnType());
             p3.terms.removeIf(Const.class::isInstance);
             if (!One.isUnity(prodOfConstants)) p3.terms.add(Const.getInstance(prodOfConstants));
         } catch (CoercionException e) {
@@ -179,18 +180,18 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         try {
             return (R) terms.parallelStream().map(f -> f.apply(arguments))
                     .map(Numeric.class::cast)
-                    .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(resultClass);
+                    .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(getReturnType());
         } catch (CoercionException e) {
-            throw new IllegalStateException("Unable to coerce result to " + resultClass.getTypeName(), e);
+            throw new IllegalStateException("Unable to coerce result to " + getReturnType().getTypeName(), e);
         }
     }
 
     @Override
     public UnaryFunction<T, R> simplify() {
         if (Negate.isNegateEquivalent(this)) {
-            Product<T, R> p = new Product<>(getArgumentName());
+            Product<T, R> p = new Product<>(getArgumentName(), getReturnType());
             terms.stream().filter(f -> !Const.isConstEquivalent(f)).forEach(p::appendTerm);
-            return p.andThen(Negate.getInstance(resultClass));
+            return p.andThen(Negate.getInstance(getReturnType()));
         }
         if (terms.stream().anyMatch(Const::isConstEquivalent)) {
             Optional<RealType> cval = terms.stream().filter(Const::isConstEquivalent).map(Const::getConstEquivalent)
@@ -199,7 +200,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             if (Zero.isZero(value)) return Const.getInstance(value);
             List<UnaryFunction<T, R>> cleaned = terms.stream().filter(f -> !Const.isConstEquivalent(f)).collect(Collectors.toList());
             if (cleaned.isEmpty()) return Const.getInstance(value);
-            Product<T, R> p = new Product<>(getArgumentName());
+            Product<T, R> p = new Product<>(getArgumentName(), getReturnType());
             p.terms.addAll(cleaned);
             if (!One.isUnity(value)) {
                 p.appendTerm(Const.getInstance(value));
@@ -216,13 +217,13 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
         if (terms.stream().filter(Pow.class::isInstance).count() >= 2L) {
             Numeric aggExponent = terms.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
                     .map(Pow::getExponent).reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add);
-            Product<T, R> p = new Product<>(getArgumentName());
+            Product<T, R> p = new Product<>(getArgumentName(), getReturnType());
             terms.stream().filter(f -> !(f instanceof Pow)).forEach(p::appendTerm);
-            if (Zero.isZero(aggExponent)) return p.termCount() > 0L ? p : Const.getInstance(OptionalOperations.dynamicInstantiate(resultClass, "1"));
+            if (Zero.isZero(aggExponent)) return p.termCount() > 0L ? p : Const.getInstance(OptionalOperations.dynamicInstantiate(getReturnType(), "1"));
             if (aggExponent instanceof IntegerType) {
-                p.appendTerm(new Pow<>(((IntegerType) aggExponent).asBigInteger().longValueExact()));
+                p.appendTerm(new Pow<>(((IntegerType) aggExponent).asBigInteger().longValueExact(), getReturnType()));
             } else {
-                p.appendTerm(new Pow<>((RationalType) aggExponent));
+                p.appendTerm(new Pow<>((RationalType) aggExponent, getReturnType()));
             }
             return p;
         }
@@ -237,9 +238,9 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     private R safeCoerce(Numeric val) {
         try {
-            return (R) val.coerceTo(resultClass);
+            return (R) val.coerceTo(getReturnType());
         } catch (CoercionException e) {
-            throw new IllegalArgumentException("Value " + val + " cannot be coerced to " + resultClass.getTypeName(), e);
+            throw new IllegalArgumentException("Value " + val + " cannot be coerced to " + getReturnType().getTypeName(), e);
         }
     }
 
@@ -247,6 +248,22 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     public Range<RealType> inputRange(String argName) {
         return terms.parallelStream().map(f -> f.inputRange(argName))
                 .reduce(RangeUtils.ALL_REALS, Range::chooseNarrowest);
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        Iterator<UnaryFunction<T, R>> iter = terms.iterator();
+        Class<T> result = iter.next().getArgumentType();
+        while (iter.hasNext()) {
+            Class<T> altArgType = iter.next().getArgumentType();
+            if (altArgType != result) {
+                Logger.getLogger(Product.class.getName()).log(Level.WARNING,
+                        "Mismatched arg types: {0} vs. {1}",
+                        new Object[] { altArgType.getTypeName(), result.getTypeName() });
+                if (altArgType.isAssignableFrom(result)) result = altArgType;
+            }
+        }
+        return result;
     }
 
     /**
@@ -287,7 +304,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     @Override
     public int hashCode() {
-        return Objects.hash(getArgumentName(), terms, resultClass);
+        return Objects.hash(getArgumentName(), terms, getReturnType());
     }
 
     @Override
@@ -296,7 +313,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             Product<?, ?> other = (Product<?, ?>) obj;
             if (!getArgumentName().equals(other.getArgumentName())) return false;
             if (termCount() != other.termCount()) return false;
-            if (!resultClass.isAssignableFrom(other.resultClass)) return false;
+            if (!getReturnType().isAssignableFrom(other.getReturnType())) return false;
             return parallelStream().allMatch(other.terms::contains);
         }
         return false;

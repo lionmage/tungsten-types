@@ -106,6 +106,11 @@ public class Sinc extends UnaryFunction<RealType, RealType> {
     }
 
     @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

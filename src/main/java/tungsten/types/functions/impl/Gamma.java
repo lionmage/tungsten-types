@@ -63,11 +63,11 @@ public class Gamma extends UnaryFunction<Numeric, Numeric> {
     private final Range<RealType> argRange = RangeUtils.getGammaArgumentInstance();
 
     public Gamma(String varName) {
-        super(varName);
+        super(varName, Numeric.class);
     }
 
     public Gamma() {
-        super("z");
+        super("z", Numeric.class);
     }
 
     @Override
@@ -124,5 +124,10 @@ public class Gamma extends UnaryFunction<Numeric, Numeric> {
             return RangeUtils.ALL_REALS;
         }
         return null;
+    }
+
+    @Override
+    public Class<Numeric> getArgumentType() {
+        return Numeric.class;
     }
 }

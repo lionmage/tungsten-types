@@ -29,7 +29,6 @@ import static tungsten.types.util.MathUtils.Re;
  * @param <R> the return type for this proxy function
  */
 public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
-    private final Class<R> outputClazz = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
     private final Map<T, R> valueMap;
     private final T epsilon;
 
@@ -40,12 +39,13 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
      * @param argName the variable name for this function's argument
      * @param source  the mapping of input to output values
      * @param epsilon the tolerance for inexact value matching
+     * @throws NoSuchElementException if {@code source.isEmpty() == true}
      */
     public ProxyFunction(String argName, Map<T, R> source, T epsilon) {
-        super(argName);
+        super(argName, (Class<R>) source.values().iterator().next().getClass());
         Range<T> epsilonRange;
         try {
-            Class<T> inputClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(0);
+            Class<T> inputClazz = (Class<T>) epsilon.getClass();
             epsilonRange = new Range<>((T) ExactZero.getInstance(epsilon.getMathContext()).coerceTo(inputClazz),
                     (T) One.getInstance(epsilon.getMathContext()).coerceTo(inputClazz), Range.BoundType.EXCLUSIVE);
         } catch (CoercionException e) {
@@ -117,7 +117,7 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
             RealType rise = (RealType) y2.subtract(y1).coerceTo(RealType.class);
             RealType run = (RealType) x2.subtract(x1).coerceTo(RealType.class);
             RealType intermediate = (RealType) x.subtract(x1).coerceTo(RealType.class);
-            return  (R) intermediate.multiply(rise).divide(run).add(y1).coerceTo(outputClazz);
+            return  (R) intermediate.multiply(rise).divide(run).add(y1).coerceTo(getReturnType());
         } catch (CoercionException e) {
             throw new IllegalArgumentException("Unable to coerce intermediate values", e);
         }
@@ -140,5 +140,10 @@ public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends 
     @Override
     public Range<RealType> inputRange(String argName) {
         return RangeUtils.ALL_REALS;
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        return (Class<T>) epsilon.getClass();
     }
 }

@@ -28,12 +28,14 @@ import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.Rewritable;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.RangeUtils;
 
 import java.math.MathContext;
@@ -49,7 +51,7 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
     final R value;
 
     private Const(R init) {
-        super("x");
+        super("x", (Class<R>) ClassTools.getInterfaceTypeFor(init.getClass()));
         value = init;
     }
 
@@ -118,6 +120,12 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         return RangeUtils.ALL_REALS;
     }
 
+    @Override
+    public Class<T> getArgumentType() {
+        // the following may return null or fail altogether
+        return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+    }
+
     public R inspect() {
         return value;
     }
@@ -127,9 +135,8 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         if (Zero.isZero(value)) {
             return this;
         } else {
-            final Class<R> resultClass = (Class<R>) value.getClass();
             try {
-                return new Const<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(resultClass));
+                return new Const<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(getReturnType()));
             } catch (CoercionException e) {
                 throw new IllegalStateException("Unable to coerce zero to result type", e);
             }

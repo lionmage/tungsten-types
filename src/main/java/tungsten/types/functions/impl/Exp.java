@@ -42,11 +42,11 @@ import java.util.Objects;
  */
 public class Exp extends UnaryFunction<RealType, RealType> {
     public Exp() {
-        super("x");
+        super("x", RealType.class);
     }
 
     public Exp(String varName) {
-        super(varName);
+        super(varName, RealType.class);
     }
 
     /**
@@ -95,6 +95,11 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     public Range<RealType> inputRange(String argName) {
         if (getComposedFunction().isPresent()) return  getComposedFunction().get().inputRange(argName);
         return RangeUtils.ALL_REALS;
+    }
+
+    @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
     }
 
     @Differentiable

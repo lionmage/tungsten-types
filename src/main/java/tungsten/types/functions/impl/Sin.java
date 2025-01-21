@@ -71,7 +71,7 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
      * @param mctx the {@link MathContext} governing the precision and rounding of this function
      */
     public Sin(String argName, MathContext mctx) {
-        super(argName);
+        super(argName, RealType.class);
         this.mctx = mctx;
         RealType decTwo = new RealImpl(BigDecimal.valueOf(2L), mctx);
         // since the table of internal values is specified over the range 0 to 2𝜋,
@@ -180,6 +180,11 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
     @Override
     public Range<RealType> inputRange(String argName) {
         return RangeUtils.ALL_REALS;
+    }
+
+    @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
     }
 
     protected RealType mapToInnerRange(RealType input) {

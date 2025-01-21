@@ -53,24 +53,20 @@ import java.util.logging.Logger;
  * @param <R> the type of the function's output
  */
 public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
-    private Class<R> rtnClazz;
-
-    private Negate() {
-        super("x");
+    private Negate(Class<R> rtnType) {
+        super("x", rtnType);
     }
 
     public static <T extends Numeric, R extends Numeric> Negate<T, R> getInstance(Class<R> clazz) {
-        Negate<T, R> instance = new Negate<>();
-        instance.rtnClazz = clazz;
-        return instance;
+        return new Negate<>(clazz);
     }
 
     @Override
     public R apply(ArgVector<T> arguments) {
         try {
-            return (R) arguments.elementAt(0L).negate().coerceTo(rtnClazz);
+            return (R) arguments.elementAt(0L).negate().coerceTo(getReturnType());
         } catch (CoercionException e) {
-            throw new ArithmeticException("Could not coerce result of negation.");
+            throw new ArithmeticException("Could not coerce result of negation");
         }
     }
 
@@ -115,7 +111,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     public UnaryFunction<? super T, R> composeWith(UnaryFunction<? super T, T> before) {
         if (before instanceof Negate) {
             final String beforeArgName = before.expectedArguments()[0];
-            return new Reflexive<>(beforeArgName, before.inputRange(beforeArgName), Numeric.class).forReturnType(rtnClazz);
+            return new Reflexive<>(beforeArgName, before.inputRange(beforeArgName), Numeric.class).forReturnType(getReturnType());
         }
         return super.composeWith(before);
     }
@@ -127,7 +123,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
             List<Class<?>> afterArgClasses = ClassTools.getTypeArguments(NumericFunction.class, after.getClass());
             List<Class<?>> argClasses = ClassTools.getTypeArguments(NumericFunction.class, this.getClass());
             Class<T> inputClass = argClasses.get(0) == null ? (Class<T>) Numeric.class : (Class<T>) argClasses.get(0);
-            Class<R2> clazz = afterArgClasses.get(1) == null ? (Class<R2>) rtnClazz : (Class<R2>) afterArgClasses.get(1);
+            Class<R2> clazz = afterArgClasses.get(1) == null ? (Class<R2>) getReturnType() : (Class<R2>) afterArgClasses.get(1);
             return new Reflexive<>(getArgumentName(), inputRange(getArgumentName()), inputClass).forReturnType(clazz);
         }
         return super.andThen(after);
@@ -135,7 +131,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Differentiable
     public UnaryFunction<T, R> diff() {
-        final R response = OptionalOperations.dynamicInstantiate(rtnClazz, "-1");
+        final R response = OptionalOperations.dynamicInstantiate(getReturnType(), "-1");
 
         return Const.getInstance(response);
     }
@@ -143,12 +139,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     @Override
     public Negate<T, R> forArgName(String argName) {
         if (getArgumentName().equals(argName)) return this;
-        final Class<R> returnType = this.rtnClazz;
-        return new Negate<>() {
-            {
-                rtnClazz = returnType;
-            }
-
+        return new Negate<>(getReturnType()) {
             @Override
             protected String getArgumentName() {
                 return argName;
@@ -167,15 +158,24 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
     }
 
     @Override
+    public Class<T> getArgumentType() {
+        if (getComposedFunction().isPresent()) {
+            return getComposedFunction().get().getReturnType();
+        }
+        // the following may return null or fail altogether
+        return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+    }
+
+    @Override
     public int hashCode() {
-        return Objects.hashCode(rtnClazz) * 31 + Objects.hashCode(getArgumentName());
+        return Objects.hashCode(getReturnType()) * 31 + Objects.hashCode(getArgumentName());
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Negate) {
             Negate<?, ?> that = (Negate<?, ?>) obj;
-            return this.rtnClazz.isAssignableFrom(that.rtnClazz);
+            return this.getReturnType().isAssignableFrom(that.getReturnType());
         }
         return false;
     }

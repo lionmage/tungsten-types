@@ -59,7 +59,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
      * @param epsilon the &#x1D700; value
      */
     public RealPiecewiseFunction(String argName, RealType epsilon) {
-        super(argName);
+        super(argName, RealType.class);
         this.epsilon = epsilon;
     }
 
@@ -68,7 +68,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
      * @param epsilon the &#x1D700; value to use
      */
     public RealPiecewiseFunction(RealType epsilon) {
-        super();
+        super(RealType.class);
         this.epsilon = epsilon;
     }
 
@@ -254,5 +254,10 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
                     .warning("Bounds check failed for derived piecewise function.");
         }
         return result;
+    }
+
+    @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
     }
 }

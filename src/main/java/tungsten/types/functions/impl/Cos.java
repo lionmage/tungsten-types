@@ -71,7 +71,7 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
      * @param mctx the {@link MathContext} determining the precision and rounding for this function
      */
     public Cos(String argName, MathContext mctx) {
-        super(argName);
+        super(argName, RealType.class);
         this.mctx = mctx;
         RealType decTwo = new RealImpl(BigDecimal.valueOf(2L), mctx);
         internalRange = new Range<>(new RealImpl(BigDecimal.ZERO, mctx), Range.BoundType.INCLUSIVE,
@@ -178,6 +178,11 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
     @Override
     public Range<RealType> inputRange(String argName) {
         return RangeUtils.ALL_REALS;
+    }
+
+    @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
     }
 
     protected RealType mapToInnerRange(RealType input) {

@@ -89,7 +89,7 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
             // only one argument left, so return a UnaryFunction
             final String varName = argList.stream().filter(argName -> !curryMap.containsKey(argName))
                     .findFirst().orElseThrow();
-            return new UnaryFunction<>(varName) {
+            return new UnaryFunction<>(varName, inputFunction.getReturnType()) {
                 @Override
                 public R apply(ArgVector<T> arguments) {
                     if (!arguments.hasVariableName(varName))
@@ -106,9 +106,14 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
                     }
                     return null;
                 }
+
+                @Override
+                public Class<T> getArgumentType() {
+                    return inputFunction.getArgumentType();
+                }
             };
         } else {
-            return new NumericFunction<>() {
+            return new NumericFunction<>(inputFunction.getReturnType()) {
                 @Override
                 public R apply(ArgVector<T> arguments) {
                     for (String varName : this.expectedArguments()) {
@@ -139,6 +144,11 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
                         return inputFunction.inputRange(argName);
                     }
                     return null;
+                }
+
+                @Override
+                public Class<T> getArgumentType() {
+                    return inputFunction.getArgumentType();
                 }
             };
         }

@@ -51,11 +51,11 @@ import java.math.MathContext;
  */
 public class NaturalLog extends UnaryFunction<RealType, RealType> {
     public NaturalLog() {
-        super("x");
+        super("x", RealType.class);
     }
 
     public NaturalLog(String argName) {
-        super(argName);
+        super(argName, RealType.class);
     }
 
     /**
@@ -116,6 +116,11 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     @Override
     public Range<RealType> inputRange(String argName) {
         return lnRange;
+    }
+
+    @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
     }
 
     @Override

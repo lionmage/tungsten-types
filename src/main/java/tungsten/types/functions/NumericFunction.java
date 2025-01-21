@@ -32,9 +32,22 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 public abstract class NumericFunction<T extends Numeric, R extends Numeric> implements Function<ArgVector<T>, R> {
+    protected final Class<R> returnType;
+
+    protected NumericFunction(Class<R> returnType) {
+        this.returnType = returnType;
+    }
+
     @Override
     public abstract R apply(ArgVector<T> arguments);
 
+    /**
+     * Given an argument map, generate an {@code ArgVector}
+     * and {@link #apply(ArgVector) apply} this function
+     * to it.
+     * @param arguments a mapping of argument names to values
+     * @return the result of this function's evaluation
+     */
     public R apply(ArgMap<T> arguments) {
         final ArgVector<T> args = new ArgVector<>(expectedArguments(), arguments);
         return apply(args);
@@ -83,8 +96,33 @@ public abstract class NumericFunction<T extends Numeric, R extends Numeric> impl
      */
     public abstract Range<RealType> inputRange(String argName);
 
+    /**
+     * Obtain the return type of this numeric function.
+     * @return the type that this function returns
+     * @since 0.6
+     */
+    public Class<R> getReturnType() {
+        return returnType;
+    }
+
+    /**
+     * Obtain the type of the arguments of this numeric function.
+     * @return the type that this function consumes
+     * @since 0.6
+     */
+    public abstract Class<T> getArgumentType();
+
+    /**
+     * Generate a function which performs the same computation as this
+     * function, but with the given return type.
+     * @param clazz the desired return type of the generated function
+     * @return the new function
+     * @param <R2> the return type
+     */
     public <R2 extends Numeric> NumericFunction<T, R2> forReturnType(Class<R2> clazz) {
-        return new NumericFunction<>() {
+        if (clazz.isAssignableFrom(returnType)) return (NumericFunction<T, R2>) this;
+
+        return new NumericFunction<>(clazz) {
             @Override
             public R2 apply(ArgVector<T> arguments) {
                 try {
@@ -107,6 +145,11 @@ public abstract class NumericFunction<T extends Numeric, R extends Numeric> impl
             @Override
             public Range<RealType> inputRange(String argName) {
                 return NumericFunction.this.inputRange(argName);
+            }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return NumericFunction.this.getArgumentType();
             }
         };
     }

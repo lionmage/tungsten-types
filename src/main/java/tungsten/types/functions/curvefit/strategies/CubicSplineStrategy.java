@@ -95,7 +95,7 @@ public class CubicSplineStrategy implements CurveFittingStrategy {
             d[j] = (RealType) c[j + 1].subtract(c[j]).divide(THREE.multiply(h[j]));
         }
         // we don't need smoothing, so we don't need a RealPiecewiseFunction
-        PiecewiseFunction<RealType, RealType> result = new PiecewiseFunction<>();
+        PiecewiseFunction<RealType, RealType> result = new PiecewiseFunction<>(RealType.class);
         for (int i = 0; i < dataPoints.size() - 2; i++) {
             // final range for series is inclusive at terminus
             Range<RealType> pieceRange = new Range<>(C.get(i).getX(), Range.BoundType.INCLUSIVE,
