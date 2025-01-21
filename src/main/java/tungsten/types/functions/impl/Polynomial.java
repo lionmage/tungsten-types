@@ -28,17 +28,19 @@ import java.util.stream.Stream;
 
 public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final List<Term<T, R>> terms = new ArrayList<>();
-    // TODO may need to make rtnClass non-final and create constructors that explicitly take a Class<R> argument
-    protected final Class<R> rtnClass = (Class<R>) ClassTools.getTypeArguments(NumericFunction.class, getClass()).get(1);
 
-    protected Polynomial(List<Term<T, R>> supplied) {
+    protected Polynomial(List<Term<T, R>> supplied, Class<R> rtnType) {
+        super(rtnType);
         terms.addAll(supplied);
     }
 
-    public Polynomial() {}
+    public Polynomial(Class<R> rtnType) {
+        super(rtnType);
+    }
 
     @SafeVarargs
     public Polynomial(Term<T, R>... initialTerms) {
+        super(initialTerms[0].getReturnType());  // use the return type of the first term
         Arrays.stream(initialTerms).forEachOrdered(terms::add);
     }
 
@@ -55,20 +57,21 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
      *
      * @param init a textual representation of a polynomial
      */
-    public Polynomial(String init) {
+    public Polynomial(String init, Class<R> rtnType) {
+        super(rtnType);
         String[] strTerms = init.split("\\s+\\+\\s+");
         for (String termInit : strTerms) {
             Matcher m = constPattern.matcher(termInit);
             if (m.matches()) {
-                terms.add(new ConstantTerm<>(termInit.stripLeading(), rtnClass));
+                terms.add(new ConstantTerm<>(termInit.stripLeading(), rtnType));
                 continue;
             }
             if (termInit.contains("/")) {
                 // probably a rational exp term
-                terms.add(new RationalExponentPolyTerm<>(termInit, rtnClass));
+                terms.add(new RationalExponentPolyTerm<>(termInit, rtnType));
                 continue;
             }
-            terms.add(new PolyTerm<>(termInit, rtnClass));
+            terms.add(new PolyTerm<>(termInit, rtnType));
         }
     }
 
@@ -84,10 +87,10 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                 .reduce(ExactZero.getInstance(ctx), Numeric::add);
 
         try {
-            return (R) result.coerceTo(rtnClass);
+            return (R) result.coerceTo(getReturnType());
         } catch (CoercionException e) {
             throw new IllegalStateException("Unable to convert result of polynomial evaluation to " +
-                    rtnClass.getTypeName(), e);
+                    getReturnType().getTypeName(), e);
         }
     }
 
@@ -119,7 +122,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                 List<RationalType> exponents = Arrays.stream(arg.expectedArguments())
                         .map(arg::exponentFor).collect(Collectors.toList());
                 R sum = (R) term.coefficient().add(old.coefficient());
-                RationalExponentPolyTerm<T, R> updated = new RationalExponentPolyTerm<T, R>(sum,
+                RationalExponentPolyTerm<T, R> updated = new RationalExponentPolyTerm<>(sum,
                         Arrays.asList(term.expectedArguments()), exponents);
                 terms.remove(old);
                 terms.add(updated);
@@ -146,7 +149,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             Sum<T, R> sum = (Sum<T, R>) alienFunc;
             sum.stream().forEach(this::add);
         } else if (alienFunc instanceof Reflexive) {
-            this.add(new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]), List.of(1L), rtnClass));
+            this.add(new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]), List.of(1L), getReturnType()));
         }
         // add additional cases as-needed
 
@@ -157,7 +160,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
 
     public Polynomial<T, R> multiply(Term<T, R> term) {
         List<Term<T, R>> multTerms = terms.stream().map(orig -> orig.multiply(term)).collect(Collectors.toList());
-        return new Polynomial<>(multTerms);
+        return new Polynomial<>(multTerms, getReturnType());
     }
 
     public Polynomial<T, R> multiply(UnaryFunction<T, R> alienFunc) {
@@ -165,14 +168,14 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             Const<T, R> foreignConst = (Const<T, R>) alienFunc;
             List<Term<T, R>> scaleTerms = termStream().map(orig -> orig.scale(foreignConst.inspect()))
                     .collect(Collectors.toList());
-            return new Polynomial<>(scaleTerms);
+            return new Polynomial<>(scaleTerms, getReturnType());
         } else if (alienFunc instanceof Pow) {
             Pow<T, R> powerFunc = (Pow<T, R>) alienFunc;
             List<Term<T, R>> multTerms = termStream().map(orig -> orig.multiply(powerFunc)).collect(Collectors.toList());
-            return new Polynomial<>(multTerms);
+            return new Polynomial<>(multTerms, getReturnType());
         } else if (alienFunc instanceof Sum) {
             Sum<T, R> sum = (Sum<T, R>) alienFunc;
-            Polynomial<T, R> result = new Polynomial<>();
+            Polynomial<T, R> result = new Polynomial<>(getReturnType());
             sum.stream().map(this::multiply).forEach(result::add);
             return result;
         } else if (alienFunc instanceof Product) {
@@ -182,7 +185,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             return this.multiply(pterm);
         } else if (alienFunc instanceof Reflexive) {
             PolyTerm<T, R> term = new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]),
-                    List.of(1L), rtnClass);
+                    List.of(1L), getReturnType());
             return this.multiply(term);
         }
         // we can add more cases here as necessary
@@ -200,7 +203,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         }
         try {
             R coeff = (R) product.stream().filter(Const.class::isInstance).map(Const.class::cast)
-                    .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(rtnClass);
+                    .map(Const::inspect).reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply).coerceTo(getReturnType());
             // Fortunately, we don't need the arg type or return type of Pow here, but it really
             // bothers me that even Pow<?, ?> causes issues.  Still haven't found a good solution.
             List<Pow> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
@@ -228,13 +231,13 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
     }
 
     public Polynomial<T, R> add(Polynomial<T, R> other) {
-        Polynomial<T, R> aggregate = new Polynomial<>(terms);
+        Polynomial<T, R> aggregate = new Polynomial<>(terms, getReturnType());
         other.termStream().forEach(aggregate::add);
         return aggregate;
     }
 
     public Polynomial<T, R> multiply(Polynomial<T, R> other) {
-        Polynomial<T, R> product = new Polynomial<>();
+        Polynomial<T, R> product = new Polynomial<>(getReturnType());
         for (Term<T, R> myterm : terms) {
             Polynomial<T, R> partialProduct = other.multiply(myterm);
             partialProduct.termStream().forEach(product::add);
@@ -250,7 +253,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
      */
     public Polynomial<T, R> firstN(long N) {
         List<Term<T, R>> nTerms = termStream().limit(N).collect(Collectors.toList());
-        return new Polynomial<>(nTerms);
+        return new Polynomial<>(nTerms, getReturnType());
     }
 
     /**
@@ -270,7 +273,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
     public Polynomial<T, R> sortByOrderIn(String varName) {
         List<Term<T, R>> sortedTerms = new ArrayList<>(terms);
         sortedTerms.sort((A, B) -> (int) (B.order(varName) - A.order(varName)));
-        return new Polynomial<>(sortedTerms);
+        return new Polynomial<>(sortedTerms, getReturnType());
     }
 
     /**
@@ -308,6 +311,15 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                 .reduce(RangeUtils.ALL_REALS, Range::chooseNarrowest);
     }
 
+    @Override
+    public Class<T> getArgumentType() {
+        if (!terms.isEmpty()) {
+            return terms.get(0).getArgumentType();
+        }
+        // the following may return null or fail altogether
+        return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+    }
+
     private Set<String> getUniqueArgnames() {
         final Set<String> result = new LinkedHashSet<>();
         terms.stream().map(Term::expectedArguments).map(Arrays::asList).forEachOrdered(result::addAll);
@@ -333,7 +345,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                         term.getClass().getTypeName());
             }
         }
-        return new Polynomial<>(dterms);
+        return new Polynomial<>(dterms, getReturnType());
     }
 
     @Override

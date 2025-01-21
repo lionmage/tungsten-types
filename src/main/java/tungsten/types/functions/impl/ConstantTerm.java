@@ -4,6 +4,7 @@ import tungsten.types.Numeric;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.Term;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
@@ -48,6 +49,12 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
     @Override
     public R apply(ArgVector<T> arguments) {
         return value;
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        // the following may return null or fail altogether
+        return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
     }
 
     @Override

@@ -35,7 +35,7 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
      * @param scope the {@link Range} over which this spline is defined
      */
     public CubicSpline2D(RealType a, RealType b, RealType c, RealType d, Range<RealType> scope) {
-        super("x");
+        super("x", RealType.class);
         this.a = a;
         this.b = b;
         this.c = c;
@@ -61,6 +61,11 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
     public Range<RealType> inputRange(String argName) {
         if (getArgumentName().equals(argName)) return scope;
         return null;
+    }
+
+    @Override
+    public Class<RealType> getArgumentType() {
+        return RealType.class;
     }
 
     @Override

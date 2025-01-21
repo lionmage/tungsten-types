@@ -7,10 +7,14 @@ import tungsten.types.functions.Term;
 import tungsten.types.functions.UnaryArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>, R extends Numeric> extends Polynomial<T, R> {
@@ -19,7 +23,7 @@ public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>
     protected final UnaryFunction<T, R> f0;
 
     public TaylorPolynomial(String argName, UnaryFunction<T, R> original, T differentiableAround) {
-        super();
+        super(original.getReturnType());
         this.argname = argName;
         this.f0 = original;
         this.diffAround = differentiableAround;
@@ -27,15 +31,29 @@ public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>
         final R f0_a0;
         if (original instanceof Proxable) {
             var proxyfunc = ((Proxable<T, R>) original).obtainProxy();
-            f0_a0 = (R) proxyfunc.apply(differentiableAround);
+            f0_a0 = proxyfunc.apply(differentiableAround);
         } else {
             f0_a0 = original.apply(differentiableAround);
         }
         super.add(new ConstantTerm<>(f0_a0));
     }
 
+    @Override
+    public Class<T> getArgumentType() {
+        if (f0.getArgumentType() != null) {
+            if (!f0.getArgumentType().isAssignableFrom(diffAround.getClass())) {
+                Logger.getLogger(TaylorPolynomial.class.getName()).log(Level.WARNING,
+                        "Argument type mismatch: {0} vs. {1}",
+                        new Object[] { f0.getArgumentType().getTypeName(), diffAround.getClass().getTypeName() });
+            } else {
+                return f0.getArgumentType();
+            }
+        }
+        return (Class<T>) ClassTools.getInterfaceTypeFor(diffAround.getClass());
+    }
+
     protected TaylorPolynomial(TaylorPolynomial<T, R> toCopy, List<Term<T, R>> computedTerms) {
-        super(computedTerms);
+        super(computedTerms, toCopy.getReturnType());
         this.argname = toCopy.argname;
         this.diffAround = toCopy.diffAround;
         this.f0 = toCopy.f0;
@@ -59,7 +77,7 @@ public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>
         if (countTerms() - 1L >= n) return;  // we already generated the requested term
         try {
             R coeff = (R) f_n(n).apply(diffAround)
-                    .divide(MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(n)))).coerceTo(rtnClass);
+                    .divide(MathUtils.factorial(new IntegerImpl(BigInteger.valueOf(n)))).coerceTo(getReturnType());
             PolyTerm<T, R> nterm = new PolyTerm<>(coeff, List.of(argname), List.of(n));
             super.add(nterm);
         } catch (CoercionException e) {
