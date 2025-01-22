@@ -27,7 +27,6 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
-import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.IntegerType;
@@ -36,7 +35,6 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
-import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
@@ -68,7 +66,8 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     public Product(UnaryFunction<T, R>... productOf) {
         super("x", productOf[0].getReturnType());
         Arrays.stream(productOf).filter(Product.class::isInstance).forEach(this::appendTerm);
-        Arrays.stream(productOf).filter(f -> !(f instanceof Product)).filter(f -> !(f instanceof Const)).forEach(terms::add);
+        Arrays.stream(productOf).filter(f -> !(f instanceof Product))
+                .filter(f -> !(f instanceof Const)).forEach(terms::add);
         // combine all const terms into one
         try {
             R prodOfConstants = (R) Arrays.stream(productOf).filter(Const.class::isInstance)
@@ -91,7 +90,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
      * @param second  the second function in the product
      */
     public Product(String argName, UnaryFunction<T, R> first, UnaryFunction<T, R> second) {
-        super(argName, first.getReturnType());
+        super(argName, first.getReturnType() != null ? first.getReturnType() : second.getReturnType());
         appendTerm(first);
         appendTerm(second);
     }
@@ -268,7 +267,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     /**
      * Return a stream of the terms in this product.
-     * @return
+     * @return a stream of unary functions
      */
     public Stream<UnaryFunction<T, R>> stream() {
         return terms.stream();
@@ -276,7 +275,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     /**
      * Return a parallel stream of the terms in this product.
-     * @return
+     * @return a parallel stream of unary functions
      */
     public Stream<UnaryFunction<T, R>> parallelStream() {
         return terms.parallelStream();

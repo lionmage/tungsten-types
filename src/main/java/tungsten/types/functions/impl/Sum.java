@@ -27,14 +27,12 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
-import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.functions.support.Simplifiable;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
-import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
@@ -64,7 +62,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @SafeVarargs
     public Sum(UnaryFunction<T, R>... sumOf) {
-        super("x", sumOf[0].getReturnType());
+        super("x", sumOf[0].getReturnType());  // this will blow up with a zero-length argument
         Arrays.stream(sumOf).filter(f -> !(f instanceof Const)).forEach(terms::add);
         // combine all const terms into one
         try {
@@ -83,7 +81,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     }
 
     protected Sum(String argName, List<? extends UnaryFunction<T, R>> init) {
-        super(argName);
+        super(argName, init.get(0).getReturnType());  // this will blow up if init is 0-length
         terms.addAll(init);
     }
 
@@ -99,7 +97,9 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         final String argName1 = first.expectedArguments()[0];
         final String argName2 = second.expectedArguments()[0];
         String argName = argName1.equals(argName2) ? argName1 : "x";
-        Sum<T, R> sum = new Sum<>(argName, first.getReturnType());
+        // pick the return type that describes both first and second
+        Class<R> rtnType = first.getReturnType().isAssignableFrom(second.getReturnType()) ? first.getReturnType() : second.getReturnType();
+        Sum<T, R> sum = new Sum<>(argName, rtnType);
         sum.appendTerm(first);
         sum.appendTerm(second);
         return sum;

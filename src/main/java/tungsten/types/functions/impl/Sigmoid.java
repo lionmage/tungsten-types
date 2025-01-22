@@ -55,7 +55,7 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
      * @param alpha   the value which determines the width of this function's transition from 0 to 1
      */
     public Sigmoid(String varName, RealType x0, RealType alpha) {
-        super(varName);
+        super(varName, RealType.class);
         this.x0 = x0;
         this.alpha = alpha.magnitude();  // this parameter should always be positive
     }
