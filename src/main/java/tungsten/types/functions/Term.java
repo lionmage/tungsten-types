@@ -58,12 +58,11 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
      */
     protected Term(Class<R> clazz, String... variableNames) {
         super(clazz);
-        final List<String> vars = Arrays.asList(variableNames);
         HashSet<String> tester = new HashSet<>();
-        if (vars.stream().map(tester::add).anyMatch(b -> b == Boolean.FALSE)) {
+        if (Arrays.stream(variableNames).map(tester::add).anyMatch(b -> b == Boolean.FALSE)) {
             throw new IllegalArgumentException("Argument names must be unique");
         }
-        this.varNames = vars;
+        this.varNames = Arrays.asList(variableNames);
     }
 
     /**
