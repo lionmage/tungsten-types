@@ -45,13 +45,14 @@ import java.util.Objects;
  * This implementation is differentiable and continuous
  * across all real values.
  * @see <a href="https://en.wikipedia.org/wiki/Sinc_function">the Wikipedia article on sinc(x)</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @since 0.4
  */
 public class Sinc extends UnaryFunction<RealType, RealType> {
     private final MathContext mctx;
 
     protected Sinc(String varName, MathContext ctx) {
-        super(varName);
+        super(varName, RealType.class);
         this.mctx = ctx;
     }
 

@@ -37,6 +37,7 @@ import java.util.function.Function;
  * @param <T>  the input parameter type
  * @param <R>  the return type of the original function
  * @param <R2> the return type of the generated function
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 extends Numeric>
         implements Function<NumericFunction<T, R>, NumericFunction<T, R2>> {
@@ -54,14 +55,29 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
     @Override
     public abstract NumericFunction<T, R2> apply(NumericFunction<T, R> inputFunction);
 
+    /**
+     * Add a single curry mapping, a mapping from a variable name
+     * to a value.
+     * @param varName the name of the variable to map
+     * @param value   the mapped value for this variable
+     */
     public void setCurryMapping(String varName, T value) {
         curryMap.put(varName, value);
     }
 
+    /**
+     * Remove all variable name to value mappings.
+     */
     public void clearCurryMappings() {
         curryMap.clear();
     }
 
+    /**
+     * Bulk-add mappings from variable names to values.
+     * @param mappings a {@code Map} containing a mapping of variable names to values
+     * @throws IllegalArgumentException if {@code mappings} contains any keys
+     *   that match an existing variable name mapping
+     */
     public void addCurryMappings(Map<String, T> mappings) {
         if (mappings.keySet().stream().anyMatch(curryMap::containsKey)) {
             throw new IllegalArgumentException("New curry mappings conflict with existing mappings");
@@ -69,18 +85,34 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
         curryMap.putAll(mappings);
     }
 
+    /**
+     * Determine if a curry mapping exists for the given variable name.
+     * @param varName the variable name
+     * @return true if a mapping exists for {@code varName}, false otherwise
+     */
     public boolean containsCurryMapping(String varName) {
         return curryMap.containsKey(varName);
     }
 
     protected ArgMap<T> mappedArgsView() { return new ArgMap<>(Collections.unmodifiableMap(curryMap)); }
 
+    /**
+     * Only retain the argument name to value mappings for the given
+     * array of argument names.
+     * @param argNames an array of argument names
+     */
     public void retainOnly(String[] argNames) {
         final Set<String> args = new TreeSet<>();
         Collections.addAll(args, argNames);
         curryMap.keySet().removeIf(name -> !args.contains(name));
     }
 
+    /**
+     * Given an input function, apply curry mappings to generate a new
+     * function with fewer free variables (arguments).
+     * @param inputFunction any {@code NumericFunction} of <em>N</em> arguments
+     * @return a reduced function with &lt;&nbsp;<em>N</em> arguments
+     */
     protected NumericFunction<T, R> curry(NumericFunction<T, R> inputFunction) {
         final ArgMap<T> argsCopy = new ArgMap<>(curryMap);
         final String[] argNames = inputFunction.expectedArguments();

@@ -42,10 +42,12 @@ import java.math.MathContext;
 import java.util.Objects;
 
 /**
- * A function that represents a constant.
+ * A function that represents a constant.  It will always evaluate to
+ * the same value.
  *
  * @param <T> the input parameter type, mostly ignored
  * @param <R> the output type
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     final R value;
@@ -122,6 +124,9 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
 
     @Override
     public Class<T> getArgumentType() {
+        if (ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).isEmpty()) {
+            return (Class<T>) Numeric.class;  // This may be wrong, but is better than nothing.
+        }
         // the following may return null or fail altogether
         return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
     }

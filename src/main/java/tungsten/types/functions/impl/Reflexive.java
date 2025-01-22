@@ -13,8 +13,10 @@ import tungsten.types.util.RangeUtils;
 import java.math.MathContext;
 
 /**
- * The reflexive function, &fnof;(x) = x
+ * The reflexive function, &fnof;(x)&nbsp;=&nbsp;x
+ * <br>Note that this function always returns the type that it consumes.
  * @param <T> the type that this function expects and returns
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Reflexive<T extends Numeric> extends UnaryFunction<T, T> {
     final Range<RealType> range;

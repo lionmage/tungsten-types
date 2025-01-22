@@ -57,6 +57,8 @@ import static tungsten.types.util.MathUtils.*;
  * existing methods in {@link MathUtils}.
  * @see MathUtils#lnGamma(Numeric) the implementation of ln&#x1D6AA;(z)
  * @see MathUtils#gamma(Numeric) the implementation of &#x1D6AA;(z)
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @since 0.4
  */
 public class Gamma extends UnaryFunction<Numeric, Numeric> {

@@ -51,6 +51,7 @@ import java.util.logging.Logger;
  *
  * @param <T> the type of the function's sole input parameter
  * @param <R> the type of the function's output
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private Negate(Class<R> rtnType) {

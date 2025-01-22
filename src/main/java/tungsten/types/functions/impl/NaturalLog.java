@@ -28,7 +28,6 @@ import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
-import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
@@ -37,7 +36,6 @@ import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.RealInfinity;
-import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
@@ -48,6 +46,7 @@ import java.math.MathContext;
  * A basic implementation of the natural logarithm function ln(x) for positive
  * real-valued arguments.  This implementation supports composing with another
  * function at construction-time, saving some effort.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class NaturalLog extends UnaryFunction<RealType, RealType> {
     public NaturalLog() {
@@ -65,7 +64,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
      * @param inner the inner function &fnof;(x) for composition
      */
     public NaturalLog(UnaryFunction<? super RealType, RealType> inner) {
-        super(inner.expectedArguments()[0]);
+        super(inner.expectedArguments()[0], RealType.class);
         composedFunction = inner;
     }
 
@@ -102,7 +101,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     @Override
     public <R2 extends RealType> UnaryFunction<RealType, R2> andThen(UnaryFunction<RealType, R2> after) {
         if (after instanceof Exp) {
-            Class<R2> rtnClass = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
+            Class<R2> rtnClass = after.getReturnType();
             if (rtnClass == null) rtnClass = (Class<R2>) RealType.class; // a reasonable default
             return new Reflexive<>(getArgumentName(), lnRange, RealType.class).forReturnType(rtnClass);
         }
@@ -173,7 +172,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     }
 
     private UnaryFunction<RealType, RealType> lnDiff(IntegerType scale) {
-        return new Pow<>(-1L) {
+        return new Pow<>(-1L, RealType.class) {
             @Override
             protected String getArgumentName() {
                 return NaturalLog.this.getArgumentName();

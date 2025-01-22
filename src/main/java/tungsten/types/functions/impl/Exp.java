@@ -26,11 +26,9 @@ package tungsten.types.functions.impl;
 import tungsten.types.Range;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.functions.ArgVector;
-import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
-import tungsten.types.util.ClassTools;
 import tungsten.types.util.RangeUtils;
 
 import java.util.Objects;
@@ -39,6 +37,7 @@ import java.util.Objects;
  * A basic implementation of the exponential function &#x212F;<sup>x</sup> for
  * real-valued arguments.  This implementation supports composing with another
  * function at construction-time, saving some effort.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Exp extends UnaryFunction<RealType, RealType> {
     public Exp() {
@@ -56,7 +55,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
      * @param inner the inner function &fnof;(x) for composition
      */
     public Exp(UnaryFunction<? super RealType, RealType> inner) {
-        super(inner.expectedArguments()[0]);
+        super(inner.expectedArguments()[0], RealType.class);
         composedFunction = inner;
     }
 
@@ -84,7 +83,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
     @Override
     public <R2 extends RealType> UnaryFunction<RealType, R2> andThen(UnaryFunction<RealType, R2> after) {
         if (after instanceof NaturalLog) {
-            Class<R2> rtnClass = (Class<R2>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
+            Class<R2> rtnClass = after.getReturnType();
             if (rtnClass == null) rtnClass = (Class<R2>) RealType.class;
             return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, RealType.class).forReturnType(rtnClass);
         }
