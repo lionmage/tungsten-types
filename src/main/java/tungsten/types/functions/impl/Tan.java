@@ -23,6 +23,7 @@ import java.util.logging.Logger;
  * This function delegates to {@link MathUtils#tan(RealType)} for
  * calculation, and delegates to {@link Quotient} for
  * computing a derivative and for the purposes of composition.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Tan extends Quotient<RealType, RealType> implements Periodic {
     private final MathContext mctx;

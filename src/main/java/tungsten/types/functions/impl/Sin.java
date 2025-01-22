@@ -56,6 +56,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * This implementation has a set of pre-computed values for
  * certain magic angles, and is treated as periodic.  Aside from a table of fixed
  * values, this function delegates to {@link MathUtils#sin(RealType)}.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<RealType, RealType>, Periodic {
     private final MathContext mctx;

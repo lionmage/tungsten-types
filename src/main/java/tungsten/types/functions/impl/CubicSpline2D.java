@@ -16,9 +16,10 @@ import java.util.Objects;
  * no smoothing defined or enabled.<br>
  * The spline function is of the form:<br>
  * S(x) = a + b(x&minus;x<sub>0</sub>) + c(x&minus;x<sub>0</sub>)<sup>2</sup> + d(x&minus;x<sub>0</sub>)<sup>3</sup>
- * @see <a href="https://en.wikipedia.org/wiki/Spline_(mathematics)">the Wikipedia article on splines,
- *  which also gives excellent details on a basic algorithm for computing natural cubic splines</a>
+ * @see <a href="https://en.wikipedia.org/wiki/Spline_(mathematics)">the Wikipedia article on splines</a>,
+ *  which also gives excellent details on a basic algorithm for computing natural cubic splines
  * @see PiecewiseFunction
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
     private final RealType a, b, c, d;

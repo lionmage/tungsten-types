@@ -40,6 +40,7 @@ import java.util.Objects;
  *
  * @see <a href="http://matlab.cheme.cmu.edu/2011/10/30/smooth-transitions-between-discontinuous-functions/">&ldquo;Smooth transitions
  *   between discontinuous functions&rdquo; by John Kitchin</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Sigmoid extends UnaryFunction<RealType, RealType> {
     private final RealType x0;

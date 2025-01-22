@@ -27,6 +27,7 @@ import static tungsten.types.util.MathUtils.Re;
  * Interpolation can be avoided with the use of a special apply method.
  * @param <T> the input type for this proxy function
  * @param <R> the return type for this proxy function
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class ProxyFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
     private final Map<T, R> valueMap;

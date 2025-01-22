@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
  * at their shared bound would mean that bound is considered a singularity.
  * @param <T> the input type for this function
  * @param <R> the return type for this function
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R extends Numeric> extends UnaryFunction<T, R> {
     private final Map<Range<T>, UnaryFunction<T, R>> internalMap = new HashMap<>();

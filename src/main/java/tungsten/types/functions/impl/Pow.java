@@ -53,6 +53,7 @@ import java.util.Objects;
  *
  * @param <T> the input parameter type
  * @param <R> the output type
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
@@ -116,7 +117,9 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
      * exponentiated.
      * @param inner    the function to compose
      * @param exponent the exponent for this function
+     * @deprecated Use {@link Pow#Pow(UnaryFunction, Numeric, Class)} instead.
      */
+    @Deprecated(since = "0.6")
     public Pow(UnaryFunction<? super T, T> inner, Numeric exponent) {
         this(inner.expectedArguments()[0], exponent);
         composedFunction = inner;
