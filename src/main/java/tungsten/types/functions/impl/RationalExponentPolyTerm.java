@@ -62,7 +62,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
      * @param toCopy the polynomial term to copy
      */
     public RationalExponentPolyTerm(PolyTerm<T, R> toCopy) {
-        super(toCopy.getReturnClass(), toCopy.expectedArguments());
+        super(toCopy.getReturnType(), toCopy.expectedArguments());
         this.coeff = toCopy.coefficient();
         for (String varName : varNames) {
             powers.put(varName, new RationalImpl(BigInteger.valueOf(toCopy.order(varName)), BigInteger.ONE));
@@ -121,12 +121,18 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
                         accum = accum.multiply(intermediate);
                     }
                 }
-                return (R) accum.coerceTo(getReturnClass());
+                return (R) accum.coerceTo(getReturnType());
             } catch (CoercionException e) {
                 throw new IllegalStateException(e);
             }
         }
         throw new IllegalArgumentException("Input vector " + arguments + " is bad.");
+    }
+
+    @Override
+    public Class<T> getArgumentType() {
+        // TODO this needs some attention
+        return (Class<T>) Numeric.class;
     }
 
     @Override
@@ -210,7 +216,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     public Term<T, R> differentiate(String argName) {
         RationalType exponent = exponentFor(argName);
         try {
-            R dcoeff = (R) coefficient().multiply(exponent).coerceTo(getReturnClass());
+            R dcoeff = (R) coefficient().multiply(exponent).coerceTo(getReturnType());
             List<String> dargs = new ArrayList<>(varNames);
             TreeMap<String, RationalType> dpowers = new TreeMap<>(powers);
             exponent = (RationalType) exponent.subtract(One.getInstance(dcoeff.getMathContext())).coerceTo(RationalType.class);
@@ -231,7 +237,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     @Override
     public R coefficient() {
         try {
-            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnClass()) : coeff;
+            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnType()) : coeff;
         } catch (CoercionException e) {
             throw new IllegalStateException("Error while trying to coerce unity", e);
         }

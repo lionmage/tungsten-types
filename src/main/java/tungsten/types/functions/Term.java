@@ -16,7 +16,6 @@ import java.util.function.Function;
 public abstract class Term<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final Map<String, Range<RealType>> rangeMap = new TreeMap<>();
     protected final List<String> varNames;
-    protected final Class<R> rtnClazz;
 
     /**
      * Instantiate a term with no arguments (variables) and
@@ -24,8 +23,8 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
      * @param clazz the return type of this term
      */
     protected Term(Class<R> clazz) {
+        super(clazz);
         varNames = Collections.emptyList();
-        rtnClazz = clazz;
     }
 
     /**
@@ -35,8 +34,8 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
      * @param clazz         the return type of this term
      */
     protected Term(Collection<String> variableNames, Class<R> clazz) {
+        super(clazz);
         varNames = new ArrayList<>(variableNames);
-        rtnClazz = clazz;
     }
 
     /**
@@ -58,13 +57,13 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
      * @param variableNames the variable name or names for this term
      */
     protected Term(Class<R> clazz, String... variableNames) {
+        super(clazz);
         final List<String> vars = Arrays.asList(variableNames);
         HashSet<String> tester = new HashSet<>();
         if (vars.stream().map(tester::add).anyMatch(b -> b == Boolean.FALSE)) {
             throw new IllegalArgumentException("Argument names must be unique");
         }
         this.varNames = vars;
-        this.rtnClazz = clazz;
     }
 
     /**
@@ -150,13 +149,5 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
     @Override
     public int hashCode() {
         return Objects.hash(rangeMap, varNames);
-    }
-
-    /**
-     * Obtain the return type of this term.
-     * @return the return type
-     */
-    public Class<R> getReturnClass() {
-        return rtnClazz;
     }
 }

@@ -144,7 +144,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         final UnaryFunction<T, T> outerDerivative = SimpleDerivative.this.apply(outer);
         final UnaryFunction<T, T> innerDerivative = SimpleDerivative.this.apply(inner);
 
-        return new UnaryFunction<>(inner.expectedArguments()[0]) {
+        return new UnaryFunction<>(inner.expectedArguments()[0], inner.getReturnType()) {
             @Override
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.elementAt(0L);
@@ -160,12 +160,17 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                 }
                 return null;
             }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return inner.getArgumentType();
+            }
         };
     }
 
     protected UnaryFunction<T, T> sumStrategy(Sum<T, T> summation) {
         final String argName = summation.expectedArguments()[0];
-        Sum<T, T> diffResult = new Sum<>(argName);
+        Sum<T, T> diffResult = new Sum<>(argName, summation.getReturnType());
         summation.stream().map(this::apply).forEach(diffResult::appendTerm);
         return diffResult;
     }
@@ -199,7 +204,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                     new Product<>(argName, functions[1], derivatives[0]));
         } else {
             // generalized product rule
-            Sum<T, T> sumTerm = new Sum<>(argName);
+            Sum<T, T> sumTerm = new Sum<>(argName, product.getReturnType());
             // f'/f
             product.parallelStream().map(f -> new Quotient<>(argName, this.apply(f), f))
                     .map(Quotient::simplify)
@@ -212,7 +217,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         final String varName = input.expectedArguments()[0];
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), epsilon.getMathContext());
 
-        return new UnaryFunction<>(varName) {
+        return new UnaryFunction<>(varName, input.getReturnType()) {
             @Override
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.forVariableName(varName);
@@ -231,6 +236,11 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                     return input.inputRange(argName);
                 }
                 return null;
+            }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return input.getArgumentType();
             }
         };
     }

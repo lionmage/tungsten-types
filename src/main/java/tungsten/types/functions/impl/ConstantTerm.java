@@ -65,7 +65,7 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
             try {
                 if (Zero.isZero(multiplier.coefficient())) return multiplier;
                 if (One.isUnity(multiplier.coefficient())) return this;
-                R prod = (R) value.multiply(multiplier.coefficient()).coerceTo(getReturnClass());
+                R prod = (R) value.multiply(multiplier.coefficient()).coerceTo(getReturnType());
                 return new ConstantTerm<>(prod);
             } catch (CoercionException e) {
                 throw new ArithmeticException("Unable to compute the product of two constants");
@@ -98,7 +98,7 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
 
     @Differentiable
     public Term<T, R> differentiate(String varName) {
-        final Class<R> clazz = getReturnClass();
+        final Class<R> clazz = getReturnType();
         try {
             return new ConstantTerm<>((R) ExactZero.getInstance(value.getMathContext()).coerceTo(clazz));
         } catch (CoercionException e) {

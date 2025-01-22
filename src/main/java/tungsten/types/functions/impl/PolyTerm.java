@@ -109,7 +109,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                 accum = accum.multiply(intermediate);
             }
             try {
-                return (R) accum.coerceTo(getReturnClass());
+                return (R) accum.coerceTo(getReturnType());
             } catch (CoercionException e) {
                 throw new IllegalStateException(e);
             }
@@ -185,7 +185,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     @Override
     public R coefficient() {
         try {
-            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnClass()) : coeff;
+            return coeff == null ? (R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnType()) : coeff;
         } catch (CoercionException e) {
             throw new IllegalStateException("Error while trying to coerce unity", e);
         }
@@ -215,6 +215,12 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     }
 
     @Override
+    public Class<T> getArgumentType() {
+        // TODO this needs some attention
+        return (Class<T>) Numeric.class;
+    }
+
+    @Override
     public boolean isConstant() {
         // if all the exponents are zero, we are effectively a constant
         if (powers.values().stream().allMatch(l -> l == 0L)) return true;
@@ -226,7 +232,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         long order = order(argName);
         try {
             R dcoeff = (R) coefficient().multiply(new IntegerImpl(BigInteger.valueOf(order)))
-                    .coerceTo(getReturnClass());
+                    .coerceTo(getReturnType());
             List<String> dargs = new ArrayList<>(varNames);
             TreeMap<String, Long> dpowers = new TreeMap<>(powers);
             if (--order == 0) {
