@@ -26,6 +26,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * A representation of a polynomial, consisting of one or more terms.
+ * @param <T> the type of the input parameter or parameters
+ * @param <R> the return type of this function
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ */
 public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final List<Term<T, R>> terms = new ArrayList<>();
 
@@ -34,6 +41,10 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         terms.addAll(supplied);
     }
 
+    /**
+     * Instantiate a polynomial initially containing no terms.
+     * @param rtnType the return type of this polynomial
+     */
     public Polynomial(Class<R> rtnType) {
         super(rtnType);
     }

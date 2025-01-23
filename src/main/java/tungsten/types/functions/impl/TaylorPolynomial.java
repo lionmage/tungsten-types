@@ -9,7 +9,6 @@ import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
-import tungsten.types.util.OptionalOperations;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -17,11 +16,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * A representation of a Taylor polynomial, the result of evaluating a Taylor series
+ * for a function.
+ * @param <T> the input type of the parameter for this polynomial
+ * @param <R> the return type of this polynomial
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ */
 public abstract class TaylorPolynomial<T extends Numeric & Comparable<? super T>, R extends Numeric> extends Polynomial<T, R> {
     private final String argname;
     private final T diffAround;
     protected final UnaryFunction<T, R> f0;
 
+    /**
+     * Instantiate a Taylor polynomial by approximating a given function with a
+     * Taylor series.
+     * @param argName              the argument name for this polynomial
+     * @param original             the original function to approximate with a Taylor series
+     * @param differentiableAround the point a<sub>0</sub> around which to differentiate {@code original}
+     */
     public TaylorPolynomial(String argName, UnaryFunction<T, R> original, T differentiableAround) {
         super(original.getReturnType());
         this.argname = argName;
