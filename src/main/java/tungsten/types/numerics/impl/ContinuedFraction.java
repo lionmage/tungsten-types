@@ -737,6 +737,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * Compute the n<sup>th</sup> root of {@code this}, where n is an integer value.
      * @param n the degree of the root to be computed
      * @return the n<sup>th</sup> root as a continued fraction
+     * @throws ArithmeticException if {@code n} is even and {@code this} is negative
+     * @throws IllegalArgumentException if {@code n < 2}
      * @since 0.6
      */
     public ContinuedFraction nthRoot(long n) {
@@ -765,6 +767,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return mctx;
     }
 
+    /**
+     * Set the {@code MathContext} for this real value.
+     * @param ctx any valid {@code MathContext}
+     */
     public void setMathContext(MathContext ctx) {
         this.mctx = ctx;
     }
