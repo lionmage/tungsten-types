@@ -395,11 +395,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             return singleTerm;
         }
 
-        long[] negValue = new long[terms.length + 1];
+        long[] negValue = new long[Math.max(terms.length + 1, 3)];
         negValue[0] = -terms[0] - 1L;
         negValue[1] = 1L;
-        negValue[2] = terms[1] - 1L;
-        System.arraycopy(terms, 2, negValue, 3, terms.length - 2);
+        negValue[2] = terms.length > 1 ? terms[1] - 1L : termAt(1L) - 1L;
+        if (terms.length > 2) {
+            System.arraycopy(terms, 2, negValue, 3, terms.length - 2);
+        }
 
         int startRepeat = repeatsFromIndex < 0 ? -1 : repeatsFromIndex + 1;
         Function<Long, Long> indexMapper = null;
@@ -582,9 +584,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public Numeric inverse() {
+        if (terms() == 1L && terms[0] == 0L) throw new ArithmeticException("Division by 0");
+
         ContinuedFraction result;
         if (terms[0] == 0L) {
+            // remove a 0
             long[] invTerms = Arrays.copyOfRange(terms, 1, terms.length);
+            if (invTerms.length == 0) invTerms = new long[] { termAt(1L) };
             int cycleStart = repeatsFromIndex < 0 ? -1 : repeatsFromIndex - 1;
             Function<Long, Long> nuMapper = null;
             if (mappingFunc != null) {
