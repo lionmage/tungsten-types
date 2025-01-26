@@ -262,6 +262,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 if (k == source.length - 1) break; // if the last term is 0, just drop it
                 long a = source[k - 1];
                 long b = source[++k];
+                // term a is already in termList, so remove it
                 termList.remove(termList.size() - 1);
                 termList.add(a + b);
             } else {
@@ -598,6 +599,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             }
             result = new ContinuedFraction(invTerms, cycleStart, nuMapper);
         } else {
+            if (terms[0] < 0L) {
+                // special handling of negatives
+                return this.negate().inverse().negate();
+            }
             // insert a 0
             long[] invTerms = new long[terms.length + 1];
             invTerms[0] = 0L;
@@ -1014,6 +1019,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
              * @return a continued fraction representation of the {@code n}<sup>th</sup> root of Euler's number
              * @see <a href="https://en.wikipedia.org/wiki/Simple_continued_fraction#Regular_patterns_in_continued_fractions">this
              *   article at Wikipedia detailing continued fractions with regular patterns</a>
+             * @apiNote This implementation of {@code nthRoot()} does not set the {@code MathContext} of the result.
              * @since 0.6
              */
             @Override
@@ -1026,6 +1032,52 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             private long rootTerm(long k, long n) {
                 long coeff = k - (k - 1L)/3L;
                 return coeff * n - 1L;
+            }
+
+            /*
+             Groovy operator overloading.  We provide a special version of power() that takes
+             advantage of the regularity of the nth root of e.
+             */
+
+            @Override
+            public RealType power(Numeric operand) {
+                if (operand instanceof RationalType) {
+                    RationalType exponent = (RationalType) operand;
+                    long p = exponent.numerator().asBigInteger().longValueExact();
+                    long q = exponent.denominator().asBigInteger().longValueExact();
+                    if (p == 2L && exponent.denominator().isOdd()) {
+                        // exponents of 2/q have a special form
+                        ContinuedFraction result = new ContinuedFraction(new long[] {1L}, -1,
+                                k -> root2term(k, q));
+                        result.setMathContext(getMathContext());
+                        return result;
+                    }
+                    // normally, we would take the power first, then the nth root
+                    // but since the nth root of e is perfectly known, it may be best
+                    // to take the root first and then exponentiate
+                    ContinuedFraction root = nthRoot(q);
+                    root.setMathContext(getMathContext());
+                    ContinuedFraction pwr = root.pow(p);
+                    pwr.setMathContext(getMathContext());
+                    return pwr;
+                }
+                return super.power(operand);
+            }
+
+            private long root2term(long k, long n) {
+                final int fiveBlock = (int) ((k - 1L) % 5L);
+                long base = (k - 1L)/5L * 6L + 1L;  // divide by 5 first
+                switch (fiveBlock) {
+                    case 0:
+                        return (base * n - 1L)/2L;
+                    case 1:
+                        return (base * 2L + 4L) * n;
+                    case 2:
+                        long extBase = base + 4L;
+                        return (extBase * n - 1L)/2L;
+                    default:
+                        return 1L;
+                }
             }
         };
         e.setMathContext(ctx);
