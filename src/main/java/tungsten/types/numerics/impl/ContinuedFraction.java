@@ -29,10 +29,7 @@ import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
-import tungsten.types.util.GosperTermIterator;
-import tungsten.types.util.MathUtils;
-import tungsten.types.util.RationalCFTermAdapter;
-import tungsten.types.util.UnicodeTextEffects;
+import tungsten.types.util.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -41,6 +38,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -1011,6 +1010,17 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 ContinuedFraction root = nthRoot(2L);
                 root.setMathContext(getMathContext());
                 return root;
+            }
+
+            @Override
+            public ContinuedFraction pow(long n) {
+                if (n == 2L) {
+                    Stream<Long> cat = Stream.concat(Stream.of(1L),
+                            LongStream.range(1L, Long.MAX_VALUE).mapToObj(k -> root2term(k, 1L)));
+                    Iterator<Long> esquared = new CFCleaner(cat.iterator());
+                    return new ContinuedFraction(esquared, 10);
+                }
+                return super.pow(n);
             }
 
             /**
