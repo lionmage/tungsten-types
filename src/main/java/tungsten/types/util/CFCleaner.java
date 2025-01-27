@@ -39,8 +39,8 @@ import java.util.logging.Logger;
  * rules about the terms of a simple continued fraction:
  * <ul>
  *     <li>Only the first term a<sub>0</sub> may contain a 0 or negative value</li>
- *     <li>Zeroes should be annealed by the standard rules</li>
- *     <li>Negative values can be cured through a simple transformation</li>
+ *     <li>Zeroes should be annealed by the standard rules (by dropping, or dropping and summing, terms)</li>
+ *     <li>Negative values can be cured through a simple transformation and insertion of a term</li>
  *     <li>If the last term is a 1, it can be folded into the previous term by addition</li>
  * </ul>
  * This iterator wraps the source iterator and by necessity does look-ahead as well
@@ -50,7 +50,8 @@ import java.util.logging.Logger;
  *   of <em>An Introduction to Continued Fractions</em>
  * @see <a href="https://medium.com/@omer.kasdarma/the-curious-world-of-simple-continued-fractions-part-i-3e4bba93db5f">this
  *   article</a> which articulates the basic rules for handling 0 terms
- * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class CFCleaner implements Iterator<Long> {
     private Iterator<Long> source;
@@ -108,7 +109,7 @@ public class CFCleaner implements Iterator<Long> {
         }
         if (source != null && !source.hasNext()) {
             Logger.getLogger(CFCleaner.class.getName()).log(Level.INFO,
-                    "Source exhausted after {0} terms read.", k);
+                    "Source exhausted after {0}th term read.", k);
             source = null;
         }
         return deque.poll();
