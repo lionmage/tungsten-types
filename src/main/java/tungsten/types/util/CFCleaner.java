@@ -52,6 +52,7 @@ import java.util.logging.Logger;
  *   article</a> which articulates the basic rules for handling 0 terms
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
  *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ * @since 0.6
  */
 public class CFCleaner implements Iterator<Long> {
     private Iterator<Long> source;
