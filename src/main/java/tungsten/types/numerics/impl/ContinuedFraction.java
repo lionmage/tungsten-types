@@ -1021,6 +1021,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
              * if computing &#x212f;<sup>2/x</sup> where x&nbsp;=&nbsp;1.
              * @param n the integral exponent
              * @return &#x212f; raised to the {@code n} power
+             * @since 0.6
              */
             @Override
             public ContinuedFraction pow(long n) {
