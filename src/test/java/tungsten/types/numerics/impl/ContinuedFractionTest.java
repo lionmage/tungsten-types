@@ -209,4 +209,19 @@ public class ContinuedFractionTest {
         System.out.println("ln(0.001): " +
                 ANSITextEffects.highlightSelection(thouComputed, 0, thouDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
     }
+
+    @Test
+    public void magicTricksWithEuler() {
+        long[] sqExpected = {7L, 2L, 1L, 1L, 3L, 18L, 5L, 1L, 1L, 6L, 30L, 8L, 1L, 1L, 9L, 42L, 11L, 1L, 1L, 12L, 54L};
+        ContinuedFraction e = ContinuedFraction.euler(MathContext.DECIMAL128);
+        assertEquals("[2; …]", e.toString());
+        System.out.println("\u212F (dec) = " + e.asBigDecimal().toPlainString());
+        ContinuedFraction sq = e.pow(2L);
+        sq.setMathContext(MathContext.DECIMAL128);
+        System.out.println("\u212F\u00B2 = " + sq);
+        System.out.println("in decimal format: " + sq.asBigDecimal().toPlainString());
+        for (int idx = 0; idx < sqExpected.length; idx++) {
+            assertEquals(sqExpected[idx], sq.termAt(idx));
+        }
+    }
 }
