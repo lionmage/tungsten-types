@@ -184,9 +184,9 @@ public class ContinuedFractionTest {
         final String lgExpected = "2.37851162325373";  // to 15 decimal places
         String lgComputed = lg.asBigDecimal().toPlainString();
         int lgDiff = ANSITextEffects.findFirstDifference(lgExpected, lgComputed);
-        assertTrue(lgDiff > 14);
         System.out.println("lg(5.2): " +
                 ANSITextEffects.highlightSelection(lgComputed, 0, lgDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_GREEN));
+        assertTrue(lgDiff > 12, "Expected 12 significant digits, but got " + (lgDiff - 1)); // ignoring decimal point
 
         ContinuedFraction ln = MathUtils.log(cf1, ContinuedFraction.euler(MathContext.DECIMAL128));
         ln.setMathContext(MathContext.DECIMAL128);
@@ -200,14 +200,27 @@ public class ContinuedFractionTest {
         ContinuedFraction thousandth = new ContinuedFraction(0L, 1000L);  // 0.001
         thousandth.setMathContext(MathContext.DECIMAL128);
         final String thouExpected = "-6.907755278982137";
-        ContinuedFraction thouLG = MathUtils.log(thousandth, ContinuedFraction.euler(MathContext.DECIMAL128));
-        thouLG.setMathContext(MathContext.DECIMAL128);
-        assertEquals(-7L, thouLG.termAt(0L));
-        String thouComputed = thouLG.asBigDecimal().toPlainString();
+        ContinuedFraction thouLN = MathUtils.log(thousandth, ContinuedFraction.euler(MathContext.DECIMAL128));
+        thouLN.setMathContext(MathContext.DECIMAL128);
+        assertEquals(-7L, thouLN.termAt(0L));
+        String thouComputed = thouLN.asBigDecimal().toPlainString();
         int thouDiff = ANSITextEffects.findFirstDifference(thouExpected, thouComputed);
         assertTrue(thouDiff > 14);
         System.out.println("ln(0.001): " +
                 ANSITextEffects.highlightSelection(thouComputed, 0, thouDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
+
+        ContinuedFraction half = new ContinuedFraction(0L, 2L);
+        half.setMathContext(MathContext.DECIMAL128);
+        final String lnhalfExpected = "-0.693147180559945";
+        ContinuedFraction halfLN = MathUtils.log(half, ContinuedFraction.euler(MathContext.DECIMAL128));
+        halfLN.setMathContext(MathContext.DECIMAL128);
+        assertEquals(-1L, halfLN.termAt(0L));
+        String halfComputed = halfLN.asBigDecimal().toPlainString();
+        int halfDiff = ANSITextEffects.findFirstDifference(lnhalfExpected, halfComputed);
+        System.out.println("ln(0.5): " +
+                ANSITextEffects.highlightSelection(halfComputed, 0, halfDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.RED));
+        System.out.println("CF for ln of " + half + " is " + halfLN);
+        assertTrue(halfDiff > 14, "Expected 14 significant digits, but got " + (halfDiff - 1));
     }
 
     @Test

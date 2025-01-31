@@ -86,8 +86,11 @@ public class CFCleaner implements Iterator<Long> {
                 // seek ahead until we find a non-zero value
                 do {
                     peek = getSourceTerm();
+                    if (peek == null) break;
                     if (peek == 0L) zeroCount++;
                 } while (source.hasNext() && peek == 0L);
+                // if peek is null, just break out of this outer loop
+                if (peek == null) break;
                 // even case, drop the zeroes
                 if (zeroCount % 2 == 0) deque.addLast(peek);
                 else {
@@ -109,7 +112,7 @@ public class CFCleaner implements Iterator<Long> {
             if (deque.size() > 2 || !source.hasNext()) break;
         }
         if (source != null && !source.hasNext()) {
-            Logger.getLogger(CFCleaner.class.getName()).log(Level.INFO,
+            Logger.getLogger(CFCleaner.class.getName()).log(Level.FINE,
                     "Source exhausted after {0}th term read.", k);
             source = null;
         }
