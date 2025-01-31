@@ -1482,12 +1482,12 @@ public class MathUtils {
     public static ContinuedFraction log(ContinuedFraction x, ContinuedFraction base) {
         if (x.sign() == Sign.NEGATIVE) throw new ArithmeticException("Cannot compute log of " + x);
 
-        final ContinuedFraction one = new ContinuedFraction(1L);
-        if (x.compareTo(one) < 0) {
-            // x is in the range (0, 1] so we have a negative logarithm
+        if (x.termAt(0L) == 0L) {
+            // x is in the range (0, 1) so we have a negative logarithm
             // compute as -log(1/x) instead of messing around with iterative multiplication below
             return (ContinuedFraction) log((ContinuedFraction) x.inverse(), base).negate();
         }
+        final ContinuedFraction one = new ContinuedFraction(1L);
         List<Long> logTerms = new ArrayList<>();
         ContinuedFraction b = base;
         ContinuedFraction n = x;
