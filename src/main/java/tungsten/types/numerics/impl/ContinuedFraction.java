@@ -251,6 +251,17 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         this.mappingFunc = mappingFunc;
     }
 
+    /**
+     * A convenience constructor for values where the first term a<sub>0</sub> is
+     * specified and the remaining terms are specified by a function.
+     * @param a0          the whole number term a<sub>0</sub>
+     * @param mappingFunc a function that maps indices to term values
+     */
+    public ContinuedFraction(long a0, Function<Long, Long> mappingFunc) {
+        terms = new long[] {a0};
+        this.mappingFunc = mappingFunc;
+    }
+
     private long[] annealZeros(long[] source) {
         if (source.length == 1) return source;
 

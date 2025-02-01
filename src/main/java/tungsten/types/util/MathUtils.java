@@ -4418,6 +4418,33 @@ public class MathUtils {
     }
 
     /**
+     * Compute tan(1/n) for an integer value n.
+     * @param n any integer value
+     * @return a continued fraction representing tan(1/n)
+     * @throws ArithmeticException if {@code n} is zero
+     */
+    public static ContinuedFraction tan_nInv(IntegerType n) {
+        if (Zero.isZero(n)) throw new ArithmeticException("tan(1/n) is not defined for n = 0");
+        final long nValue = n.asBigInteger().longValueExact();
+        ContinuedFraction result;
+        if (nValue == 1L) {
+            // tan(1) is a special case
+            result = new ContinuedFraction(1L,
+                    i -> i % 2L == 0L ? 1L : i);
+        } else {
+            result = new ContinuedFraction(0L,
+                    i -> {
+                        if (i == 1L) return nValue - 1L;
+                        if (i % 2L == 0L) return 1L;
+                        return i * nValue - 2L;
+                    });
+        }
+        result.setMathContext(n.getMathContext());
+        return result;
+
+    }
+
+    /**
      * The complex-valued cosine function.
      * @param z a complex value
      * @return the complex-valued result of cos(z)
@@ -4578,6 +4605,20 @@ public class MathUtils {
         final Euler e = Euler.getInstance(x.getMathContext());
         RealType exp = e.exp(scaledArg);
         return (RealType) exp.subtract(one).divide(exp.add(one));
+    }
+
+    /**
+     * Compute tanh(1/n) for positive integer n.
+     * @param n any positive integer
+     * @return the hyperbolic tangent of {@code 1/n}
+     */
+    public static ContinuedFraction tanh_nInv(IntegerType n) {
+        if (n.sign() != Sign.POSITIVE) throw new ArithmeticException("tanh(1/n) is only defined for positive n");
+        final long nValue = n.asBigInteger().longValueExact();
+        ContinuedFraction result = new ContinuedFraction(0L,
+                 i -> (2L * i - 1L) * nValue);
+        result.setMathContext(n.getMathContext());
+        return result;
     }
 
     /**
