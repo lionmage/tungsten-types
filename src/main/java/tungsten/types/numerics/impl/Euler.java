@@ -55,9 +55,11 @@ import java.util.logging.Logger;
  * Internally, this class uses Brothers' formula for deriving &#x212f; to an
  * arbitrary precision.
  *
- * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://www.intmath.com/exponential-logarithmic-functions/calculating-e.php">an article at Interactive Mathematics about ways to calculate &#x212f;</a>
  * @see <a href="https://en.wikipedia.org/wiki/E_(mathematical_constant)">the Wikipedia article about this constant</a>
+ * @see ContinuedFraction#euler(MathContext) the factory method to generate a continued fraction of &#x212f;
  */
 @Constant(name = "euler", representation="\u212F")
 public class Euler implements RealType {

@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *  <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see tungsten.types.set.impl.FibonacciNumbers
  * @see <a href="https://en.wikipedia.org/wiki/Golden_ratio">the Wikipedia article on Phi</a>
+ * @see ContinuedFraction#phi(MathContext) the factory method to generate a continued fraction of &#x03D5;
  */
 @Constant(name = "phi", representation = "\u03D5")
 public class Phi implements RealType {

@@ -994,6 +994,51 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 if (divisor instanceof Phi) return One.getInstance(getMathContext());
                 return super.divide(divisor);
             }
+
+            /**
+             * We could use {@link tungsten.types.set.impl.FibonacciNumbers#getNthFibonacciNumber(long)} to
+             * obtain the n<sup>th</sup> Fibonacci number, but that would require carrying around an instance
+             * of the set just in case someone needs to compute a power of &#x03D5; &mdash; not to mention
+             * having to unwrap an {@code IntegerType} with each invocation.  This should be more than good
+             * enough.
+             * @param n a non-negative integer index
+             * @return the {@code n}<sup>th</sup> Fibonacci number
+             */
+            private long fibonacci(long n) {
+                if (n < 0L) throw new ArithmeticException("No negative indices allowed for Fibonacci numbers");
+                if (n == 0L || n == 1L) return 1L;
+                return fibonacci(n - 2L) + fibonacci(n - 1L);
+            }
+
+            @Override
+            public ContinuedFraction pow(long n) {
+                if (n == 0L) return new ContinuedFraction(1L);
+                if (n == 1L) return this;
+                if (n == -1L) return (ContinuedFraction) inverse();  // a very cheap operation
+                // powers of phi can be computed without exponentiation, just a simple multiply and add
+                // see https://r-knott.surrey.ac.uk/Fibonacci/propsOfPhi.html#numprops
+                long phiCoeff = fibonacci(Math.abs(n) - 1L);
+                if (n > 0L) {
+                    long offset  = fibonacci(n - 2L);
+                    ContinuedFraction coeff = new ContinuedFraction(phiCoeff);
+                    ContinuedFraction cfOffset = new ContinuedFraction(offset);
+                    Iterator<Long> prod = GosperTermIterator.multiply(coeff.iterator(), this.iterator());
+                    Iterator<Long> sum = GosperTermIterator.add(cfOffset.iterator(), prod);
+                    return new ContinuedFraction(sum, 3);
+                } else {
+                    // otherwise, we have a negative exponent
+                    final long negn = -n;
+                    if (negn % 2L == 0L) phiCoeff = -phiCoeff;
+                    long offset = fibonacci(negn);
+                    if (negn % 2L == 1L) offset = -offset;
+                    ContinuedFraction coeff = new ContinuedFraction(phiCoeff);
+                    ContinuedFraction cfOffset = new ContinuedFraction(offset);
+                    Iterator<Long> prod = GosperTermIterator.multiply(coeff.iterator(), this.iterator());
+                    Iterator<Long> sum = GosperTermIterator.add(cfOffset.iterator(), prod);
+                    // negative powers of phi can have 4 significant terms
+                    return new ContinuedFraction(sum, 4);
+                }
+            }
         };
         phi.setMathContext(ctx);
         return phi;
