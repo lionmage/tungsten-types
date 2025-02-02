@@ -26,6 +26,7 @@
 package tungsten.types.util;
 
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -56,7 +57,7 @@ import java.util.logging.Logger;
  */
 public class CFCleaner implements Iterator<Long> {
     private Iterator<Long> source;
-    private final ArrayDeque<Long> deque = new ArrayDeque<>(5);
+    private final Deque<Long> deque = new ArrayDeque<>(5);
     private long k = -1L;
     private boolean negateOnRead = false;
 
