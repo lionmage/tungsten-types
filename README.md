@@ -40,7 +40,7 @@ numeric types:
   * Hyperbolic functions sinh, cosh, tanh.
   * Logarithms are supported for multiple types, including continued fractions.
   * Specialized functions that show up a lot, such as 𝚪(z), ln𝚪(z) and 𝜁(s).
-  * Multiple ways to compute exponents for all Numeric data types.
+  * Multiple ways to compute exponents for all `Numeric` data types.
   * Methods for computing factorials, binomial coefficients, etc.
   * Methods for obtaining pseudorandom values:
     * evenly distributed over a given range
@@ -66,12 +66,13 @@ To this point, I was actually asked (during a job interview, no less) why
 I didn't just use bc (the command line calculator) to do this stuff.
 Several reasons:
 * Although bc supports arbitrary precision, it defaults to integer precision.
+* Without implementing custom functions, bc cannot handle fractional (rational) exponents; work-arounds involve a loss of precision.
+* Complex number support is absent from bc (although there are many other calculators available which do this).
 * Who wants to shell out from within an application just to perform some calculations?
     * Shelling out is costly.
     * Avoiding the context switch by using native math capabilities of the target language is preferable.
     * I'm looking at you, Python...
 * If my goal is to write a Java application, then I should be writing these libraries in Java.
-* My understanding is that most implementations of bc don't handle complex numbers natively.
 * There are multiple implementations of bc, most of which adhere to a POSIX standard, but all of which have different features.
 
 To be clear: This project is intended to create the foundation of mathematical
