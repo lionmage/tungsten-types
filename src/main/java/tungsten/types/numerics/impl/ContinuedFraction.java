@@ -62,6 +62,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * If not present or false, the default behavior is to use an overline (vinculum).
      */
     public static final String REPEAT_IN_BRACKETS = "tungsten.types.numerics.ContinuedFraction.repeatInBrackets";
+    public static final String EMIT_NULL_ON_ZERO = "tungsten.types.numerics.ContinuedFraction.emitNullOnZeroTerm";
 
     private final long[] terms;
     private int repeatsFromIndex = -1;
@@ -926,6 +927,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return Boolean.getBoolean(REPEAT_IN_BRACKETS);
     }
 
+    protected boolean emitNullsForZeroTerms() {
+        return Boolean.getBoolean(EMIT_NULL_ON_ZERO);
+    }
+
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -975,7 +980,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 if (terms() > 0L && k >= terms()) return null;
                 long term = termAt(k++);
                 // since k has advanced, compare with 1 instead of 0
-                if (k > 1L && term == 0L) return null;
+                if (k > 1L && term == 0L) {
+                    if (emitNullsForZeroTerms()) return null;
+                    List<Long> subterms = List.of(termAt(k - 2L), termAt(k - 1L), termAt(k));
+                    Logger.getLogger(ContinuedFraction.class.getName()).log(Level.INFO,
+                            "Encountered a 0 term in subsequence {0}.", subterms);
+                }
                 return term;
             }
         };
