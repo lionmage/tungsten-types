@@ -874,7 +874,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 case POSITIVE:
                     return -1;
                 default:
-                    throw new IllegalStateException("RealInfinity should not have sign=0");
+                    throw new IllegalStateException("RealInfinity should not have sign " + o.sign());
             }
         }
         if (o instanceof ContinuedFraction) {
