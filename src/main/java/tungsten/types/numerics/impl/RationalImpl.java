@@ -153,8 +153,7 @@ public class RationalImpl implements RationalType {
 
     @Override
     public RationalType magnitude() {
-        final RationalImpl magnitude = new RationalImpl(numerator.abs(), denominator);
-        magnitude.setMathContext(mctx);
+        final RationalImpl magnitude = new RationalImpl(numerator.abs(), denominator, mctx);
         return magnitude.reduce();
     }
 

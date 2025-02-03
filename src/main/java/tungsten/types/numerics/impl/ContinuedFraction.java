@@ -867,6 +867,16 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public int compareTo(RealType o) {
+        if (o instanceof RealInfinity) {
+            switch (o.sign()) {
+                case NEGATIVE:
+                    return 1;
+                case POSITIVE:
+                    return -1;
+                default:
+                    throw new IllegalStateException("RealInfinity should not have sign=0");
+            }
+        }
         if (o instanceof ContinuedFraction) {
             ContinuedFraction that = (ContinuedFraction) o;
             final long extent = computeExtent(this.terms(), that.terms());
