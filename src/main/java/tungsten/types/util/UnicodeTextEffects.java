@@ -799,10 +799,12 @@ public class UnicodeTextEffects {
             if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
             RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
-            for (FractionalHorizontalBlock block : values()) {
-                if (onlyFrac.compareTo(block.value) <= 0) return block;
+            FractionalHorizontalBlock block = FULL;
+            for (FractionalHorizontalBlock candidate : values()) {
+                if (onlyFrac.compareTo(candidate.value) <= 0) block = candidate;
+                else break;
             }
-            return FULL;
+            return block;
         }
 
         public static FractionalHorizontalBlock forFraction(RealType frac) {
@@ -810,10 +812,12 @@ public class UnicodeTextEffects {
             if (Zero.isZero(frac)) return EMPTY;
             if (One.isUnity(frac)) return FULL;
             RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
-            for (FractionalHorizontalBlock block : values()) {
-                if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
+            FractionalHorizontalBlock block = FULL;
+            for (FractionalHorizontalBlock candidate : values()) {
+                if (onlyFrac.asBigDecimal().compareTo(candidate.value.asBigDecimal()) <= 0) block = candidate;
+                else break;
             }
-            return FULL;
+            return block;
         }
     }
 
@@ -855,21 +859,25 @@ public class UnicodeTextEffects {
             if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
             RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
-            for (FractionalVerticalBlock block : values()) {
-                if (onlyFrac.compareTo(block.value) <= 0) return block;
+            FractionalVerticalBlock block = FULL;
+            for (FractionalVerticalBlock candidate : values()) {
+                if (onlyFrac.compareTo(candidate.value) <= 0) block = candidate;
+                else break;
             }
-            return FULL;
+            return block;
         }
 
         public static FractionalVerticalBlock forFraction(RealType frac) {
             if (frac.sign() == Sign.NEGATIVE) throw new IllegalArgumentException(NEGATIVE_VALUES_PROHIBITED);
             if (Zero.isZero(frac)) return EMPTY;
             if (One.isUnity(frac)) return FULL;
+            FractionalVerticalBlock block = FULL;
             RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
-            for (FractionalVerticalBlock block : values()) {
-                if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
+            for (FractionalVerticalBlock candidate : values()) {
+                if (onlyFrac.asBigDecimal().compareTo(candidate.value.asBigDecimal()) <= 0) block = candidate;
+                else break;
             }
-            return FULL;
+            return block;
         }
     }
 
@@ -911,20 +919,24 @@ public class UnicodeTextEffects {
         public static FractionalVerticalInverseBlock forFraction(RationalType frac) {
             boolean takeFraction = frac.numerator().magnitude().compareTo(frac.denominator()) > 0; // frac > 1
             RationalType onlyFrac = takeFraction ? (RationalType) frac.magnitude().subtract(MathUtils.trunc(frac.magnitude())) : frac.magnitude();
-            for (FractionalVerticalInverseBlock block : values()) {
-                if (onlyFrac.compareTo(block.value) <= 0) return block;
+            FractionalVerticalInverseBlock block = FULL;
+            for (FractionalVerticalInverseBlock candidate : values()) {
+                if (onlyFrac.compareTo(candidate.value) <= 0) block = candidate;
+                else break;
             }
-            return FULL;
+            return block;
         }
 
         public static FractionalVerticalInverseBlock forFraction(RealType frac) {
             if (Zero.isZero(frac)) return EMPTY;
             if (One.isUnity(frac)) return FULL;
             RealType onlyFrac = (RealType) frac.magnitude().subtract(MathUtils.trunc(frac.magnitude()));
-            for (FractionalVerticalInverseBlock block : values()) {
-                if (onlyFrac.asBigDecimal().compareTo(block.value.asBigDecimal()) <= 0) return block;
+            FractionalVerticalInverseBlock block = FULL;
+            for (FractionalVerticalInverseBlock candidate : values()) {
+                if (onlyFrac.asBigDecimal().compareTo(candidate.value.asBigDecimal()) <= 0) block = candidate;
+                else break;
             }
-            return FULL;
+            return block;
         }
     }
 
