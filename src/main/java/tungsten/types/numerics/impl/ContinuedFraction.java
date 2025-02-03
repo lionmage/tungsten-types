@@ -62,6 +62,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * If not present or false, the default behavior is to use an overline (vinculum).
      */
     public static final String REPEAT_IN_BRACKETS = "tungsten.types.numerics.ContinuedFraction.repeatInBrackets";
+    /**
+     * System property governing whether {@link #iterator()} generates an {@code Iterator<Long>} instance
+     * that emits nulls when it encounters zero terms.
+     */
     public static final String EMIT_NULL_ON_ZERO = "tungsten.types.numerics.ContinuedFraction.emitNullOnZeroTerm";
 
     private final long[] terms;
@@ -746,6 +750,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         ContinuedFraction intermediate = pow(n >> 1L);  // bit shift takes care of it all
         Iterator<Long> evenTerms = GosperTermIterator.multiply(intermediate.iterator(), intermediate.iterator());
         Iterator<Long> result = oddTerm != null ? GosperTermIterator.multiply(oddTerm, evenTerms) : evenTerms;
+        if (intermediate.terms() < 0L) result = new CFCleaner(result);
         return new ContinuedFraction(result, mctx.getPrecision() + 1);
     }
 
@@ -772,7 +777,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             Iterator<Long> termB = GosperTermIterator.multiply(Adivn.iterator(),
                     xk.pow(-n + 1L).iterator());  // inverse of n - 1 exponent
             Iterator<Long> sum = GosperTermIterator.add(termA, termB);
-            xk = new ContinuedFraction(sum, i);
+            Iterator<Long> cleaned = new CFCleaner(sum);
+            xk = new ContinuedFraction(cleaned, i);
         }
         xk.setMathContext(mctx);
         return xk;
@@ -928,6 +934,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     }
 
     protected boolean emitNullsForZeroTerms() {
+        if (!System.getProperties().containsKey(EMIT_NULL_ON_ZERO)) return true;
         return Boolean.getBoolean(EMIT_NULL_ON_ZERO);
     }
 

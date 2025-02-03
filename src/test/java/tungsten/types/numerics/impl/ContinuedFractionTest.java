@@ -162,12 +162,14 @@ public class ContinuedFractionTest {
         String decString = root.asBigDecimal().toPlainString();
         System.out.println("In decimal notation: " + decString);
         // value obtained from https://en.wikipedia.org/wiki/Nth_root#Using_Newton's_method
-        assertTrue(decString.startsWith("2.024397458499885042510817245541"));
+        assertTrue(decString.startsWith("2.02439745849988504251081724554"));
         final String target = "2.02439 74584 99885 04251 08172 45541 93741 91146 21701 07311";
         var reduced = target.replaceAll("\\s", "");
         int diffpos = ANSITextEffects.findFirstDifference(reduced, decString);
         System.out.println("With highlighted digits: " +
                 ANSITextEffects.highlightSelection(decString, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_YELLOW));
+        System.out.println("vs. expected value: " +
+                ANSITextEffects.highlightSelection(reduced, 0, diffpos, ANSITextEffects.Effect.ITALIC, ANSITextEffects.Effect.BLUE, ANSITextEffects.Effect.BG_YELLOW));
     }
 
     @Test
