@@ -569,7 +569,7 @@ public class UnicodeTextEffects {
         return computeActualDecimalPointCharPosition(original, decPointIdx);
     }
 
-    private static final RationalType ONE = new RationalImpl(BigInteger.ONE, BigInteger.ONE);
+    private static final RationalType ONE = new RationalImpl(BigInteger.ONE, BigInteger.ONE, MathContext.DECIMAL64);
 
     /**
      * Format a rational value as a proper fraction.  Whole values are separated from
@@ -760,14 +760,14 @@ public class UnicodeTextEffects {
     }
 
     public enum FractionalHorizontalBlock {
-        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE)),
-        ONE_EIGHTH('\u258F', new RationalImpl("1/8")),
-        ONE_FOURTH('\u258E', new RationalImpl("1/4")),
-        THREE_EIGHTHS('\u258D', new RationalImpl("3/8")),
-        ONE_HALF('\u258C', new RationalImpl("1/2")),
-        FIVE_EIGHTHS('\u258B', new RationalImpl("5/8")),
-        THREE_FOURTHS('\u258A', new RationalImpl("3/4")),
-        SEVEN_EIGHTHS('\u2589', new RationalImpl("7/8")),
+        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE, MathContext.DECIMAL64)),
+        ONE_EIGHTH('\u258F', new RationalImpl("1/8", MathContext.DECIMAL64)),
+        ONE_FOURTH('\u258E', new RationalImpl("1/4", MathContext.DECIMAL64)),
+        THREE_EIGHTHS('\u258D', new RationalImpl("3/8", MathContext.DECIMAL64)),
+        ONE_HALF('\u258C', new RationalImpl("1/2", MathContext.DECIMAL64)),
+        FIVE_EIGHTHS('\u258B', new RationalImpl("5/8", MathContext.DECIMAL64)),
+        THREE_FOURTHS('\u258A', new RationalImpl("3/4", MathContext.DECIMAL64)),
+        SEVEN_EIGHTHS('\u2589', new RationalImpl("7/8", MathContext.DECIMAL64)),
         FULL('\u2588', ONE);
 
         private final char rep;
@@ -822,14 +822,14 @@ public class UnicodeTextEffects {
     }
 
     public enum FractionalVerticalBlock {
-        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE)),
-        ONE_EIGHTH('\u2581', new RationalImpl("1/8")),
-        ONE_FOURTH('\u2582', new RationalImpl("1/4")),
-        THREE_EIGHTHS('\u2583', new RationalImpl("3/8")),
-        ONE_HALF('\u2584', new RationalImpl("1/2")),
-        FIVE_EIGHTHS('\u2585', new RationalImpl("5/8")),
-        THREE_FOURTHS('\u2586', new RationalImpl("3/4")),
-        SEVEN_EIGHTHS('\u2587', new RationalImpl("7/8")),
+        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE, MathContext.DECIMAL64)),
+        ONE_EIGHTH('\u2581', new RationalImpl("1/8", MathContext.DECIMAL64)),
+        ONE_FOURTH('\u2582', new RationalImpl("1/4", MathContext.DECIMAL64)),
+        THREE_EIGHTHS('\u2583', new RationalImpl("3/8", MathContext.DECIMAL64)),
+        ONE_HALF('\u2584', new RationalImpl("1/2", MathContext.DECIMAL64)),
+        FIVE_EIGHTHS('\u2585', new RationalImpl("5/8", MathContext.DECIMAL64)),
+        THREE_FOURTHS('\u2586', new RationalImpl("3/4", MathContext.DECIMAL64)),
+        SEVEN_EIGHTHS('\u2587', new RationalImpl("7/8", MathContext.DECIMAL64)),
         FULL('\u2588', ONE);
 
         private final char rep;
@@ -887,10 +887,10 @@ public class UnicodeTextEffects {
      * This will limit the accuracy in plotting a histogram with negative values.
      */
     public enum FractionalVerticalInverseBlock {
-        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE)),
-        ONE_EIGHTH('\u2594', new RationalImpl("1/8")),
-        ONE_HALF('\u2580', new RationalImpl("1/2")),
-        SEVEN_EIGHTHS('\u2593', new RationalImpl("7/8")), // we're close to whole, so fake it with a dark shaded block
+        EMPTY(' ', new RationalImpl(BigInteger.ZERO, BigInteger.ONE, MathContext.DECIMAL64)),
+        ONE_EIGHTH('\u2594', new RationalImpl("1/8", MathContext.DECIMAL64)),
+        ONE_HALF('\u2580', new RationalImpl("1/2", MathContext.DECIMAL64)),
+        SEVEN_EIGHTHS('\u2593', new RationalImpl("7/8", MathContext.DECIMAL64)), // we're close to whole, so fake it with a dark shaded block
         FULL('\u2588', ONE);
 
         private final char rep;
