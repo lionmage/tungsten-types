@@ -130,6 +130,13 @@ public class ContinuedFractionTest {
 //        square.setMathContext(MathContext.DECIMAL64);
 //        System.out.println("Square is " + square);
 //        assertEquals(15L, square.termAt(0L));
+        // the multiply method should fall back to RealImpl if the result of multiplication is erroneous
+        Numeric square = sqrt15.multiply(sqrt15);
+        System.out.println("Square is " + square);
+        assertInstanceOf(RealType.class, square, "sqrt15*sqrt15 should be a real");
+        RealType diff = (RealType) new RealImpl("15.0", MathContext.DECIMAL64).subtract(square);
+        System.out.println("Difference from actual value is " + diff);
+        assertTrue(diff.asBigDecimal().compareTo(epsilon) < 0);
     }
 
     @Test
