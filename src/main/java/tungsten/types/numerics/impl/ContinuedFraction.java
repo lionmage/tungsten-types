@@ -1027,13 +1027,15 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
              * obtain the n<sup>th</sup> Fibonacci number, but that would require carrying around an instance
              * of the set just in case someone needs to compute a power of &#x03D5; &mdash; not to mention
              * having to unwrap an {@code IntegerType} with each invocation.  This should be more than good
-             * enough.
+             * enough.<br>
+             * This implementation generates values starting with 1, not 0.
              * @param n a non-negative integer index
              * @return the {@code n}<sup>th</sup> Fibonacci number
              */
             private long fibonacci(long n) {
                 if (n < 0L) throw new ArithmeticException("No negative indices allowed for Fibonacci numbers");
-                if (n == 0L || n == 1L) return 1L;
+                final long[] precalc = {1L, 1L, 2L, 3L, 5L, 8L, 13L, 21L, 34L, 55L, 89L, 144L};
+                if (n < (long) precalc.length) return precalc[(int) n];
                 return fibonacci(n - 2L) + fibonacci(n - 1L);
             }
 
