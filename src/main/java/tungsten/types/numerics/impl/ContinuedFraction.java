@@ -1250,6 +1250,41 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return freiman;
     }
 
+    /**
+     * Generate a continued fraction representation of the Rabbit Constant.
+     * @param ctx the {@code MathContext} to use for this constant
+     * @return the continued fraction representing the Rabbit Constant
+     * @see <a href="https://mathworld.wolfram.com/RabbitConstant.html">an article at Wolfram MathWorld</a>
+     * @see <a href="https://r-knott.surrey.ac.uk/fibonacci/CFintro.html#section12.2">section 12.2</a> of
+     *   <em>An Introduction to Continued Fractions</em> by <a href="https://r-knott.surrey.ac.uk/contactron.html">Dr.
+     *   Ron Knott</a>
+     */
+    public static ContinuedFraction rabbit(MathContext ctx) {
+        final Function<Long, Long> termgen = new Function<>() {
+            @Override
+            public Long apply(Long index) {
+                if (index == null || index < 1L) throw new IllegalArgumentException("Index cannot be null or negative");
+                return 1L << fibExponent(index - 1L);
+            }
+
+            /**
+             * This generates Fibonacci numbers suitable for use as exponents.
+             * As such, the sequence starts with 0, not with 1 (as it is defined elsewhere).
+             *
+             * @param n the 0-based index into the Fibonacci sequence
+             * @return the Fibonacci number corresponding with {@code n}, given that F<sub>0</sub>&nbsp;=&nbsp;0
+             */
+            private long fibExponent(long n) {
+                final long[] precalc = {0L, 1L, 1L, 2L, 3L, 5L, 8L, 13L, 21L, 34L, 55L, 89L, 144L};
+                if (n < (long) precalc.length) return precalc[(int) n];
+                return fibExponent(n - 2L) + fibExponent(n - 1L);
+            }
+        };
+        ContinuedFraction rabbitConstant = new ContinuedFraction(0L, termgen);
+        rabbitConstant.setMathContext(ctx);
+        return rabbitConstant;
+    }
+
     /*
      Methods for Groovy operator overloading follow.
      */
