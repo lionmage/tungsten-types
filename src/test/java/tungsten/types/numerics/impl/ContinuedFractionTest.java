@@ -246,4 +246,15 @@ public class ContinuedFractionTest {
             assertEquals(sqExpected[idx], sq.termAt(idx));
         }
     }
+
+    @Test
+    public void hoppityHop() {
+        ContinuedFraction bunny = ContinuedFraction.rabbit(MathContext.DECIMAL64);
+        ContinuedFraction limited = bunny.trimTo(9);
+        System.out.println("First 9 terms of rabbit constant = " + limited);
+        assertEquals("[0; 1, 2, 2, 4, 8, 32, 256, 8192]", limited.toString());
+        BigDecimal decBunny = bunny.asBigDecimal();
+        System.out.println("Decimal representation is " + decBunny.toPlainString());
+        assertTrue(decBunny.toPlainString().startsWith("0.709803442861291"));
+    }
 }
