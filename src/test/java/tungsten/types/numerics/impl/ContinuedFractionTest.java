@@ -173,9 +173,9 @@ public class ContinuedFractionTest {
         var reduced = target.replaceAll("\\s", "");
         int diffpos = ANSITextEffects.findFirstDifference(reduced, decString);
         System.out.println("With highlighted digits: " +
-                ANSITextEffects.highlightSelection(decString, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_YELLOW));
+                ANSITextEffects.highlightSelection(decString, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BLUE, ANSITextEffects.Effect.BG_YELLOW));
         System.out.println("vs. expected value: " +
-                ANSITextEffects.highlightSelection(reduced, 0, diffpos, ANSITextEffects.Effect.ITALIC, ANSITextEffects.Effect.BLUE, ANSITextEffects.Effect.BG_YELLOW));
+                ANSITextEffects.highlightSelection(reduced, diffpos, reduced.length(), ANSITextEffects.Effect.ITALIC, ANSITextEffects.Effect.RED));
         assertTrue(diffpos > 30, "Expected 30 significant digits, but got " + (diffpos - 1));
     }
 
