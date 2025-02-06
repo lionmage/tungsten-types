@@ -60,7 +60,6 @@ public class ContinuedFractionTest {
         // let's show the diff
         int diffpos = ANSITextEffects.findFirstDifference(pistr, cfstr);
         assertTrue(diffpos > 10, "There should be at least 9 significant digits in common");
-//        System.out.println( ANSITextEffects.highlightSection(pistr, 0, diffpos, ANSITextEffects.Effect.BOLD));
         System.out.println("Showing digits in common: " +
                 ANSITextEffects.highlightSelection(pistr, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
     }
