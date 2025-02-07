@@ -83,7 +83,7 @@ public class ContinuedFractionTest {
 
         RealType val = new RealImpl("9.7", MathContext.DECIMAL128);
         ContinuedFraction cfVal = new ContinuedFraction(val);
-        cfVal.setMathContext(MathContext.DECIMAL128);
+        assertEquals(MathContext.DECIMAL128, cfVal.getMathContext(), "Continued fraction should inherit MathContext");
         System.out.println("For 9.7, CF is " + cfVal);
 
         Numeric root = cfVal.sqrt();
