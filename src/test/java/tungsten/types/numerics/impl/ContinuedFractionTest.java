@@ -59,7 +59,7 @@ public class ContinuedFractionTest {
         System.out.println("From the BBP algorithm: " + pistr);
         // let's show the diff
         int diffpos = ANSITextEffects.findFirstDifference(pistr, cfstr);
-        assertTrue(diffpos > 10, "There should be at least 9 significant digits in common");
+        assertTrue(diffpos > 10, "There should be at least 10 significant digits in common");
         System.out.println("Showing digits in common: " +
                 ANSITextEffects.highlightSelection(pistr, 0, diffpos, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.BG_CYAN));
     }
