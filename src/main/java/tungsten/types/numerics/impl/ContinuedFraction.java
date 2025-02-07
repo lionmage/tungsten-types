@@ -34,6 +34,7 @@ import tungsten.types.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -190,7 +191,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             throw new IllegalArgumentException("Incorrect format");
         }
         // unwrapping and scrubbing
-        String effective = init.substring(start + 1, end).strip().replace('\u2212', '-');
+        final DecimalFormatSymbols df = DecimalFormatSymbols.getInstance();
+        String effective = init.substring(start + 1, end).strip().replace('\u2212', df.getMinusSign());
         int semi = effective.indexOf(';');
         if (semi == -1) throw new IllegalArgumentException("No semicolon after whole part");
         long whole = Long.parseLong(effective.substring(0, semi).stripTrailing());
