@@ -249,8 +249,23 @@ public interface Matrix<T extends Numeric> {
             }
         };
     }
-    
+
+    /**
+     * Add the supplied matrix to this matrix.  If this matrix has
+     * elements A<sub>j,k</sub> and the addend has elements
+     * B<sub>j, k</sub>, the resulting matrix M has elements
+     * A<sub>j,k</sub>&nbsp;+&nbsp;B<sub>j,k</sub>.
+     * @param addend the matrix to be added to {@code this}
+     * @return a {@code Matrix} that is the sum of {@code this} and {@code addend}
+     */
     Matrix<T> add(Matrix<T> addend);
+    /**
+     * Multiply the supplied matrix with this matrix.  The standard
+     * rules of matrix multiplication applies.
+     * @param multiplier the matrix to be multiplied with {@code this}
+     * @return a {@code Matrix} that is the product of {@code this} and {@code multiplier}
+     * @throws ArithmeticException if {@code this.columns() != multiplier.rows()}
+     */
     Matrix<T> multiply(Matrix<T> multiplier);
 
     /**
@@ -367,6 +382,14 @@ public interface Matrix<T extends Numeric> {
         return x.multiply(y);
     }
 
+    /**
+     * Subtract the supplied matrix from this matrix.  If this matrix has
+     * elements A<sub>j,k</sub> and the addend has elements
+     * B<sub>j, k</sub>, the resulting matrix M has elements
+     * A<sub>j,k</sub>&nbsp;&minus;&nbsp;B<sub>j,k</sub>.
+     * @param subtrahend the matrix to be added to {@code this}
+     * @return a {@code Matrix} that is the difference between {@code this} and {@code subtrahend}
+     */
     default Matrix<T> subtract(Matrix<T> subtrahend) {
         if (subtrahend.rows() != this.rows() || subtrahend.columns() != this.columns()) {
             throw new IllegalArgumentException("Matrix dimensions are mismatched");
@@ -396,7 +419,12 @@ public interface Matrix<T extends Numeric> {
                     subtrahend.rows() + MULT_SIGN + subtrahend.columns() + " matrix", ce);
         }
     }
-    
+
+    /**
+     * Obtain a row vector from this matrix for a given row index.
+     * @param row the index of the row to obtain
+     * @return a {@link RowVector} containing the elements of row {@code row}
+     */
     default RowVector<T> getRow(long row) {
         Class<? extends Numeric> pclass = LongStream.range(0L, columns()).mapToObj(col -> valueAt(row, col))
                 .map(Numeric::getClass).max(NumericHierarchy.obtainTypeComparator())
@@ -415,7 +443,12 @@ public interface Matrix<T extends Numeric> {
         }
         return new ArrayRowVector<>(temp);
     }
-    
+
+    /**
+     * Obtain a column vector from this matrix for a given column index.
+     * @param column the index of the row to obtain
+     * @return a {@link ColumnVector} containing the elements of column {@code column}
+     */
     default ColumnVector<T> getColumn(long column) {
         Class<? extends Numeric> pclass = LongStream.range(0L, rows()).mapToObj(row -> valueAt(row, column))
                 .map(Numeric::getClass).max(NumericHierarchy.obtainTypeComparator())
@@ -435,7 +468,7 @@ public interface Matrix<T extends Numeric> {
     }
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     default Matrix<T> plus(Matrix<T> operand) {
         return this.add(operand);

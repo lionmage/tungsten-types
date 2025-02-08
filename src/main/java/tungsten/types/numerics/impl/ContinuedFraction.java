@@ -65,7 +65,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public static final String REPEAT_IN_BRACKETS = "tungsten.types.numerics.ContinuedFraction.repeatInBrackets";
     /**
      * System property governing whether {@link #iterator()} generates an {@code Iterator<Long>} instance
-     * that emits nulls when it encounters zero terms.
+     * that emits nulls when it encounters zero terms.  If not defined or present, defaults to {@code true}.
      */
     public static final String EMIT_NULL_ON_ZERO = "tungsten.types.numerics.ContinuedFraction.emitNullOnZeroTerm";
 
@@ -89,7 +89,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     public ContinuedFraction(RealType num) {
         if (num instanceof ContinuedFraction) {
-            // we just want to copy directly
+            // we just want to copy directly (shallow copy)
             ContinuedFraction that = (ContinuedFraction) num;
             this.terms = that.terms;
             this.repeatsFromIndex = that.repeatsFromIndex;
@@ -119,10 +119,20 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         this.mctx = num.getMathContext();
     }
 
+    /**
+     * Varargs constructor that takes one or more {@code Long} values.
+     * @param terms one or more term values
+     */
     public ContinuedFraction(Long... terms) {
         this.terms = Arrays.stream(terms).mapToLong(Long::longValue).toArray();
     }
 
+    /**
+     * Given a {@code List<Long>}, construct a finite (rational) simple
+     * continued fraction.
+     * @param terms zero or more term values; it is recommended to supply
+     *              at least one term
+     */
     public ContinuedFraction(List<Long> terms) {
         this.terms = terms.stream().mapToLong(Long::longValue).toArray();
     }

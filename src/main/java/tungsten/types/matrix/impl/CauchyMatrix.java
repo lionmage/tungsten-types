@@ -50,7 +50,8 @@ import java.util.stream.LongStream;
  * </ul>
  * @param <S> the type of the matrix elements
  * @param <E> the type of the elements of the supplied vectors
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://en.wikipedia.org/wiki/Cauchy_matrix">the Wikipedia article</a>
  * @see <a href="https://proofwiki.org/wiki/Inverse_of_Cauchy_Matrix">formula for the inverse</a>
  */
@@ -59,6 +60,12 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
     private final Vector<E> Y;
     private final Class<S>  mtxEltType;
 
+    /**
+     * Construct a Cauchy matrix given input vectors X&#x20D7; and Y&#x20D7;.
+     * @param X           the first input vector
+     * @param Y           the second input vector
+     * @param elementType the type of the elements of the resulting {@code Matrix}
+     */
     public CauchyMatrix(Vector<E> X, Vector<E> Y, Class<S> elementType) {
         super(X.length(), Y.length(),
                 (row, column) -> {
@@ -154,10 +161,18 @@ public class CauchyMatrix<S extends Numeric, E extends Numeric> extends Parametr
         };
     }
 
+    /**
+     * Obtain an immutable copy of input vector X&#x20D7;
+     * @return an immutable copy of X&#x20D7;
+     */
     public Vector<E> getX() {
         return new ImmutableVector<>(X);
     }
 
+    /**
+     * Obtain an immutable copy of input vector Y&#x20D7;
+     * @return an immutable copy of Y&#x20D7;
+     */
     public Vector<E> getY() {
         return new ImmutableVector<>(Y);
     }

@@ -55,8 +55,8 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
     public static final char MINUTES_SIGN = '\u2032';  // prime, not apostrophe
     public static final char SECONDS_SIGN = '\u2033';  // double-prime, not two apostrophes or double quote
     /*
-    Since 1 second of arc = 1/3600 degrees ≅ 0.00027... degrees, we need at least 5 decimal places to
-    accurately represent this resolution.
+     Since 1 second of arc = 1/3600 degrees ≅ 0.00027... degrees, we need at least 5 decimal places to
+     accurately represent this resolution.
      */
     private static final MathContext DEFAULT_CONTEXT = new MathContext(5);
     private static final IntegerType SIXTY = new IntegerImpl(BigInteger.valueOf(60L));
@@ -200,6 +200,11 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
         return (RealType) MathUtils.round(decDegrees, mctx).multiply(pi).divide(halfCircleDegrees);
     }
 
+    /**
+     * Add two angles represented in degrees, minutes, and seconds.
+     * @param addend the angle in DMS to add to {@code this}
+     * @return the sum of two angles in DMS notation
+     */
     public AngularDegrees add(AngularDegrees addend) {
         final MathContext ctx = MathUtils.inferMathContext(List.of(this.getSeconds(), addend.getSeconds()));
         final RealType reSixty = new RealImpl(SIXTY, ctx);
