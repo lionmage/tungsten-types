@@ -70,9 +70,36 @@ public interface Vector<T extends Numeric> {
      * @param element the element to append
      */
     void append(T element);
+
+    /**
+     * Add the supplied vector to this vector.
+     * @param addend the vector to add to this one
+     * @return a vector that is the sum of {@code this} and {@code addend}
+     * @throws ArithmeticException if {@code this.length() != addend.length()}
+     */
     Vector<T> add(Vector<T> addend);
+    /**
+     * Subtract the supplied vector from this vector.
+     * @param subtrahend the vector to subtract from this one
+     * @return a vector that is the difference of {@code this} and {@code subtrahend}
+     * @throws ArithmeticException if {@code this.length() != subtrahend.length()}
+     */
     Vector<T> subtract(Vector<T> subtrahend);
+
+    /**
+     * Negate this vector.  Typically, this involves negating the
+     * elements of {@code this}.
+     * @return the negation of {@code this}
+     */
     Vector<T> negate();
+
+    /**
+     * Scale this vector by the given factor.
+     * The result is a vector whose elements are the elements of {@code this}
+     * multiplied by {@code factor}.
+     * @param factor the scaling factor
+     * @return a scaled vector
+     */
     Vector<T> scale(T factor);
     /**
      * Compute the magnitude of this vector.  This is
@@ -161,7 +188,7 @@ public interface Vector<T extends Numeric> {
     MathContext getMathContext();
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     default Vector<T> plus(Vector<T> operand) {
         return this.add(operand);
