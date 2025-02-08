@@ -60,23 +60,41 @@ import java.util.stream.Stream;
 @Columnar
 public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     private final List<ColumnVector<T>> columns = new ArrayList<>();
-    
+
+    /**
+     * Default constructor. Apprend operations will initially skip
+     * dimension checks.
+     */
     public ColumnarMatrix() {
     }
-    
+
+    /**
+     * Copy constructor.
+     * @param source the matrix to copy
+     */
     public ColumnarMatrix(Matrix<T> source) {
         for (long column = 0L; column < source.columns(); column++) {
             columns.add(source.getColumn(column).copy());
         }
     }
-    
+
+    /**
+     * Construct a matrix from a two-dimensional array of elements.
+     * @param source the array of source elements
+     * @apiNote The source array is in row-major format, as is the
+     *   convention for Java arrays.
+     */
     public ColumnarMatrix(T[][] source) {
         final int columns = source[0].length;
         for (int column = 0; column < columns; column++) {
             append(extractColumn(source, column));
         }
     }
-    
+
+    /**
+     * Construct a matrix from a {@code List} of column vectors.
+     * @param source the column vectors to append, in sequence
+     */
     public ColumnarMatrix(List<ColumnVector<T>> source) {
         source.forEach(this::append);
     }
@@ -153,11 +171,11 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<? extends Numeric> inverse() {
         if (rows() != columns()) {
-            throw new ArithmeticException("Cannot invert a non-square matrix.");
+            throw new ArithmeticException("Cannot invert a non-square matrix");
         }
         final T det = this.determinant();
         if (Zero.isZero(det)) {
-            throw new ArithmeticException("Matrix is singular.");
+            throw new ArithmeticException("Matrix is singular");
         }
         if (columns() == 1L) {
             return new SingletonMatrix<>(valueAt(0L, 0L).inverse());
@@ -231,7 +249,11 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     public ColumnVector<T> getColumn(long column) {
         return columns.get((int) column);
     }
-    
+
+    /**
+     * Append a column vector to this matrix.
+     * @param column the column vector to append
+     */
     public final void append(ColumnVector<T> column) {
         if (columns.isEmpty() || column.length() == this.rows()) {
             columns.add(column);
@@ -239,7 +261,13 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
             throw new IllegalArgumentException("Column vector must have " + this.rows() + " elements");
         }
     }
-    
+
+    /**
+     * Given a column index, return a {@code Matrix} that is this matrix
+     * with that column removed.
+     * @param column the index of the column to remove
+     * @return a matrix with column {@code column} removed
+     */
     public ColumnarMatrix<T> removeColumn(long column) {
         if (column < 0L || column >= columns()) throw new IndexOutOfBoundsException("Column " + column + " does not exist");
         ColumnarMatrix<T> result = new ColumnarMatrix<>();
@@ -249,7 +277,13 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         }
         return result;
     }
-    
+
+    /**
+     * Given a row index, return a {@code Matrix} that is this matrix
+     * with that row removed.
+     * @param row the index of the row to remove
+     * @return a matrix with row {@code row} removed
+     */
     public ColumnarMatrix<T> removeRow(long row) {
         if (row < 0L || row >= rows()) throw new IndexOutOfBoundsException("Row " + row + " does not exist");
         ColumnarMatrix<T> result = new ColumnarMatrix<>();
@@ -460,7 +494,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     }
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     public void leftShift(RowVector<T> row) {
         if (row.length() != columns()) throw new IllegalArgumentException("Row vector does not match the width of this matrix");
