@@ -53,7 +53,11 @@ import java.util.stream.Collectors;
 public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     private List<RowVector<T>> rows = new ArrayList<>();
     private final Map<Long, ColumnVector<T>> columnCache = new HashMap<>();
-    
+
+    /**
+     * Default constructor.  Initial append operations will skip
+     * the dimension check.
+     */
     public BasicMatrix() {
     }
     
@@ -68,7 +72,11 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
             append(rowArray);
         }
     }
-    
+
+    /**
+     * Construct a matrix from a {@code List} of row vectors.
+     * @param rows a {@code List} containing one or more row vectors
+     */
     public BasicMatrix(List<RowVector<T>> rows) {
         this.rows = rows;
     }
@@ -103,7 +111,14 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         }
         return rows.get((int) row).elementAt((int) column);
     }
-    
+
+    /**
+     * Given a row and column, set the element at that location
+     * to the given value.
+     * @param value  the value to set
+     * @param row    the row index &ge;&nbsp;0
+     * @param column the column index &ge;&nbsp;0
+     */
     public void setValueAt(T value, long row, long column) {
         RowVector<T> currentRow = this.getRow(row);
         currentRow.setElementAt(value, column);
@@ -386,6 +401,12 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         return new BasicMatrix<>(result);
     }
 
+    /**
+     * Given a row vector and an index, replace the existing row with
+     * the given vector.
+     * @param rowIndex the index of the row to update
+     * @param row      the updated row
+     */
     public void updateRow(long rowIndex, RowVector<T> row) {
         if (rowIndex < 0L || rowIndex >= rows()) throw new IndexOutOfBoundsException("Row " + rowIndex + " does not exist");
         if (row.length() != columns()) throw new IllegalArgumentException("Provided RowVector must match column dimension");
@@ -393,6 +414,12 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         columnCache.clear();
     }
 
+    /**
+     * Given a column vector and an index, replace the existing column with
+     * the given vector.
+     * @param colIndex the index of the column to update
+     * @param column   the updated column
+     */
     public void updateColumn(long colIndex, ColumnVector<T> column) {
         if (colIndex < 0L || colIndex >= columns()) throw new IndexOutOfBoundsException("Column " + colIndex + " does not exist");
         if (column.length() != rows()) throw new IllegalArgumentException("Provided ColumnVector must match row dimension");
@@ -516,7 +543,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     }
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     public void leftShift(RowVector<T> row) {
         this.append(row);
