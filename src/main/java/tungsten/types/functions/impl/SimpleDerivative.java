@@ -40,9 +40,9 @@ import java.util.logging.Logger;
  * A simple metafunction that will compute the derivative of a function.
  * This implementation primarily deals with {@link UnaryFunction}s and
  * functions that can be curried to a single input variable.
- *<br>
+ * <br>
  * Subclasses are free to extend the strategy methods.
- *<br>
+ * <br>
  * If a derivative cannot be computed directly from a function, the
  * algorithm will use a numeric method to compute an approximation.
  * The {@code epsilon} parameter controls the size of the &ldquo;straddle&rdquo;

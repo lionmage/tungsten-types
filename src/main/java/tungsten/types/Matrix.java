@@ -92,6 +92,11 @@ public interface Matrix<T extends Numeric> {
      * @return the determinant
      */
     T determinant();
+
+    /**
+     * Obtain the inverse of this matrix.
+     * @return the inverse
+     */
     Matrix<? extends Numeric> inverse();
 
     /**
