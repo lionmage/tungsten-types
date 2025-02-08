@@ -59,16 +59,28 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
      */
     protected Class<T> elementType;
 
+    /**
+     * Construct a column vector with no elements.
+     */
     protected ColumnVector() {
         // default constructor
         mctx = MathContext.UNLIMITED;
     }
 
+    /**
+     * Construct a column vector with no elements
+     * of the given type.
+     * @param clazz the type of the elements of this vector
+     */
     protected ColumnVector(Class<T> clazz) {
         this();
         elementType = clazz;
     }
 
+    /**
+     * Set the {@code MathContext} for this vector.
+     * @param mctx the {@code MathContext} to set
+     */
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
     }
@@ -217,7 +229,11 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
         if (length() == 1L) return elementAt(0L);
         throw new ArithmeticException("Cannot compute trace of a matrix with unequal columns and rows");
     }
-    
+
+    /**
+     * Transpose this column vector to a row vector.
+     * @return a row vector with the same elements as this vector
+     */
     @Override
     public abstract RowVector<T> transpose();
 

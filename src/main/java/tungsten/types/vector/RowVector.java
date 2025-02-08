@@ -60,16 +60,28 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
      */
     protected Class<T> elementType;
 
+    /**
+     * Construct a {@code RowVector} with no elements.
+     */
     protected RowVector() {
         // default constructor
         mctx = MathContext.UNLIMITED;
     }
 
+    /**
+     * Construct an empty {@code RowVector} with
+     * the given element type.
+     * @param clazz the type of the elements of this vector
+     */
     protected RowVector(Class<T> clazz) {
         this();
         elementType = clazz;
     }
 
+    /**
+     * Set the {@code MathContext} for this vector.
+     * @param mctx the {@code MathContext} to set
+     */
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
     }
@@ -235,7 +247,11 @@ public abstract class RowVector<T extends Numeric> implements Vector<T>, Matrix<
         if (length() == 1L) return elementAt(0L);
         throw new ArithmeticException("Cannot compute trace of a matrix with unequal columns and rows");
     }
-    
+
+    /**
+     * Transpose this row vector to a column vector.
+     * @return a column vector with the same elements as this vector
+     */
     @Override
     public abstract ColumnVector<T> transpose();
 
