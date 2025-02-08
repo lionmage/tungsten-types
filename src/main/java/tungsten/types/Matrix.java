@@ -62,9 +62,21 @@ public interface Matrix<T extends Numeric> {
      * max norm.
      */
     String USE_FROBENIUS_NORM = "tungsten.types.Matrix.useFrobenius";
+    /**
+     * The multiplication sign to be used for rendering.
+     */
     String MULT_SIGN = "\u00D7";
 
+    /**
+     * Obtain the number of columns in this matrix.
+     * @return the number of columns, a positive integer value
+     */
     long columns();
+
+    /**
+     * Obtain the number of rows in this matrix.
+     * @return the number of rows, a positive integer value
+     */
     long rows();
 
     /**
@@ -74,6 +86,11 @@ public interface Matrix<T extends Numeric> {
      * @return the value at {@code row} and {@code column}
      */
     T valueAt(long row, long column);
+
+    /**
+     * Obtain the determinant of this matrix.
+     * @return the determinant
+     */
     T determinant();
     Matrix<? extends Numeric> inverse();
 
@@ -154,7 +171,12 @@ public interface Matrix<T extends Numeric> {
         // if you possibly can
 //        return isLowerTriangular() || isUpperTriangular();
     }
-    
+
+    /**
+     * Obtain the trace Tr(<strong>M</strong>) of this matrix <strong>M</strong>.
+     * The trace is the sum of the diagonal elements of <strong>M</strong>.
+     * @return the trace if this matrix
+     */
     default T trace() {
         if (this.columns() != this.rows()) {
             throw new ArithmeticException("Trace is only defined for square matrices");
@@ -172,7 +194,13 @@ public interface Matrix<T extends Numeric> {
             throw new ArithmeticException("Type coercion failed");
         }
     }
-    
+
+    /**
+     * Obtain the transpose <strong>M</strong><sup>T</sup> of this
+     * matrix, <strong>M</strong>.  The transpose exchanges
+     * columns and rows.
+     * @return the transpose of this matrix
+     */
     default Matrix<T> transpose() {
         final long rows = this.columns();
         final long columns = this.rows();

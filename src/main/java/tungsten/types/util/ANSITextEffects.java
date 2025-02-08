@@ -52,7 +52,9 @@ public class ANSITextEffects {
      * The set of all background colors.
      */
     public static final EnumSet<Effect> BACKGROUND_COLORS =
-            EnumSet.of(Effect.BG_CYAN, Effect.BG_YELLOW, Effect.BG_GREEN, Effect.DEFAULT_BACKGROUND);
+            EnumSet.of(Effect.BG_CYAN, Effect.BG_YELLOW, Effect.BG_GREEN, Effect.DEFAULT_BACKGROUND,
+                    Effect.BG_BRIGHT_CYAN, Effect.BG_BRIGHT_YELLOW, Effect.BG_BRIGHT_GREEN,
+                    Effect.BG_BRIGHT_WHITE);
     /**
      * The set of all reset commands.  These commands reset whatever effect has previously
      * been applied.
@@ -75,16 +77,24 @@ public class ANSITextEffects {
         BLACK("30"),
         RED("31"),
         GREEN("32"),
+        BRIGHT_GREEN("92"),
         YELLOW("33"),
+        BRIGHT_YELLOW("93"),
         BLUE("34"),
         MAGENTA("35"),
         CYAN("36"),
+        BRIGHT_CYAN("96"),
         WHITE("37"),
+        BRIGHT_WHITE("97"),
         DEFAULT_COLOR("39"),  // resets text color
         DEFAULT_BACKGROUND("49"),  // resets text background
         BG_GREEN("42"),
+        BG_BRIGHT_GREEN("102"),
         BG_YELLOW("43"),
+        BG_BRIGHT_YELLOW("103"),
         BG_CYAN("46"),
+        BG_BRIGHT_CYAN("106"),
+        BG_BRIGHT_WHITE("107"),
         RESET("0");  // resets ALL colors and text effects
 
         private final String escSet;
