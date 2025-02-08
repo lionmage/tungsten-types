@@ -69,11 +69,17 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
 
     /**
      * Compute this<sup>n</sup> mod m.
-     * @param n the exponent
+     * @param n the exponent as a {@code long} for convenience
      * @param m the modulus
      * @return this<sup>n</sup> mod m
      */
     IntegerType powMod(long n, IntegerType m);
+    /**
+     * Compute this<sup>n</sup> mod m.
+     * @param n the exponent
+     * @param m the modulus
+     * @return this<sup>n</sup> mod m
+     */
     IntegerType powMod(IntegerType n, IntegerType m);
     
     @Override
@@ -87,7 +93,7 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
     Sign sign();
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
     default IntegerType mod(IntegerType operand) {
         return this.modulus(operand);

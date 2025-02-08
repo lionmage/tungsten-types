@@ -59,12 +59,25 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
      * @return a new {@link RationalType} equivalent to this object
      */
     RationalType reduce();
+
+    /**
+     * Determines if this rational value is reducible.
+     * @return true if this fraction can be reduced, false if it is already in reduced form
+     */
     boolean isReducible();
     @Override
     Numeric sqrt();
     Sign sign();
     IntegerType floor();
     IntegerType ceil();
+
+    /**
+     * Perform integer division of the {@link #numerator() numerator} by
+     * the {@link #denominator()  denominator}, returning an array
+     * containing the whole part of the division and the remainder, in
+     * that order.
+     * @return an array containing the integer dividend and the remainder
+     */
     IntegerType[] divideWithRemainder();
     IntegerType modulus();
 
@@ -73,7 +86,7 @@ public interface RationalType extends Numeric, Comparable<RationalType> {
     }
 
     /*
-    Methods necessary for Groovy operator overloading follow.
+     Methods necessary for Groovy operator overloading follow.
      */
 
     default RationalType positive() {
