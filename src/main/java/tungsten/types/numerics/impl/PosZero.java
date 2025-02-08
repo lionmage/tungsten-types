@@ -25,6 +25,7 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 
@@ -50,6 +51,7 @@ public class PosZero extends Zero {
     private static final Map<MathContext, PosZero> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
 
+    @ConstantFactory
     public static Numeric getInstance(MathContext mctx) {
         instanceLock.lock();
         try {

@@ -35,6 +35,13 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * A representation of an exactly zero value which does not
+ * belong to any specific subtype of {@link Numeric}.
+ * As such, this is coercible to all {@code Numeric} subtypes.
+ *
+ * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ */
 public class ExactZero extends Zero {
     private ExactZero(MathContext mctx) {
         super(mctx);

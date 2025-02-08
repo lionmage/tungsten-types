@@ -25,6 +25,7 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
@@ -38,7 +39,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A representation of negative infinity.
+ * An abstract representation of negative infinity.
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
@@ -52,7 +53,8 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
     
     private static final Map<MathContext, NegInfinity> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
-    
+
+    @ConstantFactory
     public static Numeric getInstance(MathContext mctx) {
         instanceLock.lock();
         try {
@@ -169,7 +171,7 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
     }
 
     /*
-    Groovy methods below.
+     Groovy methods below.
      */
     public Numeric power(Numeric operand) {
         if (Zero.isZero(operand)) {

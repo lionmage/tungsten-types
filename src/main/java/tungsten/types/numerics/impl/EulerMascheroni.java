@@ -320,7 +320,7 @@ public class EulerMascheroni implements RealType {
     }
 
     /*
-    Groovy methods below.
+     Groovy methods below.
      */
     public Object asType(Class<?> clazz) {
         if (CharSequence.class.isAssignableFrom(clazz)) {
