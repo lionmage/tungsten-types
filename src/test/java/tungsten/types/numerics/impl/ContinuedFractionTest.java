@@ -29,12 +29,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.util.ANSITextEffects;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.RationalCFTermAdapter;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Iterator;
 
 public class ContinuedFractionTest {
     @Test
@@ -229,6 +233,27 @@ public class ContinuedFractionTest {
                 ANSITextEffects.highlightSelection(halfComputed, 0, halfDiff, ANSITextEffects.Effect.BOLD, ANSITextEffects.Effect.RED));
         System.out.println("CF for ln of " + half + " is " + halfLN);
         assertTrue(halfDiff > 14, "Expected 14 significant digits, but got " + (halfDiff - 1));
+    }
+
+    @Test
+    public void rationals() throws CoercionException {
+        RationalType rat1 = new RationalImpl("3/4", MathContext.DECIMAL64);
+        Iterator<Long> ofRat1 = new RationalCFTermAdapter(rat1);
+        ContinuedFraction cf1 = new ContinuedFraction(ofRat1, 10);
+        assertEquals(0L, cf1.termAt(0L));
+        System.out.println("CF for 3/4: " + cf1);
+        assertTrue(cf1.terms() > 1L);
+        RationalType rat2 = (RationalType) cf1.coerceTo(RationalType.class);
+        assertEquals(rat1, rat2);
+
+        rat1 = new RationalImpl("22/7", MathContext.DECIMAL64);
+        ofRat1 = new RationalCFTermAdapter(rat1);
+        cf1 = new ContinuedFraction(ofRat1, 12);
+        assertEquals(3L, cf1.termAt(0L));
+        System.out.println("CF for 22/7: " + cf1);
+        assertTrue(cf1.terms() > 1L);
+        rat2 = (RationalType) cf1.coerceTo(RationalType.class);
+        assertEquals(rat1, rat2);
     }
 
     @Test
