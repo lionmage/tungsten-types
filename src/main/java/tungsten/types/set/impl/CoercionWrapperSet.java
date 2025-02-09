@@ -46,6 +46,14 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
     private final Class<T> origClazz;
     private final Set<T> original;
 
+    /**
+     * Given a {@code Set} to be wrapped and the {@code Numeric} subtypes of
+     * the source and target elements, construct a {@code CoercionWrapperSet}
+     * which presents the elements of the source set as those of the target type.
+     * @param wrapped    the source {@code Set} to be wrapped
+     * @param originType the type of the elements in {@code wrapped}
+     * @param targetType the desired type
+     */
     public CoercionWrapperSet(Set<T> wrapped, Class<T> originType, Class<R> targetType) {
         this.clazz = targetType;
         this.original = wrapped;

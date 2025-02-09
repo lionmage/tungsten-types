@@ -68,7 +68,20 @@ public interface CellRenderingStrategy {
      *            of elements to be inspected
      */
     void inspect(RowVector<? extends Numeric> row);
+
+    /**
+     * Render a cell value for a given column.
+     * @param value  the value to be rendered
+     * @param column the 0-based index of the column
+     * @return an appropriate rendition of {@code value}
+     */
     String render(Numeric value, int column);
+
+    /**
+     * Render an entire row of a {@code Matrix}.
+     * @param row the {@code Matrix} row to be rendered
+     * @return an appropriate rendition of the entire row
+     */
     default String render(RowVector<? extends Numeric> row) {
         StringBuilder buf = new StringBuilder();
         for (int col = 0; col < row.columns(); col++) {
