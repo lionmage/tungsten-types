@@ -35,6 +35,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.util.ANSITextEffects;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.RationalCFTermAdapter;
+import tungsten.types.util.UnicodeTextEffects;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -251,6 +252,7 @@ public class ContinuedFractionTest {
         cf1 = new ContinuedFraction(ofRat1, 12);
         assertEquals(3L, cf1.termAt(0L));
         System.out.println("CF for 22/7: " + cf1);
+        System.out.println("Proper fraction: " + UnicodeTextEffects.properFractionForDisplay(rat1));
         assertTrue(cf1.terms() > 1L);
         rat2 = (RationalType) cf1.coerceTo(RationalType.class);
         assertEquals(rat1, rat2);

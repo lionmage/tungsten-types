@@ -590,7 +590,14 @@ public class UnicodeTextEffects {
             RationalType fracPart = (RationalType) val.subtract(whole).coerceTo(RationalType.class);
             if (!Zero.isZero(fracPart)) {
                 // U+2064 INVISIBLE PLUS is ideal for separating the whole from the fraction part
-                buf.append('\u2064').append(fracPart);
+                buf.append('\u2064');
+                if (One.isUnity(fracPart.numerator())) {
+                    // U+215F fraction numerator one
+                    buf.append('\u215F').append(fracPart.denominator());
+                } else {
+                    // insert a little extra thinspace since many fonts may not support correct fraction rendering
+                    buf.append('\u2009').append(fracPart);
+                }
             }
         } catch (CoercionException e) {
             throw new IllegalStateException("While converting the fraction " + frac + " for display", e);
