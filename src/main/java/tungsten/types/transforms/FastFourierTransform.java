@@ -49,17 +49,29 @@ import java.util.function.Function;
  * </ul>
  * This work is based heavily on an FFT implementation provided by Princeton.
  *
- * @author Robert Poole (<a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
- *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>)
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see <a href="https://introcs.cs.princeton.edu/java/97data/FFT.java.html">Princeton's FFT implementation</a>
  */
 public class FastFourierTransform implements Function<List<ComplexType>, List<ComplexType>> {
     final MathContext mctx;
-    
+
+    /**
+     * Construct a new instance of {@code FastFourierTransform} using
+     * the given {@code MathContext} for all internal operations.
+     * @param mctx the {@code MathContext} governing all internal mathematical operations
+     */
     public FastFourierTransform(MathContext mctx) {
         this.mctx = mctx;
     }
 
+    /**
+     * Compute the Fast Fourier Transform (FFT) upon the given
+     * {@code List} of complex values and return the result
+     * as a list of complex values.
+     * @param t the function argument, a list of complex data values
+     * @return a list of complex values which is the result of applying the FFT to the argument
+     */
     @Override
     public List<ComplexType> apply(List<ComplexType> t) {
         ForkJoinPool commonPool = ForkJoinPool.commonPool();
@@ -95,7 +107,7 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
             SplitTuple split = splitList(source);
             List<ComplexType> q = split.getEvenElements();  // even
             List<ComplexType> r = split.getOddElements();  // odd
-            return new FFTRecursiveTask[]{new FFTRecursiveTask(q), new FFTRecursiveTask(r)};
+            return new FFTRecursiveTask[] { new FFTRecursiveTask(q), new FFTRecursiveTask(r) };
         }
     }
     
@@ -105,7 +117,8 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
         final RealImpl negtwo = new RealImpl("-2", true);
         one.setMathContext(mctx);
         negtwo.setMathContext(mctx);
-        RealType negtwopiovern = (RealType) Pi.getInstance(mctx).multiply(negtwo).divide(new RealImpl(BigDecimal.valueOf(2L * q.size())));
+        RealType negtwopiovern = (RealType) Pi.getInstance(mctx).multiply(negtwo)
+                .divide(new RealImpl(BigDecimal.valueOf(2L * q.size())));
         List<ComplexType> result = new ArrayList<>(q.size() * 2);
         
         for (int i = 0; i < q.size(); i++) {
