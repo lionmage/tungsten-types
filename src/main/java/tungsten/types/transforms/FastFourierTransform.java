@@ -121,7 +121,7 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
         List<ComplexType> result = new ArrayList<>(q.size() * 2);
         
         for (int i = 0; i < q.size(); i++) {
-            RealType kth = (RealType) negtwopiovern.multiply(new RealImpl(BigDecimal.valueOf(i)));
+            RealType kth = (RealType) negtwopiovern.multiply(new RealImpl(BigDecimal.valueOf(i), mctx, true));
             ComplexType wk = new ComplexPolarImpl(one, kth);
             result.set(i, (ComplexType) q.get(i).add(wk.multiply(r.get(i))));
             result.set(i + q.size(), (ComplexType) q.get(i).subtract(wk.multiply(r.get(i))));
