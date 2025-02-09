@@ -26,6 +26,7 @@ package tungsten.types.set.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.util.ClassTools;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -176,10 +177,14 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
+        // the following code allows this set to be equal to any set identical to the
+        // wrapped (original) set
         if (o instanceof Set && original.equals(o)) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CoercionWrapperSet<?, ?> that = (CoercionWrapperSet<?, ?>) o;
-        return clazz.equals(that.clazz) && Objects.equals(origClazz, that.origClazz) && original.equals(that.original);
+        final Class<? extends Numeric> fixedOrig = (Class<? extends Numeric>) ClassTools.getInterfaceTypeFor(origClazz);
+        final Class<? extends Numeric> fixedOther = (Class<? extends Numeric>) ClassTools.getInterfaceTypeFor(that.origClazz);
+        return clazz == that.clazz && fixedOrig == fixedOther && original.equals(that.original);
     }
 
     @Override
