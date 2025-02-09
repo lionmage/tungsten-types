@@ -54,7 +54,7 @@ import java.util.function.Function;
  * @see <a href="https://introcs.cs.princeton.edu/java/97data/FFT.java.html">Princeton's FFT implementation</a>
  */
 public class FastFourierTransform implements Function<List<ComplexType>, List<ComplexType>> {
-    final MathContext mctx;
+    private final MathContext mctx;
 
     /**
      * Construct a new instance of {@code FastFourierTransform} using
@@ -113,9 +113,8 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
     
     private List<ComplexType> combine(List<ComplexType> q, List<ComplexType> r) {
         assert q.size() == r.size();
-        final RealImpl one = new RealImpl(BigDecimal.ONE, true);
+        final RealImpl one = new RealImpl(BigDecimal.ONE, mctx, true);
         final RealImpl negtwo = new RealImpl("-2", true);
-        one.setMathContext(mctx);
         negtwo.setMathContext(mctx);
         RealType negtwopiovern = (RealType) Pi.getInstance(mctx).multiply(negtwo)
                 .divide(new RealImpl(BigDecimal.valueOf(2L * q.size())));
