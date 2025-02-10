@@ -145,6 +145,13 @@ public class ComplexPolarImpl implements ComplexType {
         this.epsilon = new RealImpl("0.00001");
     }
 
+    /**
+     * A constructor which takes a {@code String} representation of a
+     * polar complex value and a {@code MathContext} which governs all
+     * arithmetic operations.
+     * @param strval the string representation of a polar complex value
+     * @param mctx   the {@code MathContext} to associate with this value
+     */
     public ComplexPolarImpl(String strval, MathContext mctx) {
         this(strval);
         setMathContext(mctx);

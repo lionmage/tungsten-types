@@ -155,7 +155,11 @@ public class ComplexRectImpl implements ComplexType {
         imag = ZERO;
         exact = realValue.isExact();
     }
-    
+
+    /**
+     * Set the {@code MathContext} to associate with this value.
+     * @param context the {@code MathContext} to assign
+     */
     public void setMathContext(MathContext context) {
         argLock.lock();
         try {
@@ -450,7 +454,13 @@ public class ComplexRectImpl implements ComplexType {
         ComplexPolarImpl polar = new ComplexPolarImpl(magnitude(), argument(), exact);
         return polar.nthRoots(n);
     }
-    
+
+    /**
+     * Compute the n<sup>th</sup> roots of this value.
+     * @param n the degree of the roots
+     * @return a {@code Set} of {@code n} complex roots
+     * @see #nthRoots(IntegerType)
+     */
     public Set<ComplexType> nthRoots(long n) {
         return nthRoots(new IntegerImpl(BigInteger.valueOf(n), true));
     }

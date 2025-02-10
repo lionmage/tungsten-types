@@ -46,6 +46,10 @@ import tungsten.types.vector.impl.ArrayRowVector;
 public class ComplexMatrixAdapter implements Matrix<ComplexType> {
     private final Matrix<? extends Numeric> original;
 
+    /**
+     * Construct an adapter to wrap any {@code Matrix}.
+     * @param M the matrix to be wrapped as a complex-valued matrix
+     */
     public ComplexMatrixAdapter(Matrix<? extends Numeric> M) {
         this.original = M;
     }

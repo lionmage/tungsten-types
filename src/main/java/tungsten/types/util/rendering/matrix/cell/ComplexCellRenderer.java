@@ -47,7 +47,13 @@ import java.util.regex.Pattern;
  */
 @RendererSupports(name = "complex-cell", type = NumericHierarchy.COMPLEX)
 public class ComplexCellRenderer implements CellRenderingStrategy {
+    /**
+     * System property governing the maximum number of fraction digits to render.
+     */
     public static final String MAX_FRACTION_DIGITS_PROPERTY = "tungsten.types.util.rendering.matrix.cell.ComplexCellRenderer.maxFractionDigits";
+    /**
+     * A Boolean System property governing the use of ellipses when rendering values longer than allowed.
+     */
     public static final String USE_ELLIPSES_PROPERTY = "tungsten.types.util.rendering.matrix.cell.ComplexCellRenderer.useEllipses";
     private static final String HORIZONTAL_ELLIPSIS = "\u2026";
     private int minimumCellWidth = 1; // 1 digit, no decimal point or fraction part
