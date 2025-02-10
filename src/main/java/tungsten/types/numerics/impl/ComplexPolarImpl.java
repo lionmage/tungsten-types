@@ -472,7 +472,7 @@ public class ComplexPolarImpl implements ComplexType {
     }
 
     /**
-     * A strict test for equality.  The algorithm makes no attempt to normalize the argument (phase angle)
+     * A strict test for equality.  The algorithm may attempt to normalize the argument (phase angle)
      * of any {@link ComplexType} supplied as a parameter. If you need a more forgiving
      * comparison, use {@link #equalToWithin(ComplexPolarImpl, ComplexPolarImpl, RealType)} instead.
      *
