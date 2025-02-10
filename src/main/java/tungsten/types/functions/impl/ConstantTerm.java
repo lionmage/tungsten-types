@@ -113,7 +113,7 @@ public class ConstantTerm<T extends Numeric, R extends Numeric> extends Term<T, 
 
     @Override
     public long order(String varName) {
-        return 0;
+        return 0L;
     }
 
     @Override
