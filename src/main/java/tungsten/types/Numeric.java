@@ -81,7 +81,22 @@ public interface Numeric {
     Numeric subtract(Numeric subtrahend);
     Numeric multiply(Numeric multiplier);
     Numeric divide(Numeric divisor);
+
+    /**
+     * Compute the multiplicative inverse of this value.
+     * The result may be of a different type from {@code this}.
+     * @return the inverse of {@code this}
+     */
     Numeric inverse();
+
+    /**
+     * Compute the square root of this value.  Note that the
+     * type of the returned value may not be the same as {@code this}
+     * (e.g., in the case of roots of negative real values).
+     * The resolution may be dependent on the type of {@code this}
+     * (e.g., integer values may provide a truncated result).
+     * @return the square root of {@code this}
+     */
     Numeric sqrt();
 
     /**

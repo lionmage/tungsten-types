@@ -61,6 +61,12 @@ public class ComplexPolarImpl implements ComplexType {
     private static final RealType TWO = new RealImpl(BigDecimal.valueOf(2L), MathContext.UNLIMITED);
     private static final RealType TEN = new RealImpl(BigDecimal.TEN, MathContext.UNLIMITED);
 
+    /**
+     * Construct a polar complex number value given a modulus and an argument.
+     * @param modulus  the magnitude of this complex value
+     * @param argument the angle formed between the positive real axis and the line
+     *                 segment defined by this point on the complex plane
+     */
     public ComplexPolarImpl(RealType modulus, RealType argument) {
         if (modulus.sign() == Sign.NEGATIVE) {
             throw new IllegalArgumentException("Complex modulus must be positive or zero");
@@ -70,7 +76,15 @@ public class ComplexPolarImpl implements ComplexType {
         this.mctx = MathUtils.inferMathContext(List.of(modulus, argument));
         epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
     }
-    
+
+    /**
+     * Construct a polar complex number value given a modulus, an argument, and an
+     * indicator of exactness.
+     * @param modulus  the magnitude of this value
+     * @param argument the angle of this complex value with respect to the positive
+     *                 real axis
+     * @param exact    whether this value is to be considered exact or not
+     */
     public ComplexPolarImpl(RealType modulus, RealType argument, boolean exact) {
         this(modulus, argument);
         this.exact = exact;
@@ -124,10 +138,22 @@ public class ComplexPolarImpl implements ComplexType {
         this.modulus = new RealImpl(strMod);
         if (modulus.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("Complex modulus must be positive or zero");
         this.argument = angle;
-        this.mctx = MathUtils.inferMathContext(List.of(this.modulus, this.argument));
-        epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
+        // the following doesn't really work since modulus and argument probably have precision = 0
+//        this.mctx = MathUtils.inferMathContext(List.of(this.modulus, this.argument));
+//        epsilon = MathUtils.computeIntegerExponent(TEN, 1 - this.mctx.getPrecision(), this.mctx);
+        this.mctx = MathContext.UNLIMITED;
+        this.epsilon = new RealImpl("0.00001");
     }
 
+    public ComplexPolarImpl(String strval, MathContext mctx) {
+        this(strval);
+        setMathContext(mctx);
+    }
+
+    /**
+     * Set the {@code MathContext} to associate with this complex value.
+     * @param mctx the {@code MathContext} to use
+     */
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
         if (argument.getMathContext().getPrecision() < mctx.getPrecision())
@@ -425,7 +451,15 @@ public class ComplexPolarImpl implements ComplexType {
             throw new IllegalStateException("Coercing one of n roots failed", ex);
         }
     }
-    
+
+    /**
+     * Compute the n<sup>th</sup> roots of this complex value.
+     * This is a convenience method which takes a {@code long} instead
+     * of an {@code IntegerType}.
+     * @param n the degree of the requested roots
+     * @return a {@code Set} of {@code n} complex values
+     * @see #nthRoots(IntegerType)
+     */
     public Set<ComplexType> nthRoots(long n) {
         return nthRoots(new IntegerImpl(BigInteger.valueOf(n), true));
     }

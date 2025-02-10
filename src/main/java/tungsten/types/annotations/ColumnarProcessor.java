@@ -42,7 +42,9 @@ import java.util.Set;
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ColumnarProcessor extends AbstractProcessor {
-    
+    /**
+     * Default constructor.
+     */
     public ColumnarProcessor() {
         super();
     }

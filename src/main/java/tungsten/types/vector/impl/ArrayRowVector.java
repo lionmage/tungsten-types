@@ -19,6 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+/**
+ * An implementation of {@link RowVector} which uses an array as its internal store.
+ * @param <T> the type of the elements of this {@code RowVector}
+ */
 public class ArrayRowVector<T extends Numeric> extends RowVector<T> {
     private T[] elementArray;
 

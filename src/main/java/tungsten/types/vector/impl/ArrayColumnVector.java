@@ -19,6 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+/**
+ * A {@link ColumnVector} implementation which uses an array as its internal store.
+ * @param <T> the type of the elements of this {@code ColumnVector}
+ */
 public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
     private T[] elementArray;
 

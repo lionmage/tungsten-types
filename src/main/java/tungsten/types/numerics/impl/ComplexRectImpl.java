@@ -52,6 +52,9 @@ import static tungsten.types.util.MathUtils.atan2;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ComplexRectImpl implements ComplexType {
+    /**
+     * The System property which determines whether fast magnitude calculation is used.
+     */
     public static final String FAST_MAGNITUDE = "tungsten.types.numerics.ComplexRectImpl.fastMagnitude.enable";
     private final RealType real;
     private final RealType imag;
@@ -60,14 +63,26 @@ public class ComplexRectImpl implements ComplexType {
     
     private static final RealType ZERO = new RealImpl(BigDecimal.ZERO);
     private static final RealType TWO = new RealImpl(BigDecimal.valueOf(2L));
-    
+
+    /**
+     * Construct a complex number in rectangular form given a real and an imaginary component.
+     * @param real      the real component of this complex value
+     * @param imaginary the imaginary component of this complex value
+     */
     public ComplexRectImpl(RealType real, RealType imaginary) {
         this.real = real;
         this.imag = imaginary;
         this.mctx = MathUtils.inferMathContext(List.of(real, imaginary));
         this.exact = real.isExact() && imaginary.isExact();
     }
-    
+
+    /**
+     * Construct a complex number in rectangular form given a real and an imaginary component
+     * and an indication of exactness.
+     * @param real      the real component of this complex value
+     * @param imaginary the imaginary component of this complex value
+     * @param exact     determines whether this value is considered exact or not
+     */
     public ComplexRectImpl(RealType real, RealType imaginary, boolean exact) {
         this(real, imaginary);
         this.exact = exact;
@@ -111,10 +126,22 @@ public class ComplexRectImpl implements ComplexType {
             boolean imNeg = m.group(2).equals("-");  // sanitizer catches U+2212 therefore no need to catch it here
             RealImpl temp = new RealImpl(m.group(3));
             imag = imNeg ? temp.negate() : temp;
-            mctx = MathUtils.inferMathContext(List.of(real, imag));
+            // the following does not really work at all
+//            mctx = MathUtils.inferMathContext(List.of(real, imag));
         } else {
             throw new IllegalArgumentException("Illegal init string for complex number value: " + strval);
         }
+    }
+
+    /**
+     * Convenience constructor that takes a {@code String} representation
+     * of a complex value and a {@code MathContext}.
+     * @param strval a string representing a complex value in rectangular coordinates
+     * @param mctx   the {@code MathContext} to associate with this value
+     */
+    public ComplexRectImpl(String strval, MathContext mctx) {
+        this(strval);
+        this.mctx = mctx;
     }
 
     /**
