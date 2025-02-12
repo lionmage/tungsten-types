@@ -37,15 +37,43 @@ import java.math.BigInteger;
  *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public interface RealType extends Numeric, Comparable<RealType> {
+    /**
+     * Determine whether this real value is an irrational number.
+     * @return {@code true} if this number is known to be irrational, {@code false} otherwise
+     */
     boolean isIrrational();
     @SuppressWarnings("unchecked")
     @Override
     RealType magnitude();
     @Override
     RealType negate();
+
+    /**
+     * Obtain a {@link BigDecimal} representation of this real value.
+     * @return a {@code BigDecimal} whose value is equivalent or near-equivalent
+     *   to {@code this}
+     */
     BigDecimal asBigDecimal();
+
+    /**
+     * Obtain the sign of this real value.
+     * @return the sign of {@code this}
+     * @see Sign
+     */
     Sign sign();
+
+    /**
+     * Compute the floor of this value.  The floor
+     * is defined as the greatest integer less than {@code this}.
+     * @return the floor of {@code this}
+     */
     IntegerType floor();
+
+    /**
+     * Compute the ceiling of this value.  The ceiling
+     * is defined as the smallest integer greater than {@code this}.
+     * @return the ceiling of {@code this}
+     */
     IntegerType ceil();
     /**
      * Calculate the set of n<sup>th</sup> roots

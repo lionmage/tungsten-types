@@ -51,8 +51,17 @@ import java.util.regex.Pattern;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class AngularDegrees implements Comparable<AngularDegrees> {
+    /**
+     * The symbol (&deg;) used to denote degrees of arc.
+     */
     public static final char DEGREE_SIGN = '\u00B0';
+    /**
+     * The symbol (&#x2032;) used to denote minutes of arc.
+     */
     public static final char MINUTES_SIGN = '\u2032';  // prime, not apostrophe
+    /**
+     * The symbol (&#x2033;) used to denote seconds of arc.
+     */
     public static final char SECONDS_SIGN = '\u2033';  // double-prime, not two apostrophes or double quote
     /*
      Since 1 second of arc = 1/3600 degrees ≅ 0.00027... degrees, we need at least 5 decimal places to
