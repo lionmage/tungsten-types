@@ -26,15 +26,23 @@ import java.util.stream.Stream;
 public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
     private T[] elementArray;
 
+    /**
+     * Varargs constructor.
+     * @param elements one or more vector elements
+     */
     @SafeVarargs
     public ArrayColumnVector(T... elements) {
-        elementArray = elements;
         if (elements != null) {
+            elementArray = Arrays.copyOf(elements, elements.length);
             super.elementType = (Class<T>) ClassTools.getInterfaceTypeFor((Class<? extends Numeric>) elements.getClass().getComponentType());
             if (elements.length > 0) setMathContext(MathUtils.inferMathContext(List.of(elements)));
         }
     }
 
+    /**
+     * Constructor that takes a {@code List}.
+     * @param elementList any {@code List} of vector elements
+     */
     public ArrayColumnVector(List<T> elementList) {
         super((Class<T>) ClassTools.getInterfaceTypeFor(ClassTools.getBaseTypeFor(elementList)));
         this.elementArray = (T[]) Array.newInstance(getElementType(), elementList.size());
@@ -42,6 +50,10 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         setMathContext(MathUtils.inferMathContext(elementList));
     }
 
+    /**
+     * Copy constructor that will take any {@code Vector} as its source.
+     * @param source the vector to copy
+     */
     public ArrayColumnVector(Vector<T> source) {
         if (source.length() > (long) Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Vector is too large to fit into an array");
@@ -55,6 +67,12 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         setMathContext(source.getMathContext());
     }
 
+    /**
+     * Construct a column vector of a given element type and size.
+     * All elements of the constructed column vector are initialized to 0.
+     * @param elementType the type of the elements of this vector
+     * @param size        the size of the internal array
+     */
     public ArrayColumnVector(Class<T> elementType, long size) {
         super(elementType);
         if (size > (long) Integer.MAX_VALUE) {
@@ -66,6 +84,14 @@ public class ArrayColumnVector<T extends Numeric> extends ColumnVector<T> {
         Arrays.fill(elementArray, zero);
     }
 
+    /**
+     * Construct a column vector given a {@link NumericHierarchy} value and a size.
+     * This may be a safer choice than {@link ArrayColumnVector#ArrayColumnVector(Class, long)}
+     * since {@code NumericHierarchy} values always map to interface types, not concrete types.
+     * Elements of the resulting vector are initialized to 0.
+     * @param type an enum value specifying the {@code Numeric} subtype of this column vector
+     * @param size the initial size of this vector and its internal array
+     */
     public ArrayColumnVector(NumericHierarchy type, long size) {
         this((Class<T>) type.getNumericType(), size);
     }
