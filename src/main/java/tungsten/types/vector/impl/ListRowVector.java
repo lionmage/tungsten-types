@@ -127,10 +127,13 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
             ListIterator<T> iter = elements.listIterator(startIndex);
             if ((long) startIndex < position) {
                 long currIdx = startIndex;
-                while (currIdx < position) {
+                while (currIdx <= position) {
                     iter.next();
                     currIdx++;
                 }
+            } else {
+                // we need to call next() once or the set() will fail
+                iter.next();
             }
             iter.set(element);
         } finally {
