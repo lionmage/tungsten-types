@@ -4,6 +4,7 @@ import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
@@ -17,6 +18,11 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+/**
+ * A {@link ColumnVector} implementation which uses a {@code List} as its internal store.
+ * Indices larger than {@link Integer#MAX_VALUE} are supported.
+ * @param <T> the type of the elements of this {@code ColumnVector}
+ */
 public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     public static final long RANDOM_ACCESS_THRESHOLD = 1_000L;
     private final List<T> elements;
@@ -32,6 +38,10 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
         super(clazz);
         elements = new LinkedList<>();
         elementCount = 0L;
+    }
+
+    public ListColumnVector(NumericHierarchy type) {
+        this((Class<T>) type.getNumericType());
     }
 
     public ListColumnVector(List<T> source) {
