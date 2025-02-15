@@ -12,5 +12,9 @@ import tungsten.types.functions.impl.ProxyFunction;
  * @param <R> the return type
  */
 public interface Proxable<T extends Numeric & Comparable<? super T>, R extends Numeric> {
+    /**
+     * Obtain a proxy function for this function.
+     * @return the proxy function
+     */
     ProxyFunction<T, R> obtainProxy();
 }

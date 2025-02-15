@@ -48,11 +48,20 @@ import static tungsten.types.util.MathUtils.*;
 public class Curry<T extends Numeric, R extends Numeric> extends MetaFunction<T, R, R> {
     private long numberOfMappings;
 
+    /**
+     * Instantiate a curry meta-function given a set of curried arguments.
+     * @param curriedArguments a set of argument name to value mappings
+     */
     public Curry(ArgMap<T> curriedArguments) {
         super(curriedArguments);
         numberOfMappings = curriedArguments.size();
     }
 
+    /**
+     * Insert or update a mapping from a variable name to a value.
+     * @param varName the name of an argument
+     * @param value   the value associated with {@code varName}
+     */
     public void insertOrUpdateCurryMapping(String varName, T value) {
         boolean update = super.containsCurryMapping(varName);
         super.setCurryMapping(varName, value);

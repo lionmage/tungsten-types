@@ -186,6 +186,11 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         return RealType.class;
     }
 
+    /**
+     * Map a given input value to the inner range of this function.
+     * @param input the input value
+     * @return a value mapped to the internal range of this function
+     */
     protected RealType mapToInnerRange(RealType input) {
         if (internalRange.contains(input)) return input;
 
