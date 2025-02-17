@@ -222,7 +222,7 @@ public class FareySequence implements Set<RationalType> {
 
             @Override
             public Spliterator<RationalType> trySplit() {
-                if (order < 3L) return null;
+                if (order < 3L || !inner.contains(half)) return null;
                 SortedSet<RationalType> head = inner.headSet(half);
                 int headSize = head.size();
                 remaining -= headSize < Integer.MAX_VALUE ? headSize : head.stream().count();
