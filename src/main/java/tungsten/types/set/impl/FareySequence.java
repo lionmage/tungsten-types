@@ -334,6 +334,6 @@ public class FareySequence implements Set<RationalType> {
      */
     public FareySequence previous() {
         if (order == 1) throw new NoSuchElementException("F\u2081 has no previous set");
-        return new FareySequence(order - 1, mctx);
+        return new FareySequence(order - 1L, mctx);
     }
 }
