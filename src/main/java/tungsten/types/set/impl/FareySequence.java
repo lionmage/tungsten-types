@@ -39,6 +39,7 @@ import java.math.MathContext;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * A {@code Set} that contains a Farey sequence of some order n,
@@ -91,7 +92,7 @@ public class FareySequence implements Set<RationalType> {
     private FareySequence(Collection<RationalType> source, long order) {
         this.order = order;
         members.addAll(source);
-        count = source.stream().count();
+        count = computeCount();
     }
 
     /**
@@ -244,6 +245,32 @@ public class FareySequence implements Set<RationalType> {
     @Override
     public boolean isOfType(Class<?> clazz) {
         return RationalType.class.isAssignableFrom(clazz);
+    }
+
+    private long gcd(long a, long b) { return b == 0L ? a : gcd(b, a % b); }
+
+    private long totient(long n) {
+        if (n < 1L) throw new IllegalArgumentException("Totient undefined for n < 1");
+        // 1 is considered coprime to everything, so it always shows up
+        long totatives = 1L;  // therefore, start the count at 1
+
+        for (long k = 2L; k < n; k++) {
+            if (gcd(k, n) == 1L) totatives++;
+        }
+
+        return totatives;
+    }
+
+    /**
+     * Compute the nunber of elements that should be contained in
+     * this {@code Set}.  Note that this may be faster than iterating
+     * over elements and counting them, especially for F<sub>n</sub>
+     * for very large values of n.
+     * @return the expected number of elements in this Farey sequence
+     */
+    public long computeCount() {
+        return LongStream.rangeClosed(1L, order).parallel()
+                .map(this::totient).reduce(1L, Long::sum);
     }
 
     @Override
