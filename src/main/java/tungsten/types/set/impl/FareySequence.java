@@ -308,7 +308,7 @@ public class FareySequence implements Set<RationalType> {
      * @return the Farey sequence with an order that is 1 greater than {@code this}
      */
     public FareySequence next() {
-        final IntegerType n = new IntegerImpl(BigInteger.valueOf(order + 1));
+        final IntegerType n = new IntegerImpl(BigInteger.valueOf(order + 1L));
         final List<RationalType> updated = new LinkedList<>(members);
         RationalType prev = null;
         for (RationalType current : members) {
