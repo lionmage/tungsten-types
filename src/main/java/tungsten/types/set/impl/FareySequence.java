@@ -71,20 +71,17 @@ public class FareySequence implements Set<RationalType> {
         order = n;
         this.mctx = mctx;
 
-        long a = 0L;
-        long b = 1L;
-        long c = 1L;
-        long d = n;
-        members.add(new RationalImpl(a, b, mctx));
-        long elementCount = 1L;
-        while (c >= 0L && c <= n) {
-            final long k = (n + b) / d;
-            a = c;
-            b = d;
-            c = k * c - a;
-            d = k * d - b;
-            members.add(new RationalImpl(a, b, mctx));
-            elementCount++;
+        members.add(new RationalImpl(0L, 1L, mctx));  // zero
+        members.add(new RationalImpl(1L, 1L, mctx));  // one
+
+        long elementCount = 2L;
+        for (long denom = 2L; denom <= n; denom++) {
+            for (long num = 1L; num < denom; num++) {
+                if (gcd(num, denom) == 1L) {
+                    members.add(new RationalImpl(num, denom, mctx));
+                    elementCount++;
+                }
+            }
         }
         count = elementCount;
     }
@@ -269,8 +266,10 @@ public class FareySequence implements Set<RationalType> {
      * @return the expected number of elements in this Farey sequence
      */
     public long computeCount() {
-        return LongStream.rangeClosed(1L, order).parallel()
-                .map(this::totient).reduce(1L, Long::sum);
+        // Note that the identity for reduce must be 0, or else
+        // running this in parallel will give strange results.
+        return 1L + LongStream.rangeClosed(1L, order).parallel()
+                .map(this::totient).reduce(0L, Long::sum);
     }
 
     @Override
