@@ -175,7 +175,7 @@ public class FareySequence implements Set<RationalType> {
     }
 
     /**
-     * Updates this {@code Set}'s members to use the given {@code MathContext}
+     * Updates this {@code Set}'s members to use the given {@code MathContext}.
      * @param ctx a valid {@code MathContext}
      */
     public void setMathContext(MathContext ctx) {
@@ -259,7 +259,7 @@ public class FareySequence implements Set<RationalType> {
     }
 
     /**
-     * Compute the nunber of elements that should be contained in
+     * Compute the number of elements that should be contained in
      * this {@code Set}.  Note that this may be faster than iterating
      * over elements and counting them, especially for F<sub>n</sub>
      * for very large values of n.
