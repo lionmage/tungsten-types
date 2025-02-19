@@ -360,7 +360,7 @@ public class MathUtils {
             } catch (InterruptedException | ExecutionException ex) {
                 throw new IllegalStateException("Interrupted while computing \uD835\uDEAA(" + z + ")", ex);
             }
-        }).reduce(coeff, Numeric::multiply);
+        }).reduce(One.getInstance(compCtx), Numeric::multiply).multiply(coeff);
         executor.shutdown();  // request a shutdown no matter what
         if (!executor.isTerminated()) {
             Logger.getLogger(MathUtils.class.getName()).warning("gamma() executor may not have terminated properly");
@@ -749,9 +749,9 @@ public class MathUtils {
                     one.subtract(s).subtract(twoK), s.getMathContext());
         }
         Numeric coeff = bn.getB(k << 1L).multiply(npow).divide(factorial(twoK));
-        return LongStream.rangeClosed(0L, 2L * k - 2L)
+        return LongStream.rangeClosed(0L, 2L * k - 2L).parallel()
                 .mapToObj(j -> s.add(new RealImpl(BigDecimal.valueOf(j), s.getMathContext())))
-                .reduce(coeff, Numeric::multiply);
+                .reduce(one, Numeric::multiply).multiply(coeff);
     }
 
     /**
@@ -3652,7 +3652,9 @@ public class MathUtils {
                     .add(matrix.valueAt(1L, 2L).multiply(matrix.valueAt(1L, 2L))).coerceTo(ComplexType.class);
             ComplexType q = (ComplexType) matrix.trace().divide(three).coerceTo(ComplexType.class);
             ComplexType intermediate = (ComplexType) LongStream.range(0L, matrix.rows()).mapToObj(idx -> matrix.valueAt(idx, idx))
-                    .map(z -> z.multiply(z)).reduce(triangleSq.multiply(two), Numeric::add).coerceTo(ComplexType.class);
+                    .map(z -> z.multiply(z)).reduce(ExactZero.getInstance(ctx), Numeric::add)
+                    .add(triangleSq.multiply(two))
+                    .coerceTo(ComplexType.class);
             ComplexType p = (ComplexType) intermediate.divide(six).sqrt();
             Matrix<ComplexType> A = new ComplexMatrixAdapter(matrix);
             Matrix<ComplexType> B = A.subtract(lambdaMatrix(3L, q));

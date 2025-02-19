@@ -118,11 +118,14 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     public void appendTerm(UnaryFunction<T, R> term) {
         if (term instanceof Const && termCount() > 0L) {
             final Const<T, R> cterm = (Const<T, R>) term;
+            final MathContext ctx = cterm.inspect().getMathContext();
             if (One.isUnity(cterm.inspect())) return;
             try {
+                R one = OptionalOperations.dynamicInstantiate(getReturnType(), 1);
                 R prodOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
-                        .reduce(cterm.inspect(), Numeric::multiply)
+                        .reduce(One.getInstance(ctx), Numeric::multiply)
+                        .add(cterm.inspect())
                         .coerceTo(getReturnType());
                 terms.removeIf(Const.class::isInstance);
                 if (Zero.isZero(prodOfConstants)) terms.clear();  // zero renders all other terms irrelevant

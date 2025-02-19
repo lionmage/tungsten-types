@@ -14,6 +14,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.util.ClassTools;
+import tungsten.types.util.OptionalOperations;
 import tungsten.types.util.RangeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -141,9 +142,10 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                 terms.add((Term<T, R>) term);
             }
         } else if (term.isConstant()) {
+            R zero = OptionalOperations.dynamicInstantiate(getReturnType(), 0);
             // find all the constant terms and combine them
-            R aggConst = terms.stream().filter(Term::isConstant).map(Term::coefficient)
-                    .reduce(term.coefficient(), (c1, c2) -> (R) c1.add(c2));
+            R aggConst = (R) terms.stream().filter(Term::isConstant).map(Term::coefficient)
+                    .reduce(zero, (c1, c2) -> (R) c1.add(c2)).add(term.coefficient());
             terms.removeIf(Term::isConstant);
             terms.add(new ConstantTerm<>(aggConst));
         } else {
