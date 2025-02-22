@@ -46,14 +46,14 @@ import java.util.stream.Collectors;
 /**
  * Implementation of a complex-valued vector.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ComplexVector implements Vector<ComplexType> {
     private final List<ComplexType> elements;
     private MathContext mctx = MathContext.UNLIMITED;
     
     /**
-     * Creates a new empty instance of {@link ComplexVector} with room for
+     * Creates a new empty instance of {@code ComplexVector} with room for
      * {@code initialCapacity} elements.
      * @param initialCapacity the desired initial capacity for this vector
      */
@@ -63,12 +63,23 @@ public class ComplexVector implements Vector<ComplexType> {
         }
         this.elements = new ArrayList<>((int) initialCapacity);
     }
-    
+
+    /**
+     * Creates a {@code ComplexVector} from a {@code List} of
+     * complex-valued elements.
+     * @param elements a list of complex values
+     */
     public ComplexVector(List<ComplexType> elements) {
         this.elements = elements;
         setMathContext(MathUtils.inferMathContext(elements));
     }
-    
+
+    /**
+     * Given an array of {@code ComplexType} values and a {@code MathContext},
+     * instantiate a {@code ComplexVector} with them.
+     * @param cplxArray an array of complex values
+     * @param mctx      the {@code MathContext} for this vector
+     */
     public ComplexVector(ComplexType[] cplxArray, MathContext mctx) {
         this.mctx = mctx;
         this.elements = Arrays.stream(cplxArray).sequential().collect(Collectors.toList());
@@ -91,7 +102,11 @@ public class ComplexVector implements Vector<ComplexType> {
         }
         setMathContext(source.getMathContext());
     }
-    
+
+    /**
+     * Set the {@code MathContext} of this vector.
+     * @param mctx the {@code MathContext} to be set
+     */
     public void setMathContext(MathContext mctx) {
         if (mctx == null) {
             throw new IllegalArgumentException("MathContext must not be null");

@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of a real-valued vector.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RealVector implements Vector<RealType> {
     private final List<RealType> elements;
@@ -80,11 +80,21 @@ public class RealVector implements Vector<RealType> {
         this.elements = new ArrayList<>(source.elements);
     }
 
+    /**
+     * Given an array of {@code RealType} values and a {@code MathContext},
+     * instantiate a real-valued vector.
+     * @param realArray an array of real values
+     * @param mctx      the {@code MathContext} for this vector
+     */
     public RealVector(RealType[] realArray, MathContext mctx) {
         this.mctx = mctx;
         this.elements = Arrays.stream(realArray).sequential().collect(Collectors.toList());
     }
-    
+
+    /**
+     * Set the {@code MathContext} for this vector.
+     * @param mctx a valid {@code MathContext}
+     */
     public void setMathContext(MathContext mctx) {
         if (mctx == null) {
             throw new IllegalArgumentException("MathContext must not be null");

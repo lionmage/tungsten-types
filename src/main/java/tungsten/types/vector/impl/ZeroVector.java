@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  * An implementation of the zero vector 0&#x20d7;, which has the value of 0
  * for all of its elements.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ZeroVector implements Vector<Numeric> {
     private final long length;
@@ -60,7 +60,14 @@ public class ZeroVector implements Vector<Numeric> {
     
     private static final Lock instanceLock = new ReentrantLock();
     private static final Map<Long, ZeroVector> instanceMap = new HashMap<>();
-    
+
+    /**
+     * Factory method to obtain an instance of {@code ZeroVector} with a given
+     * length.
+     * @param length the desired length of the zero vector instance
+     * @param ctx    the {@code MathContext} for the obtained instance
+     * @return a zero vector of length {@code length}
+     */
     public static ZeroVector getInstance(long length, MathContext ctx) {
         instanceLock.lock();
         try {
@@ -175,6 +182,13 @@ public class ZeroVector implements Vector<Numeric> {
         throw new ArithmeticException("Zero vector cannot form an angle with any vector");
     }
 
+    /**
+     * Determine if the supplied {@code Vector} is a zero vector.
+     * This method will return {@code true} for instances of {@code ZeroVector}
+     * as well as any {@code Vector} whose elements are all 0.
+     * @param vector the {@code Vector} to test
+     * @return true if the supplied vector is a zero vector, false otherwise
+     */
     public static boolean isZeroVector(Vector<? extends Numeric> vector) {
         if (vector instanceof ZeroVector) return true;
         for (long k = 0L; k < vector.length(); k++) {
@@ -184,10 +198,17 @@ public class ZeroVector implements Vector<Numeric> {
         return true;
     }
 
+    /**
+     * Obtain a zero vector of the given {@code Numeric} subtype.
+     * @param clazz the type of the elements of the returned vector
+     * @return a zero vector coerced to type {@code T}
+     * @param <T> the type of the elements of the returned vector
+     * @throws CoercionException if coercion of the zero element to the target type fails
+     */
     public <T extends Numeric> Vector<T> forType(Class<T> clazz) throws CoercionException {
         final Vector<Numeric> parent = this;
         final T coercedZero = (T) zero.coerceTo(clazz);
-        return new Vector<T>() {
+        return new Vector<>() {
             @Override
             public long length() {
                 return parent.length();
