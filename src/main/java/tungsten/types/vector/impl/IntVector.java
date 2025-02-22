@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A very simple implementation of a {@link Vector<IntegerType>}, intended
+ * A very simple implementation of a {@code Vector<IntegerType>}, intended
  * for use with e.g. {@link tungsten.types.matrix.impl.CauchyMatrix Cauchy matrices}
  * but suitable for any application where integer elements are acceptable.
  * @author Robert Poole &mdash; <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
@@ -110,6 +110,9 @@ public class IntVector implements Vector<IntegerType> {
             throw new IndexOutOfBoundsException("Index " + position + " is outside the range 0\u2013" + (length() - 1L));
         }
         elements[(int) position] = element.asBigInteger();
+        if (mctx.getPrecision() == 0 && element.getMathContext().getPrecision() > 0) {
+            mctx = element.getMathContext();
+        }
     }
 
     @Override
