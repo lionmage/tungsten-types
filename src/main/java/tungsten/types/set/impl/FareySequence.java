@@ -330,6 +330,7 @@ public class FareySequence implements Set<RationalType> {
     /**
      * For F<sub>n</sub>, generates F<sub>n&minus;1</sub>.
      * @return the Farey sequence with an order that is 1 less than {@code this}
+     * @throws NoSuchElementException if there is no previous Farey sequence
      */
     public FareySequence previous() {
         if (order == 1L) throw new NoSuchElementException("F\u2081 has no previous set");
