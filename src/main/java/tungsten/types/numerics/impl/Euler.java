@@ -377,7 +377,7 @@ public class Euler implements RealType {
     }
 
     /*
-    Groovy methods below.
+     Groovy methods below.
      */
     public Object asType(Class<?> clazz) {
         if (CharSequence.class.isAssignableFrom(clazz)) {
@@ -394,7 +394,8 @@ public class Euler implements RealType {
         return this.exp(operand);
     }
     public RealType power(RationalType operand) {
-        RealType converted = new RealImpl(operand.asBigDecimal(), getMathContext());
+        MathContext ctx = operand.getMathContext().getPrecision() == 0 ? this.getMathContext() : operand.getMathContext();
+        RealType converted = new RealImpl(operand.asBigDecimal(), ctx);
         return this.exp(converted);
     }
     public RealType power(IntegerType operand) {
