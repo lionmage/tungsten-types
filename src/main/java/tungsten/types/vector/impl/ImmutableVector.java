@@ -36,9 +36,9 @@ import java.util.stream.Stream;
 /**
  * A simple wrapper class for vectors which provides a read-only view
  * of the wrapped vector.  Any methods that produce a vector as a result
- * also wrap this result in an {@link ImmutableVector}.
+ * also wrap this result in an {@code ImmutableVector}.
  * @param <T> any {@link Numeric} (sub)type
- * @author Robert Poole <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class ImmutableVector<T extends Numeric> implements Vector<T> {
@@ -141,6 +141,11 @@ public class ImmutableVector<T extends Numeric> implements Vector<T> {
         return wrapped.equals(obj);
     }
 
+    /**
+     * Obtain a {@code Stream} of the elements in this {@code Vector}
+     * in index order.
+     * @return a stream of {@code T}
+     */
     public Stream<T> stream() {
         if (wrapped instanceof RowVector) {
             RowVector<T> rvec = (RowVector<T>) wrapped;
