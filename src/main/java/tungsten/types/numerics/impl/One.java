@@ -248,7 +248,8 @@ public class One implements Numeric, Comparable<Numeric> {
                 Numeric temp = this.coerceTo(clazz);
                 return temp.equals(o);
             } catch (CoercionException ex) {
-                Logger.getLogger(One.class.getName()).log(Level.SEVERE, "Exception during test for equality with " + o, ex);
+                Logger.getLogger(One.class.getName()).log(Level.SEVERE,
+                        "Exception during test for equality with " + o, ex);
             }
         }
         return false;
@@ -306,14 +307,15 @@ public class One implements Numeric, Comparable<Numeric> {
                 Comparable<Numeric> that = (Comparable<Numeric>) o;
                 return -that.compareTo(this.coerceTo(o.getClass()));
             } catch (CoercionException ex) {
-                Logger.getLogger(One.class.getName()).log(Level.SEVERE, "Exception during comparison with " + o, ex);
+                Logger.getLogger(One.class.getName()).log(Level.SEVERE,
+                        "Exception during comparison with " + o, ex);
             }
         }
         throw new IllegalArgumentException("Non-comparable value of type " + o.getClass().getTypeName());
     }
 
     /*
-    Groovy methods below.
+     Groovy methods below.
      */
     @Override
     public Numeric power(Numeric operand) {
