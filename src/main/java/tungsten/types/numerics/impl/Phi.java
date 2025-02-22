@@ -252,6 +252,10 @@ public class Phi implements RealType {
     public int compareTo(RealType realType) {
         if (MathUtils.isInfinity(realType, Sign.POSITIVE)) return -1;
         if (MathUtils.isInfinity(realType, Sign.NEGATIVE)) return 1;
+        if (realType instanceof ContinuedFraction) {
+            // avoid the BigDecimal conversion
+            return ContinuedFraction.phi(mctx).compareTo(realType);
+        }
         return value.compareTo(realType.asBigDecimal());
     }
 

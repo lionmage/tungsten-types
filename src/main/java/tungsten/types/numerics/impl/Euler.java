@@ -336,6 +336,10 @@ public class Euler implements RealType {
     public int compareTo(RealType o) {
         if (MathUtils.isInfinity(o, Sign.POSITIVE)) return -1;
         if (MathUtils.isInfinity(o, Sign.NEGATIVE)) return 1;
+        if (o instanceof ContinuedFraction) {
+            // avoid the BigDecimal conversion
+            return ContinuedFraction.euler(mctx).compareTo(o);
+        }
         return this.value.compareTo(o.asBigDecimal());
     }
 
