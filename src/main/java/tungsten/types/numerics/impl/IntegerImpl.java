@@ -150,6 +150,7 @@ public class IntegerImpl implements IntegerType {
             // this is a candidate for a perfect square, but the only way
             // to be sure is to take the square root and then square the result,
             // comparing with this value to see if it matches
+            // Note that this is taken care of inside IntegerImpl.sqrt()
             IntegerType root = this.sqrt();
             return root.isExact();
         }
@@ -198,7 +199,7 @@ public class IntegerImpl implements IntegerType {
             do {
                 // calculate bitLength
                 bits = temp.bitLength();
-                // 4 > log2(10) so we should not reduce it too far.
+                // 4 > log₂(10) so we should not reduce it too far
                 int reduce = bits / 4;
                 // Divide by 10^reduce
                 temp = temp.divide(BigInteger.TEN.pow(reduce));
