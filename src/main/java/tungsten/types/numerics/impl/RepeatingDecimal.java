@@ -55,12 +55,24 @@ public class RepeatingDecimal extends RationalImpl {
     private BigInteger position;  // the position after the decimal point where repetition begins
     private BigInteger decimalPeriod;  // the length of the repetition
 
+    /**
+     * Instantiate a repeating decimal value with a rational numerator and
+     * denominator.
+     * @param numerator   the numerator of a rational value
+     * @param denominator the denominator of a rational value
+     * @param mctx        the {@code MathContext} associated with this value
+     */
     public RepeatingDecimal(IntegerType numerator, IntegerType denominator, MathContext mctx) {
         super(numerator, denominator);
         super.setMathContext(mctx);
         characterize();
     }
-    
+
+    /**
+     * Construct a repeating decimal from a {@code RationalType} value.
+     * @param source the rational value from which to construct this value
+     * @param mctx   the {@code MathContext} associated with this value
+     */
     public RepeatingDecimal(RationalType source, MathContext mctx) {
         super(source.numerator(), source.denominator());
         super.setMathContext(mctx);
