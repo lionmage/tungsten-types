@@ -44,13 +44,18 @@ import java.util.logging.Logger;
 /**
  * An implementation of an integer data type.
  *
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class IntegerImpl implements IntegerType {
     private boolean exact = true;
     private final BigInteger val;
     private static final BigInteger NINE = BigInteger.valueOf(9L);
 
+    /**
+     * Constructor that initializes {@code this} with a {@link BigInteger}.
+     * @param initialVal the value with which to initialize {@code this}
+     */
     public IntegerImpl(BigInteger initialVal) {
         if (initialVal == null) {
             throw new IllegalArgumentException("Must supply a non-null value");
@@ -58,15 +63,33 @@ public class IntegerImpl implements IntegerType {
         val = initialVal;
     }
 
+    /**
+     * Constructor that takes a {@code String} representation and parses it.
+     * The string is sanitized before parsing.
+     * @param representation the textual representation of an integer value
+     */
     public IntegerImpl(String representation) {
         val = new BigInteger(UnicodeTextEffects.sanitizeDecimal(representation));
     }
-    
+
+    /**
+     * Constructor that initializes {@code this} with a {@link BigInteger} and
+     * a given exactness.
+     * @param initialVal the value with which to initialize {@code this}
+     * @param exact      whether this value should be considered exact or not
+     */
     public IntegerImpl(BigInteger initialVal, boolean exact) {
         this(initialVal);
         this.exact = exact;
     }
-    
+
+    /**
+     * Constructor that takes a {@code String} representation and parses it
+     * as well as a given exactness.
+     * The string is sanitized before parsing.
+     * @param representation the textual representation of an integer value
+     * @param exact          whether this value should be considered exact or not
+     */
     public IntegerImpl(String representation, boolean exact) {
         this(representation);
         this.exact = exact;
@@ -102,9 +125,8 @@ public class IntegerImpl implements IntegerType {
      * always return a false value.
      *
      * @return true if this is a perfect square, false otherwise
-     * @see
-     * <a href="http://burningmath.blogspot.com/2013/09/how-to-check-if-number-is-perfect-square.html">the
-     * general algorithm</a>
+     * @see <a href="http://burningmath.blogspot.com/2013/09/how-to-check-if-number-is-perfect-square.html">the
+     *   general algorithm</a>
      */
     @Override
     public boolean isPerfectSquare() {
@@ -149,12 +171,11 @@ public class IntegerImpl implements IntegerType {
     /**
      * This is based on an algorithm posted by OldCurmudgeon on StackOverflow.
      * It has been modified to avoid code repetition and for compatibility with
-     * small values (e.g., 2 and 3 digit numbers).
+     * small values (e.g., 2- and 3-digit numbers).
      *
      * @return the number of digits in this integral value
-     * @see
-     * <a href="https://stackoverflow.com/questions/18828377/biginteger-count-the-number-of-decimal-digits-in-a-scalable-method">the
-     * original StackOverflow article</a>
+     * @see <a href="https://stackoverflow.com/questions/18828377/biginteger-count-the-number-of-decimal-digits-in-a-scalable-method">the
+     *   original StackOverflow article</a>
      */
     @Override
     public long numberOfDigits() {
@@ -318,7 +339,7 @@ public class IntegerImpl implements IntegerType {
     public Numeric add(Numeric addend) {
         if (addend instanceof IntegerType) {
             IntegerType that = (IntegerType) addend;
-            return new IntegerImpl(this.asBigInteger().add(that.asBigInteger()), exact && that.isExact());
+            return new IntegerImpl(val.add(that.asBigInteger()), exact && that.isExact());
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
             if (iface == Numeric.class) {
@@ -329,7 +350,8 @@ public class IntegerImpl implements IntegerType {
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).add(addend);
             } catch (CoercionException ex) {
-                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer add.", ex);
+                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during integer add.", ex);
             }
         }
         throw new UnsupportedOperationException("Addition operation unsupported");
@@ -339,7 +361,7 @@ public class IntegerImpl implements IntegerType {
     public Numeric subtract(Numeric subtrahend) {
         if (subtrahend instanceof IntegerType) {
             IntegerType that = (IntegerType) subtrahend;
-            return new IntegerImpl(this.asBigInteger().subtract(that.asBigInteger()), exact && that.isExact());
+            return new IntegerImpl(val.subtract(that.asBigInteger()), exact && that.isExact());
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(subtrahend.getClass());
             if (iface == Numeric.class) {
@@ -350,7 +372,8 @@ public class IntegerImpl implements IntegerType {
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).subtract(subtrahend);
             } catch (CoercionException ex) {
-                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer subtract.", ex);
+                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during integer subtract.", ex);
             }
         }
         throw new UnsupportedOperationException("Subtraction operation unsupported");
@@ -361,7 +384,7 @@ public class IntegerImpl implements IntegerType {
         final boolean exactness = this.isExact() && multiplier.isExact();
         if (multiplier instanceof IntegerType) {
             final IntegerType that = (IntegerType) multiplier;
-            return new IntegerImpl(this.asBigInteger().multiply(that.asBigInteger()), exactness);
+            return new IntegerImpl(val.multiply(that.asBigInteger()), exactness);
         } else if (multiplier instanceof RationalType) {
             final RationalType that = (RationalType) multiplier;
             BigInteger numResult = val.multiply(that.numerator().asBigInteger());
@@ -383,7 +406,8 @@ public class IntegerImpl implements IntegerType {
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).multiply(multiplier);
             } catch (CoercionException ex) {
-                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer multiply.", ex);
+                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during integer multiply.", ex);
             }
         }
         throw new UnsupportedOperationException("Multiplication operation unsupported");
@@ -413,7 +437,8 @@ public class IntegerImpl implements IntegerType {
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).divide(divisor);
             } catch (CoercionException ex) {
-                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE, "Failed to coerce type during integer divide.", ex);
+                Logger.getLogger(IntegerImpl.class.getName()).log(Level.SEVERE,
+                        "Failed to coerce type during integer divide.", ex);
             }
         }
         throw new UnsupportedOperationException("Division operation unsupported");
@@ -470,7 +495,7 @@ public class IntegerImpl implements IntegerType {
         if (other instanceof IntegerType) {
             final IntegerType that = (IntegerType) other;
             if (this.isExact() != that.isExact()) return false;
-            return this.asBigInteger().equals(that.asBigInteger());
+            return val.equals(that.asBigInteger());
         } else if (other instanceof Numeric) {
             final Numeric that = (Numeric) other;
             if (that.isCoercibleTo(IntegerType.class)) {
