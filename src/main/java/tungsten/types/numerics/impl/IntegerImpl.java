@@ -227,11 +227,10 @@ public class IntegerImpl implements IntegerType {
             return val.mod(BigInteger.TEN).intValue();
         }
 
-        BigInteger[] resultAndRemainder;
         BigInteger temp = val.abs();
         long count = 0L;
         do {
-            resultAndRemainder = temp.divideAndRemainder(BigInteger.TEN);
+            BigInteger[] resultAndRemainder = temp.divideAndRemainder(BigInteger.TEN);
             if (count == position) {
                 return resultAndRemainder[1].intValue();
             }
@@ -542,7 +541,7 @@ public class IntegerImpl implements IntegerType {
     }
 
     /*
-    Groovy-specific methods below here.
+     Groovy-specific methods below here.
      */
 
     @Override
