@@ -273,6 +273,13 @@ public class NumericSet implements Set<Numeric> {
                 }
                 return false;
             }
+
+            @Override
+            public String toString() {
+                // uses the toString of the owning NumericSet
+                // U+202F is a narrow no-break space
+                return NumericSet.this + "\u202F[" + clazz.getSimpleName() + "]";
+            }
         };
     } 
     
@@ -315,5 +322,10 @@ public class NumericSet implements Set<Numeric> {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return internal.stream().map(Numeric::toString).collect(Collectors.joining(",\u2009", "{", "}"));
     }
 }
