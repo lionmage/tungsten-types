@@ -237,7 +237,7 @@ public class IntegerImpl implements IntegerType {
             }
             temp = resultAndRemainder[0];
             count++;
-        } while (temp.compareTo(BigInteger.ZERO) != 0);
+        } while (!temp.equals(BigInteger.ZERO));
         // if we fell through here, it means position is not valid
         throw new IndexOutOfBoundsException("Index " + position + " exceeds max value " + (count - 1L));
     }
