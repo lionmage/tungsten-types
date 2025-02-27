@@ -247,8 +247,7 @@ public class IntegerImpl implements IntegerType {
         final BigInteger MAX_INT = BigInteger.valueOf(Integer.MAX_VALUE);
         Sign expSign = exponent.sign();
         if (exponent.asBigInteger().abs().compareTo(MAX_INT) > 0) {
-            IntegerType halfExponent = new IntegerImpl(exponent.asBigInteger().shiftRight(1));
-            if (expSign == Sign.NEGATIVE) halfExponent = halfExponent.negate();
+            IntegerType halfExponent = new IntegerImpl(exponent.asBigInteger().abs().shiftRight(1));
             IntegerType intermediate = (IntegerType) this.pow(halfExponent);
             intermediate = (IntegerType) intermediate.multiply(intermediate); // square the intermediate result
             if (exponent.isOdd()) {
