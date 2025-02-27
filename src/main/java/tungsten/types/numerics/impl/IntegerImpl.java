@@ -276,7 +276,7 @@ public class IntegerImpl implements IntegerType {
     }
 
     /**
-     * Compute {@code this}<sup>n</sup>mod&nbsp;m.
+     * Compute {@code this}<sup>n</sup>&nbsp;mod&nbsp;m.
      * @param n an integer exponent
      * @param m an integer value for taking the modulus
      * @return the result of exponentiation followed by taking the modulus
