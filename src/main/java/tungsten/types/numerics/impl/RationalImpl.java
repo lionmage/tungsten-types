@@ -269,9 +269,19 @@ public class RationalImpl implements RationalType {
         switch (htype) {
             case INTEGER:
                 if (denominator.equals(BigInteger.ONE)) {
-                    return new IntegerImpl(numerator, exact);
+                    return new IntegerImpl(numerator, exact) {
+                        @Override
+                        public MathContext getMathContext() {
+                            return RationalImpl.this.getMathContext();
+                        }
+                    };
                 } else if (numerator.equals(BigInteger.ZERO)) {
-                    return new IntegerImpl(BigInteger.ZERO, exact);
+                    return new IntegerImpl(BigInteger.ZERO, exact) {
+                        @Override
+                        public MathContext getMathContext() {
+                            return RationalImpl.this.getMathContext();
+                        }
+                    };
                 } else {
                     throw new CoercionException("Cannot convert fraction to integer", this.getClass(), numtype);
                 }
