@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  * Note that {@link #equals(Object) } may be inconsistent
  * with {@link #hashCode() }.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Constant(name = "one", representation = "1")
 public class One implements Numeric, Comparable<Numeric> {

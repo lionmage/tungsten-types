@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  * Note that {@link #equals(Object) } may be inconsistent
  * with {@link #hashCode() }.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Constant(name = "zero", representation = "0")
 public abstract class Zero implements Numeric, Comparable<Numeric> {
@@ -177,11 +177,11 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     /**
      * Test for equality with a given value.  If the given value is:
      * <ul><li>an implementation of {@link Numeric}</li>
-     * <li>is exact, and</li>
+     * <li>matches the exactness of {@code this}, and</li>
      * <li>has a numeric value equivalent to zero (0),</li></ul>
      * then it is considered equal.
      * @param o the value to compare
-     * @return true if equal, false otherwise
+     * @return true if the argument is equivalent to {@code this}, false otherwise
      */
     @Override
     public boolean equals(Object o) {
@@ -205,11 +205,11 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     }
 
     /**
-     * Convenience method to determine if a {{@link Numeric}} has a value of zero.
+     * Convenience method to determine if a {@link Numeric} has a value of zero.
      * Note that this does not check exactness or significant digits, only the value.
      * The intention is to consolidate tests for &ldquo;zero-ness&rdquo; here rather than spreading
      * them throughout the code base.  These checks are guaranteed to be faster than
-     * coercing an instance of Zero to the target type and then testing for equality.
+     * coercing an instance of {@code Zero} to the target type and then testing for equality.
      *
      * @param val the value to test
      * @return true if the value is 0, false otherwise
@@ -266,7 +266,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
     }
 
     /*
-    Groovy methods follow.
+     Groovy methods follow.
      */
     public Numeric power(Numeric operand) {
         if (isZero(operand)) {

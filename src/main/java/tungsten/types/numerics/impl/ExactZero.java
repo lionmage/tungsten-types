@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * belong to any specific subtype of {@link Numeric}.
  * As such, this is coercible to all {@code Numeric} subtypes.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class ExactZero extends Zero {
     private ExactZero(MathContext mctx) {

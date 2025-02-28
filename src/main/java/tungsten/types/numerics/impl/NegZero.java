@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * A representation of zero for situations where zero is being asymptotically
  * approached from a negative value.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 @Constant(name = "-zero", representation = "\u22120")
 public class NegZero extends Zero {
