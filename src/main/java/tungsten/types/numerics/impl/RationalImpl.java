@@ -53,6 +53,12 @@ public class RationalImpl implements RationalType {
 
     protected RationalImpl() { }
 
+    /**
+     * Given a pair of {@code BigInteger} values, construct a rational
+     * value that is exact with an unlimited {@code MathContext}.
+     * @param numerator   the numerator of this rational
+     * @param denominator the denominator of this rational
+     */
     public RationalImpl(BigInteger numerator, BigInteger denominator) {
         if (numerator == null || denominator == null) {
             throw new IllegalArgumentException("Numerator and denominator must be non-null");
@@ -67,7 +73,13 @@ public class RationalImpl implements RationalType {
         this.numerator = numerator;
         this.denominator = denominator;
     }
-    
+
+    /**
+     * Given a {@code String} representation of a rational value, construct a
+     * rational value.  The parser accepts multiple different solidus characters.
+     * Vulgar fraction characters are accepted.
+     * @param representation a {@code String} representing a fraction
+     */
     public RationalImpl(String representation) {
         if (UnicodeTextEffects.hasVulgarFraction(representation)) {
             representation = UnicodeTextEffects.expandFractions(representation);
@@ -131,12 +143,21 @@ public class RationalImpl implements RationalType {
         return new MathContext(precision, first.getRoundingMode());
     }
 
+    /**
+     * A convenience constructor that instantiates a rational value from two {@code long}
+     * values and a supplied {@code MathContext}.  This is ideal for cases where a series
+     * of rational values need to be generated in a loop.<br>
+     * The resulting rational is exact.
+     * @param numerator   the numerator of this fraction
+     * @param denominator the denominator of this fraction
+     * @param mctx        the {@code MathContext} to assign to this rational
+     */
     public RationalImpl(long numerator, long denominator, MathContext mctx) {
         this(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator), mctx);
     }
 
     /**
-     * Convenience constructor to convert {@link IntegerType}
+     * Convenience constructor to convert an {@link IntegerType}
      * to a rational.
      * @param val an integer value
      */
