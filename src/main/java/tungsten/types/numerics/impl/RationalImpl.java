@@ -588,7 +588,7 @@ public class RationalImpl implements RationalType {
     }
 
     /*
-    Groovy methods implemented below.
+     Groovy methods implemented below.
      */
 
     @Override
@@ -600,6 +600,7 @@ public class RationalImpl implements RationalType {
             return this.sign() == Sign.POSITIVE ? PosZero.getInstance(getMathContext()) : NegZero.getInstance(getMathContext());
         } else if (MathUtils.isInfinity(operand, Sign.POSITIVE)) {
             if (denominator.compareTo(numerator.abs()) > 0) {
+                // 0 < p/q < 1 so (p/q)ⁿ should converge to +0 as n approaches +∞
                 if (this.sign() == Sign.POSITIVE) return PosZero.getInstance(getMathContext());
                 else throw new ArithmeticException("Negative rational raised to infinity does not converge");
             }
