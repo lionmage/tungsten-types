@@ -345,7 +345,7 @@ public class IntegerImpl implements IntegerType {
                 // to avoid infinite recursion
                 return addend.add(this);
             }
-            // if we got here, subtrahend is probably something like Real or ComplexType
+            // if we got here, addend is probably something like Real or ComplexType
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).add(addend);
             } catch (CoercionException ex) {

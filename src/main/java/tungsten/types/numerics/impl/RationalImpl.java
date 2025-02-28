@@ -374,7 +374,7 @@ public class RationalImpl implements RationalType {
                 // to avoid infinite recursion
                 return multiplier.multiply(this);
             }
-            // if we got here, subtrahend is probably something like Real or ComplexType
+            // if we got here, multiplier is probably something like Real or ComplexType
             try {
                 return this.coerceTo((Class<? extends Numeric>) iface).multiply(multiplier);
             } catch (CoercionException ex) {
