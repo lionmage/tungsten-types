@@ -168,6 +168,7 @@ public class NumericSet implements Set<Numeric> {
         }
         
         return new Set<>() {
+            private static final String UNMODIFIABLE_VIEW = "Cannot modify this view";
             private final java.util.Set<T> elements = Collections.unmodifiableSet(innerSet);
 
             @Override
@@ -187,12 +188,12 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public void append(T element) {
-                throw new UnsupportedOperationException("Cannot modify this view");
+                throw new UnsupportedOperationException(UNMODIFIABLE_VIEW);
             }
 
             @Override
             public void remove(T element) {
-                throw new UnsupportedOperationException("Cannot modify this view");
+                throw new UnsupportedOperationException(UNMODIFIABLE_VIEW);
             }
 
             @Override
@@ -207,6 +208,11 @@ public class NumericSet implements Set<Numeric> {
                     }
                 }
                 if (Comparable.class.isAssignableFrom(clazz)) {
+                    // It would be nice to be able to just return a new UnionSet(this, other), but
+                    // that Set implementation takes a Set<T extends Comparable<? super T>>
+                    // whereas this anonymous class is a Set<T extends Numeric>, and not all Numeric
+                    // values are comparable.
+                    // The work-around is to use reflection and dynamically instantiate a UnionSet.
                     try {
                         Constructor<UnionSet> constructor = UnionSet.class.getConstructor(Set.class, Set.class);
                         return constructor.newInstance(this, other);

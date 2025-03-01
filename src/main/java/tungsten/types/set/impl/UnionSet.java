@@ -109,7 +109,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
                     boolean success = result.remove(element);
                     if (!success) {
                         Logger.getLogger(UnionSet.class.getName()).log(Level.WARNING,
-                                "Attempt to remove element {0} from set {1}.",
+                                "Attempt to remove element {0} from set {1} failed.",
                                 new Object[] {element, result});
                     }
                 }
