@@ -276,9 +276,9 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public String toString() {
-                // uses the toString of the owning NumericSet
                 // U+202F is a narrow no-break space
-                return NumericSet.this + "\u202F[" + clazz.getSimpleName() + "]";
+                String suffix = "}\u202F[" + clazz.getSimpleName() + "]";
+                return elements.stream().map(T::toString).collect(Collectors.joining(",\u2009", "{", suffix));
             }
         };
     } 
