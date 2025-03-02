@@ -1,3 +1,28 @@
+/*
+ * The MIT License
+ *
+ * Copyright © 2025 Robert Poole <Tarquin.AZ@gmail.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 package tungsten.types.util;
 
 import java.util.Iterator;
@@ -10,15 +35,23 @@ import java.util.logging.Logger;
  * An implementation of {@link Iterator} that combines the output of two other
  * {@link Iterator}s.  The elements returned from the wrapped iterators must
  * be comparable, and it is assumed that these iterators return their elements
- * in sorted order (least to highest).
+ * in sorted order (least to highest).  If the contributing iterators return
+ * values in any other order, the behavior of this iterator is not guaranteed.
  *
  * @param <T> the type of the elements returned by this iterator
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class CombiningIterator <T extends Comparable<? super T>> implements Iterator<T> {
     private final Iterator<T> iter1;
     private final Iterator<T> iter2;
     private final TreeSet<T> cache = new TreeSet<>();
 
+    /**
+     * Construct a {@code CombiningIterator} from the two given {@code Iterator}s.
+     * @param first  the first iterator to be combined
+     * @param second the second iterator to be combined
+     */
     public CombiningIterator(Iterator<T> first, Iterator<T> second) {
         this.iter1 = first;
         this.iter2 = second;
@@ -57,7 +90,7 @@ public class CombiningIterator <T extends Comparable<? super T>> implements Iter
         } else if (!cache.isEmpty()) {
             return cache.pollFirst();
         }
-        throw new NoSuchElementException("Parent iterators have both been exhausted.");
+        throw new NoSuchElementException("Parent iterators have both been exhausted");
     }
 
     private T findLowestVsCache(T val) {
