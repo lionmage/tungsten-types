@@ -113,8 +113,8 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
     public Set<T> intersection(Set<T> other) {
         if (other.cardinality() == 0L) return EmptySet.getInstance();
         if (other.countable() && other.cardinality() > 0L) {
-            final TreeSet<T> result = new TreeSet<>();
-            StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(result::add);
+            final TreeSet<T> result = StreamSupport.stream(other.spliterator(), true).filter(this::contains)
+                    .collect(Collectors.toCollection(TreeSet::new));
             return new Set<>() {
                 @Override
                 public long cardinality() {
@@ -155,6 +155,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
                 public Set<T> intersection(Set<T> other2) {
                     if (other2.cardinality() == 0L) return EmptySet.getInstance();
                     if (result.stream().noneMatch(other2::contains)) return EmptySet.getInstance();
+                    if (result.stream().allMatch(other2::contains)) return this;
                     return other2.intersection(this);
                 }
 
