@@ -113,11 +113,10 @@ public class NumericSet implements Set<Numeric> {
         } else if (other.cardinality() == 0L) {
             return this;
         }
+
         HashSet<Numeric> union = new HashSet<>(internal);
-        
-        Iterator<Numeric> iter = other.iterator();
-        while (iter.hasNext()) {
-            union.add(iter.next());
+        for (Numeric element : other) {
+            union.add(element);
         }
         
         return new NumericSet(union);
