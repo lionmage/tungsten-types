@@ -32,13 +32,18 @@ import java.util.NoSuchElementException;
 /**
  * The empty set, &empty;.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class EmptySet implements Set<Object> {
     private EmptySet() {}
     
     private static final EmptySet instance = new EmptySet();
 
+    /**
+     * Obtain an instance of &empty; cast to the required return type.
+     * @return a singleton instance of {@code EmptySet}
+     * @param <T> the requested element type of this set
+     */
     @SuppressWarnings("unchecked")
     public static <T> Set<T> getInstance() { return (Set<T>) instance; }
 
