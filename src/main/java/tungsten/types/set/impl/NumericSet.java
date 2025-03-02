@@ -26,7 +26,6 @@ package tungsten.types.set.impl;
 import tungsten.types.Numeric;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
-import tungsten.types.numerics.ComplexType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -40,11 +39,12 @@ import java.util.stream.Stream;
  * Implementation of {@link Set} for {@link Numeric} values.  If created using
  * the no-args constructor, this {@link Set} will attempt to preserve ordering
  * equivalent to the insertion order.  (This is useful if building a set of
- * {@link ComplexType} values, where insertion order may be critical but the
+ * {@code ComplexType} values, where insertion order may be critical but the
  * values themselves have no natural ordering.)  If the copy constructor is
  * used, there are no ordering guarantees.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a> or
+ *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class NumericSet implements Set<Numeric> {
     private final java.util.Set<Numeric> internal;
