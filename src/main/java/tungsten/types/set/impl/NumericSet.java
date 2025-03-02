@@ -235,6 +235,7 @@ public class NumericSet implements Set<Numeric> {
             @Override
             public Set<T> intersection(Set<T> other) {
                 java.util.Set<T> temp = elements.stream().filter(other::contains).collect(Collectors.toSet());
+                if (temp.isEmpty()) return EmptySet.getInstance();
                 try {
                     return new NumericSet(temp).coerceTo(clazz);
                 } catch (CoercionException e) {
@@ -246,6 +247,7 @@ public class NumericSet implements Set<Numeric> {
             public Set<T> difference(Set<T> other) {
                 LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
                 temp.removeIf(other::contains);
+                if (temp.isEmpty()) return EmptySet.getInstance();
                 try {
                     return new NumericSet(temp).coerceTo(clazz);
                 } catch (CoercionException e) {
