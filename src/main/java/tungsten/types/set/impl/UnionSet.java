@@ -157,7 +157,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
                     if (result.stream().noneMatch(other2::contains)) return EmptySet.getInstance();
                     if (result.stream().allMatch(other2::contains)) return this;
                     if (other2.cardinality() < result.size() &&
-                            StreamSupport.stream(other2.spliterator(), false).allMatch(result::contains)) return other2;
+                            StreamSupport.stream(other2.spliterator(), true).allMatch(result::contains)) return other2;
                     return other2.intersection(this);
                 }
 
