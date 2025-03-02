@@ -201,6 +201,7 @@ public class NumericSet implements Set<Numeric> {
 
             @Override
             public Set<T> union(Set<T> other) {
+                if (other.cardinality() == 0L) return this;
                 if (other.countable() && other.cardinality() > 0L) {
                     LinkedHashSet<T> temp = new LinkedHashSet<>(elements);
                     other.forEach(temp::add);
