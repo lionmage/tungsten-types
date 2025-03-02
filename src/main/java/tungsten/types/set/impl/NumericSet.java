@@ -106,6 +106,9 @@ public class NumericSet implements Set<Numeric> {
     @Override
     public Set<Numeric> union(Set<Numeric> other) {
         if (other.cardinality() == -1L) {
+            // if this is wholly contained by other, return other
+            if (internal.parallelStream().allMatch(other::contains)) return other;
+            // otherwise, delegate to other's union method
             return other.union(this);
         } else if (other.cardinality() == 0L) {
             return this;
@@ -207,6 +210,7 @@ public class NumericSet implements Set<Numeric> {
                         throw new IllegalStateException("While computing union", e);
                     }
                 }
+                if (elements.parallelStream().allMatch(other::contains)) return other;
                 if (Comparable.class.isAssignableFrom(clazz)) {
                     // It would be nice to be able to just return a new UnionSet(this, other), but
                     // that Set implementation takes a Set<T extends Comparable<? super T>>

@@ -3,6 +3,8 @@ package tungsten.types.util;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of {@link Iterator} that combines the output of two other
@@ -66,6 +68,8 @@ public class CombiningIterator <T extends Comparable<? super T>> implements Iter
                 cache.remove(top);
                 return top;
             } else if (top.compareTo(val) == 0) {
+                Logger.getLogger(CombiningIterator.class.getName()).log(Level.FINE,
+                        "Encountered duplicate element {0} during iteration.", val);
                 // remove duplicates
                 cache.remove(top);
             }
@@ -82,6 +86,8 @@ public class CombiningIterator <T extends Comparable<? super T>> implements Iter
             cache.add(val1);
             return val2;
         } else {
+            Logger.getLogger(CombiningIterator.class.getName()).log(Level.FINE,
+                    "Encountered duplicate element {0} during iteration.", val2);
             // currently we're dropping duplicates
             return val1;
         }

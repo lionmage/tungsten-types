@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import java.util.stream.StreamSupport;
 
 /**
  * A {@code Set} that contains a Farey sequence of some order n,
@@ -141,6 +142,8 @@ public class FareySequence implements Set<RationalType> {
                 throw new IllegalStateException("While computing Set union", e);
             }
         }
+        // if other is not countable, or is infinite in size, check for total containment of this
+        if (members.parallelStream().allMatch(other::contains)) return other;
         // since RationalType is comparable, offload the logic to UnionSet
         return new UnionSet<>(this, other);
     }
