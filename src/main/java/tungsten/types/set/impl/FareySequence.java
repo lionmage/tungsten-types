@@ -128,6 +128,10 @@ public class FareySequence implements Set<RationalType> {
     @Override
     public Set<RationalType> union(Set<RationalType> other) {
         if (other.cardinality() == 0L) return this;
+        if (other instanceof FareySequence) {
+            FareySequence seq = (FareySequence) other;
+            return this.order() > seq.order() ? this : seq;
+        }
         if (other.countable() && other.cardinality() > 0L) {
             SortedSet<RationalType> all = new TreeSet<>(members);
             other.forEach(all::add);
@@ -137,12 +141,16 @@ public class FareySequence implements Set<RationalType> {
                 throw new IllegalStateException("While computing Set union", e);
             }
         }
-        // last ditch effort
-        return other.union(this);
+        // since RationalType is comparable, offload the logic to UnionSet
+        return new UnionSet<>(this, other);
     }
 
     @Override
     public Set<RationalType> intersection(Set<RationalType> other) {
+        if (other instanceof FareySequence) {
+            FareySequence seq = (FareySequence) other;
+            return this.order() < seq.order() ? this : seq;
+        }
         NumericSet result = new NumericSet();
         for (RationalType value : members) {
             if (other.contains(value)) result.append(value);

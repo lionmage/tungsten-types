@@ -149,6 +149,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
             };
         }
         // default strategy is to construct a new UnionSet that represents the intersection
+        // (A ∪ B) ∩ C = (A ∩ C) ∪ (B ∩ C)
         return new UnionSet<>(set1.intersection(other), set2.intersection(other));
     }
 

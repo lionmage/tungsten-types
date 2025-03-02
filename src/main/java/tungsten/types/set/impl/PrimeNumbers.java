@@ -28,7 +28,6 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.util.CombiningIterator;
 
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -110,65 +109,7 @@ public class PrimeNumbers implements Set<IntegerType> {
     @Override
     public Set<IntegerType> union(Set<IntegerType> other) {
         if (other.cardinality() == 0L || other instanceof PrimeNumbers) return this;
-        // general case uses a combining iterator
-        return new Set<>() {
-            @Override
-            public long cardinality() {
-                return -1;
-            }
-
-            @Override
-            public boolean countable() {
-                return true;
-            }
-
-            @Override
-            public boolean contains(IntegerType element) {
-                return PrimeNumbers.this.contains(element) || other.contains(element);
-            }
-
-            @Override
-            public void append(IntegerType element) {
-                throw new UnsupportedOperationException("Append is not supported");
-            }
-
-            @Override
-            public void remove(IntegerType element) {
-                throw new UnsupportedOperationException("Remove is not supported");
-            }
-
-            @Override
-            public Set<IntegerType> union(Set<IntegerType> other2) {
-                return PrimeNumbers.this.union(other.union(other2));
-            }
-
-            @Override
-            public Set<IntegerType> intersection(Set<IntegerType> other2) {
-                if (other2.cardinality() == 0L) return EmptySet.getInstance();
-                if (other2.cardinality() > 0L) {
-                    NumericSet intersection = new NumericSet();
-                    StreamSupport.stream(other2.spliterator(), true).filter(this::contains).forEach(intersection::append);
-                    if (intersection.cardinality() == 0L) return EmptySet.getInstance();
-                    try {
-                        return intersection.coerceTo(IntegerType.class);
-                    } catch (CoercionException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-                // (A ∪ B) ∩ C = (A ∩ C) ∪ (B ∩ C)
-                return PrimeNumbers.this.intersection(other2).union(other.intersection(other2));
-            }
-
-            @Override
-            public Set<IntegerType> difference(Set<IntegerType> other2) {
-                return PrimeNumbers.this.difference(other2).union(other.difference(other2));
-            }
-
-            @Override
-            public Iterator<IntegerType> iterator() {
-                return new CombiningIterator<>(PrimeNumbers.this.iterator(), other.iterator());
-            }
-        };
+        return new UnionSet<>(this, other);
     }
 
     @Override
