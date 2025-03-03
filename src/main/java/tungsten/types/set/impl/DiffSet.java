@@ -82,7 +82,8 @@ public class DiffSet<T> implements Set<T> {
     @Override
     public Set<T> union(Set<T> other) {
         if (right.equals(other)) return left;
-        return other.difference(this).union(this);
+        // (A - B) ∪ C = A - (B - C)
+        return left.difference(right.difference(other));
     }
 
     @Override
