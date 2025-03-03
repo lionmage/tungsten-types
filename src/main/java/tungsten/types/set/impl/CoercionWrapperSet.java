@@ -43,6 +43,8 @@ import java.util.stream.StreamSupport;
  * @author Robert Poole
  */
 public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements Set<R> {
+    private static final String APPEND_UNSUPPORTED = "Append is not supported for this view";
+    private static final String REMOVE_UNSUPPORTED = "Remove is not supported for this view";
     private final Class<R> clazz;
     private final Class<T> origClazz;
     private final Set<T> original;
@@ -103,12 +105,12 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
 
     @Override
     public void append(R element) {
-        throw new UnsupportedOperationException("Append is not supported for this view");
+        throw new UnsupportedOperationException(APPEND_UNSUPPORTED);
     }
 
     @Override
     public void remove(R element) {
-        throw new UnsupportedOperationException("Remove is not supported for this view");
+        throw new UnsupportedOperationException(REMOVE_UNSUPPORTED);
     }
 
     @Override
@@ -150,6 +152,9 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
             }
         }
         if (other.equals(this)) return EmptySet.getInstance();
+        // What we have left if we get to this point is an infinite set
+        // which may or may not be countable.  This will probably require
+        // a specialized class to handle.
         throw new UnsupportedOperationException("Case not implemented yet");
     }
 
