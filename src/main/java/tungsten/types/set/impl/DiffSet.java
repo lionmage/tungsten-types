@@ -126,8 +126,10 @@ public class DiffSet<T> implements Set<T> {
 
             Set<T> that = (Set<T>) obj;
             if (that.countable() != this.countable()) return false;
+            if (that.cardinality() == 0L && cardinality() == 0L) return true;
             if (cardinality() > 0L && that.cardinality() == cardinality()) {
-                return StreamSupport.stream(this.spliterator(), true).allMatch(that::contains);
+                return StreamSupport.stream(left.spliterator(), true)
+                        .dropWhile(right::contains).allMatch(that::contains);
             }
         }
         return false;
