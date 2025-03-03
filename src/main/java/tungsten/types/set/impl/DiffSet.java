@@ -86,7 +86,7 @@ public class DiffSet<T> implements Set<T> {
         if (left.intersection(other).equals(other)) {
             return left.difference(right.difference(other));
         }
-        return other.difference(this).union(this);
+        return other.union(this);
     }
 
     @Override
