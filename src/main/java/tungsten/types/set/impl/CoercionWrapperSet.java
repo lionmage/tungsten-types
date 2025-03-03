@@ -153,14 +153,15 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
         }
         if (other.equals(this)) return EmptySet.getInstance();
         // What we have left if we get to this point is an infinite set
-        // which may or may not be countable.  This will probably require
+        // which may or may not be countable.  This requires
         // a specialized class to handle.
-        throw new UnsupportedOperationException("Case not implemented yet");
+        return new DiffSet<>(this, other);
     }
 
     @Override
     public Iterator<R> iterator() {
         final Iterator<T> origIter = original.iterator();
+
         return new Iterator<>() {
             @Override
             public boolean hasNext() {
