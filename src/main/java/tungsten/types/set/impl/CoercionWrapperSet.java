@@ -160,7 +160,7 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
 
     @Override
     public Iterator<R> iterator() {
-        Iterator<T> origIter = original.iterator();
+        final Iterator<T> origIter = original.iterator();
         return new Iterator<>() {
             @Override
             public boolean hasNext() {
