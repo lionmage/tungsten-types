@@ -28,6 +28,7 @@ package tungsten.types.set.impl;
 import tungsten.types.Set;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 /**
@@ -113,5 +114,27 @@ public class DiffSet<T> implements Set<T> {
     public Iterator<T> iterator() {
         return StreamSupport.stream(left.spliterator(), false)
                 .dropWhile(right::contains).iterator();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Set) {
+            if (obj instanceof DiffSet) {
+                DiffSet<T> that = (DiffSet<T>) obj;
+                return this.left.equals(that.left) && this.right.equals(that.right);
+            }
+
+            Set<T> that = (Set<T>) obj;
+            if (that.countable() != this.countable()) return false;
+            if (cardinality() > 0L && that.cardinality() == cardinality()) {
+                return StreamSupport.stream(this.spliterator(), true).allMatch(that::contains);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
     }
 }
