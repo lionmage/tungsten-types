@@ -269,7 +269,8 @@ public class RangeUtils {
                 return new Set<>() {
                     @Override
                     public long cardinality() {
-                        return StreamSupport.stream(container.spliterator(), true).dropWhile(other::contains).count();
+                        return StreamSupport.stream(container.spliterator(), true)
+                                .filter(element -> !other.contains(element)).count();
                     }
 
                     @Override
@@ -324,7 +325,8 @@ public class RangeUtils {
                     @Override
                     public Set<IntegerType> difference(Set<IntegerType> intSet) {
                         NumericSet difference = new NumericSet();
-                        StreamSupport.stream(this.spliterator(), true).dropWhile(intSet::contains).forEach(difference::append);
+                        StreamSupport.stream(this.spliterator(), true)
+                                .filter(element -> !intSet.contains(element)).forEach(difference::append);
                         if (difference.cardinality() == 0L) return EmptySet.getInstance();
                         try {
                             return difference.coerceTo(IntegerType.class);
@@ -335,7 +337,8 @@ public class RangeUtils {
 
                     @Override
                     public Iterator<IntegerType> iterator() {
-                        return StreamSupport.stream(container.spliterator(), false).dropWhile(other::contains).iterator();
+                        return StreamSupport.stream(container.spliterator(), false)
+                                .filter(element -> !other.contains(element)).iterator();
                     }
 
                     @Override

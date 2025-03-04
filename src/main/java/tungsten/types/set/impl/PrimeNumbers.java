@@ -241,7 +241,8 @@ public class PrimeNumbers implements Set<IntegerType> {
 
             @Override
             public Iterator<IntegerType> iterator() {
-                return StreamSupport.stream(container.spliterator(), false).dropWhile(other::contains).iterator();
+                return StreamSupport.stream(container.spliterator(), false)
+                        .filter(element -> !other.contains(element)).iterator();
             }
         };
     }

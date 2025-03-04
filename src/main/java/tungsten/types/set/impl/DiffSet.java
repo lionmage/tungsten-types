@@ -95,13 +95,18 @@ public class DiffSet<T> implements Set<T> {
         if (right.equals(other)) return EmptySet.getInstance();
         if (other.cardinality() > 0L) {
             return other.difference(other.difference(this));
+        } else if (this.cardinality() > 0L) {
+            return this.difference(this.difference(other));
         }
-        return this.difference(this.difference(other));
+        // use an identity for the general case
+        // (A - B) ∩ C = A ∩ (B - C)
+        return left.intersection(right.difference(other));
     }
 
     @Override
     public Set<T> difference(Set<T> other) {
         if (other.cardinality() == 0L || other.equals(right)) return this;
+        // could also do left.difference(right.union(other))
         return left.difference(other).difference(right.difference(other));
     }
 
@@ -113,14 +118,14 @@ public class DiffSet<T> implements Set<T> {
     @Override
     public Iterator<T> iterator() {
         return StreamSupport.stream(left.spliterator(), false)
-                .dropWhile(right::contains).iterator();
+                .filter(element -> !right.contains(element)).iterator();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Set) {
             if (obj instanceof DiffSet) {
-                DiffSet<T> that = (DiffSet<T>) obj;
+                DiffSet<?> that = (DiffSet<?>) obj;
                 return this.left.equals(that.left) && this.right.equals(that.right);
             }
 
@@ -129,7 +134,8 @@ public class DiffSet<T> implements Set<T> {
             if (that.cardinality() == 0L && cardinality() == 0L) return true;
             if (cardinality() > 0L && that.cardinality() == cardinality()) {
                 return StreamSupport.stream(left.spliterator(), true)
-                        .dropWhile(right::contains).allMatch(that::contains);
+                        .filter(element -> !right.contains(element))
+                        .allMatch(that::contains);
             }
         }
         return false;

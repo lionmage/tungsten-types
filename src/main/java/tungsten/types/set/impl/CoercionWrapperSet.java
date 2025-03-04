@@ -140,7 +140,8 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
         if (this.cardinality() == 0L) return EmptySet.getInstance();
         if (this.cardinality() > 0L) {
             NumericSet difference = new NumericSet();
-            StreamSupport.stream(this.spliterator(), true).dropWhile(other::contains).forEach(difference::append);
+            StreamSupport.stream(this.spliterator(), true)
+                    .filter(element -> !other.contains(element)).forEach(difference::append);
             if (difference.cardinality() == 0L) return EmptySet.getInstance();
             try {
                 return difference.coerceTo(clazz);

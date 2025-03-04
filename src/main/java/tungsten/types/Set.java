@@ -186,7 +186,7 @@ public interface Set<T> extends Iterable<T> {
             @Override
             public Set<T> difference(Set<T> other) {
                 if (other.cardinality() == 0L) return this;
-                T[] difference = Arrays.stream(elements).dropWhile(other::contains).toArray(this::createNewArray);
+                T[] difference = Arrays.stream(elements).filter(element -> !other.contains(element)).toArray(this::createNewArray);
                 return Set.of(difference);
             }
 
