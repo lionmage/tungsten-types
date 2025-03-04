@@ -34,6 +34,9 @@ import java.util.stream.StreamSupport;
 /**
  * Given two sets A and B, compute the difference A&minus;B.
  * @param <T> the type of this set's elements
+ * @since 0.6
+ * @author Robert Poole, <a href="tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class DiffSet<T> implements Set<T> {
     private static final String IMMUTABLE_VIEW = "Difference set view is immutable";

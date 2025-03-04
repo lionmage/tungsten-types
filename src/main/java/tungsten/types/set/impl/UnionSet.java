@@ -44,6 +44,7 @@ import java.util.stream.StreamSupport;
  *           the contributing sets' elements
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
  *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ * @since 0.6
  */
 public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
     private final Set<T> set1, set2;
