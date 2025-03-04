@@ -57,6 +57,8 @@ public class DiffSet<T> implements Set<T> {
     public long cardinality() {
         // we shouldn't have to check right.cardinality() here
         if (left.cardinality() == -1L) return -1L;
+        if (left.cardinality() == 0L) return 0L;
+        if (right.cardinality() == 0L) return left.cardinality();
         return StreamSupport.stream(this.spliterator(), false).count();
     }
 
@@ -82,6 +84,7 @@ public class DiffSet<T> implements Set<T> {
 
     @Override
     public Set<T> union(Set<T> other) {
+        if (other.cardinality() == 0L) return this;
         if (right.equals(other)) return left;
         // (A - B) ∪ C = A - (B - C) if C ⊆ A
         if (left.intersection(other).equals(other)) {
@@ -92,7 +95,7 @@ public class DiffSet<T> implements Set<T> {
 
     @Override
     public Set<T> intersection(Set<T> other) {
-        if (right.equals(other)) return EmptySet.getInstance();
+        if (right.equals(other) || other.cardinality() == 0L) return EmptySet.getInstance();
         if (other.cardinality() > 0L) {
             return other.difference(other.difference(this));
         } else if (this.cardinality() > 0L) {
