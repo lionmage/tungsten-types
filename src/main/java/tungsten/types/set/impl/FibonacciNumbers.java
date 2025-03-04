@@ -65,6 +65,7 @@ public class FibonacciNumbers implements Set<IntegerType> {
      */
     public static final long MAX_N_TO_CACHE = 20L;
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
+    private static final String IMMUTABLE_SET = "The set of Fibonacci numbers is immutable";
     private final TreeSet<IntegerType> cache = new TreeSet<>();
 
     public FibonacciNumbers() {
@@ -95,12 +96,12 @@ public class FibonacciNumbers implements Set<IntegerType> {
 
     @Override
     public void append(IntegerType element) {
-        throw new UnsupportedOperationException("The set of Fibonacci numbers is immutable");
+        throw new UnsupportedOperationException(IMMUTABLE_SET);
     }
 
     @Override
     public void remove(IntegerType element) {
-        throw new UnsupportedOperationException("The set of Fibonacci numbers is immutable");
+        throw new UnsupportedOperationException(IMMUTABLE_SET);
     }
 
     @Override
