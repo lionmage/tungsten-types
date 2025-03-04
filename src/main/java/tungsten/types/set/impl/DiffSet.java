@@ -109,7 +109,9 @@ public class DiffSet<T> implements Set<T> {
     @Override
     public Set<T> difference(Set<T> other) {
         if (other.cardinality() == 0L || other.equals(right)) return this;
-        // could also do left.difference(right.union(other))
+        if (right.countable() && other.countable()) {
+            return left.difference(right.union(other));
+        }
         return left.difference(other).difference(right.difference(other));
     }
 
@@ -139,6 +141,8 @@ public class DiffSet<T> implements Set<T> {
                 return StreamSupport.stream(left.spliterator(), true)
                         .filter(element -> !right.contains(element))
                         .allMatch(that::contains);
+            } else {
+                return this.difference(that).cardinality() == 0L;
             }
         }
         return false;
