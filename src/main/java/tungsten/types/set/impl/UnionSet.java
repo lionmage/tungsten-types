@@ -29,6 +29,7 @@ import tungsten.types.Set;
 import tungsten.types.util.CombiningIterator;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -47,6 +48,7 @@ import java.util.stream.StreamSupport;
  * @since 0.6
  */
 public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
+    private static final String IMMUTABLE_SET = "This aggregate set is immutable";
     private final Set<T> set1, set2;
 
     /**
@@ -85,12 +87,12 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
 
     @Override
     public void append(T element) {
-        throw new UnsupportedOperationException("This aggregate set is immutable");
+        throw new UnsupportedOperationException(IMMUTABLE_SET);
     }
 
     @Override
     public void remove(T element) {
-        throw new UnsupportedOperationException("This aggregate set is immutable");
+        throw new UnsupportedOperationException(IMMUTABLE_SET);
     }
 
     @Override
@@ -219,5 +221,33 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
         }
         buf.append('}');
         return buf.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(set1, set2);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Set) {
+            if (obj instanceof UnionSet) {
+                UnionSet<?> that = (UnionSet<?>) obj;
+                return set1.equals(that.set1) && set2.equals(that.set2);
+            }
+            Set<T> other = (Set<T>) obj;
+            if (other.countable() != this.countable()) return false;
+            if (other.cardinality() == 0L && this.cardinality() == 0L) return true;
+            if (other.cardinality() > 0L && this.cardinality() == other.cardinality()) {
+                return StreamSupport.stream(other.spliterator(), true).allMatch(this::contains);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isOfType(Class<?> clazz) {
+        // in case set1 doesn't report an accurate type
+        return set1.isOfType(clazz) || set2.isOfType(clazz);
     }
 }
