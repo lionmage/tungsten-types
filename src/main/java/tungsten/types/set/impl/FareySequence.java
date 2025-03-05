@@ -40,7 +40,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import java.util.stream.StreamSupport;
 
 /**
  * A {@code Set} that contains a Farey sequence of some order n,
@@ -150,6 +149,7 @@ public class FareySequence implements Set<RationalType> {
 
     @Override
     public Set<RationalType> intersection(Set<RationalType> other) {
+        if (other.cardinality() == 0L) return EmptySet.getInstance();
         if (other instanceof FareySequence) {
             FareySequence seq = (FareySequence) other;
             return this.order() < seq.order() ? this : seq;
