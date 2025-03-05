@@ -37,6 +37,7 @@ import tungsten.types.numerics.impl.RealInfinity;
 import tungsten.types.set.impl.DiffSet;
 import tungsten.types.set.impl.EmptySet;
 import tungsten.types.set.impl.NumericSet;
+import tungsten.types.set.impl.UnionSet;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -253,7 +254,7 @@ public class RangeUtils {
                         StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) {
                     return this;
                 }
-                return other.union(this);
+                return new UnionSet<>(this, other);
             }
 
             @Override
