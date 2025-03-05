@@ -34,6 +34,7 @@ import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.RealInfinity;
+import tungsten.types.set.impl.DiffSet;
 import tungsten.types.set.impl.EmptySet;
 import tungsten.types.set.impl.NumericSet;
 
@@ -52,11 +53,13 @@ import static tungsten.types.Range.BoundType;
 /**
  * Utility class with factory methods for commonly used types of ranges.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public class RangeUtils {
     private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
+    private static final String CANNOT_APPEND = "Cannot append to this set";
+    private static final String CANNOT_REMOVE = "Cannot remove elements from this set";
 
     private RangeUtils() {
         // to prevent instantiation
@@ -235,12 +238,12 @@ public class RangeUtils {
 
             @Override
             public void append(IntegerType element) {
-                throw new UnsupportedOperationException("Cannot append to this set");
+                throw new UnsupportedOperationException(CANNOT_APPEND);
             }
 
             @Override
             public void remove(IntegerType element) {
-                throw new UnsupportedOperationException("Cannot remove elements from this set");
+                throw new UnsupportedOperationException(CANNOT_REMOVE);
             }
 
             @Override
@@ -285,12 +288,12 @@ public class RangeUtils {
 
                     @Override
                     public void append(IntegerType element) {
-                        throw new UnsupportedOperationException("Cannot append to this set");
+                        throw new UnsupportedOperationException(CANNOT_APPEND);
                     }
 
                     @Override
                     public void remove(IntegerType element) {
-                        throw new UnsupportedOperationException("Cannot remove elements from this set");
+                        throw new UnsupportedOperationException(CANNOT_REMOVE);
                     }
 
                     @Override
@@ -387,12 +390,12 @@ public class RangeUtils {
 
             @Override
             public void append(RealType element) {
-                throw new UnsupportedOperationException("Cannot append to this set");
+                throw new UnsupportedOperationException(CANNOT_APPEND);
             }
 
             @Override
             public void remove(RealType element) {
-                throw new UnsupportedOperationException("Cannot remove elements from this set");
+                throw new UnsupportedOperationException(CANNOT_REMOVE);
             }
 
             @Override
@@ -455,12 +458,12 @@ public class RangeUtils {
 
                     @Override
                     public void append(RealType element) {
-                        throw new UnsupportedOperationException("Cannot append to this set");
+                        throw new UnsupportedOperationException(CANNOT_APPEND);
                     }
 
                     @Override
                     public void remove(RealType element) {
-                        throw new UnsupportedOperationException("Cannot remove elements from this set");
+                        throw new UnsupportedOperationException(CANNOT_REMOVE);
                     }
 
                     @Override
@@ -499,8 +502,7 @@ public class RangeUtils {
                             // TODO it would be nice to have a hybrid set that can handle ranges as well as elements of
                             //  both inclusion AND exclusion.
                         }
-                        // this operation is non-commutative, so we can't try this in reverse
-                        throw new UnsupportedOperationException("Cannot currently compute difference with a non-discrete set");
+                        return new DiffSet<>(this, other);
                     }
 
                     @Override
