@@ -151,6 +151,10 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
 
                 @Override
                 public Set<T> union(Set<T> other2) {
+                    if (other.equals(other2) ||
+                            (other.cardinality() == other2.cardinality() && other.difference(other2).cardinality() == 0L)) {
+                        return UnionSet.this;
+                    }
                     return new UnionSet<>(this, other2);
                 }
 
