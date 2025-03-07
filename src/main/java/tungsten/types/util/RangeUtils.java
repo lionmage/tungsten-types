@@ -260,102 +260,24 @@ public class RangeUtils {
             @Override
             public Set<IntegerType> intersection(Set<IntegerType> other) {
                 // this.cardinality() will always be >= 1
-                if (StreamSupport.stream(this.spliterator(), true).noneMatch(other::contains)) {
-                    return EmptySet.getInstance();
+                NumericSet intersection = new NumericSet();
+                StreamSupport.stream(this.spliterator(), true).filter(other::contains).forEach(intersection::append);
+                if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                try {
+                    return intersection.coerceTo(IntegerType.class);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException(e);
                 }
-                return other.intersection(this);
             }
 
             @Override
             public Set<IntegerType> difference(Set<IntegerType> other) {
-                final Set<IntegerType> container = this;
-
-                return new Set<>() {
+                if (other.cardinality() == 0L) return this;
+                return new DiffSet<>(this, other) {
                     @Override
-                    public long cardinality() {
-                        return StreamSupport.stream(container.spliterator(), true)
-                                .filter(element -> !other.contains(element)).count();
-                    }
-
-                    @Override
-                    public boolean countable() {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean contains(IntegerType element) {
-                        return container.contains(element) && !other.contains(element);
-                    }
-
-                    @Override
-                    public void append(IntegerType element) {
-                        throw new UnsupportedOperationException(CANNOT_APPEND);
-                    }
-
-                    @Override
-                    public void remove(IntegerType element) {
-                        throw new UnsupportedOperationException(CANNOT_REMOVE);
-                    }
-
-                    @Override
-                    public Set<IntegerType> union(Set<IntegerType> intSet) {
-                        if (this.cardinality() == 0L) return intSet;
-                        if (this.cardinality() >= intSet.cardinality() &&
-                                StreamSupport.stream(intSet.spliterator(), true).allMatch(this::contains)) {
-                            return this;
-                        }
-                        NumericSet aggregate = new NumericSet();
-                        this.forEach(aggregate::append);
-                        intSet.forEach(aggregate::append);
-                        try {
-                            return aggregate.coerceTo(IntegerType.class);
-                        } catch (CoercionException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-
-                    @Override
-                    public Set<IntegerType> intersection(Set<IntegerType> intSet) {
-                        NumericSet intersection = new NumericSet();
-                        StreamSupport.stream(this.spliterator(), true).filter(intSet::contains).forEach(intersection::append);
-                        if (intersection.cardinality() == 0L) return EmptySet.getInstance();
-                        try {
-                            return intersection.coerceTo(IntegerType.class);
-                        } catch (CoercionException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-
-                    @Override
-                    public Set<IntegerType> difference(Set<IntegerType> intSet) {
-                        NumericSet difference = new NumericSet();
-                        StreamSupport.stream(this.spliterator(), true)
-                                .filter(element -> !intSet.contains(element)).forEach(difference::append);
-                        if (difference.cardinality() == 0L) return EmptySet.getInstance();
-                        try {
-                            return difference.coerceTo(IntegerType.class);
-                        } catch (CoercionException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-
-                    @Override
-                    public Iterator<IntegerType> iterator() {
-                        return StreamSupport.stream(container.spliterator(), false)
-                                .filter(element -> !other.contains(element)).iterator();
-                    }
-
-                    @Override
-                    public String toString() {
-                        StringBuilder buf = new StringBuilder();
-                        buf.append('{');
-                        Iterator<IntegerType> iterator = this.iterator();
-                        while (iterator.hasNext()) {
-                            buf.append(iterator.next());
-                            if (iterator.hasNext()) buf.append(", ");
-                        }
-                        buf.append('}');
-                        return buf.toString();
+                    public Set<IntegerType> union(Set<IntegerType> rhs) {
+                        if (rhs.cardinality() == 0L) return this;
+                        return new UnionSet<>(this, rhs);
                     }
                 };
             }
