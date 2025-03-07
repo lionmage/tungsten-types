@@ -335,6 +335,12 @@ public class RangeUtils {
                     Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
                             "Some elements of {0} are outside range {1}: {2}",
                             new Object[] { other, range, outOfRange } );
+                    try {
+                        // compute a union set with no overlap between the component sets
+                        return new UnionSet<>(this, outOfRange.coerceTo(RealType.class));
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException("While computing union set", e);
+                    }
                 }
                 // last resort
                 return other.union(this);
@@ -361,78 +367,7 @@ public class RangeUtils {
 
             @Override
             public Set<RealType> difference(Set<RealType> other) {
-                final Set<RealType> container = this;
-
-                return new Set<>() {
-                    @Override
-                    public long cardinality() {
-                        return -1;
-                    }
-
-                    @Override
-                    public boolean countable() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean contains(RealType element) {
-                        return container.contains(element) && !other.contains(element);
-                    }
-
-                    @Override
-                    public void append(RealType element) {
-                        throw new UnsupportedOperationException(CANNOT_APPEND);
-                    }
-
-                    @Override
-                    public void remove(RealType element) {
-                        throw new UnsupportedOperationException(CANNOT_REMOVE);
-                    }
-
-                    @Override
-                    public Set<RealType> union(Set<RealType> other) {
-                        if (other.countable() && other.cardinality() > 0L) {
-                            if (StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) {
-                                // the elements of other are already contained within this set
-                                return this;
-                            }
-                        }
-                        return other.union(this);
-                    }
-
-                    @Override
-                    public Set<RealType> intersection(Set<RealType> other) {
-                        if (other.countable() && other.cardinality() > 0L) {
-                            NumericSet intersection = new NumericSet();
-                            StreamSupport.stream(other.spliterator(), true).filter(this::contains).forEach(intersection::append);
-                            if (intersection.cardinality() == 0L) return EmptySet.getInstance();
-                            try {
-                                return intersection.coerceTo(RealType.class);
-                            } catch (CoercionException e) {
-                                throw new IllegalStateException(e);
-                            }
-                        }
-                        return other.intersection(this);
-                    }
-
-                    @Override
-                    public Set<RealType> difference(Set<RealType> other) {
-                        if (other.countable() && other.cardinality() > 0L) {
-                            // if none of the elements of other are in this set, we can just return this set
-                            if (StreamSupport.stream(other.spliterator(), true).noneMatch(this::contains)) {
-                                return this;
-                            }
-                            // TODO it would be nice to have a hybrid set that can handle ranges as well as elements of
-                            //  both inclusion AND exclusion.
-                        }
-                        return new DiffSet<>(this, other);
-                    }
-
-                    @Override
-                    public Iterator<RealType> iterator() {
-                        return Collections.emptyIterator();
-                    }
-                };
+                return new DiffSet<>(this, other);
             }
 
             @Override
