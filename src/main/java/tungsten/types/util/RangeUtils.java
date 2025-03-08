@@ -23,6 +23,7 @@
  */
 package tungsten.types.util;
 
+import tungsten.types.NotchedRange;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.Set;
@@ -42,9 +43,7 @@ import tungsten.types.set.impl.UnionSet;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
@@ -185,15 +184,19 @@ public class RangeUtils {
     public static Range<IntegerType> fromSet(Set<IntegerType> source) {
         IntegerType min = StreamSupport.stream(source.spliterator(), true).min(IntegerType::compareTo).orElseThrow();
         IntegerType max = StreamSupport.stream(source.spliterator(), true).max(IntegerType::compareTo).orElseThrow();
-        // check that there are no gaps in the source, otherwise the range cannot represent it
+        // check that there are no gaps in the source, otherwise we will need a NotchedRange
+        List<IntegerType> notches = new ArrayList<>();
         IntegerType current = (IntegerType) min.add(ONE);  // we don't need to check the min or max values themselves
         while (current.compareTo(max) < 0) {
             if (!source.contains(current)) {
-                throw new IllegalArgumentException("Cannot extract a range; source is discontiguous starting at " + current);
+                // log the first discontinuity
+                if (notches.isEmpty()) Logger.getLogger(RangeUtils.class.getName()).log(Level.INFO,
+                        "Source set is discontiguous starting at {0}.", current);
+                notches.add(current);
             }
             current = (IntegerType) current.add(ONE);
         }
-        return new Range<>(min, max, BoundType.INCLUSIVE);
+        return notches.isEmpty() ? new Range<>(min, max, BoundType.INCLUSIVE) : new NotchedRange<>(min, max, BoundType.INCLUSIVE, notches.toArray(IntegerType[]::new));
     }
 
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
@@ -266,7 +269,7 @@ public class RangeUtils {
                 try {
                     return intersection.coerceTo(IntegerType.class);
                 } catch (CoercionException e) {
-                    throw new IllegalStateException(e);
+                    throw new IllegalStateException("While computing intersection set", e);
                 }
             }
 
@@ -289,7 +292,7 @@ public class RangeUtils {
 
             @Override
             public String toString() {
-                return "{\u2009x in \u2124 \u2208\u2009" + range + "\u2009}";
+                return "{x in \u2124 \u2208\u2009" + range + "\u2009}";
             }
         };
     }
@@ -355,7 +358,7 @@ public class RangeUtils {
                     try {
                         return intersection.coerceTo(RealType.class);
                     } catch (CoercionException e) {
-                        throw new IllegalStateException(e);
+                        throw new IllegalStateException("While computing intersection set", e);
                     }
                 }
                 // TODO it would be nice to be able to ascertain if other contains ranges, so we could compute
