@@ -331,6 +331,19 @@ public class RangeUtils {
                         // the elements of other are already contained within this set
                         return this;
                     }
+                    if (range instanceof NotchedRange) {
+                        NotchedRange<RealType> notchedRange = (NotchedRange<RealType>) range;
+                        Set<RealType> notches = notchedRange.getNotches();
+                        if (notches.cardinality() <= other.cardinality() &&
+                                StreamSupport.stream(notches.spliterator(), true).allMatch(other::contains)) {
+                            Set<RealType> lhs = asRealSet(notchedRange.getInnerRange());
+                            if (other.cardinality() > notches.cardinality()) {
+                                Set<RealType> remainder = other.difference(notches);
+                                return new UnionSet<>(lhs, remainder);
+                            }
+                            return lhs;
+                        }
+                    }
                     // TODO what we need is a hybrid type of Set that can incorporate ranges as well as individual elements
                     NumericSet outOfRange = new NumericSet();
                     StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
@@ -370,6 +383,10 @@ public class RangeUtils {
 
             @Override
             public Set<RealType> difference(Set<RealType> other) {
+                if (range instanceof NotchedRange) {
+                    Set<RealType> notches = ((NotchedRange<RealType>) range).getNotches();
+
+                }
                 return new DiffSet<>(this, other);
             }
 

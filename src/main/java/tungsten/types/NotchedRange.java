@@ -99,6 +99,26 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
         return super.contains(range);
     }
 
+    /**
+     * Obtain a set of notches, representing values that are exceptions
+     * to this range.
+     * @return the set of notches
+     */
+    public Set<T> getNotches() {
+        return notches;
+    }
+
+    /**
+     * Obtain a {@link Range} representing the bounds of this range without
+     * the notches.
+     * @return the inner range
+     */
+    public Range<T> getInnerRange() {
+        BoundType lower = this.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+        BoundType upper = this.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+        return new Range<>(this.getLowerBound(), lower, this.getUpperBound(), upper);
+    }
+
     @Override
     public String toString() {
         return super.toString() + " excluding " + notches;
