@@ -23,9 +23,7 @@
  */
 package tungsten.types.util;
 
-import tungsten.types.NotchedRange;
-import tungsten.types.Numeric;
-import tungsten.types.Range;
+import tungsten.types.*;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
@@ -278,10 +276,13 @@ public class RangeUtils {
             @Override
             public Set<IntegerType> difference(Set<IntegerType> other) {
                 if (other.cardinality() == 0L) return this;
+                final Set<IntegerType> parent = this;
+
                 return new DiffSet<>(this, other) {
                     @Override
                     public Set<IntegerType> union(Set<IntegerType> rhs) {
                         if (rhs.cardinality() == 0L) return this;
+                        if (other.equals(rhs)) return parent;
                         return new UnionSet<>(this, rhs);
                     }
                 };
@@ -317,6 +318,78 @@ public class RangeUtils {
     }
 
     public static Set<RealType> asRealSet(Range<RealType> range) {
+        if (range instanceof SteppedRange) {
+            SteppedRange srange = (SteppedRange) range;
+
+            return new Set<>() {
+                @Override
+                public long cardinality() {
+                    RealType count = (RealType) srange.getUpperBound().subtract(srange.getLowerBound()).divide(srange.getStepSize());
+                    return count.asBigDecimal().longValue();
+                }
+
+                @Override
+                public boolean countable() {
+                    return true;
+                }
+
+                @Override
+                public boolean contains(RealType element) {
+                    return srange.parallelStream().anyMatch(element::equals);
+                }
+
+                @Override
+                public void append(RealType element) {
+                    throw new UnsupportedOperationException(CANNOT_APPEND);
+                }
+
+                @Override
+                public void remove(RealType element) {
+                    throw new UnsupportedOperationException(CANNOT_REMOVE);
+                }
+
+                @Override
+                public Set<RealType> union(Set<RealType> other) {
+                    return new UnionSet<>(this, other);
+                }
+
+                @Override
+                public Set<RealType> intersection(Set<RealType> other) {
+                    if (other.cardinality() == 0L) return EmptySet.getInstance();
+                    NumericSet intersec = new NumericSet();
+                    for (RealType element : srange) {
+                        if (other.contains(element)) intersec.append(element);
+                    }
+                    if (intersec.cardinality() == 0L) return EmptySet.getInstance();
+                    try {
+                        return intersec.coerceTo(RealType.class);
+                    } catch (CoercionException e) {
+                        throw new IllegalStateException("While computing set intersection", e);
+                    }
+                }
+
+                @Override
+                public Set<RealType> difference(Set<RealType> other) {
+                    if (other.cardinality() == 0L) return this;
+                    final Set<RealType> parent = this;
+
+                    return new DiffSet<>(this, other) {
+                        @Override
+                        public Set<RealType> union(Set<RealType> rhs) {
+                            if (rhs.cardinality() == 0L) return this;
+                            if (other.equals(rhs)) return parent;
+                            return new UnionSet<>(this, rhs);
+                        }
+                    };
+                }
+
+                @Override
+                public Iterator<RealType> iterator() {
+                    return srange.iterator();
+                }
+            };
+        }
+        // not a stepped range, therefore not countable
         return new RangeSet(range);
     }
 

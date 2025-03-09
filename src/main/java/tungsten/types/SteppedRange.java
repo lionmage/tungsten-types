@@ -183,6 +183,10 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
         return StreamSupport.stream(this.spliterator(), true);
     }
 
+    public RealType getStepSize() {
+        return stepSize;
+    }
+
     @Override
     public String toString() {
         return super.toString() + ", step\u2009=\u2009" + stepSize;
