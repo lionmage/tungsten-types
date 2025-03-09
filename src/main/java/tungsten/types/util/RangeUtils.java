@@ -298,114 +298,172 @@ public class RangeUtils {
     }
 
     public static Set<RealType> asRealSet(Range<RealType> range) {
-        return new Set<>() {
-            @Override
-            public long cardinality() {
-                return -1L;
-            }
+        return new RangeSet(range);
+    }
 
-            @Override
-            public boolean countable() {
-                return false;
-            }
+    private static class RangeSet implements Set<RealType> {
+        private final Range<RealType> range;
 
-            @Override
-            public boolean contains(RealType element) {
-                return range.contains(element);
-            }
+        public RangeSet(Range<RealType> range) {
+            this.range = range;
+        }
 
-            @Override
-            public void append(RealType element) {
-                throw new UnsupportedOperationException(CANNOT_APPEND);
-            }
+        @Override
+        public long cardinality() {
+            return -1L;
+        }
 
-            @Override
-            public void remove(RealType element) {
-                throw new UnsupportedOperationException(CANNOT_REMOVE);
-            }
+        @Override
+        public boolean countable() {
+            return false;
+        }
 
-            @Override
-            public Set<RealType> union(Set<RealType> other) {
-                if (other.countable() && other.cardinality() > 0L) {
-                    if (StreamSupport.stream(other.spliterator(), true).allMatch(range::contains)) {
-                        // the elements of other are already contained within this set
-                        return this;
-                    }
-                    if (range instanceof NotchedRange) {
-                        NotchedRange<RealType> notchedRange = (NotchedRange<RealType>) range;
-                        Set<RealType> notches = notchedRange.getNotches();
-                        if (notches.cardinality() <= other.cardinality() &&
-                                StreamSupport.stream(notches.spliterator(), true).allMatch(other::contains)) {
-                            Set<RealType> lhs = asRealSet(notchedRange.getInnerRange());
-                            if (other.cardinality() > notches.cardinality()) {
-                                Set<RealType> remainder = other.difference(notches);
-                                return new UnionSet<>(lhs, remainder);
-                            }
-                            return lhs;
-                        }
-                    }
-                    // TODO what we need is a hybrid type of Set that can incorporate ranges as well as individual elements
-                    NumericSet outOfRange = new NumericSet();
-                    StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
-                            .forEach(outOfRange::append);
-                    Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
-                            "Some elements of {0} are outside range {1}: {2}",
-                            new Object[] { other, range, outOfRange } );
-                    try {
-                        // compute a union set with no overlap between the component sets
-                        return new UnionSet<>(this, outOfRange.coerceTo(RealType.class));
-                    } catch (CoercionException e) {
-                        throw new IllegalStateException("While computing union set", e);
-                    }
+        @Override
+        public boolean contains(RealType element) {
+            return range.contains(element);
+        }
+
+        @Override
+        public void append(RealType element) {
+            throw new UnsupportedOperationException(CANNOT_APPEND);
+        }
+
+        @Override
+        public void remove(RealType element) {
+            throw new UnsupportedOperationException(CANNOT_REMOVE);
+        }
+
+        @Override
+        public Set<RealType> union(Set<RealType> other) {
+            if (other.countable() && other.cardinality() > 0L) {
+                if (StreamSupport.stream(other.spliterator(), true).allMatch(range::contains)) {
+                    // the elements of other are already contained within this set
+                    return this;
                 }
-                // last resort
-                return other.union(this);
-            }
-
-            @Override
-            public Set<RealType> intersection(Set<RealType> other) {
-                if (other.countable() && other.cardinality() > 0L) {
-                    NumericSet intersection = new NumericSet();
-                    StreamSupport.stream(other.spliterator(), true).filter(range::contains).forEach(intersection::append);
-                    if (intersection.cardinality() == 0L) return EmptySet.getInstance();
-                    try {
-                        return intersection.coerceTo(RealType.class);
-                    } catch (CoercionException e) {
-                        throw new IllegalStateException("While computing intersection set", e);
-                    }
-                }
-                // TODO it would be nice to be able to ascertain if other contains ranges, so we could compute
-                //  the intersection of this range with those
-
-                // last ditch effort
-                return other.intersection(this);
-            }
-
-            @Override
-            public Set<RealType> difference(Set<RealType> other) {
                 if (range instanceof NotchedRange) {
-                    Set<RealType> notches = ((NotchedRange<RealType>) range).getNotches();
-                    Set<RealType> rangeSet = asRealSet(((NotchedRange<RealType>) range).getInnerRange());
-                    return new DiffSet<>(rangeSet, new UnionSet<>(other, notches));
-                }
-                return new DiffSet<>(this, other) {
-                    @Override
-                    public Set<RealType> union(Set<RealType> rhs) {
-                        if (rhs.cardinality() == 0L) return this;
-                        return new UnionSet<>(this, rhs);
+                    NotchedRange<RealType> notchedRange = (NotchedRange<RealType>) range;
+                    Set<RealType> notches = notchedRange.getNotches();
+                    if (notches.cardinality() <= other.cardinality() &&
+                            StreamSupport.stream(notches.spliterator(), true).allMatch(other::contains)) {
+                        Set<RealType> lhs = asRealSet(notchedRange.getInnerRange());
+                        if (other.cardinality() > notches.cardinality()) {
+                            Set<RealType> remainder = other.difference(notches);
+                            return new UnionSet<>(lhs, remainder);
+                        }
+                        return lhs;
                     }
-                };
+                }
+                // TODO what we need is a hybrid type of Set that can incorporate ranges as well as individual elements
+                NumericSet outOfRange = new NumericSet();
+                StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
+                        .forEach(outOfRange::append);
+                Logger.getLogger(RangeUtils.class.getName()).log(Level.WARNING,
+                        "Some elements of {0} are outside range {1}: {2}",
+                        new Object[] { other, range, outOfRange } );
+                try {
+                    // compute a union set with no overlap between the component sets
+                    return new UnionSet<>(this, outOfRange.coerceTo(RealType.class));
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While computing union set", e);
+                }
             }
+            if (other instanceof RangeSet) {
+                RangeSet that = (RangeSet) other;
+                if (range.contains(that.range)) return this;
+                else if (that.range.contains(range)) return that;
+                if (!range.overlaps(that.range)) {
+                    return new UnionSet<>(this, that);
+                }
+                return new RangeSet(merge(range, that.range));
+            }
+            // last resort
+            return other.union(this);
+        }
 
-            @Override
-            public Iterator<RealType> iterator() {
-                return Collections.emptyIterator();
+        @Override
+        public Set<RealType> intersection(Set<RealType> other) {
+            if (other.countable() && other.cardinality() > 0L) {
+                NumericSet intersection = new NumericSet();
+                StreamSupport.stream(other.spliterator(), true).filter(range::contains).forEach(intersection::append);
+                if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+                try {
+                    return intersection.coerceTo(RealType.class);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While computing intersection set", e);
+                }
             }
+            if (other instanceof RangeSet) {
+                RangeSet that = (RangeSet) other;
+                if (range.overlaps(that.range)) {
+                    if (range.contains(that.range)) return that;
+                    else if (that.range.contains(range)) return this;
+                    else {
+                        RealType lowerBound = MathUtils.max(range.getLowerBound(), that.range.getLowerBound());
+                        RealType upperBound = MathUtils.min(range.getUpperBound(), that.range.getUpperBound());
+                        // TODO calculate proper inclusivity/exclusivity for both lower and upper bounds
+                        Range<RealType> intersection = new Range<>(lowerBound, upperBound, BoundType.INCLUSIVE);
+                        return new RangeSet(intersection);
+                    }
+                } else {
+                    return EmptySet.getInstance();
+                }
+            }
+            // TODO it would be nice to be able to ascertain if other contains ranges, so we could compute
+            //  the intersection of this range with those
 
-            @Override
-            public String toString() {
-                return "{x in \u211D \u2208\u2009" + range + "\u2009}";
+            // last ditch effort
+            return other.intersection(this);
+        }
+
+        @Override
+        public Set<RealType> difference(Set<RealType> other) {
+            if (range instanceof NotchedRange) {
+                Set<RealType> notches = ((NotchedRange<RealType>) range).getNotches();
+                Set<RealType> rangeSet = asRealSet(((NotchedRange<RealType>) range).getInnerRange());
+                return new DiffSet<>(rangeSet, new UnionSet<>(other, notches));
             }
-        };
+            if (other instanceof RangeSet) {
+                RangeSet that = (RangeSet) other;
+                if (!range.overlaps(that.range)) return this;
+                if (that.range.contains(range)) return EmptySet.getInstance();
+                final Range<RealType> topRange = new Range<>(that.range.getUpperBound(),
+                        that.range.isUpperClosed() ? BoundType.EXCLUSIVE : BoundType.INCLUSIVE,
+                        range.getUpperBound(),
+                        range.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE);
+                final Range<RealType> bottomRange = new Range<>(range.getLowerBound(),
+                        range.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE,
+                        that.range.getLowerBound(),
+                        that.range.isLowerClosed() ? BoundType.EXCLUSIVE : BoundType.INCLUSIVE);
+                if (range.contains(that.range)) {
+                    // we're taking a chunk out of the middle
+                    return new UnionSet<>(new RangeSet(bottomRange), new RangeSet(topRange));
+                }
+                if (range.isBelow(that.range.getLowerBound())) {
+                    return new RangeSet(topRange);
+                } else if (range.isAbove(that.range.getUpperBound())) {
+                    return new RangeSet(bottomRange);
+                }
+                Logger.getLogger(RangeSet.class.getName()).log(Level.WARNING,
+                        "Failed to compute difference between {0} and {1}.",
+                        new Object[] {this, that});
+            }
+            return new DiffSet<>(this, other) {
+                @Override
+                public Set<RealType> union(Set<RealType> rhs) {
+                    if (rhs.cardinality() == 0L) return this;
+                    return new UnionSet<>(this, rhs);
+                }
+            };
+        }
+
+        @Override
+        public Iterator<RealType> iterator() {
+            return Collections.emptyIterator();
+        }
+
+        @Override
+        public String toString() {
+            return "{x in \u211D \u2208\u2009" + range + "\u2009}";
+        }
     }
 }
