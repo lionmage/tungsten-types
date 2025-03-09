@@ -385,9 +385,16 @@ public class RangeUtils {
             public Set<RealType> difference(Set<RealType> other) {
                 if (range instanceof NotchedRange) {
                     Set<RealType> notches = ((NotchedRange<RealType>) range).getNotches();
-
+                    Set<RealType> rangeSet = asRealSet(((NotchedRange<RealType>) range).getInnerRange());
+                    return new DiffSet<>(rangeSet, new UnionSet<>(other, notches));
                 }
-                return new DiffSet<>(this, other);
+                return new DiffSet<>(this, other) {
+                    @Override
+                    public Set<RealType> union(Set<RealType> rhs) {
+                        if (rhs.cardinality() == 0L) return this;
+                        return new UnionSet<>(this, rhs);
+                    }
+                };
             }
 
             @Override
