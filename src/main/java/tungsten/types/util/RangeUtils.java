@@ -423,8 +423,19 @@ public class RangeUtils {
                     else {
                         RealType lowerBound = MathUtils.max(range.getLowerBound(), that.range.getLowerBound());
                         RealType upperBound = MathUtils.min(range.getUpperBound(), that.range.getUpperBound());
-                        // TODO calculate proper inclusivity/exclusivity for both lower and upper bounds
-                        Range<RealType> intersection = new Range<>(lowerBound, upperBound, BoundType.INCLUSIVE);
+                        BoundType lowerType;
+                        BoundType upperType;
+                        if (lowerBound.equals(range.getLowerBound())) {
+                            lowerType = range.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+                        } else {
+                            lowerType = that.range.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+                        }
+                        if (upperBound.equals(range.getUpperBound())) {
+                            upperType = range.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+                        } else {
+                            upperType = that.range.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE;
+                        }
+                        Range<RealType> intersection = new Range<>(lowerBound, lowerType, upperBound, upperType);
                         return new RangeSet(intersection);
                     }
                 } else {
