@@ -35,10 +35,7 @@ import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.RealInfinity;
-import tungsten.types.set.impl.DiffSet;
-import tungsten.types.set.impl.EmptySet;
-import tungsten.types.set.impl.NumericSet;
-import tungsten.types.set.impl.UnionSet;
+import tungsten.types.set.impl.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -241,6 +238,11 @@ public class RangeUtils {
             }
 
             @Override
+            public boolean isOfType(Class<?> clazz) {
+                return IntegerType.class.isAssignableFrom(clazz);
+            }
+
+            @Override
             public void append(IntegerType element) {
                 throw new UnsupportedOperationException(CANNOT_APPEND);
             }
@@ -286,6 +288,23 @@ public class RangeUtils {
             }
 
             @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof Set) {
+                    Set<?> that = (Set<?>) obj;
+                    if (!that.isOfType(IntegerType.class)) return false;
+                    Set<IntegerType> foreignInts = (Set<IntegerType>) that;
+                    return foreignInts.countable() && foreignInts.cardinality() == this.cardinality()
+                            && StreamSupport.stream(this.spliterator(), true).allMatch(foreignInts::contains);
+                }
+                return false;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(range, start, limit);
+            }
+
+            @Override
             public Iterator<IntegerType> iterator() {
                 return new RangeIterator();
             }
@@ -324,6 +343,11 @@ public class RangeUtils {
         }
 
         @Override
+        public boolean isOfType(Class<?> clazz) {
+            return RealType.class.isAssignableFrom(clazz);
+        }
+
+        @Override
         public void append(RealType element) {
             throw new UnsupportedOperationException(CANNOT_APPEND);
         }
@@ -353,7 +377,6 @@ public class RangeUtils {
                         return lhs;
                     }
                 }
-                // TODO what we need is a hybrid type of Set that can incorporate ranges as well as individual elements
                 NumericSet outOfRange = new NumericSet();
                 StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
                         .forEach(outOfRange::append);
@@ -408,8 +431,6 @@ public class RangeUtils {
                     return EmptySet.getInstance();
                 }
             }
-            // TODO it would be nice to be able to ascertain if other contains ranges, so we could compute
-            //  the intersection of this range with those
 
             // last ditch effort
             return other.intersection(this);
@@ -451,9 +472,22 @@ public class RangeUtils {
                 @Override
                 public Set<RealType> union(Set<RealType> rhs) {
                     if (rhs.cardinality() == 0L) return this;
+                    if (rhs.equals(other)) return RangeSet.this;
                     return new UnionSet<>(this, rhs);
                 }
             };
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof RangeSet)) return false;
+            RangeSet realTypes = (RangeSet) o;
+            return Objects.equals(range, realTypes.range);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(range);
         }
 
         @Override
