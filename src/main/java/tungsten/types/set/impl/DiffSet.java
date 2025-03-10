@@ -146,7 +146,8 @@ public class DiffSet<T> implements Set<T> {
                         .filter(element -> !right.contains(element))
                         .allMatch(that::contains);
             } else {
-                return this.difference(that).cardinality() == 0L;
+                return this.difference(that).cardinality() == 0L &&
+                        that.difference(this).cardinality() == 0L;
             }
         }
         return false;
