@@ -93,7 +93,8 @@ public class DiffSet<T> implements Set<T> {
         if (left.intersection(other).equals(other)) {
             return left.difference(right.difference(other));
         }
-        return other.union(this);
+        // (A - B) ∪ C = (A ∪ C) - (B - C)
+        return new DiffSet<>(left.union(other), right.difference(other));
     }
 
     @Override
