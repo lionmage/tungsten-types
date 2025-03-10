@@ -292,10 +292,10 @@ public class RangeUtils {
             public boolean equals(Object obj) {
                 if (obj instanceof Set) {
                     Set<?> that = (Set<?>) obj;
+                    if (!that.countable() || that.cardinality() != this.cardinality()) return false;
                     if (!that.isOfType(IntegerType.class)) return false;
                     Set<IntegerType> foreignInts = (Set<IntegerType>) that;
-                    return foreignInts.countable() && foreignInts.cardinality() == this.cardinality()
-                            && StreamSupport.stream(this.spliterator(), true).allMatch(foreignInts::contains);
+                    return StreamSupport.stream(this.spliterator(), true).allMatch(foreignInts::contains);
                 }
                 return false;
             }
