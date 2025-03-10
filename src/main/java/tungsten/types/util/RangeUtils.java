@@ -387,6 +387,23 @@ public class RangeUtils {
                 public Iterator<RealType> iterator() {
                     return srange.iterator();
                 }
+
+                @Override
+                public boolean equals(Object obj) {
+                    if (obj instanceof Set) {
+                        Set<?> that = (Set<?>) obj;
+                        if (!that.countable() || !that.isOfType(RealType.class)) return false;
+                        if (this.cardinality() != that.cardinality()) return false;
+                        Set<RealType> other = (Set<RealType>) that;
+                        return srange.parallelStream().allMatch(other::contains);
+                    }
+                    return false;
+                }
+
+                @Override
+                public int hashCode() {
+                    return 7 * Objects.hashCode(srange) - 5;
+                }
             };
         }
         // not a stepped range, therefore not countable
