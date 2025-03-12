@@ -157,4 +157,25 @@ public class DiffSet<T> implements Set<T> {
     public int hashCode() {
         return Objects.hash(left, right);
     }
+
+    private static final int TOSTRING_LIMIT = 15;
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("DiffSet: {");
+        Iterator<T> iter = this.iterator();
+        int idx = 0;
+        while (iter.hasNext()) {
+            buf.append(iter.next()).append(", ");
+            if (++idx > TOSTRING_LIMIT) break;  // only include the first TOSTRING_LIMIT elements if the set is bigger
+        }
+        if (idx < TOSTRING_LIMIT) {
+            buf.setLength(buf.length() - 2); // erase the final comma and space
+        } else {
+            buf.append('\u2026'); // append an ellipsis to indicate that there are more elements
+        }
+        buf.append('}');
+        return buf.toString();
+    }
 }
