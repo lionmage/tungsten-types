@@ -76,7 +76,7 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
         this.clazz = targetType;
         this.original = wrapped;
         // if wrapped is not empty, inspect its first element to figure out its elements' type
-        this.origClazz = (Class<T>) wrapped.iterator().next().getClass();
+        this.origClazz = (Class<T>) ClassTools.getInterfaceTypeFor(wrapped.iterator().next().getClass());
     }
 
     @Override
