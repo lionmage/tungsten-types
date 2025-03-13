@@ -40,7 +40,8 @@ import java.util.stream.StreamSupport;
  * the elements to be of a different subtype.
  * @param <T> the type of the set being wrapped
  * @param <R> the type of this view of the wrapped set
- * @author Robert Poole
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a> or
+ *   <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements Set<R> {
     private static final String APPEND_UNSUPPORTED = "Append is not supported for this view";
@@ -123,6 +124,8 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
         // if B ⊃ A, return B
         if (StreamSupport.stream(this.spliterator(), true).allMatch(other::contains) &&
                 StreamSupport.stream(other.spliterator(), true).anyMatch(e -> !this.contains(e))) return other;
+        // can't really put a UnionSet here unless we use reflection to instantiate one
+        // we do that in NumericSet, and it's a pain... just ugly, to be avoided
         return other.union(this);
     }
 
@@ -131,7 +134,27 @@ public class CoercionWrapperSet<T extends Numeric, R extends Numeric> implements
         if (other.cardinality() == 0L || this.cardinality() == 0L) return EmptySet.getInstance();
         if (other.cardinality() > 0L && StreamSupport.stream(other.spliterator(), true).allMatch(this::contains)) return other;
         if (this.cardinality() > 0L && StreamSupport.stream(this.spliterator(), true).allMatch(other::contains)) return this;
+        if (this.cardinality() > 0L) {
+            return finiteCountableIntersection(this, other);
+        } else if (other.cardinality() > 0L) {
+            return finiteCountableIntersection(other, this);
+        }
         return other.intersection(this);
+    }
+
+    private Set<R> finiteCountableIntersection(Set<R> left, Set<R> right) {
+        NumericSet intersection = new NumericSet();
+        StreamSupport.stream(left.spliterator(), true)
+                .filter(right::contains).forEach(intersection::append);
+        if (intersection.cardinality() == 0L) return EmptySet.getInstance();
+        try {
+            return intersection.coerceTo(clazz);
+        } catch (CoercionException e) {
+            Logger.getLogger(CoercionWrapperSet.class.getName()).log(Level.SEVERE,
+                    "Result from set intersection {0} could not be coerced to {1}.",
+                    new Object[] {intersection, clazz.getTypeName()});
+            throw new ArithmeticException("Problem computing set intersection: " + e.getMessage());
+        }
     }
 
     @Override
