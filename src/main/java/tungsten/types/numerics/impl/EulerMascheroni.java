@@ -102,7 +102,8 @@ public class EulerMascheroni implements RealType {
         // ConcurrentModificationException in ForkJoinTask (used by parallel streams under the covers).
         // This seems strange and counterintuitive, since this stream does not explicitly modify a collection.
         Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact())
-                .mapToObj(k -> computeTerm(new IntegerImpl(BigInteger.valueOf(k)), n))
+                .mapToObj(BigInteger::valueOf).map(IntegerImpl::new)
+                .map(k -> computeTerm(k, n))
                 .map(Numeric.class::cast)
                 .reduce(ExactZero.getInstance(compCtx), Numeric::add);
         value = OptionalOperations.asBigDecimal(sum.subtract(MathUtils.ln(n, compCtx))).round(mctx);
