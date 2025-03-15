@@ -51,6 +51,9 @@ import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -170,6 +173,9 @@ public class MathUtils {
 
         Long m = findMaxKeyUnder(n);
 
+        // Normally, we would put a read lock on this, but we're not iterating,
+        // only retrieving a value for which we already know the key is good.
+        // Therefore, we don't expect a ConcurrentModificationException to be thrown here.
         BigInteger accum = m != null ? factorialCache.get(m) : BigInteger.ONE;
         BigInteger intermediate = n.asBigInteger();
         BigInteger bailout = m != null ? BigInteger.valueOf(m + 1L) : BigInteger.TWO;
@@ -189,6 +195,8 @@ public class MathUtils {
         };
     }
 
+    private static final ReadWriteLock factRWL = new ReentrantReadWriteLock(true);
+
     /**
      * If there's a cached factorial value, find the highest key that is less
      * than n.
@@ -197,13 +205,18 @@ public class MathUtils {
      *   if no key is found
      */
     private static Long findMaxKeyUnder(IntegerType n) {
+        final Lock scanLock = factRWL.readLock();
+        scanLock.lock();
         try {
             final long ncmp = n.asBigInteger().longValueExact();
             return factorialCache.keySet().parallelStream().filter(x -> x < ncmp).max(Long::compareTo).orElse(null);
         } catch (ArithmeticException e) {
-            Logger.getLogger(MathUtils.class.getName()).log(Level.FINER, "Attempt to find a max key < n outside Long range.", e);
+            Logger.getLogger(MathUtils.class.getName()).log(Level.FINER,
+                    "Attempt to find a max key < n outside Long range.", e);
             // return the biggest key we can find since the given upper bound is too large for the cache
             return factorialCache.keySet().parallelStream().max(Long::compareTo).orElse(null);
+        } finally {
+            scanLock.unlock();
         }
     }
 
@@ -213,9 +226,15 @@ public class MathUtils {
         // these bounds should prevent an ArithmeticException from being thrown
         // if not, we want to fail fast to catch the problem
         if (n.compareTo(BigInteger.TWO) >= 0 && n.compareTo(MAX_LONG) < 0) {
+            final Lock writeLock = factRWL.writeLock();
             Long key = n.longValueExact();
 
-            if (!factorialCache.containsKey(key)) factorialCache.put(key, value);
+            writeLock.lock();
+            try {
+                if (!factorialCache.containsKey(key)) factorialCache.put(key, value);
+            } finally {
+                writeLock.unlock();
+            }
         }
     }
 
@@ -224,11 +243,16 @@ public class MathUtils {
     }
 
     private static BigInteger getCacheFor(BigInteger n) {
+        final Lock readLock = factRWL.readLock();
+        readLock.lock();
         try {
             return factorialCache.get(n.longValueExact());
         } catch (ArithmeticException e) {
-            Logger.getLogger(MathUtils.class.getName()).log(Level.FINER, "Attempt to access cache of factorial value for n outside Long range.", e);
+            Logger.getLogger(MathUtils.class.getName()).log(Level.FINER,
+                    "Attempt to access cache of factorial value for n outside Long range.", e);
             return null; // this is the same as if we had a regular cache miss
+        } finally {
+            readLock.unlock();
         }
     }
 

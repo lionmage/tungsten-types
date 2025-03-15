@@ -98,10 +98,7 @@ public class EulerMascheroni implements RealType {
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
         IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼⋅n gives us the number of terms to compute
 
-        // Note: I tried to make this stream .parallel(), but this generated a
-        // ConcurrentModificationException in ForkJoinTask (used by parallel streams under the covers).
-        // This seems strange and counterintuitive, since this stream does not explicitly modify a collection.
-        Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact())
+        Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact()).parallel()
                 .mapToObj(BigInteger::valueOf).map(IntegerImpl::new)
                 .map(k -> computeTerm(k, n))
                 .map(Numeric.class::cast)
