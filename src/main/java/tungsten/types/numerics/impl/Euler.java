@@ -30,12 +30,14 @@ import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
@@ -396,7 +398,7 @@ public class Euler implements RealType {
         return this.exp(operand);
     }
     public RealType power(RationalType operand) {
-        MathContext ctx = operand.getMathContext().getPrecision() == 0 ? this.getMathContext() : operand.getMathContext();
+        MathContext ctx = MathUtils.inferMathContext(List.of(this, operand));
         RealType converted = new RealImpl(operand.asBigDecimal(), ctx);
         return this.exp(converted);
     }
