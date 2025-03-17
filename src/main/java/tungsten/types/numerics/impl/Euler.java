@@ -401,6 +401,6 @@ public class Euler implements RealType {
         return this.exp(converted);
     }
     public RealType power(IntegerType operand) {
-        return MathUtils.computeIntegerExponent(this, operand.asBigInteger().longValueExact());
+        return MathUtils.computeIntegerExponent(this, operand);
     }
 }
