@@ -293,10 +293,8 @@ public class Euler implements RealType {
 
         // otherwise compute the series
         final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
-        BigDecimal sum = BigDecimal.ZERO;
-        for (int n = 0; n < mctx.getPrecision(); n++) {
-            sum = sum.add(computeNthTerm(n, x, compctx), compctx);
-        }
+        BigDecimal sum = IntStream.range(0, mctx.getPrecision()).parallel()
+                .mapToObj(n -> computeNthTerm(n, x, compctx)).reduce(BigDecimal.ZERO, BigDecimal::add);
         RealImpl result = new RealImpl(sum.round(mctx), mctx, false);
         result.setIrrational(true);
         return result;
