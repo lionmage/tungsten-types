@@ -42,6 +42,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  * This class provides a representation of the mathematical constant &#x212f; &mdash;
@@ -249,10 +250,13 @@ public class Euler implements RealType {
     private void calculate() {
         // compute a few extra digits so we can round off later
         final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
-        BigDecimal value = BigDecimal.ZERO;
-        for (int k = 0; k < mctx.getPrecision() / 2; k++) {
-            value = value.add(computeKthTerm(k, compctx), compctx);
-        }
+//        BigDecimal value = BigDecimal.ZERO;
+//        for (int k = 0; k < mctx.getPrecision() / 2; k++) {
+//            value = value.add(computeKthTerm(k, compctx), compctx);
+//        }
+        BigDecimal value = IntStream.range(0, mctx.getPrecision() / 2).parallel()
+                .mapToObj(k -> computeKthTerm(k, compctx))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         this.value = value.round(mctx);
     }
     
@@ -276,7 +280,7 @@ public class Euler implements RealType {
         if (x instanceof RealInfinity) {
             switch (x.sign()) {
                 case NEGATIVE:
-                    return new RealImpl(BigDecimal.ZERO, mctx);
+                    return new RealImpl(BigDecimal.ZERO, mctx, false);
                 case POSITIVE:
                     return x;
                 default:

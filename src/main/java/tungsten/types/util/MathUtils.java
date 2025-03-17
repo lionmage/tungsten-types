@@ -51,9 +51,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -155,8 +153,10 @@ public class MathUtils {
                     return n.getMathContext(); // preserve MathContext
                 }
             };
-        } else if (getCacheFor(n) != null) {
-            return new IntegerImpl(getCacheFor(n)) {
+        }
+        BigInteger cacheForN = getCacheFor(n);
+        if (cacheForN != null) {
+            return new IntegerImpl(cacheForN) {
                 @Override
                 public MathContext getMathContext() {
                     // we don't know if n is using the default getMathContext()
@@ -171,31 +171,38 @@ public class MathUtils {
             };
         }
 
-        Long m = findMaxKeyUnder(n);
+        // beyond the base case, manage the cache
+        factLock.lock();
+        try {
+            Long m = findMaxKeyUnder(n);
 
-        // Normally, we would put a read lock on this, but we're not iterating,
-        // only retrieving a value for which we already know the key is good.
-        // Therefore, we don't expect a ConcurrentModificationException to be thrown here.
-        BigInteger accum = m != null ? factorialCache.get(m) : BigInteger.ONE;
-        BigInteger intermediate = n.asBigInteger();
-        BigInteger bailout = m != null ? BigInteger.valueOf(m + 1L) : BigInteger.TWO;
-        while (intermediate.compareTo(bailout) >= 0) {
-            accum = accum.multiply(intermediate);
-            intermediate = intermediate.subtract(BigInteger.ONE);
-        }
-        cacheFact(n, accum);
-        return new IntegerImpl(accum) {
-            @Override
-            public MathContext getMathContext() {
-                if (this.numberOfDigits() > n.getMathContext().getPrecision()) {
-                    return super.getMathContext();
-                }
-                return n.getMathContext();  // preserve MathContext
+            BigInteger accum = m != null ? factorialCache.get(m) : BigInteger.ONE;
+            BigInteger intermediate = n.asBigInteger();
+            BigInteger bailout = m != null ? BigInteger.valueOf(m + 1L) : BigInteger.TWO;
+            while (intermediate.compareTo(bailout) >= 0) {
+                accum = accum.multiply(intermediate);
+                intermediate = intermediate.subtract(BigInteger.ONE);
             }
-        };
+            cacheFact(n, accum);
+            return new IntegerImpl(accum) {
+                @Override
+                public MathContext getMathContext() {
+                    if (this.numberOfDigits() > n.getMathContext().getPrecision()) {
+                        return super.getMathContext();
+                    }
+                    return n.getMathContext();  // preserve MathContext
+                }
+            };
+        } finally {
+            factLock.unlock();
+        }
     }
 
-    private static final ReadWriteLock factRWL = new ReentrantReadWriteLock(true);
+    // I would rather use a ReentrantReadWriteLock here, but that seems to have
+    // major issues with deadlocks (writer waiting for reader, reader waiting
+    // for writer).  Tried using StampedLock, but that is difficult to get working
+    // right, and I ran into the same deadlock issues.
+    private static final Lock factLock = new ReentrantLock(true);
 
     /**
      * If there's a cached factorial value, find the highest key that is less
@@ -205,8 +212,6 @@ public class MathUtils {
      *   if no key is found
      */
     private static Long findMaxKeyUnder(IntegerType n) {
-        final Lock scanLock = factRWL.readLock();
-        scanLock.lock();
         try {
             final long ncmp = n.asBigInteger().longValueExact();
             return factorialCache.keySet().parallelStream().filter(x -> x < ncmp).max(Long::compareTo).orElse(null);
@@ -215,8 +220,6 @@ public class MathUtils {
                     "Attempt to find a max key < n outside Long range.", e);
             // return the biggest key we can find since the given upper bound is too large for the cache
             return factorialCache.keySet().parallelStream().max(Long::compareTo).orElse(null);
-        } finally {
-            scanLock.unlock();
         }
     }
 
@@ -226,15 +229,9 @@ public class MathUtils {
         // these bounds should prevent an ArithmeticException from being thrown
         // if not, we want to fail fast to catch the problem
         if (n.compareTo(BigInteger.TWO) >= 0 && n.compareTo(MAX_LONG) < 0) {
-            final Lock writeLock = factRWL.writeLock();
             Long key = n.longValueExact();
 
-            writeLock.lock();
-            try {
-                if (!factorialCache.containsKey(key)) factorialCache.put(key, value);
-            } finally {
-                writeLock.unlock();
-            }
+            if (!factorialCache.containsKey(key)) factorialCache.put(key, value);
         }
     }
 
@@ -243,16 +240,12 @@ public class MathUtils {
     }
 
     private static BigInteger getCacheFor(BigInteger n) {
-        final Lock readLock = factRWL.readLock();
-        readLock.lock();
         try {
             return factorialCache.get(n.longValueExact());
         } catch (ArithmeticException e) {
             Logger.getLogger(MathUtils.class.getName()).log(Level.FINER,
                     "Attempt to access cache of factorial value for n outside Long range.", e);
             return null; // this is the same as if we had a regular cache miss
-        } finally {
-            readLock.unlock();
         }
     }
 
