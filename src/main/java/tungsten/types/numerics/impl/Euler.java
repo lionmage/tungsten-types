@@ -30,7 +30,6 @@ import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
-import tungsten.types.util.OptionalOperations;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -252,10 +251,6 @@ public class Euler implements RealType {
     private void calculate() {
         // compute a few extra digits so we can round off later
         final MathContext compctx = new MathContext(mctx.getPrecision() + 4, mctx.getRoundingMode());
-//        BigDecimal value = BigDecimal.ZERO;
-//        for (int k = 0; k < mctx.getPrecision() / 2; k++) {
-//            value = value.add(computeKthTerm(k, compctx), compctx);
-//        }
         BigDecimal value = IntStream.range(0, mctx.getPrecision() / 2).parallel()
                 .mapToObj(k -> computeKthTerm(k, compctx))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
