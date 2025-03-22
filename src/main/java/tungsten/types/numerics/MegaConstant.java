@@ -192,7 +192,9 @@ public abstract class MegaConstant<T extends Numeric> {
     }
 
     public T getValue() {
-        long stamp = valueGuard.readLock();
+        long stamp = valueGuard.tryOptimisticRead();
+        if (value != null && valueGuard.validate(stamp)) return value;
+        stamp = valueGuard.readLock();
         try {
             return value != null ? value : calculate(stamp);
         } finally {
