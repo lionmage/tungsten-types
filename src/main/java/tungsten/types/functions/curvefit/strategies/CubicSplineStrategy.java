@@ -99,7 +99,7 @@ public class CubicSplineStrategy implements CurveFittingStrategy {
         for (int i = 0; i < dataPoints.size() - 2; i++) {
             // final range for series is inclusive at terminus
             Range<RealType> pieceRange = new Range<>(C.get(i).getX(), Range.BoundType.INCLUSIVE,
-                    C.get(i + 1).getX(), i == dataPoints.size() - 3 ? Range.BoundType.EXCLUSIVE : Range.BoundType.INCLUSIVE);
+                    C.get(i + 1).getX(), i == dataPoints.size() - 3 ? Range.BoundType.INCLUSIVE : Range.BoundType.EXCLUSIVE);
             result.addFunctionForRange(pieceRange, new CubicSpline2D(a[i], b[i], c[i], d[i], pieceRange));
         }
         if (!result.checkAggregateBounds()) {
