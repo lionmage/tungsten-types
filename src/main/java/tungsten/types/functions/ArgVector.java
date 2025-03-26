@@ -287,6 +287,14 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
         throw new UnsupportedOperationException("ArgVector does not currently support this method");
     }
 
+    /**
+     * Safely coerce this {@code ArgVector} to an equivalent {@code ArgVector}
+     * of the given type.
+     * @param clazz the target type of this coercion, a subtype of {@link Numeric}
+     * @return an {@code ArgVector} with elements of type {@code clazz}
+     * @param <T2> the type of the elements of the converted {@code ArgVector}
+     * @throws IllegalArgumentException if this vector cannot be converted to an {@code ArgVector<T2>}
+     */
     public <T2 extends Numeric> ArgVector<T2> coerceToArgVectorOf(Class<T2> clazz) {
         ArgMap<T2> coercedArgs = new ArgMap<>();
         List<String> argNames = new LinkedList<>();
@@ -296,7 +304,7 @@ public class ArgVector<T extends Numeric> implements Vector<T> {
                 coercedArgs.put(entry.getKey(), (T2) entry.getValue().coerceTo(clazz));
             }
             return new ArgVector<>(argNames.toArray(String[]::new), coercedArgs);
-        } catch (Exception e) {
+        } catch (CoercionException e) {
             throw new IllegalArgumentException("Cannot convert arg vector " + this +
                     " to an arg vector of element type " + clazz.getTypeName());
         }
