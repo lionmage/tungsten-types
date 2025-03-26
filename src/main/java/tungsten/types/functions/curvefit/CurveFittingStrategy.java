@@ -30,6 +30,12 @@ import tungsten.types.numerics.RealType;
 import java.util.List;
 
 public interface CurveFittingStrategy {
+    /**
+     * Given a set of data points, generate a real-valued {@code NumericFunction}
+     * that provides a closest fit according to this strategy.
+     * @param dataPoints a list of {@code Coordinates} containing data
+     * @return a function fitted to the input data
+     */
     NumericFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints);
 
     /**
