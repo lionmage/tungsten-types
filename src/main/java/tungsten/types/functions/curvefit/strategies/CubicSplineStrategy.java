@@ -48,7 +48,8 @@ import java.util.stream.Collectors;
  * transition points.
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  *  or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
- * @see <a href="https://en.wikipedia.org/wiki/Spline_(mathematics)#Algorithm_for_computing_natural_cubic_splines">the basic algorithm used here</a>
+ * @see <a href="https://en.wikipedia.org/w/index.php?title=Spline_(mathematics)&oldid=1232938504#Algorithm_for_computing_natural_cubic_splines">the
+ *   basic algorithm used here</a>, sourced from an older version of a Wikipedia article dated July&nbsp;6,&nbsp;2024
  */
 @StrategySupports(name = "cubic splines", type = CurveType.CURVE_2D)
 public class CubicSplineStrategy implements CurveFittingStrategy {
@@ -86,8 +87,8 @@ public class CubicSplineStrategy implements CurveFittingStrategy {
             z[i] = (RealType) alpha[i].subtract(h[i - 1].multiply(z[i - 1])).divide(l[i]);
         }
         l[l.length - 1] = new RealImpl(BigDecimal.ONE, ctx);
-        mu[mu.length - 1] = new RealImpl(BigDecimal.ZERO, ctx);
-        z[z.length - 1] = mu[mu.length - 1];
+        z[z.length - 1] = new RealImpl(BigDecimal.ZERO, ctx);
+        c[c.length - 1] = z[z.length - 1];
         for (int j = dataPoints.size() - 2; j >= 0; j--) {
             c[j] = (RealType) z[j].subtract(mu[j].multiply(c[j + 1]));
             b[j] = (RealType) a[j + 1].subtract(a[j]).divide(h[j])
