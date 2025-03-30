@@ -23,7 +23,10 @@ package tungsten.types.functions.support;
  * THE SOFTWARE.
  */
 
+import tungsten.types.Axis;
 import tungsten.types.numerics.RealType;
+
+import java.util.Comparator;
 
 public class Coordinates2D extends Coordinates {
     public Coordinates2D(RealType x, RealType y) {
@@ -43,6 +46,18 @@ public class Coordinates2D extends Coordinates {
 
     public RealType getY() {
         return getValue();
+    }
+
+    public static Comparator<Coordinates> sortableBy(Axis dimension) {
+        switch (dimension) {
+            case X_AXIS:
+                return sortableBy(0);
+            case Y_AXIS:
+                return sortableByValue();
+            case Z_AXIS:
+            default:
+                throw new IllegalArgumentException("Coordinates in 2 dimensions not applicable to " + dimension);
+        }
     }
 
     @Override
