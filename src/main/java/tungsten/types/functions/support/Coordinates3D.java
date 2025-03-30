@@ -53,6 +53,14 @@ public class Coordinates3D extends Coordinates {
         return getValue();
     }
 
+    /**
+     * Obtain a comparator that compares {@link Coordinates3D} or an equivalent by
+     * the ordinate that correlates with the given {@link Axis}.<br>
+     * Note that the return type's parameter is {@code Coordinates} because
+     * Java's support for covariant return types does not extend to type parameters.
+     * @param dimension the ordinate axis
+     * @return a comparator that compares by the ordinate that corresponds to {@code dimension}
+     */
     public static Comparator<Coordinates> sortableBy(Axis dimension) {
         switch (dimension) {
             case X_AXIS:
