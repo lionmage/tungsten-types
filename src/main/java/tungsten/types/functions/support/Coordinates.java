@@ -23,16 +23,21 @@ package tungsten.types.functions.support;
  * THE SOFTWARE.
  */
 
+import tungsten.types.Axis;
 import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Coordinates {
+    private static final String MISMATCHED_ARITY = "Mismatched arity";
     protected RealType[] inputs;
     protected RealType value;
     /**
@@ -76,6 +81,61 @@ public class Coordinates {
      */
     public long arity() {
         return inputs.length;
+    }
+
+    /**
+     * Obtain a comparator that compares {@link Coordinates} by
+     * their i<sup>th</sup> constraint or parameter.
+     * @param i the 0-based index of the ordinate to compare
+     * @return a comparator that uses the given ordinate for comparison
+     */
+    public static Comparator<Coordinates> sortableBy(int i) {
+        return new Comparator<>() {
+            @Override
+            public int compare(Coordinates o1, Coordinates o2) {
+                if (o1.arity() != o2.arity()) throw new IllegalArgumentException(MISMATCHED_ARITY);
+                return o1.getOrdinate(i).compareTo(o2.getOrdinate(i));
+            }
+        };
+    }
+
+    /**
+     * Obtain a comparator that compares {@link Coordinates} by
+     * their value.
+     * @return a comparator that compares by value
+     */
+    public static Comparator<Coordinates> sortableByValue() {
+        return new Comparator<>() {
+            @Override
+            public int compare(Coordinates o1, Coordinates o2) {
+                if (o1.arity() != o2.arity()) throw new IllegalArgumentException(MISMATCHED_ARITY);
+                return o1.getValue().compareTo(o2.getValue());
+            }
+        };
+    }
+
+    /**
+     * Obtain a comparator that compares {@link Coordinates} by
+     * the ordinate that correlates with the given {@link Axis}.
+     * @param dimension the ordinate axis
+     * @return a comparator that compares by the ordinate that corresponds to {@code dimension}
+     */
+    public static Comparator<Coordinates> sortableBy(Axis dimension) {
+        // this logic is dumb since we don't know the arity of the coordinate objects
+        // in advance -- for 2D coordinates, you might want to sort on value, for instance
+        switch (dimension) {
+            case X_AXIS:
+                return sortableBy(0);
+            case Y_AXIS:
+                return sortableBy(1);
+            case Z_AXIS:
+                return sortableBy(2);
+            default:
+                Logger.getLogger(Coordinates.class.getName()).log(Level.SEVERE,
+                        "Unknown axis: {0}.", dimension);
+                break;
+        }
+        throw new IllegalArgumentException("Supplied axis is not valid");
     }
 
     /**
