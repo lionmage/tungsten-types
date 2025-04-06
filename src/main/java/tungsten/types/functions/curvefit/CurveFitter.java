@@ -56,7 +56,7 @@ public class CurveFitter {
     final ServiceLoader<CurveFittingStrategy> loader;
 
     public CurveFitter(List<? extends Coordinates> coordinates, boolean skipIntegrityCheck) {
-        if (coordinates == null) throw new IllegalArgumentException("Coordinates must be non-empty");
+        if (coordinates == null || coordinates.isEmpty()) throw new IllegalArgumentException("Coordinates must be non-empty");
         this.coordinates = coordinates;
         if (coordinates.parallelStream().allMatch(Coordinates2D.class::isInstance)) {
             characteristic = CurveType.CURVE_2D;
@@ -96,6 +96,14 @@ public class CurveFitter {
     private final Supplier<StrategyNotFoundException> noMatchingStrategy =
             () -> new StrategyNotFoundException("No matching strategy found");
 
+    /**
+     * Generate a function that is a best fit to the data held by this
+     * {@code CurveFitter} instance.  This method chooses the first strategy
+     * that matches the {@link CurveType} determined by examining the data.
+     * @return a function with the same number of parameters as there are
+     *   independent variables in the data, and an output that best approximates
+     *   the dependent variable in the data
+     */
     public NumericFunction<RealType, RealType> fitToData() {
         CurveFittingStrategy strategy = loader.stream()
                 .filter(s -> s.type().isAnnotationPresent(StrategySupports.class)
@@ -104,13 +112,30 @@ public class CurveFitter {
         return strategy.fitToCoordinates(coordinates);
     }
 
+    private static final int MIN_WILDCARD_INDEX = 1;
+
+    /**
+     * Generate a function that is a best fit to the data held by this
+     * {@code CurveFitter} instance.  This method takes a single parameter,
+     * the name of the strategy to be applied.  The strategy is selected based
+     * upon the {@link CurveType} determined from the data itself and the
+     * name supplied.  Partial matches of the strategy name are supported if
+     * a wildcard character is used.
+     * @param strategyName either the full name of a cuve fitting strategy or a
+     *                     partial name followed by an asterisk (the wildcard character)
+     * @return a function with the same number of parameters as there are
+     *   independent variables in the data, and an output that best approximates
+     *   the dependent variable in the data
+     * @see CurveFittingStrategy#name()
+     */
     public NumericFunction<RealType, RealType> fitToData(String strategyName) {
         int wildcard = strategyName.indexOf('*');
-        String nameToCompare = wildcard >= 1 ? strategyName.substring(0, wildcard) : strategyName.replace("*", "").trim();
+        String nameToCompare = wildcard >= MIN_WILDCARD_INDEX ? strategyName.substring(0, wildcard)
+                : strategyName.replace("*", "").strip();
         CurveFittingStrategy strategy = loader.stream()
                 .filter(s -> s.type().isAnnotationPresent(StrategySupports.class)
                         && s.type().getAnnotation(StrategySupports.class).type() == characteristic)
-                .filter(s -> wildcard >= 1 ? s.type().getAnnotation(StrategySupports.class).name().startsWith(nameToCompare)
+                .filter(s -> wildcard >= MIN_WILDCARD_INDEX ? s.type().getAnnotation(StrategySupports.class).name().startsWith(nameToCompare)
                         : s.type().getAnnotation(StrategySupports.class).name().equals(nameToCompare))
                 .findFirst().orElseThrow(noMatchingStrategy).get();
         return strategy.fitToCoordinates(coordinates);
@@ -238,7 +263,7 @@ public class CurveFitter {
             Logger.getLogger(CurveFitter.class.getName()).log(Level.SEVERE,
                     "Unable to coerce mean={0} and variance={1} to real values given a population of size {2}.",
                     new Object[] {mean, variance, populationSize});
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("While computing mean and standard deviation", e);
         }
     }
 }

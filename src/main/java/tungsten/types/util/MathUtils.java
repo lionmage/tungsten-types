@@ -56,10 +56,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-import java.util.stream.StreamSupport;
+import java.util.stream.*;
 
 import static tungsten.types.Range.BoundType;
 
@@ -2657,10 +2654,10 @@ public class MathUtils {
      * @return the Moore-Penrose inverse of {@code M}, denoted M<sup>+</sup>
      * @see <a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse">the related article at Wikipedia</a>
      */
-    public static Matrix<? extends Numeric> pseudoInverse(Matrix<? extends Numeric> M) {
+    public static Matrix<ComplexType> pseudoInverse(Matrix<? extends Numeric> M) {
         // if M is square, it's a degenerate case
         if (M.rows() == M.columns()) {
-            return M.inverse();
+            return new ComplexMatrixAdapter(M.inverse());
         }
         // otherwise compute the pseudoinverse
         long rank = rank(M);
@@ -2687,7 +2684,8 @@ public class MathUtils {
             final RealType zero = new RealImpl(BigDecimal.ZERO, sigma.getMathContext());
             Range<RealType> alphaRange = new Range<>(zero, maxAlpha, BoundType.EXCLUSIVE);
             final ComplexType scale = new ComplexRectImpl(random(alphaRange));
-            ComplexType cplxTwo = new ComplexRectImpl(two, zero, true);
+            logger.log(Level.FINE, "Chose scale {0} from range {1} for pseudoinverse iteration.", new Object[] {scale, alphaRange});
+            final ComplexType cplxTwo = new ComplexRectImpl(two, zero, true);
 
             // take the iterative approach
             Matrix<ComplexType> intermediate = Mcxp.scale(scale);
@@ -2945,30 +2943,18 @@ public class MathUtils {
     }
 
     /**
-     * Compute &sigma;<sub>1</sub>(M) of any {@link Matrix} M, which returns the single largest
+     * Compute &sigma;<sub>1</sub>(M) of any {@link Matrix} M, which returns the single &ldquo;largest&rdquo;
      * value of M (i.e., the matrix element with the greatest {@link Numeric#magnitude() magnitude}).
      * @param M any {@link Matrix}
      * @return the element of {@code M} with the greatest magnitude
      * @param <T> the numeric type of the elements of {@code M} as well as the return value
      */
     public static <T extends Numeric> T sigma_1(Matrix<T> M) {
-        T maxVal = null;
-
-        if (M.getClass().isAnnotationPresent(Columnar.class)) {
-            for (long col = 0L; col < M.columns(); col++) {
-                ColumnVector<T> column = M.getColumn(col);
-                T colMax = column.stream().max((x, y) -> x.magnitude().compareTo(y.magnitude())).orElseThrow();
-                if (maxVal == null || colMax.magnitude().compareTo(maxVal.magnitude()) > 0) maxVal = colMax;
-            }
-        } else {
-            for (long rowidx = 0L; rowidx < M.rows(); rowidx++) {
-                RowVector<T> row = M.getRow(rowidx);
-                T rowMax = row.stream().max((x, y) -> x.magnitude().compareTo(y.magnitude())).orElseThrow();
-                if (maxVal == null || rowMax.magnitude().compareTo(maxVal.magnitude()) > 0) maxVal = rowMax;
-            }
-        }
-
-        return maxVal;
+        Stream<T> intermediate = M.getClass().isAnnotationPresent(Columnar.class) ?
+                LongStream.range(0L, M.columns()).mapToObj(M::getColumn).flatMap(ColumnVector::stream) :
+                LongStream.range(0L, M.rows()).mapToObj(M::getRow).flatMap(RowVector::stream);
+        return intermediate.max((x, y) -> x.magnitude().compareTo(y.magnitude()))
+                .orElseThrow(() -> new ArithmeticException("Failed to compute \uD835\uDF0E\u2081(M)"));
     }
 
     /**
