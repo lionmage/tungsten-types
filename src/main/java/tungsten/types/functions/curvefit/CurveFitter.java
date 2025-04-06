@@ -255,13 +255,8 @@ public class CurveFitter {
         // now reduce the original data to a set with averaged values and std dev as the error
         List<Coordinates2D> reduced = new ArrayList<>(reductionMap.size());
         reductionMap.forEach((x, yvals) -> {
-            Coordinates2D coord;
-            if (yvals.size() == 1) {
-                coord = new Coordinates2D(x, yvals.get(0), new RealImpl(BigDecimal.ZERO, yvals.get(0).getMathContext()));
-            } else {
-                List<RealType> meanAndStdev = computeMeanAndStdDev(yvals);
-                coord = new Coordinates2D(x, meanAndStdev.get(0), meanAndStdev.get(1));
-            }
+            List<RealType> meanAndStdev = computeMeanAndStdDev(yvals);
+            Coordinates2D coord = new Coordinates2D(x, meanAndStdev.get(0), meanAndStdev.get(1));
             reduced.add(coord);
         });
         return reduced;
@@ -275,6 +270,9 @@ public class CurveFitter {
 
     private static List<RealType> computeMeanAndStdDev(List<RealType> values) {
         final RealType zero = new RealImpl(BigDecimal.ZERO, values.get(0).getMathContext());
+        if (values.size() == 1) {
+            return List.of(values.get(0), zero);
+        }
         IntegerImpl populationSize = new IntegerImpl(BigInteger.valueOf(values.size()));
         final Numeric mean = values.parallelStream().map(Numeric.class::cast).reduce(zero, Numeric::add)
                 .divide(populationSize);
