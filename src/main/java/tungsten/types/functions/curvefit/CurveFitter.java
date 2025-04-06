@@ -141,6 +141,10 @@ public class CurveFitter {
         return strategy.fitToCoordinates(coordinates);
     }
 
+    /**
+     * Sort the coordinate data held by this {@code CurveFitter} by the given ordinate.
+     * @param ordinate the 0-based index of the ordinate by which to sort the data
+     */
     public void sortDataBy(int ordinate) {
         List<? extends Coordinates> result = coordinates.stream()
                 .sorted(Comparator.comparing((Coordinates x) -> x.getOrdinate(ordinate)))
@@ -152,10 +156,19 @@ public class CurveFitter {
         coordinates = result;
     }
 
+    /**
+     * Sort the data held by this {@code CurveFitter} by the first ordinate,
+     * denoted as <em>x</em>.
+     */
     public void sortInX() {
         sortDataBy(0);
     }
 
+    /**
+     * For data with more than 2 dimensions, sort by the second ordinate,
+     * denoted as <em>y</em>.
+     * @throws IllegalStateException if the data is 2-dimensional
+     */
     public void sortInY() {
         if (characteristic != CurveType.CURVE_2D) {
             sortDataBy(1);
@@ -164,17 +177,27 @@ public class CurveFitter {
         }
     }
 
+    /**
+     * Obtain the minimum independent variable value for the given ordinate.
+     * @param ordinate the 0-based index of the desired ordinate
+     * @return the lowest value of the independent variable corresponding with {@code ordinate}
+     */
     public RealType minOrdinateValue(int ordinate) {
         return coordinates.parallelStream().map(x -> x.getOrdinate(ordinate)).min(RealType::compareTo).orElseThrow();
     }
 
+    /**
+     * Obtain the maximum independent variable value for the given ordinate.
+     * @param ordinate the 0-based index of the desired ordinate
+     * @return the highest value of the independent variable corresponding with {@code ordinate}
+     */
     public RealType maxOrdinateValue(int ordinate) {
         return coordinates.parallelStream().map(x -> x.getOrdinate(ordinate)).max(RealType::compareTo).orElseThrow();
     }
 
     /**
      * Return the {@link Coordinates} of the lowest-valued datum.
-     * @return the coordinates with the lowest value
+     * @return the coordinates with the lowest dependent variable value
      */
     public Coordinates minValueAt() {
         return coordinates.parallelStream().min(Comparator.comparing(Coordinates::getValue)).orElseThrow();
@@ -182,7 +205,7 @@ public class CurveFitter {
 
     /**
      * Return the {@link Coordinates} of the highest-valued datum.
-     * @return the coordinates with the highest value
+     * @return the coordinates with the highest dependent variable value
      */
     public Coordinates maxValueAt() {
         return coordinates.parallelStream().max(Comparator.comparing(Coordinates::getValue)).orElseThrow();
