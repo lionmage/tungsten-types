@@ -323,7 +323,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
             return result;
         }
         
-        // otherwise recursively compute this using the adjoint
+        // otherwise compute this using the adjoint
         final Matrix<T> adjoint = this.adjoint();
         final Numeric detInv = det.inverse();
         BasicMatrix<Numeric> byAdjoint = new BasicMatrix<>();
