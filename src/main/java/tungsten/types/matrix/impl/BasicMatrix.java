@@ -325,9 +325,10 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
         
         // otherwise recursively compute this using the adjoint
         final Matrix<T> adjoint = this.adjoint();
+        final Numeric detInv = det.inverse();
         BasicMatrix<Numeric> byAdjoint = new BasicMatrix<>();
         for (long row = 0L; row < adjoint.rows(); row++) {
-            byAdjoint.append(((RowVector<Numeric>) adjoint.getRow(row)).scale(det.inverse()));
+            byAdjoint.append(((RowVector<Numeric>) adjoint.getRow(row)).scale(detInv));
         }
         return byAdjoint;
     }
