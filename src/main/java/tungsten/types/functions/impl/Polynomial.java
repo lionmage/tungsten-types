@@ -2,6 +2,7 @@ package tungsten.types.functions.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.Range;
+import tungsten.types.Vector;
 import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
@@ -21,7 +22,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,6 +60,51 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
     public Polynomial(Term<T, R>... initialTerms) {
         super(initialTerms[0].getReturnType());  // use the return type of the first term
         Arrays.stream(initialTerms).forEachOrdered(terms::add);
+    }
+
+    public Polynomial(String variableName, List<R> coefficients) {
+        super((Class<R>) ClassTools.getInterfaceTypeFor(coefficients.get(0).getClass()));
+        long exponent = 0L;
+        for (R coeff : coefficients) {
+            if (exponent == 0L) {
+                terms.add(new ConstantTerm<>(coeff));
+            } else {
+                terms.add(new PolyTerm<>(variableName, coeff, exponent));
+            }
+            exponent++;
+        }
+    }
+
+    @SafeVarargs
+    public Polynomial(String variableName, R... coefficients) {
+        super((Class<R>) coefficients.getClass().getComponentType());
+        for (int exponent = 0; exponent < coefficients.length; exponent++) {
+            if (exponent == 0) {
+                terms.add(new ConstantTerm<>(coefficients[0]));
+            } else {
+                terms.add(new PolyTerm<>(variableName, coefficients[exponent], exponent));
+            }
+        }
+    }
+
+    /**
+     * Given a vector of coefficients and a variable name, construct a
+     * polynomial in the given variable with coefficients for each power
+     * of that variable.  The n<sup>th</sup> coefficient corresponds
+     * with the n<sup>th</sup> element of the given vector, and with the
+     * n<sup>th</sup> power of the variable.
+     * @param variableName the name of the sole variable of this polynomial
+     * @param coefficients a vector of coefficients for this polynomial's terms
+     */
+    public Polynomial(String variableName, Vector<R> coefficients) {
+        super(coefficients.getElementType());
+        for (long exponent = 0L; exponent < coefficients.length(); exponent++) {
+            if (exponent == 0L) {
+                terms.add(new ConstantTerm<>(coefficients.elementAt(0L)));
+            } else {
+                terms.add(new PolyTerm<>(variableName, coefficients.elementAt(exponent), exponent));
+            }
+        }
     }
 
     private static final Pattern constPattern = Pattern.compile("^\\s*([+-]?\\d+[./]?\\d*)");

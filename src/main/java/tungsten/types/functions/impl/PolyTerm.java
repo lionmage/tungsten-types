@@ -35,6 +35,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     private static final char DOT_OPERATOR = '\u22C5';
     private final Map<String, Long> powers = new TreeMap<>();
     private R coeff;
+    private Class<T> argTypeCache;
 
     /**
      * Instantiate a polynomial term given a list of variable names, a corresponding list
@@ -64,6 +65,18 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     public PolyTerm(R coefficient, List<String> variableNames, List<Long> exponents) {
         this(variableNames, exponents, (Class<R>) ClassTools.getInterfaceTypeFor(coefficient.getClass()));
         this.coeff = coefficient;
+    }
+
+    /**
+     * This is a convenience constructor to instantiate a polynomial term
+     * given a single variable name, a coefficient, and an exponent to be
+     * applied to the single designated variable.
+     * @param variableName the name of a variable
+     * @param coefficient  a multiplicative coefficient for this term
+     * @param exponent     an integral exponent
+     */
+    public PolyTerm(String variableName, R coefficient, long exponent) {
+        this(coefficient, List.of(variableName), List.of(exponent));
     }
 
     private static final Pattern coeffPattern = Pattern.compile("^\\s*([+-]?\\d+[./]?\\d*)\\s?");
@@ -199,6 +212,16 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
 
     @Override
     protected boolean checkArguments(ArgVector<T> arguments) {
+        if (argTypeCache == null) {
+            argTypeCache = arguments.getElementType();
+            Logger.getLogger(PolyTerm.class.getName()).log(Level.INFO,
+                    "Determined arg type of PolyTerm is {0}.", argTypeCache.getSimpleName());
+        } else if (!argTypeCache.isAssignableFrom(arguments.getElementType())) {
+            Logger.getLogger(PolyTerm.class.getName()).log(Level.WARNING,
+                    "PolyTerm expected arguments of type {0} but received {1} instead.",
+                    new Object[] { argTypeCache, arguments.getElementType() });
+            return false;
+        }
         for (String argName : arguments.getElementLabels()) {
             Range<RealType> argRange = this.inputRange(argName);
             try {
@@ -216,8 +239,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
 
     @Override
     public Class<T> getArgumentType() {
-        // TODO this needs some attention
-        return (Class<T>) Numeric.class;
+        return argTypeCache;
     }
 
     @Override
