@@ -1108,7 +1108,7 @@ public class MathUtils {
                         return fifo.take();
                     } catch (InterruptedException e) {
                         logger.log(Level.SEVERE,
-                                "While obtaining a Gaussian noise value", e);
+                                "While obtaining a Gaussian noise value.", e);
                         throw new NoSuchElementException("No element found while waiting for FIFO to fill");
                     }
                 }
@@ -1140,7 +1140,7 @@ public class MathUtils {
                     fifo.put((RealType) mu.add(sigma.multiply(v).multiply(s)));
                 } catch (InterruptedException e) {
                     logger.log(Level.SEVERE,
-                            "While generating Gaussian noise value", e);
+                            "While generating Gaussian noise value.", e);
                     if (fifo.isEmpty()) {
                         throw new IllegalStateException("No Gaussian noise values have been generated", e);
                     } else {
@@ -2670,7 +2670,7 @@ public class MathUtils {
                     }
                     return new DiagonalMatrix<>(diag);
                 } catch (CoercionException e) {
-                    throw new IllegalStateException("While computing the pseudoinverse of a diagonal matrix", e);
+                    throw new IllegalStateException("While computing the pseudoinverse of a diagonal matrix.", e);
                 }
             }
             return new ComplexMatrixAdapter(M.inverse());
@@ -2858,7 +2858,7 @@ public class MathUtils {
                     new Object[] {itercount, errAbsolute, errRelative});
             RealType currNorm = hilbertSchmidtNorm(Y);
             if (currNorm.compareTo(prevNorm) > 0) {
-                logger.log(Level.WARNING, "At iteration {0}, ||Y|| = {1} (was {2} in previous iteration)",
+                logger.log(Level.WARNING, "At iteration {0}, ||Y|| = {1} (was {2} in previous iteration).",
                         new Object[] { itercount, currNorm, prevNorm });
                 if (++growthCount > MAX_NORM_GROWTH) {
                     throw new ConvergenceException("Denman-Beavers iteration appears to diverge", "denmanBeavers", itercount);
@@ -2904,7 +2904,7 @@ public class MathUtils {
                 }
             } catch (CoercionException e) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "While computing the nth root of a diagonal matrix", e);
+                        "While computing the nth root of a diagonal matrix.", e);
                 throw new ArithmeticException("Error computing " + root + "th root of a diagonal matrix");
             }
             return new DiagonalMatrix<>(elements);
@@ -4269,7 +4269,7 @@ public class MathUtils {
             } else if (z instanceof RealType) {
                 // the result *should* be a real, so force it to return as a RealType
                 Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
-                        "Result {0} has imaginary part {1} for arccos({2})",
+                        "Result {0} has imaginary part {1} for arccos({2}).",
                         new Object[] { result, Im(result), z });
                 return Re(result);
             }
