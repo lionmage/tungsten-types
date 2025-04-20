@@ -2657,6 +2657,22 @@ public class MathUtils {
     public static Matrix<ComplexType> pseudoInverse(Matrix<? extends Numeric> M) {
         // if M is square, it's a degenerate case
         if (M.rows() == M.columns()) {
+            // a diagonal matrix with 0 elements is still pseudo-invertible
+            if (M instanceof DiagonalMatrix) {
+                final MathContext ctx = M.valueAt(0L, 0L).getMathContext();
+                try {
+                    final ComplexType zero = (ComplexType) ExactZero.getInstance(ctx).coerceTo(ComplexType.class);
+                    ComplexType[] diag = new ComplexType[(int) M.columns()];
+                    for (int idx = 0; idx < diag.length; idx++) {
+                        Numeric element = M.valueAt(idx, idx);
+                        if (Zero.isZero(element)) diag[idx] = zero;
+                        else diag[idx] = (ComplexType) element.inverse().coerceTo(ComplexType.class);
+                    }
+                    return new DiagonalMatrix<>(diag);
+                } catch (CoercionException e) {
+                    throw new IllegalStateException("While computing the pseudoinverse of a diagonal matrix", e);
+                }
+            }
             return new ComplexMatrixAdapter(M.inverse());
         }
         // otherwise compute the pseudoinverse
