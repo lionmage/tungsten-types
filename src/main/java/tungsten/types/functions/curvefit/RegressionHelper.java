@@ -119,6 +119,11 @@ public class RegressionHelper {
         return new ArrayColumnVector<>(yvec);
     }
 
+    public static ColumnVector<RealType> observedValuesFor3D(List<Coordinates3D> data) {
+        RealType[] zvec = data.stream().map(Coordinates3D::getZ).toArray(RealType[]::new);
+        return new ArrayColumnVector<>(zvec);
+    }
+
     public static DiagonalMatrix<RealType> weightMatrixFor(List<Coordinates2D> data) {
         RealType[] diag = data.stream().map(Coordinates2D::getSigma)
                 .map(x -> MathUtils.computeIntegerExponent(x, -2L))
@@ -134,12 +139,22 @@ public class RegressionHelper {
      * @return the pseudoinverse of {@code design}, calculated as (X<sup>T</sup>X)<sup>-1</sup>X<sup>T</sup>
      */
     public static Matrix<RealType> realPseudoInverse(Matrix<RealType> design) {
-        Matrix<RealType> intermediate = (Matrix<RealType>) design.transpose().multiply(design).inverse();
-        return intermediate.multiply(design.transpose());
+        final Matrix<RealType> transpose = design.transpose();
+        Matrix<RealType> intermediate = (Matrix<RealType>) transpose.multiply(design).inverse();
+        return intermediate.multiply(transpose);
     }
 
+    /**
+     * Compute a pseudoinverse with a weight matrix whose diagonal elements are 1/&sigma;<sup>2</sup>,
+     * where &sigma; is the standard deviation of the dependent variable for its corresponding datum.
+     * @param design  the design matrix to compute the pseudoinverse of, typically denoted <strong>X</strong>
+     * @param weights the weight matrix, typically denoted <strong>W</strong>, with diagonal entries
+     *                that are the inverses of variances
+     * @return the pseudoinverse of {@code design} taking {@code weights} into account
+     */
     public static Matrix<RealType> weightedPseudoInverse(Matrix<RealType> design, Matrix<RealType> weights) {
-        Matrix<RealType> intermediate = (Matrix<RealType>) design.transpose().multiply(weights).multiply(design).inverse();
-        return intermediate.multiply(design.transpose()).multiply(weights);
+        final Matrix<RealType> transpose = design.transpose();
+        Matrix<RealType> intermediate = (Matrix<RealType>) transpose.multiply(weights).multiply(design).inverse();
+        return intermediate.multiply(transpose).multiply(weights);
     }
 }
