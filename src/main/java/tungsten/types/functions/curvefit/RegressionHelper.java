@@ -41,9 +41,10 @@ import java.util.List;
 
 public class RegressionHelper {
     public static Matrix<RealType> designMatrixFor(List<Coordinates2D> data, int order) {
+        if (order < 1) throw new IllegalArgumentException("Order of model must be at least 1 (linear)");
         ColumnarMatrix<RealType> X = new ColumnarMatrix<>();
 
-        for (long k = 0L; k < (long) order; k++) {
+        for (long k = 0L; k <= (long) order; k++) {
             final IntegerType exponent = new IntegerImpl(BigInteger.valueOf(k));
             RealType[] column = data.stream().map(Coordinates2D::getX)
                     .map(x -> MathUtils.computeIntegerExponent(x, exponent))
