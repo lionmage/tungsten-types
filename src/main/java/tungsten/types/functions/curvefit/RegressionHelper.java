@@ -27,19 +27,43 @@ package tungsten.types.functions.curvefit;
 
 import tungsten.types.Matrix;
 import tungsten.types.functions.support.Coordinates2D;
+import tungsten.types.functions.support.Coordinates3D;
 import tungsten.types.matrix.impl.ColumnarMatrix;
 import tungsten.types.matrix.impl.DiagonalMatrix;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
+import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.MathUtils;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.impl.ArrayColumnVector;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+/**
+ * A set of methods for assisting with doing a linear regression, polynomial regression,
+ * or weighted least squares for fitting a curve to a set of data.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @since 0.6
+ */
 public class RegressionHelper {
+    private RegressionHelper() {
+        // no instantiation allowed
+    }
+
+    /**
+     * Generate a design matrix for a set of X, Y data,
+     * @param data  the {@link Coordinates2D} values in this data set
+     * @param order the order of the polynomial we wish to model
+     * @return a design matrix with <em>n</em> columns and <em>m</em> rows, where
+     *   <em>n</em>&nbsp;=&nbsp;{@code order + 1} and <em>m</em>&nbsp;=&nbsp;{@code data.size()}
+     */
     public static Matrix<RealType> designMatrixFor(List<Coordinates2D> data, int order) {
         if (order < 1) throw new IllegalArgumentException("Order of model must be at least 1 (linear)");
         ColumnarMatrix<RealType> X = new ColumnarMatrix<>();
@@ -55,6 +79,41 @@ public class RegressionHelper {
         return X;
     }
 
+    /**
+     * Generate a design matrix from a set of X, Y, Z data.
+     * This simple design matrix represents the expression
+     * &beta;<sub>0</sub> + &beta;<sub>1</sub>x + &beta;<sub>2</sub>y + &beta;<sub>3</sub>xy =&nbsp;z
+     * @param data the {@link Coordinates3D} values in this data set
+     * @return a n&times;4 matrix, where n&nbsp;=&nbsp;{@code data.size()}
+     */
+    public static Matrix<RealType> designMatrixFor3D(List<Coordinates3D> data) {
+        Stream<RealType> values = Stream.concat(data.stream().map(Coordinates3D::getX),
+                data.stream().map(Coordinates3D::getY));
+        final MathContext ctx = MathUtils.inferMathContext(values.collect(Collectors.toList()));
+        ColumnarMatrix<RealType> X = new ColumnarMatrix<>();
+        // columns are offset, x, y, and xy
+        RealType[] scratch = new RealType[data.size()];  // scratch buffer for the column vectors we create
+        Arrays.fill(scratch, new RealImpl(BigDecimal.ONE, ctx));
+        ColumnVector<RealType> offset = new ArrayColumnVector<>(scratch);
+        for (int i = 0; i < data.size(); i++) scratch[i] = data.get(i).getX();
+        ColumnVector<RealType> xvec = new ArrayColumnVector<>(scratch);
+        for (int i = 0; i < data.size(); i++) scratch[i] = data.get(i).getY();
+        ColumnVector<RealType> yvec = new ArrayColumnVector<>(scratch);
+        for (int i = 0; i < data.size(); i++) {
+            var x = data.get(i).getX();
+            var y = data.get(i).getY();
+            scratch[i] = (RealType) x.multiply(y);
+        }
+        ColumnVector<RealType> xyvec = new ArrayColumnVector<>(scratch);
+
+        X.append(offset);
+        X.append(xvec);
+        X.append(yvec);
+        X.append(xyvec);
+
+        return X;
+    }
+
     public static ColumnVector<RealType> observedValuesFor(List<Coordinates2D> data) {
         RealType[] yvec = data.stream().map(Coordinates2D::getY).toArray(RealType[]::new);
         return new ArrayColumnVector<>(yvec);
@@ -65,5 +124,22 @@ public class RegressionHelper {
                 .map(x -> MathUtils.computeIntegerExponent(x, -2L))
                 .toArray(RealType[]::new);
         return new DiagonalMatrix<>(diag);
+    }
+
+    /**
+     * Similar to {@link MathUtils#pseudoInverse(Matrix)} but specifically designed to operate on
+     * real-valued matrices, thus avoiding penalties for operating with complex matrices and
+     * downconverting them.
+     * @param design the design matrix to compute the pseudoinverse of, often denoted <strong>X</strong>
+     * @return the pseudoinverse of {@code design}, calculated as (X<sup>T</sup>X)<sup>-1</sup>X<sup>T</sup>
+     */
+    public static Matrix<RealType> realPseudoInverse(Matrix<RealType> design) {
+        Matrix<RealType> intermediate = (Matrix<RealType>) design.transpose().multiply(design).inverse();
+        return intermediate.multiply(design.transpose());
+    }
+
+    public static Matrix<RealType> weightedPseudoInverse(Matrix<RealType> design, Matrix<RealType> weights) {
+        Matrix<RealType> intermediate = (Matrix<RealType>) design.transpose().multiply(weights).multiply(design).inverse();
+        return intermediate.multiply(design.transpose()).multiply(weights);
     }
 }
