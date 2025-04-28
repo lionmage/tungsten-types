@@ -28,7 +28,10 @@ import tungsten.types.Numeric;
 import tungsten.types.Range;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
+import tungsten.types.numerics.impl.RealImpl;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -153,6 +156,16 @@ public class Coordinates {
 
     public RealType getValue() {
         return value;
+    }
+
+    public RealType getSigma() {
+        final MathContext ctx = getValue().getMathContext();
+        if (highError == null) return new RealImpl(BigDecimal.ZERO, ctx);
+        if (lowError == null || lowError.negate().equals(highError)) {
+            return highError;
+        }
+        throw new ArithmeticException("No sigma value can be determined for asymmetric error bounds " +
+                getErrorBounds());
     }
 
     /**

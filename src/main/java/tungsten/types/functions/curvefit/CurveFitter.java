@@ -31,6 +31,7 @@ import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
+import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.RealImpl;
@@ -273,7 +274,7 @@ public class CurveFitter {
         if (values.size() == 1) {
             return List.of(values.get(0), zero);
         }
-        IntegerImpl populationSize = new IntegerImpl(BigInteger.valueOf(values.size()));
+        IntegerType populationSize = new IntegerImpl(BigInteger.valueOf(values.size()));
         final Numeric mean = values.parallelStream().map(Numeric.class::cast).reduce(zero, Numeric::add)
                 .divide(populationSize);
         Numeric variance = values.parallelStream().map(Numeric.class::cast).map(x -> x.subtract(mean))
