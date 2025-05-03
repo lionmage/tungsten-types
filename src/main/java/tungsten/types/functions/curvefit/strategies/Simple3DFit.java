@@ -81,6 +81,6 @@ public class Simple3DFit implements CurveFittingStrategy {
 
     @Override
     public String name() {
-        return "";
+        return "Linear regression to a simple surface for 3D data";
     }
 }
