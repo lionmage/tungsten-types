@@ -1,3 +1,4 @@
 tungsten.types.functions.curvefit.strategies.CubicSplineStrategy
 tungsten.types.functions.curvefit.strategies.LinearFitStrategy
 tungsten.types.functions.curvefit.strategies.ParabolicFitStrategy
+tungsten.types.functions.curvefit.strategies.Simple3DFit
