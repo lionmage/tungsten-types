@@ -26,6 +26,7 @@
 package tungsten.types.functions.curvefit;
 
 import tungsten.types.Matrix;
+import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
 import tungsten.types.matrix.impl.ColumnarMatrix;
@@ -42,6 +43,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,7 +93,7 @@ public class RegressionHelper {
                 data.stream().map(Coordinates3D::getY));
         final MathContext ctx = MathUtils.inferMathContext(values.collect(Collectors.toList()));
         ColumnarMatrix<RealType> X = new ColumnarMatrix<>();
-        // columns are offset, x, y, and xy
+        // columns are: offset (intercept), x, y, and xy
         RealType[] scratch = new RealType[data.size()];  // scratch buffer for the column vectors we create
         Arrays.fill(scratch, new RealImpl(BigDecimal.ONE, ctx));
         ColumnVector<RealType> offset = new ArrayColumnVector<>(scratch);
@@ -114,6 +116,26 @@ public class RegressionHelper {
         return X;
     }
 
+    /**
+     * Generate a design matrix from a set of multidimensional data.
+     * The resulting design matrix is linear in each of the independent variables.
+     * @param data the {@link Coordinates} values in this data set of arbitrary arity
+     * @return a matrix with n + 1 columns where n is the arity of the data and as many rows as there are observations
+     */
+    public static Matrix<RealType> designMatrixForMulti(List<Coordinates> data) {
+        final MathContext ctx = data.get(0).getOrdinate(0).getMathContext();
+        ColumnarMatrix<RealType> X = new ColumnarMatrix<>();
+        X.append(new ArrayColumnVector<>(Collections.nCopies(data.size(), new RealImpl(BigDecimal.ONE, ctx))));
+        for (int k = 0; k < data.get(0).arity(); k++) {
+            RealType[] scratch = new RealType[data.size()];
+            for (int j = 0; j < data.size(); j++) {
+                scratch[j] = data.get(j).getOrdinate(k);
+            }
+            X.append(new ArrayColumnVector<>(scratch));
+        }
+        return X;
+    }
+
     public static ColumnVector<RealType> observedValuesFor(List<Coordinates2D> data) {
         RealType[] yvec = data.stream().map(Coordinates2D::getY).toArray(RealType[]::new);
         return new ArrayColumnVector<>(yvec);
@@ -122,6 +144,11 @@ public class RegressionHelper {
     public static ColumnVector<RealType> observedValuesFor3D(List<Coordinates3D> data) {
         RealType[] zvec = data.stream().map(Coordinates3D::getZ).toArray(RealType[]::new);
         return new ArrayColumnVector<>(zvec);
+    }
+
+    public static ColumnVector<RealType> observedValuesForMulti(List<Coordinates> data) {
+        RealType[] values = data.stream().map(Coordinates::getValue).toArray(RealType[]::new);
+        return new ArrayColumnVector<>(values);
     }
 
     public static DiagonalMatrix<RealType> weightMatrixFor(List<Coordinates2D> data) {
