@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 public class Simple3DFit implements CurveFittingStrategy {
     @Override
     public NumericFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints) {
-        if (dataPoints == null || dataPoints.get(0).arity() != 1L) {
+        if (dataPoints == null || dataPoints.get(0).arity() != 2L) {
             throw new IllegalArgumentException("Incorrect dimension for data");
         }
         List<Coordinates3D> coords = toSupportedCoordinates(dataPoints);
