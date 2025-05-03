@@ -60,7 +60,7 @@ public class ParabolicFitStrategy implements CurveFittingStrategy {
         Matrix<RealType> beta = RegressionHelper.realPseudoInverse(X).multiply(Y);
         if (beta.columns() != 1L || beta.rows() != 3L) {
             Logger.getLogger(LinearFitStrategy.class.getName()).log(Level.WARNING,
-                    "Expected a 3\u00D71 result, but received {0}\u00D7{1} instead",
+                    "Expected a 3\u00D71 result, but received {0}\u00D7{1} instead.",
                     new Object[] {beta.rows(), beta.columns()});
         }
         return new Polynomial<>("x",

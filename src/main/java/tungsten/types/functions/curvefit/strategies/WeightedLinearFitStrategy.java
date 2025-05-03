@@ -37,18 +37,18 @@ import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.numerics.RealType;
 import tungsten.types.vector.ColumnVector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
- * A strategy for fitting a set of data to a linear function.
+ * A weighted least-squares strategy for fitting a set of data to a linear function.
  * @since 0.6
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
-@StrategySupports(name = "linear fit", type = CurveType.CURVE_2D)
-public class LinearFitStrategy implements CurveFittingStrategy {
+@StrategySupports(name = "weighted linear fit", type = CurveType.CURVE_2D)
+public class WeightedLinearFitStrategy implements CurveFittingStrategy {
     @Override
     public NumericFunction<RealType, RealType> fitToCoordinates(List<? extends Coordinates> dataPoints) {
         if (dataPoints == null || dataPoints.get(0).arity() != 1L) {
@@ -57,9 +57,10 @@ public class LinearFitStrategy implements CurveFittingStrategy {
         List<Coordinates2D> C = toSupportedCoordinates(dataPoints);
         Matrix<RealType> X = RegressionHelper.designMatrixFor(C, 1);
         ColumnVector<RealType> Y = RegressionHelper.observedValuesFor(C);
-        Matrix<RealType> beta = RegressionHelper.realPseudoInverse(X).multiply(Y);
+        Matrix<RealType> W = RegressionHelper.weightMatrixFor(C);
+        Matrix<RealType> beta = RegressionHelper.weightedPseudoInverse(X, W).multiply(Y);
         if (beta.columns() != 1L || beta.rows() != 2L) {
-            Logger.getLogger(LinearFitStrategy.class.getName()).log(Level.WARNING,
+            Logger.getLogger(WeightedLinearFitStrategy.class.getName()).log(Level.WARNING,
                     "Expected a 2\u00D71 result, but received {0}\u00D7{1} instead.",
                     new Object[] {beta.rows(), beta.columns()});
         }
@@ -69,8 +70,13 @@ public class LinearFitStrategy implements CurveFittingStrategy {
 
     private List<Coordinates2D> toSupportedCoordinates(List<? extends Coordinates> coords) {
         if (coords.stream().allMatch(Coordinates2D.class::isInstance)) return (List<Coordinates2D>) coords;
-        return coords.stream().map(C -> new Coordinates2D(C.getOrdinate(0), C.getValue()))
-                .collect(Collectors.toList());
+        List<Coordinates2D> result = new ArrayList<>();
+        for (Coordinates C : coords) {
+            Coordinates2D converted = new Coordinates2D(C.getOrdinate(0), C.getValue());
+            converted.setSigma(C.getSigma());  // preserve the error
+            result.add(converted);
+        }
+        return result;
     }
 
     @Override
@@ -80,6 +86,6 @@ public class LinearFitStrategy implements CurveFittingStrategy {
 
     @Override
     public String name() {
-        return "Linear regression to a linear fit for 2D data";
+        return "Weighted linear regression to a linear fit for 2D data";
     }
 }

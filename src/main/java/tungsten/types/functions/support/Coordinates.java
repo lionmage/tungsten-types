@@ -168,6 +168,11 @@ public class Coordinates {
                 getErrorBounds());
     }
 
+    public void setSigma(RealType sigma) {
+        highError = sigma;
+        lowError = null;
+    }
+
     /**
      * When the error bounds for a value are asymmetric, use this method to set the
      * bounds for a given datum.  Note that these error values are relative to the
