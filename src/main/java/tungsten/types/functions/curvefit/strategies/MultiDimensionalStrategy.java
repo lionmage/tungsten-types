@@ -39,6 +39,8 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.vector.ColumnVector;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A basic strategy for computing an approximate hypersurface that best fits
@@ -54,9 +56,14 @@ public class MultiDimensionalStrategy implements CurveFittingStrategy {
         Matrix<RealType> X = RegressionHelper.designMatrixForMulti(data);
         ColumnVector<RealType> Y = RegressionHelper.observedValuesForMulti(data);
         Matrix<RealType> beta = RegressionHelper.realPseudoInverse(X).multiply(Y);
+        if (beta.columns() != 1L) {
+            Logger.getLogger(MultiDimensionalStrategy.class.getName()).log(Level.WARNING,
+                    "Expected a {0}\u00D71 matrix, but received a {1}\u00D7{2} matrix instead.",
+                    new Object[] {X.columns(), beta.rows(), beta.columns()});
+        }
         Polynomial<RealType, RealType> result = new Polynomial<>(new ConstantTerm<>(beta.valueAt(0L, 0L)));
         for (long k = 1L; k < beta.rows(); k++) {
-            String varName = "x" + k;
+            String varName = "x" + (k - 1L);  // start naming at x0
             result.add(new PolyTerm<>(varName, beta.valueAt(k, 0L), 1L));
         }
         return result;
