@@ -124,10 +124,10 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
             try {
                 return (R) accum.coerceTo(getReturnType());
             } catch (CoercionException e) {
-                throw new IllegalStateException(e);
+                throw new IllegalStateException("While coercing evaluated PolyTerm to return type", e);
             }
         }
-        throw new IllegalArgumentException("Input vector " + arguments + " is bad.");
+        throw new IllegalArgumentException("Input vector " + arguments + " is bad");
     }
 
     @Override
