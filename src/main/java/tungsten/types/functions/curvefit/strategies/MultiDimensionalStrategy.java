@@ -40,6 +40,12 @@ import tungsten.types.vector.ColumnVector;
 
 import java.util.List;
 
+/**
+ * A basic strategy for computing an approximate hypersurface that best fits
+ * a set of multidimensional data.
+ * @since 0.6
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ */
 @StrategySupports(name = "multidimensional fit", type = CurveType.MULTI)
 public class MultiDimensionalStrategy implements CurveFittingStrategy {
     @Override
