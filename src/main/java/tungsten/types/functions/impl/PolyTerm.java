@@ -257,7 +257,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                     .coerceTo(getReturnType());
             List<String> dargs = new ArrayList<>(varNames);
             TreeMap<String, Long> dpowers = new TreeMap<>(powers);
-            if (--order == 0) {
+            if (--order == 0L) {
                 dargs.remove(argName);
                 dpowers.remove(argName);
             } else {
