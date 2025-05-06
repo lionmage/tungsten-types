@@ -112,7 +112,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     public R apply(ArgVector<T> arguments) {
         if (checkArguments(arguments)) {
             Numeric accum = coefficient();
-            for (long index = 0; index < arguments.length(); index++) {
+            for (long index = 0L; index < arguments.length(); index++) {
                 final String argName = arguments.labelForIndex(index);
                 Long exponent = powers.getOrDefault(argName, 1L);
                 if (exponent == null) exponent = 1L;  // just in case powers stores null mappings
@@ -128,7 +128,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                 throw new IllegalStateException("While coercing evaluated PolyTerm to return type", e);
             }
         }
-        throw new IllegalArgumentException("Input vector " + arguments + " is bad");
+        throw new IllegalArgumentException("Input vector " + arguments + " failed check");
     }
 
     @Override
