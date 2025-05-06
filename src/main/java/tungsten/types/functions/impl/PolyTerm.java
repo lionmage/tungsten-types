@@ -307,7 +307,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                 buf.setLength(buf.length() - 1);
             }
         }
-        if (buf.length() == 0) return "\uD835\uDFCF";  // bold mathematical 1, surrogate pair for U+1D7CF
+        if (buf.length() == 0 && One.isUnity(coefficient())) return "\uD835\uDFCF";  // bold mathematical 1, surrogate pair for U+1D7CF
 
         return buf.toString();
     }
