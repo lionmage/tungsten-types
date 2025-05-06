@@ -90,14 +90,15 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     public PolyTerm(String init, Class<R> rtnClass) {
         super(Collections.emptyList(), rtnClass); // force superclass to instantiate a usable collection
         int startOfVars = 0;
-        Matcher coeffMatcher = coeffPattern.matcher(init);
+        final String cleaned = init.replace(DOT_OPERATOR, ' ');
+        Matcher coeffMatcher = coeffPattern.matcher(cleaned);
         if (coeffMatcher.find()) {
             this.coeff = OptionalOperations.dynamicInstantiate(rtnClass, coeffMatcher.group(1));
             startOfVars = coeffMatcher.end();
         }
         // this probably isn't strictly necessary, but helps the regex matcher avoid
         // non-matching stuff at the beginning of the input string
-        String remainder = init.substring(startOfVars);
+        String remainder = cleaned.substring(startOfVars);
         Matcher varMatcher = varPattern.matcher(remainder);
         List<String> parsedVarNames = new ArrayList<>();
         while (varMatcher.find()) {
@@ -230,7 +231,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
             } catch (CoercionException e) {
                 Logger.getLogger(PolyTerm.class.getName()).log(Level.WARNING,
                         "Variable {0} has a real-valued range of {1}, but the value {2} cannot be coerced to RealTyoe.",
-                        new Object[]{argName, argRange, arguments.forVariableName(argName)});
+                        new Object[] { argName, argRange, arguments.forVariableName(argName) });
                 return false;
             }
         }
