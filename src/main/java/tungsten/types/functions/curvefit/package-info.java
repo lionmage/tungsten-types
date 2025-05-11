@@ -17,6 +17,12 @@
  *       {@code Coordinates} of arbitrary dimension to a list of {@code Coordinates2D} with
  *       standard deviation values computed when there is a multiplicity of values for a given
  *       ordinate value.</li>
+ *     <li>There are multiple strategies to fit a curve based upon linear regression (least squares),
+ *       including weighted least squares strategies that take error into account.  There is also
+ *       a strategy which uses cubic splines.</li>
+ *     <li>A utility class, {@link tungsten.types.functions.curvefit.RegressionHelper}, is provided
+ *       to ease the construction of curve fitting strategies.  It can, for example, build a
+ *       design matrix for a polynomial regression of arbitrary order.</li>
  * </ul>
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
