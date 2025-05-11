@@ -142,10 +142,10 @@ public class Coordinates {
     }
 
     /**
-     * Obtain the i<sup>th</sup> constraint or parameter for this datum. Note
+     * Obtain the i<sup>th</sup> constraint, parameter, or independent variable for this datum. Note
      * that negative indexing is supported.
      * @param i the index of the constraint to obtain
-     * @return the constraint
+     * @return the constraint or independent variable
      * @throws IndexOutOfBoundsException if {@code i} points to a non-existent constraint
      */
     public RealType getOrdinate(int i) {
@@ -158,17 +158,31 @@ public class Coordinates {
         return value;
     }
 
+    /**
+     * Obtain the error for the observed value in this datum.
+     * This value, &sigma;, is known as the standard deviation,
+     * and is the square root of the variance.
+     * @return the &sigma; value for the observed value
+     * @see #getValue() the corresponding method to obtain the observed value
+     * @throws ArithmeticException if the error bounds are not symmetric
+     */
     public RealType getSigma() {
         final MathContext ctx = getValue().getMathContext();
         if (highError == null) return new RealImpl(BigDecimal.ZERO, ctx);
         if (lowError == null || lowError.negate().equals(highError)) {
             return highError;
         }
-        throw new ArithmeticException("No sigma value can be determined for asymmetric error bounds " +
+        throw new ArithmeticException("No \uD835\uDF0E value can be determined for asymmetric error bounds " +
                 getErrorBounds());
     }
 
+    /**
+     * Set the symmetric error bounds using the standard deviation &sigma;.
+     * @param sigma the standard deviation &sigma;
+     * @throws IllegalArgumentException if {@code sigma} is negative
+     */
     public void setSigma(RealType sigma) {
+        if (sigma.sign() == Sign.NEGATIVE) throw new IllegalArgumentException("\uD835\uDF0E must be \u2265 0");
         highError = sigma;
         lowError = null;
     }
