@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 /**
  * A strategy for fitting a set of data points to an exponential curve
  * of the form y&nbsp;=&nbsp;Ae<sup>Bx</sup>.
+ * @since 0.6
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see <a href="https://mathworld.wolfram.com/LeastSquaresFittingExponential.html">An article at Wolfram Mathworld</a>
