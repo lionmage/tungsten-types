@@ -5,3 +5,4 @@ tungsten.types.functions.curvefit.strategies.Simple3DFit
 tungsten.types.functions.curvefit.strategies.WeightedLinearFitStrategy
 tungsten.types.functions.curvefit.strategies.WeightedParabolicFitStrategy
 tungsten.types.functions.curvefit.strategies.MultiDimensionalStrategy
+tungsten.types.functions.curvefit.strategies.ExponentialFit
