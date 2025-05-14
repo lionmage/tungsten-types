@@ -65,7 +65,8 @@ public class Exp extends UnaryFunction<RealType, RealType> {
             throw new IllegalArgumentException("Expected argument " + getArgumentName() +
                     " is not present in the input vector " + arguments);
         }
-        final RealType arg = arguments.elementAt(0L);
+        final RealType arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
         final Euler e = Euler.getInstance(arg.getMathContext());
         return e.exp(intermediate);
