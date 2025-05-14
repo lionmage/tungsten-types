@@ -211,7 +211,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public Matrix<T> add(Matrix<T> addend) {
         if (addend.columns() != columns() || addend.rows() != rows()) {
-            throw new ArithmeticException("Cannot add matrices of different dimensions.");
+            throw new ArithmeticException("Cannot add matrices of different dimensions");
         }
         
         ColumnarMatrix<T> result = new ColumnarMatrix<>();

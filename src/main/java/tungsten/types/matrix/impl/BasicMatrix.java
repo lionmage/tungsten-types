@@ -130,7 +130,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public T determinant() {
         if (rows() != columns()) {
-            throw new ArithmeticException("Can only compute determinant for a square matrix.");
+            throw new ArithmeticException("Can only compute determinant for a square matrix");
         }
         if (rows() == 1L) { // 1x1 matrix
             return valueAt(0L, 0L);
