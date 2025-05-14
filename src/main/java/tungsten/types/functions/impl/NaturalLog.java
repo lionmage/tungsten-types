@@ -199,7 +199,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
             @Override
             public String toString() {
                 StringBuilder buf = new StringBuilder();
-                buf.append(scale).append('/').append(getArgumentName());
+                buf.append(scale).append('\u2215').append(getArgumentName());  // U+2215 = division slash
                 return buf.toString();
             }
         };
