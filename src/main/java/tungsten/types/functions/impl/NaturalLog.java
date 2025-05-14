@@ -124,7 +124,10 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
 
     @Override
     protected boolean checkArguments(ArgVector<RealType> arguments) {
-        return super.checkArguments(arguments) && lnRange.contains(arguments.elementAt(0L));
+        if (!super.checkArguments(arguments)) return false;
+        final RealType arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
+        return lnRange.contains(arg);
     }
 
     @Differentiable
