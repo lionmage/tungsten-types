@@ -72,7 +72,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
     public RealType apply(ArgVector<RealType> arguments) {
         if (!checkArguments(arguments)) {
             throw new IllegalArgumentException("Expected argument "
-                    + getArgumentName() + " is not present in input " + arguments + " or is out of range.");
+                    + getArgumentName() + " is not present in input " + arguments + " or is out of range");
         }
         final RealType arg = arguments.hasVariableName(getArgumentName()) ?
                 arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
@@ -103,6 +103,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
         if (after instanceof Exp) {
             Class<R2> rtnClass = after.getReturnType();
             if (rtnClass == null) rtnClass = (Class<R2>) RealType.class; // a reasonable default
+            if (getComposedFunction().isPresent()) return (UnaryFunction<RealType, R2>) getComposedFunction().get().forReturnType(rtnClass);
             return new Reflexive<>(getArgumentName(), lnRange, RealType.class).forReturnType(rtnClass);
         }
         return super.andThen(after);
