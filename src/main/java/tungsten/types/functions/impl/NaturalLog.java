@@ -114,7 +114,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
 
     @Override
     public Range<RealType> inputRange(String argName) {
-        return lnRange;
+        return getComposedFunction().isPresent() ? getComposedFunction().get().inputRange(argName) : lnRange;
     }
 
     @Override
