@@ -159,7 +159,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
                         if (this.termCount() == 2L) {
                             // this Product has not been modified post-construction, so emit a representation of this derivative
                             StringBuilder buf = new StringBuilder();
-                            buf.append('(').append("1/").append(innerToString(false)).append(')');
+                            buf.append('(').append("1\u2215").append(innerToString(false)).append(')');
                             buf.append('\u22C5'); // dot operator
                             buf.append('(').append(innerdiff).append(')');
                             return buf.toString();
