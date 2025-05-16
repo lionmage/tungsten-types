@@ -34,6 +34,13 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+/**
+ * A model of a unary function, that is, a function that takes a single scalar argument and returns a single
+ * scalar result.
+ * @param <T> the type consumed by this unary function
+ * @param <R> the type returned by this unary function
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ */
 public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
     private final String argumentName;
     // if this function is f(x) and we have a composition of h(f(g(x)))
