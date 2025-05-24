@@ -225,12 +225,13 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         }
         for (String argName : arguments.getElementLabels()) {
             Range<RealType> argRange = this.inputRange(argName);
+            if (argRange == null) continue;
             try {
                 RealType toCheck = (RealType) arguments.forVariableName(argName).coerceTo(RealType.class);
-                if (argRange != null && !argRange.contains(toCheck)) return false;
+                if (!argRange.contains(toCheck)) return false;
             } catch (CoercionException e) {
                 Logger.getLogger(PolyTerm.class.getName()).log(Level.WARNING,
-                        "Variable {0} has a real-valued range of {1}, but the value {2} cannot be coerced to RealTyoe.",
+                        "Variable {0} has a real-valued range of {1}, but the value {2} cannot be coerced to RealType.",
                         new Object[] { argName, argRange, arguments.forVariableName(argName) });
                 return false;
             }
