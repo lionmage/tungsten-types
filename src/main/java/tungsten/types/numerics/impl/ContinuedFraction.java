@@ -1287,7 +1287,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
              * @return the Fibonacci number corresponding with {@code n}, given that F<sub>0</sub>&nbsp;=&nbsp;0
              */
             private long fibExponent(long n) {
-                final long[] precalc = {0L, 1L, 1L, 2L, 3L, 5L, 8L, 13L, 21L, 34L, 55L, 89L, 144L};
+                final long[] precalc = {0L, 1L, 1L, 2L, 3L, 5L, 8L, 13L, 21L, 34L};
                 if (n < (long) precalc.length) return precalc[(int) n];
                 return fibExponent(n - 2L) + fibExponent(n - 1L);
             }
