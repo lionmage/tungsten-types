@@ -1020,7 +1020,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * @since 0.7
      */
     public ContinuedFraction concat(ContinuedFraction rhs) {
-        Stream<Long> concatenation = Stream.concat(StreamSupport.stream(this.spliterator(), false),
+        ContinuedFraction me = new ContinuedFraction(this.terms, this.repeatsFromIndex, this.mappingFunc) {
+            @Override
+            protected boolean emitNullsForZeroTerms() {
+                return false;
+            }
+        };
+        Stream<Long> concatenation = Stream.concat(StreamSupport.stream(me.spliterator(), false),
                 StreamSupport.stream(rhs.spliterator(), false));
         int size = this.terms() > 0L ? terms.length + 2 : 5;
         return new ContinuedFraction(new CFCleaner(concatenation.iterator()), size);
