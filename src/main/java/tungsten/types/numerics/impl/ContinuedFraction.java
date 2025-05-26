@@ -1010,6 +1010,22 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         };
     }
 
+    /**
+     * Concatenate two continued fractions, A and B.  The resulting continued fraction is
+     * equivalent to [A]++[B], that is, all the terms of A followed by all the terms of B.
+     * Intermediate 0 terms are filtered out according to the usual rules.
+     * @param rhs the right-hand side of this concatenation operation
+     * @return a new {@code ContinuedFraction} that represents the concatenation of the terms
+     *   of {@code this} continued fraction followed by the terms of {@code rhs}
+     * @since 0.7
+     */
+    public ContinuedFraction concat(ContinuedFraction rhs) {
+        Stream<Long> concatenation = Stream.concat(StreamSupport.stream(this.spliterator(), false),
+                StreamSupport.stream(rhs.spliterator(), false));
+        int size = this.terms() > 0L ? terms.length + 2 : 5;
+        return new ContinuedFraction(new CFCleaner(concatenation.iterator()), size);
+    }
+
     /*
      The following section provides factory methods that produce various constants.
      */
