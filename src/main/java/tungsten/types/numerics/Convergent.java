@@ -38,13 +38,21 @@ import java.math.BigInteger;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Convergent {
-    BigInteger p, q;
-    BigInteger pPrime, qPrime;
+    private BigInteger p, q;
+    private BigInteger pPrime, qPrime;
 
+    /**
+     * Construct this convergent using the first term, x<sub>0</sub>, of a continued fraction.
+     * @param x0 the first term of a continued fraction
+     */
     public Convergent(long x0) {
         this(BigInteger.valueOf(x0));
     }
 
+    /**
+     * Construct this convergent using the first term of a continued fraction.
+     * @param x0 the first term of a continued fraction expressed as a {@code BigInteger}
+     */
     public Convergent(BigInteger x0) {
         p = x0;
         q = BigInteger.ONE;
@@ -52,6 +60,12 @@ public class Convergent {
         qPrime = BigInteger.ZERO;
     }
 
+    /**
+     * Given the x<sub>i</sub> term of a continued fraction, evolve the state
+     * of this convergent to match.  A valid convergent requires that all
+     * of the terms of the original CF are supplied to this method, in sequence.
+     * @param xi the x<sub>i</sub> term of a continued fraction
+     */
     public void nextTerm(long xi) {
         var pp = p;
         var qq = q;
