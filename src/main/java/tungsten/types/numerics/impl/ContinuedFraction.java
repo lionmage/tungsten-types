@@ -739,6 +739,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return (valSq - asquared) > (valSq - bsquared) ? b : a;
     }
 
+    private static final long MAX_INT_FOR_EXPONENT = 999_999_999L;
+
     /**
      * Compute {@code this}<sup>n</sup>, where n is an integer.
      * The caller should supply the {@code MathContext} for the result, if needed.
@@ -758,12 +760,57 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (n < 0L) return (ContinuedFraction) pow(-n).inverse();
         if (n == 1L) return this;
         // from this point, n is guaranteed > 1
+        if (terms() > 0L && n < MAX_INT_FOR_EXPONENT) {
+            return fastpow((int) n);
+        }
         Iterator<Long> oddTerm = n % 2L == 1L ? this.iterator() : null; // if n is odd, no need to decrement
         ContinuedFraction intermediate = pow(n >> 1L);  // bit shift takes care of it all
         Iterator<Long> evenTerms = GosperTermIterator.multiply(intermediate.iterator(), intermediate.iterator());
         Iterator<Long> result = oddTerm != null ? GosperTermIterator.multiply(oddTerm, evenTerms) : evenTerms;
         if (intermediate.terms() < 0L) result = new CFCleaner(result);
         return new ContinuedFraction(result, mctx.getPrecision() + 1);
+    }
+
+    // a fast version of pow() that avoids the use of Gosper's algorithm
+    // for reference: https://medium.com/@omer.kasdarma/the-curious-world-of-simple-continued-fractions-part-vi-the-power-2760aeadf5cf
+    private ContinuedFraction fastpow(int n) {
+        Convergent xConv = new Convergent(terms[0]);
+        BigInteger s0 = xConv.getP().pow(n);
+        Convergent sConv = new Convergent(s0);
+        List<Long> result = new LinkedList<>();
+        result.add(s0.longValueExact());
+
+        RationalType ratio = new RationalImpl(BigInteger.ZERO, BigInteger.ONE);
+        for (int i = 1; i < terms.length; i++) {
+            // iterate the convergent for X
+            xConv.nextTerm(terms[i]);
+            ratio = calcPowTerm(xConv, sConv, n, i % 2 == 1);
+            if (i != terms.length - 1) {
+                long si = ratio.floor().asBigInteger().longValueExact();
+                // iterate the convergent for S
+                sConv.nextTerm(si);
+                result.add(si);
+            }
+        }
+        final RationalType finalRatio = ratio;
+        Iterable<Long> ratTerms = () -> new RationalCFTermAdapter(finalRatio);
+        // concatenate the terms of the CF expansion of the final ratio computed above
+        // to the terms already in result
+        Stream<Long> allTerms = Stream.concat(result.stream(),
+                StreamSupport.stream(ratTerms.spliterator(), false));
+        return new ContinuedFraction(new CFCleaner(allTerms.iterator()), terms.length + 2);
+    }
+
+    private RationalType calcPowTerm(Convergent x, Convergent s, int exponent, boolean isOdd) {
+        BigInteger qa = x.getQ().pow(exponent);
+        BigInteger pa = x.getP().pow(exponent);
+        // r'q^a - s'p^a odd | s'p^a - r'q^a even
+        BigInteger numerator = isOdd ? s.getpPrime().multiply(qa).subtract(s.getqPrime().multiply(pa)) :
+                s.getqPrime().multiply(pa).subtract(s.getpPrime().multiply(qa));
+        // sp^a - rq^a odd | rq^a - sp^a even
+        BigInteger denominator = isOdd ? s.getQ().multiply(pa).subtract(s.getP().multiply(qa)) :
+                s.getP().multiply(qa).subtract(s.getQ().multiply(pa));
+        return new RationalImpl(numerator, denominator);
     }
 
     /**

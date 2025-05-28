@@ -31,7 +31,13 @@
  * This package also includes two enums necessary to support these types,
  * {@link tungsten.types.numerics.Sign} (which encapsulates whether a value is
  * negative or positive) and {@link tungsten.types.numerics.NumericHierarchy}
- * (which provides a ladder of coercibility, among other functions).
+ * (which provides a ladder of coercibility, among other functions).<br>
+ * There are two additional support classes:
+ * <ul>
+ *     <li>{@link tungsten.types.numerics.Convergent}, used for {@code ContinuedFraction} operations</li>
+ *     <li>{@link tungsten.types.numerics.MegaConstant}, the base class for {@code RealMegaConstant}
+ *       and {@code ComplexMegaConstant}, which encapsulate expressions made up of other constants</li>
+ * </ul>
  * @since 0.1
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
