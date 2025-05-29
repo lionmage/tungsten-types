@@ -170,7 +170,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                     } else {
                         long numTerms = index - boundary - cache.size();
                         if (numTerms > 0L) {
-                            Logger.getLogger(ContinuedFraction.class.getName()).log(Level.INFO,
+                            Logger.getLogger(ContinuedFraction.class.getName()).log(Level.FINE,
                                     "Cannot find term {0} in cache; iterating over {1} terms and caching.",
                                     new Object[] {index, numTerms});
                         }

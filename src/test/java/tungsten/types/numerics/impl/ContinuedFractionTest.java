@@ -51,6 +51,22 @@ public class ContinuedFractionTest {
         System.out.println("cf^5 = " + toFive.asBigDecimal().toPlainString());
         RealType decVersion = new RealImpl("97.65625", MathContext.DECIMAL64);
         assertEquals(0, decVersion.compareTo(toFive));
+
+        ContinuedFraction cf1 = new ContinuedFraction(2L, 1L, 4L);  // 2.8
+        cf1.setMathContext(MathContext.DECIMAL128);
+        var sq = cf1.pow(2L);
+        System.out.println(cf1 + " squared: " + sq);
+        assertEquals("[7; 1, 5, 4]", sq.toString());
+        var pw = cf1.pow(9L);
+        System.out.println(cf1 + " to 9th power: " + pw);
+        // ensure that the final terms are what we expect
+        // since they may not show up in the string printed above
+        assertEquals(16L, pw.termAt(12L));
+        assertEquals(5L, pw.termAt(13L));
+        pw.setMathContext(MathContext.DECIMAL128);
+        System.out.println(pw + " as a decimal: " + pw.asBigDecimal().toPlainString());
+        RealType decPower = new RealImpl("10578.455953408", MathContext.DECIMAL128);
+        assertEquals(0, decPower.compareTo(pw));
     }
 
     @Test
