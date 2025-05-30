@@ -67,6 +67,15 @@ public class ContinuedFractionTest {
         System.out.println(pw + " as a decimal: " + pw.asBigDecimal().toPlainString());
         RealType decPower = new RealImpl("10578.455953408", MathContext.DECIMAL128);
         assertEquals(0, decPower.compareTo(pw));
+
+        // ensure we test the old code path for exponentiation
+        ContinuedFraction fr = ContinuedFraction.freiman(MathContext.DECIMAL128);
+        var fsq = fr.pow(2L);
+        fsq.setMathContext(MathContext.DECIMAL128);
+        assertTrue(fsq.asBigDecimal().toPlainString().startsWith("20.501240580200615"));
+        var fto9 = fr.pow(9L);
+        fto9.setMathContext(MathContext.DECIMAL128);
+        assertTrue(fto9.asBigDecimal().toPlainString().startsWith("799853.84954600839940"));
     }
 
     @Test
