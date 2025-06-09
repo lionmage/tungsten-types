@@ -760,7 +760,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (n < 0L) return (ContinuedFraction) pow(-n).inverse();
         if (n == 1L) return this;
         // from this point, n is guaranteed > 1
-        if (terms() > 0L && n < MAX_INT_FOR_EXPONENT) {
+        if (terms() > 0L && MathUtils.useBuiltInOperations() && n < MAX_INT_FOR_EXPONENT) {
             return fastpow((int) n);
         }
         Iterator<Long> oddTerm = n % 2L == 1L ? this.iterator() : null; // if n is odd, no need to decrement
