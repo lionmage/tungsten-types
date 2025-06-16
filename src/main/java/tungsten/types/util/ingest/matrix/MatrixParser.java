@@ -92,7 +92,7 @@ public class MatrixParser<T extends Numeric> {
             }
             return innerRead(reader);
         } catch (IOException e) {
-            throw new RuntimeException("While reading matrix from InputStream", e);
+            throw new IllegalStateException("While reading matrix from InputStream", e);
         }
     }
 
