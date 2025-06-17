@@ -26,6 +26,7 @@
 package tungsten.types.util.ingest.coordinates;
 
 import tungsten.types.Matrix;
+import tungsten.types.Numeric;
 import tungsten.types.functions.curvefit.CurveType;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
@@ -52,6 +53,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A reusable parser that can be used to generate {@code List<Coordinates>} instances.
+ * To keep things simple, the parser expects one of the following formats:
+ * <ul>
+ *     <li>A row beginning with a pound sign (&ldquo;#&rdquo;) is treated as a comment.</li>
+ *     <li>For parsing all values, the values in a row are delimited by a
+ *         pipe character (&ldquo;|&rdquo;) optionally surrounded by whitespace.</li>
+ *     <li>Each row is terminated by a newline, as recognized by {@link BufferedReader#readLine()}.</li>
+ *     <li>A blank line (empty or containing nothing but whitespace) terminates input.</li>
+ *     <li>If parsing a file rather than a stream, a warning is emitted if the file name
+ *         does not end in &ldquo;.data&rdquo; &mdash; note that file name extensions
+ *         are not currently enforced, but may be in the future.</li>
+ * </ul>
+ *
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ *   or <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Gmail</a>
+ * @since 0.7
+ */
 public class DataParser {
     private final MathContext mctx;
     private final CurveType readDatumAs;
