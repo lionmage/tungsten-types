@@ -182,7 +182,9 @@ public class DataParser {
 
     private RealType[] convert(String[] tokens) {
         RealType[] converted = new RealType[tokens.length];
+        final int lastToken = tokens.length - 1;
 
+        tokens[lastToken] = tokens[lastToken].stripTrailing(); // in case of trailing whitespace
         for (int i = 0; i < tokens.length; i++) {
             converted[i] = new RealImpl(tokens[i], mctx);
         }
