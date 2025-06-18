@@ -25,23 +25,14 @@
 
 package tungsten.types.util.ingest.coordinates;
 
-import tungsten.types.Matrix;
-import tungsten.types.Numeric;
 import tungsten.types.functions.curvefit.CurveType;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
-import tungsten.types.matrix.impl.BasicMatrix;
-import tungsten.types.numerics.ComplexType;
-import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
-import tungsten.types.util.OptionalOperations;
-import tungsten.types.util.ingest.matrix.MatrixParser;
-import tungsten.types.vector.impl.ArrayRowVector;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.math.MathContext;
 import java.net.URISyntaxException;
 import java.net.URL;
