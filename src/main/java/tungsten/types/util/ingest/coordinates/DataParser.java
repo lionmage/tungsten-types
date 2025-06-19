@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 
 /**
  * A reusable parser that can be used to generate {@code List<Coordinates>} instances.
- * To keep things simple, the parser expects one of the following formats:
+ * To keep things simple, the parser expects the following format:
  * <ul>
  *     <li>A row beginning with a pound sign (&ldquo;#&rdquo;) is treated as a comment.</li>
  *     <li>For parsing all values, the values in a row are delimited by a
