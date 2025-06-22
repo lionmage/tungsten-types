@@ -77,7 +77,21 @@ public class DataFittingTest {
         ArgVector<RealType> newargs = new ArgVector<>(new String[] {"x"}, zxMap);
         RealType result = polycurve.apply(newargs);
         RealType expected = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL32);
-        System.out.println("Result = " + result);
+        System.out.println("For x = " + negSix + ", " + polycurve + " = " + result);
         assertTrue(MathUtils.areEqualToWithin(expected, result, EPSILON));
+    }
+
+    @Test
+    public void quadraticFit() {
+        CurveFitter fitter = new CurveFitter(anscombe2);
+        assertEquals(CurveType.CURVE_2D, fitter.characteristic);
+        fitter.sortInX();
+        NumericFunction<RealType, RealType> curve = fitter.fitToData("parabolic*");
+        assertInstanceOf(Polynomial.class, curve);
+
+        Polynomial<RealType, RealType> polycurve = (Polynomial<RealType, RealType>) curve;
+        assertEquals(3L, polycurve.countTerms());
+        assertEquals(2L, polycurve.order("x"));
+        System.out.println("Parabolic fit for Anscombe 2 is " + polycurve);
     }
 }
