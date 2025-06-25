@@ -429,4 +429,23 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         // U+2009 is a thin space
         return terms.stream().map(Object::toString).collect(Collectors.joining("\u2009+\u2009"));
     }
+
+    /*
+     Groovy methods follow.
+     */
+
+    public Term<T, R> getAt(int index) {
+        if (index < 0) {
+            return terms.get(terms.size() + index);
+        }
+        return terms.get(index);
+    }
+
+    public void putAt(int index, Term<T, R> term) {
+        if (index < 0) {
+            terms.set(terms.size() + index, term);
+        } else {
+            terms.set(index, term);
+        }
+    }
 }
