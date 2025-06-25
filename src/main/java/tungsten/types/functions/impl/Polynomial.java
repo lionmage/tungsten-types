@@ -22,12 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,7 +36,8 @@ import java.util.stream.Stream;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
  *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
-public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFunction<T, R> {
+public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFunction<T, R>
+        implements Iterable<Term<T, R>> {
     private final List<Term<T, R>> terms = new ArrayList<>();
 
     protected Polynomial(List<Term<T, R>> supplied, Class<R> rtnType) {
@@ -325,6 +322,21 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
      * @return a stream consisting of the terms of this polynomial
      */
     protected Stream<Term<T, R>> termStream() { return terms.stream(); }
+
+    @Override
+    public Iterator<Term<T, R>> iterator() {
+        return terms.iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Term<T, R>> action) {
+        terms.forEach(action);
+    }
+
+    @Override
+    public Spliterator<Term<T, R>> spliterator() {
+        return terms.spliterator();
+    }
 
     /**
      * Generate a polynomial identical to this one, but with the terms

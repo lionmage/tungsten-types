@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import tungsten.types.functions.ArgMap;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.NumericFunction;
+import tungsten.types.functions.Term;
 import tungsten.types.functions.impl.Polynomial;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.numerics.RealType;
@@ -38,6 +39,7 @@ import tungsten.types.util.ingest.coordinates.DataParser;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,5 +95,22 @@ public class DataFittingTest {
         assertEquals(3L, polycurve.countTerms());
         assertEquals(2L, polycurve.order("x"));
         System.out.println("Parabolic fit for Anscombe 2 is " + polycurve);
+        RealType a = null, b = null;  // coefficients
+        for (Term<RealType, RealType> term : polycurve) {
+            if (term.order("x") == 2L) a = term.coefficient();
+            if (term.order("x") == 1L) b = term.coefficient();
+        }
+        assertNotNull(a, "Could not extract a");
+        assertNotNull(b, "Could not extract b");
+        System.out.println("Extracted a = " + a + ", b = " + b);
+        RealType two = new RealImpl("2.00", MathContext.DECIMAL32);
+        RealType vertexX = (RealType) b.negate().divide(two.multiply(a));
+        ArgMap<RealType> map = new ArgMap<>(Collections.singletonMap("x", vertexX));
+        ArgVector<RealType> arg = new ArgVector<>(new String[] {"x"}, map);
+        RealType vertexY = polycurve.apply(arg);
+        System.out.println("Vertex should be at (" + vertexX + ", " + vertexY + ")");
+        // There's a data point at 11.0, 9.26 which is very close to the vertex
+        RealType minimum = new RealImpl("9.26", MathContext.DECIMAL32);
+        assertTrue(vertexY.compareTo(minimum) > 0);
     }
 }
