@@ -32,8 +32,10 @@ import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.Term;
 import tungsten.types.functions.impl.Polynomial;
 import tungsten.types.functions.support.Coordinates;
+import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.ingest.coordinates.DataParser;
 
@@ -46,6 +48,12 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests to exercise code for reducing data and fitting curves.
+ * @see <a href="https://en.wikipedia.org/wiki/Anscombe%27s_quartet">the data sets used for these tests</a>
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @since 0.7
+ */
 public class DataFittingTest {
     private final List<Coordinates> anscombe1, anscombe2, anscombe3, anscombe4;
 
@@ -151,5 +159,15 @@ public class DataFittingTest {
         System.out.println("Slope of original data set: " + slope1);
         System.out.println("Slope of linear fit for cleaned data set: " + slope2);
         assertTrue(slope1.compareTo(slope2) > 0, "Corrected slope should be less than original slope");
+    }
+
+    @Test
+    public void andNowForTheSigmas() {
+        List<Coordinates2D> reduced = CurveFitter.reduce(anscombe4, 0);
+        assertEquals(2, reduced.size());
+        for (Coordinates2D coordinates2D : reduced) {
+            System.out.println(coordinates2D);
+        }
+        assertEquals(1L, reduced.stream().filter(coords -> Zero.isZero(coords.getSigma())).count());
     }
 }

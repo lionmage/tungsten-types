@@ -246,7 +246,7 @@ public class CurveFitter {
      */
     public static List<Coordinates2D> reduce(List<? extends Coordinates> raw, int ordinate) {
         TreeMap<RealType, List<RealType>> reductionMap = new TreeMap<>();
-        raw.parallelStream().forEach(x -> {
+        raw.forEach(x -> {
             if (reductionMap.containsKey(x.getOrdinate(ordinate))) {
                 reductionMap.get(x.getOrdinate(ordinate)).add(x.getValue());
             } else {
