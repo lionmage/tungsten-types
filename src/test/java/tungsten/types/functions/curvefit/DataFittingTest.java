@@ -40,7 +40,9 @@ import tungsten.types.util.ingest.coordinates.DataParser;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -112,5 +114,42 @@ public class DataFittingTest {
         // There's a data point at 11.0, 9.26 which is very close to the vertex
         RealType minimum = new RealImpl("9.26", MathContext.DECIMAL32);
         assertTrue(vertexY.compareTo(minimum) > 0);
+    }
+
+    @Test
+    public void removingOutliers() {
+        CurveFitter fitter = new CurveFitter(anscombe3);
+        assertEquals(CurveType.CURVE_2D, fitter.characteristic);
+        fitter.sortInX();
+        NumericFunction<RealType, RealType> curve = fitter.fitToData("linear*");
+        assertInstanceOf(Polynomial.class, curve);
+
+        Polynomial<RealType, RealType> withOutlier = (Polynomial<RealType, RealType>) curve;
+
+        final Coordinates outlier = anscombe3.stream().max(Comparator.comparing(Coordinates::getValue)).orElseThrow();
+        System.out.println("Outlier detected at " + outlier);
+        List<Coordinates> cleaned = anscombe3.stream().filter(datum -> !datum.equals(outlier)).collect(Collectors.toList());
+        assertEquals(anscombe3.size() - 1, cleaned.size());
+
+        CurveFitter fitter2 = new CurveFitter(cleaned);
+        assertEquals(CurveType.CURVE_2D, fitter2.characteristic);
+        fitter2.sortInX();
+        NumericFunction<RealType, RealType> curve2 = fitter2.fitToData("linear*");
+        assertInstanceOf(Polynomial.class, curve2);
+
+        Polynomial<RealType, RealType> noOutlier = (Polynomial<RealType, RealType>) curve2;
+
+        RealType slope1 = null, slope2 = null;
+        for (Term<RealType, RealType> term : withOutlier) {
+            if (term.order("x") == 1L) slope1 = term.coefficient();
+        }
+        assertNotNull(slope1);
+        for (Term<RealType, RealType> term : noOutlier) {
+            if (term.order("x") == 1L) slope2 = term.coefficient();
+        }
+        assertNotNull(slope2);
+        System.out.println("Slope of original data set: " + slope1);
+        System.out.println("Slope of linear fit for cleaned data set: " + slope2);
+        assertTrue(slope1.compareTo(slope2) > 0, "Corrected slope should be less than original slope");
     }
 }

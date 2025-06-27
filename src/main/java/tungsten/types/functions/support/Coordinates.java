@@ -35,6 +35,7 @@ import java.math.MathContext;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -229,5 +230,17 @@ public class Coordinates {
         }
 
         return buf.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Coordinates)) return false;
+        Coordinates that = (Coordinates) o;
+        return Objects.deepEquals(inputs, that.inputs) && Objects.equals(value, that.value) && Objects.equals(highError, that.highError) && Objects.equals(lowError, that.lowError);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(inputs), value, highError, lowError);
     }
 }
