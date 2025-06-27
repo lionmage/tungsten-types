@@ -156,7 +156,7 @@ public class DataFittingTest {
             if (term.order("x") == 1L) slope2 = term.coefficient();
         }
         assertNotNull(slope2);
-        System.out.println("Slope of original data set: " + slope1);
+        System.out.println("Slope of linear fit to original data set: " + slope1);
         System.out.println("Slope of linear fit for cleaned data set: " + slope2);
         assertTrue(slope1.compareTo(slope2) > 0, "Corrected slope should be less than original slope");
     }
@@ -168,6 +168,6 @@ public class DataFittingTest {
         for (Coordinates2D coordinates2D : reduced) {
             System.out.println(coordinates2D);
         }
-        assertEquals(1L, reduced.stream().filter(coords -> Zero.isZero(coords.getSigma())).count());
+        assertEquals(1L, reduced.stream().map(Coordinates::getSigma).filter(Zero::isZero).count());
     }
 }
