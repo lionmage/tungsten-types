@@ -26,6 +26,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
     private static final char DOT_OPERATOR = '\u22C5';
     private final Map<String, RationalType> powers = new TreeMap<>();
     private R coeff;
+    private Class<T> argTypeCache;
 
     /**
      * Instantiate a polynomial term with a list of variable names, a list of rational exponents,
@@ -126,13 +127,27 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
                 throw new IllegalStateException(e);
             }
         }
-        throw new IllegalArgumentException("Input vector " + arguments + " is bad.");
+        throw new IllegalArgumentException("Input vector " + arguments + " is bad");
+    }
+
+    @Override
+    protected boolean checkArguments(ArgVector<T> arguments) {
+        if (argTypeCache == null) {
+            argTypeCache = arguments.getElementType();
+            Logger.getLogger(RationalExponentPolyTerm.class.getName()).log(Level.INFO,
+                    "Determined arg type of RationalExponentPolyTerm is {0}.", argTypeCache.getSimpleName());
+        } else if (!argTypeCache.isAssignableFrom(arguments.getElementType())) {
+            Logger.getLogger(RationalExponentPolyTerm.class.getName()).log(Level.WARNING,
+                    "RationalExponentPolyTerm expected arguments of type {0} but received {1} instead.",
+                    new Object[] { argTypeCache, arguments.getElementType() });
+            return false;
+        }
+        return super.checkArguments(arguments);
     }
 
     @Override
     public Class<T> getArgumentType() {
-        // TODO this needs some attention
-        return (Class<T>) Numeric.class;
+        return argTypeCache;
     }
 
     @Override
