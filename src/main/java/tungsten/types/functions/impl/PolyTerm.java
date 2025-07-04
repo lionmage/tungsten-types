@@ -6,8 +6,10 @@ import tungsten.types.annotations.Differentiable;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.Term;
+import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
@@ -290,7 +292,10 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         if (!One.isUnity(coefficient())) {
+            boolean useParens = ComplexType.class.isAssignableFrom(getReturnType()) || OptionalOperations.sign(coeff) == Sign.NEGATIVE;
+            if (useParens) buf.append('(');
             buf.append(coeff);
+            if (useParens) buf.append(')');
         }
         if (!isConstant()) {
             // if we already appended something to the buffer, append U+22C5 (dot operator)
