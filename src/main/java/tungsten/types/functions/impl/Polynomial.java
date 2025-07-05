@@ -448,4 +448,8 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             terms.set(index, term);
         }
     }
+
+    public void leftShift(Term<T, R> term) {
+        terms.add(term);
+    }
 }
