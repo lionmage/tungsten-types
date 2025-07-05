@@ -140,7 +140,7 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Term)) return false;
         Term<?, ?> term = (Term<?, ?>) o;
         return rangeMap.equals(term.rangeMap) && varNames.equals(term.varNames);
     }
