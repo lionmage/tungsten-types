@@ -677,13 +677,10 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         // use Newton's method iterations
         ContinuedFraction prev = new ContinuedFraction(guess);  // initial guess
         prev.setMathContext(mctx);
-        final ContinuedFraction half = new ContinuedFraction(0L, 2L);
-        half.setMathContext(mctx);
         final int bailout = mctx.getPrecision() / 2 + 1;  // a total hack
         for (int iter = 0; iter < bailout; iter++) {
             Iterator<Long> quotient = GosperTermIterator.divide(this.iterator(), prev.iterator());
-            Iterator<Long> sum = GosperTermIterator.add(prev.iterator(), quotient);
-            Iterator<Long> avg = GosperTermIterator.multiply(half.iterator(), sum);
+            Iterator<Long> avg = GosperTermIterator.mean(prev.iterator(), quotient);
             prev = new ContinuedFraction(avg, iter + 1) {
                 @Override
                 public boolean isExact() {

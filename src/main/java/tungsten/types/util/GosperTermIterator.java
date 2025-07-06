@@ -154,6 +154,20 @@ public class GosperTermIterator implements Iterator<Long> {
         return new GosperTermIterator(x, y, s);
     }
 
+    /**
+     * Create an {@code Iterator} to compute the mean of two continued fractions.
+     * @param x the iterator over the terms of the first operand
+     * @param y the iterator over the terms of the second operand
+     * @return the arithmetic mean of {@code x} and {@code y} as an iterator over terms
+     */
+    public static Iterator<Long> mean(Iterator<Long> x, Iterator<Long> y) {
+        final StateVector s = new StateVector(
+                0L, 1L, 1L, 0L,
+                2L, 0L, 0L, 0L);
+        return new GosperTermIterator(x, y, s);
+    }
+
+
     private static Long absDifference(Long a, Long b) {
         if (a == null) return b == null ? 0L : null;
         if (b == null) return null;
