@@ -213,7 +213,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             }
             throw new UnsupportedOperationException("Cannot rewrite inner function in terms of " + argName);
         }
-        return new Pow<>(argName, exponent);
+        return new Pow<>(argName, exponent, getReturnType());
     }
 
     @Differentiable
@@ -226,7 +226,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             if (Zero.isZero(diffExponent)) outerdiff = Const.getInstance(coeff);
             else if (diffExponent instanceof RationalType) {
                 outerdiff = new Product<>(getArgumentName(), Const.getInstance(coeff),
-                        new Pow<>((RationalType) diffExponent));
+                        new Pow<>((RationalType) diffExponent, getReturnType()));
             } else {
                 final long n = ((IntegerType) diffExponent.coerceTo(IntegerType.class)).asBigInteger().longValueExact();
                 outerdiff = new Product<>(getArgumentName(), Const.getInstance(coeff), new Pow<>(n));
