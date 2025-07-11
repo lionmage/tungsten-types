@@ -35,10 +35,7 @@ import tungsten.types.numerics.*;
 import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.Zero;
-import tungsten.types.util.ClassTools;
-import tungsten.types.util.MathUtils;
-import tungsten.types.util.RangeUtils;
-import tungsten.types.util.UnicodeTextEffects;
+import tungsten.types.util.*;
 
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -335,8 +332,13 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (exponent instanceof IntegerType) {
             buf.append(UnicodeTextEffects.numericSuperscript(((IntegerType) exponent).asBigInteger().intValueExact()));
         } else {
-            // since the exponent cannot be superscripted, add a thin space after
-            buf.append('^').append(exponent).append('\u2009');
+            // since the exponent cannot be superscripted, add a thin space after if no parentheses
+            boolean useParens = OptionalOperations.sign(exponent) == Sign.NEGATIVE;
+            buf.append('^');
+            if (useParens) buf.append('(');
+            buf.append(exponent);
+            if (useParens) buf.append(')');
+            else buf.append('\u2009');
         }
         return buf.toString();
     }
