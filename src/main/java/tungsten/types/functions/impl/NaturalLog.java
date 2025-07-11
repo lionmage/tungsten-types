@@ -215,6 +215,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
         final boolean useParens = alwaysUseParens || getComposedFunction().isPresent();
         StringBuilder buf = new StringBuilder();
         if (useParens) buf.append('(');
+        else buf.append('\u2009');
         getComposedFunction().ifPresentOrElse(buf::append,
                 () -> buf.append(getArgumentName()));
         if (useParens) buf.append(')');
