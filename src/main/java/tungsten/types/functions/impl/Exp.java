@@ -30,6 +30,7 @@ import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.util.RangeUtils;
+import tungsten.types.util.UnicodeTextEffects;
 
 import java.util.Objects;
 
@@ -129,7 +130,9 @@ public class Exp extends UnaryFunction<RealType, RealType> {
 
     @Override
     public String toString() {
-        if (getComposedFunction().isEmpty()) return "\u212Fˣ";
+        if (getComposedFunction().isEmpty()) {
+            return "\u212F" + UnicodeTextEffects.convertToSuperscript(getArgumentName());
+        }
         return "exp(\u2009" + getComposedFunction().get() + "\u2009)";
     }
 }
