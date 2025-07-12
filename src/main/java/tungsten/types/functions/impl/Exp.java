@@ -117,13 +117,19 @@ public class Exp extends UnaryFunction<RealType, RealType> {
 
     @Override
     public int hashCode() {
-        return 47 + Objects.hashCode(getArgumentName());
+        return 47 + Objects.hash(getArgumentName(), getComposedFunction());
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Exp) {
-            return Objects.equals(((Exp) obj).getArgumentName(), this.getArgumentName());
+            Exp fn = (Exp) obj;
+            if (fn.getComposedFunction().isPresent() != this.getComposedFunction().isPresent()) return false;
+            if (fn.getComposedFunction().isPresent() && this.getComposedFunction().isPresent()) {
+                // if both Exp instances have composed functions, ensure they are the same function
+                if (!Objects.equals(fn.getComposedFunction().get(), this.getComposedFunction().get())) return false;
+            }
+            return Objects.equals(fn.getArgumentName(), this.getArgumentName());
         }
         return false;
     }
