@@ -145,7 +145,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         return new UnaryFunction<>(inner.expectedArguments()[0], inner.getReturnType()) {
             @Override
             public T apply(ArgVector<T> arguments) {
-                T arg = arguments.elementAt(0L);
+                T arg = arguments.hasVariableName(getArgumentName()) ? arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
                 T intermediate = inner.apply(arg);
                 return (T) outerDerivative.apply(intermediate).multiply(innerDerivative.apply(arg));
             }
