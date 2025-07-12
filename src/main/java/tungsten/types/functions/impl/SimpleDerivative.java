@@ -142,7 +142,9 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
         final UnaryFunction<T, T> outerDerivative = SimpleDerivative.this.apply(outer);
         final UnaryFunction<T, T> innerDerivative = SimpleDerivative.this.apply(inner);
 
-        return new UnaryFunction<>(inner.expectedArguments()[0], inner.getReturnType()) {
+        return new Product<>(inner.expectedArguments()[0],
+                (UnaryFunction<T, T>) outerDerivative.composeWith(inner),
+                innerDerivative) {
             @Override
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.hasVariableName(getArgumentName()) ? arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
@@ -152,7 +154,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
 
             @Override
             public Range<RealType> inputRange(String argName) {
-                final String varName = inner.expectedArguments()[0];
+                final String varName = getArgumentName();
                 if (varName.equals(argName)) {
                     return inner.inputRange(argName);
                 }
