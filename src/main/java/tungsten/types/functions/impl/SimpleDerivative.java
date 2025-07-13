@@ -147,6 +147,7 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                 innerDerivative) {
             @Override
             public T apply(ArgVector<T> arguments) {
+                if (this.termCount() != 2L) return super.apply(arguments);
                 T arg = arguments.hasVariableName(getArgumentName()) ? arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
                 T intermediate = inner.apply(arg);
                 return (T) outerDerivative.apply(intermediate).multiply(innerDerivative.apply(arg));
