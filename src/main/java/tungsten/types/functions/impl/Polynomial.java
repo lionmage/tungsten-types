@@ -377,6 +377,8 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         List<String> args = Arrays.asList(term.expectedArguments());
         if (!term.isConstant() && !args.contains(varName)) throw new IllegalArgumentException("Term does not reference " + varName);
 
+        if (term.isConstant()) return Const.getInstance(term.coefficient());
+
         return new UnaryFunction<>(varName, term.getReturnType()) {
             @Override
             public R apply(ArgVector<T> arguments) {
