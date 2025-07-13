@@ -13,6 +13,7 @@ import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ExactZero;
+import tungsten.types.numerics.impl.IntegerImpl;
 import tungsten.types.numerics.impl.One;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.OptionalOperations;
@@ -378,6 +379,13 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         if (!term.isConstant() && !args.contains(varName)) throw new IllegalArgumentException("Term does not reference " + varName);
 
         if (term.isConstant()) return Const.getInstance(term.coefficient());
+        if (term instanceof PolyTerm) {
+            PolyTerm<T, R> polyTerm = (PolyTerm<T, R>) term;
+            R coeff = polyTerm.coefficient();
+            IntegerType exponent = new IntegerImpl(BigInteger.valueOf(polyTerm.order(varName)));
+            Pow<T, R> pow = new Pow<>(varName, exponent, term.getReturnType());
+            return Product.of(Const.getInstance(coeff), pow);
+        }
 
         return new UnaryFunction<>(varName, term.getReturnType()) {
             @Override
