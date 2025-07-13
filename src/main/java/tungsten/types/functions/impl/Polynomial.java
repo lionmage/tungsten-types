@@ -24,6 +24,8 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -350,6 +352,50 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         List<Term<T, R>> sortedTerms = new ArrayList<>(terms);
         sortedTerms.sort((A, B) -> (int) (B.order(varName) - A.order(varName)));
         return new Polynomial<>(sortedTerms, getReturnType());
+    }
+
+    /**
+     * Convert this polynomial to a unary function in the given variable name.
+     * @param varName the argument name for the extracted unary function
+     * @return the unary function generated from this polynomial
+     * @since 0.8
+     */
+    public UnaryFunction<T, R> asUnaryFunctionIn(String varName) {
+        Set<String> names = getUniqueArgnames();
+        if (!names.contains(varName)) throw new IllegalArgumentException("Polynomial argument names " + names + " do not include" + varName);
+        if (termStream().anyMatch(term -> term.arity() > 1L)) {
+            Logger.getLogger(Polynomial.class.getName()).log(Level.WARNING, "Polynomial contains terms with more than 1 argument.");
+        }
+
+        List<UnaryFunction<T, R>> fixedTerms = termStream().filter(term -> term.isConstant() || term.arity() == 1L)
+                .map(term -> termWrapper(varName, term))
+                .collect(Collectors.toList());
+        return new Sum<>(varName, fixedTerms);
+    }
+
+    private UnaryFunction<T, R> termWrapper(String varName, Term<T, R> term) {
+        List<String> args = Arrays.asList(term.expectedArguments());
+        if (!term.isConstant() && !args.contains(varName)) throw new IllegalArgumentException("Term does not reference " + varName);
+
+        return new UnaryFunction<>(varName, term.getReturnType()) {
+            @Override
+            public R apply(ArgVector<T> arguments) {
+                return term.apply(arguments);
+            }
+
+            @Override
+            public Range<RealType> inputRange(String argName) {
+                if (varName.equals(argName)) {
+                    return term.inputRange(argName);
+                }
+                return null;
+            }
+
+            @Override
+            public Class<T> getArgumentType() {
+                return term.getArgumentType();
+            }
+        };
     }
 
     /**
