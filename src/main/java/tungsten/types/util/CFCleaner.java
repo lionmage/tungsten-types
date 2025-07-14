@@ -134,6 +134,7 @@ public class CFCleaner implements Iterator<Long> {
     public void forEachRemaining(Consumer<? super Long> action) {
         if (source == null) {
             deque.forEach(action);
+            deque.clear();  // clear all remaining elements from the queue after calling forEach() on them
         } else {
             Iterator.super.forEachRemaining(action);
         }
