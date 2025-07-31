@@ -116,6 +116,15 @@ public class ImaginaryUnit implements ComplexType {
             }
 
             @Override
+            public Numeric add(Numeric addend) {
+                if (addend instanceof ImaginaryUnit) {
+                    // -i is the additive inverse of i
+                    return ExactZero.getInstance(mctx);
+                }
+                return super.add(addend);
+            }
+
+            @Override
             public String toString() {
                 return "\u2212\u2148";
             }
