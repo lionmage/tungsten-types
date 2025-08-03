@@ -4417,6 +4417,16 @@ public class MathUtils {
      */
     public static RealType tan(RealType x) {
         final MathContext ctx = x.getMathContext();
+        final Range<RealType> cfRange = RangeUtils.getZeroToUnity(ctx, true);
+        if (x instanceof ContinuedFraction && cfRange.contains(x.magnitude())) {
+            try {
+                IntegerType n = (IntegerType) x.inverse().coerceTo(IntegerType.class);
+                return tan_nInv(n);
+            } catch (CoercionException e) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                        "Unable to compute tan({0}) as continued fraction.", x);
+            }
+        }
         final Pi pi = Pi.getInstance(ctx);
         final RealType epsilon = computeIntegerExponent(TEN, 1 - ctx.getPrecision(), ctx);
         // check for zero crossings before incurring the cost of computing
@@ -4443,6 +4453,7 @@ public class MathUtils {
      * @param n any integer value
      * @return a continued fraction representing tan(1/n)
      * @throws ArithmeticException if {@code n} is zero
+     * @since 0.6
      */
     public static ContinuedFraction tan_nInv(IntegerType n) {
         if (Zero.isZero(n)) throw new ArithmeticException("tan(1/n) is not defined for n = 0");
@@ -4619,6 +4630,17 @@ public class MathUtils {
      * @return the result of computing tanh(x)
      */
     public static RealType tanh(RealType x) {
+        final MathContext ctx = x.getMathContext();
+        final Range<RealType> cfRange = RangeUtils.getZeroToUnity(ctx, true);
+        if (x instanceof ContinuedFraction && cfRange.contains(x)) {
+            try {
+                IntegerType n = (IntegerType) x.inverse().coerceTo(IntegerType.class);
+                return tanh_nInv(n);
+            } catch (CoercionException e) {
+                Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
+                        "Unable to compute tanh({0}) as continued fraction.", x);
+            }
+        }
         final RealType one = new RealImpl(BigDecimal.ONE, x.getMathContext());
         final RealType two = new RealImpl(decTWO, x.getMathContext());
         RealType scaledArg = (RealType) x.multiply(two);
@@ -4631,6 +4653,7 @@ public class MathUtils {
      * Compute tanh(1/n) for positive integer n.
      * @param n any positive integer
      * @return the hyperbolic tangent of {@code 1/n}
+     * @since 0.6
      */
     public static ContinuedFraction tanh_nInv(IntegerType n) {
         if (n.sign() != Sign.POSITIVE) throw new ArithmeticException("tanh(1/n) is only defined for positive n");

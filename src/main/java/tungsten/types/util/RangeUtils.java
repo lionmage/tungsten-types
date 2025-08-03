@@ -75,6 +75,19 @@ public class RangeUtils {
             new Range<>(new IntegerImpl(MIN_LONG), new IntegerImpl(MAX_LONG), BoundType.INCLUSIVE);
 
     /**
+     * Generate a range with an exclusive lower bound of 0 and an upper bound of 1.
+     * @param mctx      the MathContext for the bounds
+     * @param inclusive if true, use an inclusive upper bound; otherwise use an exclusive upper bound
+     * @return a range representing an interval between 0 and 1
+     * @since 0.8
+     */
+    public static Range<RealType> getZeroToUnity(MathContext mctx, boolean inclusive) {
+        RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
+        RealType unity = new RealImpl(BigDecimal.ONE, mctx);
+        return new Range<>(zero, BoundType.EXCLUSIVE, unity, inclusive ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE);
+    }
+
+    /**
      * Generate a range of (&minus;&pi;, &pi;] for the given {@link MathContext}.
      * Note that this is the typical range of return values for atan2 and
      * is the principal input range for cos and sin.
