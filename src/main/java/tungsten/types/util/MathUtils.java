@@ -4462,7 +4462,6 @@ public class MathUtils {
         }
         result.setMathContext(n.getMathContext());
         return result;
-
     }
 
     /**
