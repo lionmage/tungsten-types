@@ -155,16 +155,16 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Override
     public Range<RealType> inputRange(String argName) {
-        return RangeUtils.ALL_REALS;
+        return getComposedFunction().map(f -> f.inputRange(argName))
+                .orElse(RangeUtils.ALL_REALS);
     }
 
     @Override
     public Class<T> getArgumentType() {
-        if (getComposedFunction().isPresent()) {
-            return getComposedFunction().get().getReturnType();
-        }
-        // the following may return null or fail altogether
-        return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+        // argumentType of composed func is ? super T, return type is T, so use return type
+        return getComposedFunction().map(UnaryFunction::getReturnType)
+                // the following expression may return null or fail altogether
+                .orElse((Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0));
     }
 
     @Override
