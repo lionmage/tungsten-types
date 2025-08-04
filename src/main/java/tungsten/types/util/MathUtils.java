@@ -4432,7 +4432,7 @@ public class MathUtils {
         // check for zero crossings before incurring the cost of computing
         // an in-range argument or calculating the sin() and cos() power series
         RealType argOverPi = x.divide(pi).magnitude();
-        if (((RealType) argOverPi.subtract(argOverPi.floor()).magnitude()).compareTo(epsilon) < 0) {
+        if (((RealType) argOverPi.subtract(argOverPi.floor())).compareTo(epsilon) < 0) {
             // tan(x) has zero crossings periodically at x=k𝜋 ∀ k ∈ ℤ
             return new RealImpl(BigDecimal.ZERO, ctx);
         }
