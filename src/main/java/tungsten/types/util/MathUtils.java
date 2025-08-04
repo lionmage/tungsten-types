@@ -4641,10 +4641,10 @@ public class MathUtils {
                         "Unable to compute tanh({0}) as continued fraction.", x);
             }
         }
-        final RealType one = new RealImpl(BigDecimal.ONE, x.getMathContext());
-        final RealType two = new RealImpl(decTWO, x.getMathContext());
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        final RealType two = new RealImpl(decTWO, ctx);
         RealType scaledArg = (RealType) x.multiply(two);
-        final Euler e = Euler.getInstance(x.getMathContext());
+        final Euler e = Euler.getInstance(ctx);
         RealType exp = e.exp(scaledArg);
         return (RealType) exp.subtract(one).divide(exp.add(one));
     }
