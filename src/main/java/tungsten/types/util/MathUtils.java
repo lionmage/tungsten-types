@@ -4424,7 +4424,7 @@ public class MathUtils {
                 return tan_nInv(n);
             } catch (CoercionException e) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
-                        "Unable to compute tan({0}) as continued fraction.", x);
+                        "Unable to compute tan({0}) as a continued fraction.", x);
             }
         }
         final Pi pi = Pi.getInstance(ctx);
@@ -4638,7 +4638,7 @@ public class MathUtils {
                 return tanh_nInv(n);
             } catch (CoercionException e) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.FINE,
-                        "Unable to compute tanh({0}) as continued fraction.", x);
+                        "Unable to compute tanh({0}) as a continued fraction.", x);
             }
         }
         final RealType one = new RealImpl(BigDecimal.ONE, ctx);
