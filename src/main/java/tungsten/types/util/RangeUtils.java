@@ -127,7 +127,8 @@ public class RangeUtils {
         return new Range<>(halfPi.negate(), halfPi, Range.BoundType.EXCLUSIVE) {
             @Override
             public String toString() {
-                return "(\u2212\uD835\uDF0B/2, \uD835\uDF0B/2)";
+                // U+2215 division slash
+                return "(\u2212\uD835\uDF0B\u22152, \uD835\uDF0B\u22152)";
             }
         };
     }
