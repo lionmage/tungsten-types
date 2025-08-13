@@ -127,7 +127,7 @@ public class RangeUtils {
         return new Range<>(halfPi.negate(), halfPi, Range.BoundType.EXCLUSIVE) {
             @Override
             public String toString() {
-                // U+2215 division slash
+                // U+2215 = division slash
                 return "(\u2212\uD835\uDF0B\u22152, \uD835\uDF0B\u22152)";
             }
         };
@@ -138,7 +138,7 @@ public class RangeUtils {
      * specified bound type on both ends.  Negative values for {@code distance}
      * will be coerced to their absolute value.
      * @param distance the distance of each boundary from the origin
-     * @param type the type of boundary for both ends
+     * @param type     the type of boundary for both ends
      * @return the desired range
      */
     public static Range<RealType> symmetricAroundOrigin(RealType distance, BoundType type) {
@@ -147,12 +147,27 @@ public class RangeUtils {
         return new Range<>(distance.negate(), distance, type);
     }
 
+    /**
+     * Generate an integer interval that is symmetric around the origin, with the
+     * specified bound type on both ends.  Negative values for {@code distance}
+     * will be coerced to their absolute value.
+     * @param distance the distance of each boundary from the origin
+     * @param type     the type of boundary for both ends
+     * @return the desired range
+     */
     public static Range<IntegerType> symmetricAroundOrigin(IntegerType distance, BoundType type) {
         distance = distance.magnitude();  // absolute value
         
         return new Range<>(distance.negate(), distance, type);
     }
 
+    /**
+     * Compute the range that is in between two ranges.
+     * @param A the first range
+     * @param B the second range
+     * @return the range that is bounded by {@code A} and {@code B}
+     * @param <T> the numeric type of the range parameters and the result
+     */
     public static <T extends Numeric & Comparable<? super T>> Range<T> rangeBetween(Range<T> A, Range<T> B) {
         if (A.overlaps(B)) throw new IllegalArgumentException("Ranges overlap, therefore there is no range between them");
         Range<T> lowest = A.isBelow(B.getLowerBound()) ? A : B;
@@ -163,6 +178,15 @@ public class RangeUtils {
                 highest.getLowerBound(), highest.isLowerClosed() ? BoundType.EXCLUSIVE : BoundType.INCLUSIVE);
     }
 
+    /**
+     * Combine two ranges, if possible.  If the ranges do not overlap, elements in between those
+     * ranges will be included.  This is similar to taking the union of two sets in the case
+     * where ranges overlap.
+     * @param A the first range
+     * @param B the second range
+     * @return the merged range
+     * @param <T> the numeric type of the range parameters and the result
+     */
     public static <T extends Numeric & Comparable<? super T>> Range<T> merge(Range<T> A, Range<T> B) {
         if (A.contains(B)) return A;
         if (B.contains(A)) return B;
@@ -190,6 +214,12 @@ public class RangeUtils {
         return new Range<>(lowerBound, lowerBoundType, upperBound, upperBoundType);
     }
 
+    /**
+     * Generate a range from a set.  If there are discontinuities in the set, a
+     * {@link NotchedRange} is produced.
+     * @param source a set of {@code IntegerType} values
+     * @return a range representing the set
+     */
     public static Range<IntegerType> fromSet(Set<IntegerType> source) {
         IntegerType min = StreamSupport.stream(source.spliterator(), true).min(IntegerType::compareTo).orElseThrow();
         IntegerType max = StreamSupport.stream(source.spliterator(), true).max(IntegerType::compareTo).orElseThrow();
@@ -210,6 +240,11 @@ public class RangeUtils {
 
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
 
+    /**
+     * Generate a set from a range of integer values.
+     * @param range a range of integer values
+     * @return a {@code Set} encompassing the values in {@code range}
+     */
     public static Set<IntegerType> asSet(Range<IntegerType> range) {
         return new Set<>() {
             final IntegerType limit = range.isUpperClosed() ? range.getUpperBound() : (IntegerType) range.getUpperBound().subtract(ONE);
@@ -331,6 +366,11 @@ public class RangeUtils {
         };
     }
 
+    /**
+     * Generate a set of real values from a range of real values.
+     * @param range any range of real values
+     * @return a {@code Set} of real values
+     */
     public static Set<RealType> asRealSet(Range<RealType> range) {
         if (range instanceof SteppedRange) {
             SteppedRange srange = (SteppedRange) range;
