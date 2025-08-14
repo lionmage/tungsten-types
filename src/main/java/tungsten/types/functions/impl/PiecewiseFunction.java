@@ -72,7 +72,8 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
     @Override
     public R apply(ArgVector<T> arguments) {
         if (!boundsChecked) throw new IllegalStateException("checkAggregateBounds() must be called before applying this function");
-        T arg = arguments.elementAt(0L);
+        final String argName = getArgumentName();
+        T arg = arguments.hasVariableName(argName) ? arguments.forVariableName(argName) : arguments.elementAt(0L);
         Range<T> key = internalMap.keySet().parallelStream().filter(r -> r.contains(arg)).findAny().orElseThrow(outOfBounds);
         return internalMap.get(key).apply(arg);
     }
