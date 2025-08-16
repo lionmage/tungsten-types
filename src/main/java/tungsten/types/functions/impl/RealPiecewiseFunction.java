@@ -190,7 +190,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
             computeTransitionZones();
         }
 
-        RealType arg = arguments.elementAt(0);
+        RealType arg = arguments.hasVariableName(getArgumentName()) ? arguments.forVariableName(getArgumentName()) : arguments.elementAt(0);
 
         Optional<Range<RealType>> rangeForTransition = smoothing == SmoothingType.NONE ? Optional.empty() :
                 transitionZones.stream().filter(range -> range.contains(arg)).findFirst();
