@@ -4485,7 +4485,8 @@ public class MathUtils {
         final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
         final ComplexType iz = (ComplexType) i.multiply(z);
         final Euler e = Euler.getInstance(z.getMathContext());
-        return (ComplexType) e.exp(iz).add(e.exp(iz.negate())).divide(new RealImpl(decTWO, z.getMathContext()));
+        final RealType two = new RealImpl(decTWO, z.getMathContext());
+        return (ComplexType) e.exp(iz).add(e.exp(iz.negate())).divide(two);
     }
 
     /**
@@ -4498,7 +4499,8 @@ public class MathUtils {
         final ComplexType i = ImaginaryUnit.getInstance(z.getMathContext());
         final ComplexType iz = (ComplexType) i.multiply(z);
         final Euler e = Euler.getInstance(z.getMathContext());
-        return (ComplexType) e.exp(iz).subtract(e.exp(iz.negate())).divide(new RealImpl(decTWO, z.getMathContext()).multiply(i));
+        final RealType two = new RealImpl(decTWO, z.getMathContext());
+        return (ComplexType) e.exp(iz).subtract(e.exp(iz.negate())).divide(two.multiply(i));
     }
 
     /**
