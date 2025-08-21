@@ -425,9 +425,10 @@ public class RealImpl implements RealType {
             try {
                 return new NumericSet(List.of(root, root.negate())).coerceTo(ComplexType.class);
             } catch (CoercionException e) {
-                Logger.getLogger(RealImpl.class.getName()).log(Level.WARNING,
+                final Logger logger = Logger.getLogger(RealImpl.class.getName());
+                logger.log(Level.WARNING,
                         "While generating the complex set of square roots of " + this, e);
-                Logger.getLogger(RealImpl.class.getName()).log(Level.WARNING,
+                logger.log(Level.WARNING,
                         "Unable to generate a Set<ComplexType> from {0} and {1}; falling through to polar code.",
                         new Object[] { root, root.negate() });
             }
