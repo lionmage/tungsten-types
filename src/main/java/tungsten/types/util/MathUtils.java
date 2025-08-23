@@ -1715,13 +1715,14 @@ public class MathUtils {
                 return (ComplexType) One.getInstance(mctx).coerceTo(ComplexType.class);
             } catch (CoercionException ex) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
-                        "Could not obtain a complex instance of One", ex);
+                        "Could not obtain a complex instance of One.", ex);
                 throw new IllegalStateException(ex);
             }
         } else if (One.isUnity(exponent)) {
             return base;
         }
         NumericHierarchy htype = NumericHierarchy.forNumericType(exponent.getClass());
+        assert htype != null;
         switch (htype) {
             case INTEGER:
                 long n = ((IntegerType) exponent).asBigInteger().longValueExact();
