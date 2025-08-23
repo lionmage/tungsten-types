@@ -19,6 +19,11 @@ public class CompositeKey implements Comparable<CompositeKey> {
     private final Long order;
     private final RealType a0;
 
+    /**
+     * Construct a key given a polynomial order and a<sub>0</sub> values.
+     * @param order a Taylor polynomial's order, its number of terms
+     * @param a0    the point around which a Taylor polynomial is generated, a<sub>0</sub>
+     */
     public CompositeKey(Long order, RealType a0) {
         this.order = order;
         this.a0 = a0;

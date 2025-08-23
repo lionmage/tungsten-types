@@ -37,18 +37,33 @@ import tungsten.types.Numeric;
 public class CoercionException extends Exception {
     private final Class<? extends Numeric> sourceType;
     private final Class<? extends Numeric> desiredType;
-    
+
+    /**
+     * Construct a new {@code CoercionException} with a message as well as
+     * the source and target types.
+     * @param message the human-readable message associated with this exception
+     * @param source  the source type of the {@code Numeric} being coerced
+     * @param target  the target type of the coercion
+     */
     public CoercionException(String message,
                              Class<? extends Numeric> source, Class<? extends Numeric> target) {
         super(message);
         sourceType = source;
         desiredType = target;
     }
-    
+
+    /**
+     * Obtain the source type of the {@code Numeric} being coerced.
+     * @return the source type
+     */
     public Class<? extends Numeric> getSourceType() {
         return sourceType;
     }
-    
+
+    /**
+     * Obtain the target type of the coercion that triggered this exception.
+     * @return the target type
+     */
     public Class<? extends Numeric> getTargetType() {
         return desiredType;
     }

@@ -28,22 +28,48 @@ import tungsten.types.numerics.RealType;
 
 import java.util.Comparator;
 
+/**
+ * A specialization of {@link Coordinates} for a 2-dimensional
+ * datum, consisting of a single independent variable and
+ * a value (dependent variable).
+ */
 public class Coordinates2D extends Coordinates {
+    /**
+     * Constructor that takes a real-valued constraint
+     * and a real value.
+     * @param x the constraint or independent variable
+     * @param y the value or dependent variable
+     */
     public Coordinates2D(RealType x, RealType y) {
         inputs = new RealType[1];
         inputs[0] = x;
         value = y;
     }
 
+    /**
+     * Constructor that takes a real-valued constraint
+     * and a real value, as well as an error value (typically a standard deviation).
+     * @param x             the constraint or independent variable
+     * @param y             the value or dependent variable
+     * @param relativeError the error associated with {@code y}, e.g. a standard deviation
+     */
     public Coordinates2D(RealType x, RealType y, RealType relativeError) {
         this(x, y);
         highError = relativeError;  // error is symmetric
     }
 
+    /**
+     * Convenience method to obtain the sole independent variable.
+     * @return the x value of this datum
+     */
     public RealType getX() {
         return inputs[0];
     }
 
+    /**
+     * Convenience method to obtain the dependent variable.
+     * @return the y value of this datum
+     */
     public RealType getY() {
         return getValue();
     }

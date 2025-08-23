@@ -66,6 +66,12 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         return value;
     }
 
+    /**
+     * Given a function f(x), determine whether it can be reduced to
+     * a constant-valued function.
+     * @param fn any unary function
+     * @return true if {@code fn} can be reduced to a constant-valued function
+     */
     public static boolean isConstEquivalent(UnaryFunction<?, ?> fn) {
         if (fn instanceof Const) return true;
         if (fn instanceof Product) {
@@ -84,6 +90,13 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         return false;
     }
 
+    /**
+     * Given a function f(x), generate a constant equivalent.  If f(x) cannot be
+     * reduced to a constant, an exception will be thrown.
+     * @param fn any function that is reducible to a constant
+     * @return a constant-valued function
+     * @throws IllegalArgumentException if {@code fn} is not reducible to a constant-valued function
+     */
     public static Const<? super RealType, RealType> getConstEquivalent(UnaryFunction<?, ?> fn) {
         if (!isConstEquivalent(fn)) throw new IllegalArgumentException("Argument is not constant-equivalent");
         try {

@@ -46,7 +46,12 @@ import java.math.MathContext;
 public class ComplexRealVectorAdapter implements Vector<ComplexType> {
     private final Vector<RealType> realVector;
     private static final RealType ZERO = new RealImpl(BigDecimal.ZERO);
-    
+
+    /**
+     * Construct a {@code ComplexRealVectorAdapter} which wraps a
+     * {@code Vector<RealType>}.
+     * @param realvect a {@code Vector} of real values to be adapted
+     */
     public ComplexRealVectorAdapter(Vector<RealType> realvect) {
         realVector = realvect;
     }

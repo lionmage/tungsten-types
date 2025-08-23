@@ -546,6 +546,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     /*
      Methods necessary for Groovy operator overloading follow.
      */
+
     public void leftShift(RowVector<T> row) {
         this.append(row);
     }

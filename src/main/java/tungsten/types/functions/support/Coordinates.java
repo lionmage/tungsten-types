@@ -40,6 +40,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * A representation of a datum: one or more constraints (independent variables)
+ * and an associated value.  Error bounds may be optionally included, and may
+ * be symmetric or asymmetric around the value.
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ */
 public class Coordinates {
     private static final String MISMATCHED_ARITY = "Mismatched arity";
     protected RealType[] inputs;

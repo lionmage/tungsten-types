@@ -28,7 +28,19 @@ import tungsten.types.numerics.RealType;
 
 import java.util.Comparator;
 
+/**
+ * A specialization of {@link Coordinates} for a 3-dimensional
+ * datum, consisting of two independent variables and
+ * a value (dependent variable).
+ */
 public class Coordinates3D extends Coordinates {
+    /**
+     * Construct a datum consisting of independent variables x and y and
+     * a dependent variable z.
+     * @param x the first independent variable
+     * @param y the second independent variable
+     * @param z the dependent variable or value of this datum
+     */
     public Coordinates3D(RealType x, RealType y, RealType z) {
         inputs = new RealType[2];
         inputs[0] = x;
@@ -36,6 +48,14 @@ public class Coordinates3D extends Coordinates {
         value = z;
     }
 
+    /**
+     * Construct a datum consisting of independent variables x and y and
+     * a dependent variable z, as well as a relative error (typically a standard deviation).
+     * @param x             the first independent variable
+     * @param y             the second independent variable
+     * @param z             the dependent variable or value of this datum
+     * @param relativeError the relative error in {@code z}, e.g. a standard deviation
+     */
     public Coordinates3D(RealType x, RealType y, RealType z, RealType relativeError) {
         this(x, y, z);
         highError = relativeError;  // error is symmetric

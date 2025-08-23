@@ -7,6 +7,8 @@ import tungsten.types.numerics.RealType;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An abstract representation of a polynomial term.
@@ -83,13 +85,19 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
 
     @Override
     public <V> Function<V, R> compose(Function<? super V, ? extends ArgVector<T>> before) {
-        // TODO enhance or track this somehow
+        Logger.getLogger(Term.class.getName()).log(Level.INFO,
+                "Term({0}) composing with before = {1}",
+                new Object[] { varNames, before });
+        // this may need to be enhanced or tracked in the future
         return super.compose(before);
     }
 
     @Override
     public <V> Function<ArgVector<T>, V> andThen(Function<? super R, ? extends V> after) {
-        // TODO enhance or track this somehow
+        Logger.getLogger(Term.class.getName()).log(Level.INFO,
+                "Term({0}) composing with after = {1}",
+                new Object[] { varNames, after });
+        // another candidate for enhancement or further tracking
         return super.andThen(after);
     }
 
