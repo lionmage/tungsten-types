@@ -2100,7 +2100,7 @@ public class MathUtils {
      * Compute the Hadamard product of two vectors of the same length.
      * @param a the first vector
      * @param b the second vector
-     * @return the Hadamard product a&#x2299;b
+     * @return the Hadamard product a&#x20D7;&#x2299;b&#x20D7;
      * @param <T> the element type for the input vectors
      */
     public static <T extends Numeric> Matrix<T> hadamardProduct(Vector<T> a, Vector<T> b) {
