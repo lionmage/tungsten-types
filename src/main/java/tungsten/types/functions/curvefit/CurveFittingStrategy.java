@@ -29,6 +29,11 @@ import tungsten.types.numerics.RealType;
 
 import java.util.List;
 
+/**
+ * An interface implemented by any strategy used to fit a set of data points to
+ * a curve.
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ */
 public interface CurveFittingStrategy {
     /**
      * Given a set of data points, generate a real-valued {@code NumericFunction}

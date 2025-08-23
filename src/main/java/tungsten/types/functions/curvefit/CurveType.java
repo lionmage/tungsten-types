@@ -25,6 +25,20 @@
 
 package tungsten.types.functions.curvefit;
 
+/**
+ * An enumeration defining a general class of curves.
+ */
 public enum CurveType {
-    CURVE_2D, CURVE_3D, MULTI
+    /**
+     * A 2-dimensional curve.
+     */
+    CURVE_2D,
+    /**
+     * A 3-dimensional surface.
+     */
+    CURVE_3D,
+    /**
+     * A multi-dimensional surface.
+     */
+    MULTI
 }
