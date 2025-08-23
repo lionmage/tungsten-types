@@ -417,7 +417,7 @@ public interface Matrix<T extends Numeric> {
 
     /**
      * Subtract the supplied matrix from this matrix.  If this matrix has
-     * elements A<sub>j,k</sub> and the addend has elements
+     * elements A<sub>j,k</sub> and the subtrahend has elements
      * B<sub>j, k</sub>, the resulting matrix M has elements
      * A<sub>j,k</sub>&nbsp;&minus;&nbsp;B<sub>j,k</sub>.
      * @param subtrahend the matrix to be added to {@code this}
