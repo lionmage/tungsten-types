@@ -38,6 +38,7 @@ import tungsten.types.set.impl.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +74,62 @@ public class RangeUtils {
      */
     public static final Range<IntegerType> ALL_LONGS =
             new Range<>(new IntegerImpl(MIN_LONG), new IntegerImpl(MAX_LONG), BoundType.INCLUSIVE);
+
+    /**
+     * Generate a {@code Range} of integer values from a {@code String} representation.
+     * Square brackets indicate an inclusive bound, and parentheses indicate an exclusive bound.
+     * Lower and upper bound values are separated by a comma (&ldquo;,&rdquo;).
+     * @param source a string representing integer bounds
+     * @return a range representation
+     * @since 0.8
+     */
+    public static Range<IntegerType> intRangeFromString(String source) {
+        String reduced = source.strip();
+        Range.BoundType lowerBound = rangeStart(reduced);
+        Range.BoundType upperBound = rangeEnd(reduced);
+        final char delimiter = ',';
+        int position = reduced.indexOf(delimiter);
+        if (position < 2) throw new IllegalArgumentException("Cannot find delimiter '" + delimiter + "' in input string");
+        IntegerType lower = new IntegerImpl(reduced.substring(1, position).strip());
+        IntegerType upper = new IntegerImpl(reduced.substring(position + 1, reduced.length() - 1).strip());
+        return new Range<>(lower, lowerBound, upper, upperBound);
+    }
+
+    /**
+     * Generate a {@code Range} of real values from a {@code String} representation.
+     * Square brackets indicate an inclusive bound, and parentheses indicate an exclusive bound.
+     * If the locale specifies a decimal separator of a comma (&ldquo;,&rdquo;), this method expects
+     * a semicolon (&ldquo;;&rdquo;) to separate the real values.  Otherwise, this method expects
+     * a comma (&ldquo;,&rdquo;) as the separator.
+     * @param source a string representing real bounds
+     * @param ctx    the {@code MathContext} to associate with the bound values
+     * @return a range representation
+     * @since 0.8
+     */
+    public static Range<RealType> realRangeFromString(String source, MathContext ctx) {
+        String reduced = source.strip();
+        Range.BoundType lowerBound = rangeStart(reduced);
+        Range.BoundType upperBound = rangeEnd(reduced);
+        final char decimalPoint = DecimalFormatSymbols.getInstance().getDecimalSeparator();
+        final char delimiter = decimalPoint == ',' ? ';' : ',';
+        int position = reduced.indexOf(delimiter);
+        if (position < 2) throw new IllegalArgumentException("Cannot find delimiter '" + delimiter + "' in input string");
+        RealType lower = new RealImpl(reduced.substring(1, position).strip(), ctx);
+        RealType upper = new RealImpl(reduced.substring(position + 1, reduced.length() - 1).strip(), ctx);
+        return new Range<>(lower, lowerBound, upper, upperBound);
+    }
+
+    private static Range.BoundType rangeStart(String source) {
+        if (source.startsWith("[")) return BoundType.INCLUSIVE;
+        if (source.startsWith("(")) return BoundType.EXCLUSIVE;
+        throw new IllegalArgumentException("Range must begin with [ or (");
+    }
+
+    private static Range.BoundType rangeEnd(String source) {
+        if (source.endsWith("]")) return BoundType.INCLUSIVE;
+        if (source.endsWith(")")) return BoundType.EXCLUSIVE;
+        throw new IllegalArgumentException("Range must end with ] or )");
+    }
 
     /**
      * Generate a range with an exclusive lower bound of 0 and an upper bound of 1.
