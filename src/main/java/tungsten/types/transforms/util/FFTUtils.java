@@ -71,7 +71,7 @@ public class FFTUtils {
      * @param x   the first list of complex values
      * @param y   the second list of complex values
      * @param ctx the {@code MathContext} to use in calculations
-     * @return the convolution of {@code x} and {@code y}
+     * @return the circular convolution of {@code x} and {@code y}
      * @throws IllegalArgumentException if {@code x} and {@code y} have different lengths
      * @see <a href="https://en.wikipedia.org/wiki/Circular_convolution">the Wikipedia article</a>
      */
@@ -114,6 +114,14 @@ public class FFTUtils {
         }
     }
 
+    /**
+     * Compute the linear convolution of two lists of complex values.
+     * @param x   the first list of complex values
+     * @param y   the second list of complex values
+     * @param ctx the {@code MathContext} to use in calculations
+     * @return the linear convolution of {@code x} and {@code y}
+     * @throws IllegalArgumentException if {@code x} and {@code y} have different lengths
+     */
     public static List<ComplexType> linearConvolution(List<ComplexType> x, List<ComplexType> y, MathContext ctx) {
         final ComplexType zero = new ComplexRectImpl(new RealImpl(BigDecimal.ZERO, ctx));
         List<ComplexType> xExt = new ArrayList<>(x.size() * 2);
