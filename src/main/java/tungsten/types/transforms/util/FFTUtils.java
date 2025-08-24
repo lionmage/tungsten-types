@@ -66,6 +66,15 @@ public class FFTUtils {
         return conj.stream().map(z -> (ComplexType) z.multiply(scale)).collect(Collectors.toList());
     }
 
+    /**
+     * Compute the circular convolution of two lists of complex values.
+     * @param x   the first list of complex values
+     * @param y   the second list of complex values
+     * @param ctx the {@code MathContext} to use in calculations
+     * @return the convolution of {@code x} and {@code y}
+     * @throws IllegalArgumentException if {@code x} and {@code y} have different lengths
+     * @see <a href="https://en.wikipedia.org/wiki/Circular_convolution">the Wikipedia article</a>
+     */
     public static List<ComplexType> circularConvolution(List<ComplexType> x, List<ComplexType> y, MathContext ctx) {
         final int N = x.size();
         if (N != y.size()) {

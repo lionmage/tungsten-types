@@ -95,6 +95,7 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
     /*
      Methods necessary for Groovy operator overloading follow.
      */
+
     default IntegerType mod(IntegerType operand) {
         return this.modulus(operand);
     }

@@ -51,6 +51,11 @@ public class IdentityMatrix implements Matrix<Numeric> {
     private final MathContext mctx;
     private final long elementCount;
 
+    /**
+     * Instantiate an identity matrix with the given dimension.
+     * @param size the number of rows and columns of this identity matrix
+     * @param mctx the {@code MathContext} for the elements of this matrix
+     */
     public IdentityMatrix(long size, MathContext mctx) {
         this.mctx = mctx;
         this.elementCount = size;
@@ -201,6 +206,11 @@ public class IdentityMatrix implements Matrix<Numeric> {
         return true;
     }
 
+    /**
+     * Determine whether the given matrix is in fact an identity matrix.
+     * @param matrix the matrix to check
+     * @return true if {@code matrix} is equivalent to an identity matrix
+     */
     public static boolean isIdentityMatrix(Matrix<? extends Numeric> matrix) {
         if (matrix instanceof IdentityMatrix) return true;
         if (matrix.rows() != matrix.columns()) return false;
