@@ -95,7 +95,7 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
                 // see https://dzone.com/articles/singleton-list-showdown-collectionssingletonlist-v
                 return Collections.singletonList(source.get(0));
             } else if (length % 2 != 0) {
-                throw new IllegalArgumentException("Fourier transform requires an even-length List");
+                throw new IllegalStateException("Fourier transform requires an even-length List");
             }
             FFTRecursiveTask[] tasks = createSubtasks();
             
