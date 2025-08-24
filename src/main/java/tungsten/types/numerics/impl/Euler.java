@@ -243,7 +243,12 @@ public class Euler implements RealType {
     public Set<ComplexType> nthRoots(IntegerType n) {
         return magnitude().nthRoots(n);
     }
-    
+
+    /**
+     * Obtain the number of significant digits of this instance
+     * of Euler's number.
+     * @return the number of significant digits
+     */
     public long numberOfDigits() {
         return mctx.getPrecision();
     }
@@ -378,6 +383,7 @@ public class Euler implements RealType {
     /*
      Groovy methods below.
      */
+
     public Object asType(Class<?> clazz) {
         if (CharSequence.class.isAssignableFrom(clazz)) {
             if (clazz == StringBuilder.class) return new StringBuilder().append(value.toPlainString());

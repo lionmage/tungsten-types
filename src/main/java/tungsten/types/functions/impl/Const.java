@@ -57,6 +57,13 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         value = init;
     }
 
+    /**
+     * Factory method to obtain an instance of a constant-value function with a specified value.
+     * @param init the value that this constant-value function will always evaluate to
+     * @return the constant-value function instance
+     * @param <T> the argument type of this function, largely ignored
+     * @param <R> the return type of this function
+     */
     public static <T extends Numeric, R extends Numeric> Const<T, R> getInstance(R init) {
         return new Const<>(init) {};  // anonymous subclass to aid in reification of type parameters
     }
@@ -144,6 +151,12 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
         return (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
     }
 
+    /**
+     * Inspect the value that this function always evaluates to.
+     * Calling this is equivalent to calling {@link #apply(ArgVector)} with
+     * a dummy argument.
+     * @return the return value of this constant-value function
+     */
     public R inspect() {
         return value;
     }

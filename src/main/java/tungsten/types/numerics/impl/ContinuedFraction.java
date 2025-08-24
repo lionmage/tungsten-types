@@ -81,12 +81,23 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     private Function<Long, Long> mappingFunc;
     private MathContext mctx = MathContext.UNLIMITED;
 
+    /**
+     * Instantiate a continued fraction from an integer value.
+     * @param num an integer value
+     */
     public ContinuedFraction(IntegerType num) {
         terms = new long[1];
         terms[0] = num.asBigInteger().longValueExact();
         mctx = num.getMathContext();
     }
 
+    /**
+     * A pseudo copy constructor.  If {@code num} is a
+     * continued fraction, copy the internal state values into
+     * a new instance.  Otherwise, convert {@code num} into
+     * a continued fraction using the Euclidean algorithm.
+     * @param num a real value
+     */
     public ContinuedFraction(RealType num) {
         if (num instanceof ContinuedFraction) {
             // we just want to copy directly (shallow copy)
