@@ -23,6 +23,7 @@
  */
 package tungsten.types.transforms;
 
+import tungsten.types.Numeric;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ComplexPolarImpl;
@@ -123,8 +124,9 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
         for (int i = 0; i < q.size(); i++) {
             RealType kth = (RealType) negtwopiovern.multiply(new RealImpl(BigDecimal.valueOf(i), mctx, true));
             ComplexType wk = new ComplexPolarImpl(one, kth);
-            result.set(i, (ComplexType) q.get(i).add(wk.multiply(r.get(i))));
-            result.set(i + q.size(), (ComplexType) q.get(i).subtract(wk.multiply(r.get(i))));
+            Numeric wkRprod = wk.multiply(r.get(i));
+            result.set(i, (ComplexType) q.get(i).add(wkRprod));
+            result.set(i + q.size(), (ComplexType) q.get(i).subtract(wkRprod));
         }
         return result;
     }
