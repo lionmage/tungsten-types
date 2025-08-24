@@ -41,10 +41,18 @@ import java.util.Objects;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class Exp extends UnaryFunction<RealType, RealType> {
+    /**
+     * Instantiate the function &#x212F;<sup>x</sup>.  The default variable name
+     * is used.
+     */
     public Exp() {
         super("x", RealType.class);
     }
 
+    /**
+     * Instantiate the exponential function using the given variable name.
+     * @param varName the name of the variable for this exponential
+     */
     public Exp(String varName) {
         super(varName, RealType.class);
     }

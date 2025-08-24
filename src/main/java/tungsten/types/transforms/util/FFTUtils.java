@@ -50,6 +50,12 @@ import java.util.stream.Collectors;
  * @see <a href="https://introcs.cs.princeton.edu/java/97data/FFT.java.html">Princeton's FFT implementation</a>
  */
 public class FFTUtils {
+    /**
+     * Compute the inverse FFT for the given complex-valued source.
+     * @param source a list of complex values, e.g. from the previous application of an FFT
+     * @param ctx    the {@code MathContext} to use
+     * @return the inverse FFT of {@code source}
+     */
     public static List<ComplexType> inverseFFT(List<ComplexType> source, MathContext ctx) {
         final FastFourierTransform fft = new FastFourierTransform(ctx);
 
@@ -112,14 +118,32 @@ public class FFTUtils {
         return circularConvolution(xExt, yExt, ctx);
     }
 
+    /**
+     * Given a {@code List<ComplexType>}, extract the real components into
+     * a new {@code List<RealType>} with ordering preserved.
+     * @param complexValues a list of complex values
+     * @return a list of real values
+     */
     public static List<RealType> extractReals(List<ComplexType> complexValues) {
         return complexValues.stream().map(ComplexType::real).collect(Collectors.toList());
     }
 
+    /**
+     * Given a {@code List<RealType>}, promote the values to complex and add
+     * them to a new {@code List<ComplexType>} with ordering preserved.
+     * @param realValues a list of real values
+     * @return a list of equivalent complex values
+     */
     public static List<ComplexType> realsToComplex(List<RealType> realValues) {
         return realValues.stream().map(ComplexRectImpl::new).collect(Collectors.toList());
     }
 
+    /**
+     * Given a {@code List<RealType>}, promote the values to polar complex values and add
+     * them to a new {@code List<ComplexType>} with ordering preserved.
+     * @param realValues a list of real values
+     * @return a list of equivalent complex values
+     */
     public static List<ComplexType> realsToComplexPolar(List<RealType> realValues) {
         return realValues.stream().map(ComplexPolarImpl::new).collect(Collectors.toList());
     }

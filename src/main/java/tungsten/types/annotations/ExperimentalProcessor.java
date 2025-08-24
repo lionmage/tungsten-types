@@ -52,6 +52,9 @@ public class ExperimentalProcessor extends AbstractProcessor implements TaskList
     private Trees trees;
     private final Set<Name> funcNames = new HashSet<>();
 
+    /**
+     * The default constructor for this annotation processor.
+     */
     public ExperimentalProcessor() { super(); }
 
     @Override

@@ -146,6 +146,13 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
         return super.compose(before);
     }
 
+    /**
+     * Compose this function f(x) with another &ldquo;after&rdquo; function g(x)
+     * to create a function g(f(x)).
+     * @param after the function which takes the output of this function as its input
+     * @return the composed function
+     * @param <R2> the return type of the {@code after} and composed functions
+     */
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
         final Class<R2> rtnClass = after.getReturnType();
 
