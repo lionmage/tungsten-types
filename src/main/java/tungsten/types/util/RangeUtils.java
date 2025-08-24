@@ -99,7 +99,7 @@ public class RangeUtils {
      * Generate a {@code Range} of real values from a {@code String} representation.
      * Square brackets indicate an inclusive bound, and parentheses indicate an exclusive bound.
      * If the locale specifies a decimal separator of a comma (&ldquo;,&rdquo;), this method expects
-     * a semicolon (&ldquo;;&rdquo;) to separate the real values.  Otherwise, this method expects
+     * a semicolon (&ldquo;;&rdquo;) to separate the real bound values.  Otherwise, this method expects
      * a comma (&ldquo;,&rdquo;) as the separator.
      * @param source a string representing real bounds
      * @param ctx    the {@code MathContext} to associate with the bound values
