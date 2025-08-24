@@ -56,6 +56,11 @@ public class CurveFitter {
     List<? extends Coordinates> coordinates;
     final ServiceLoader<CurveFittingStrategy> loader;
 
+    /**
+     * Instantiate a {@code CurveFitter} for a given set of data.
+     * @param coordinates        the data set on which to operate
+     * @param skipIntegrityCheck if true, skip any integrity checks of the data
+     */
     public CurveFitter(List<? extends Coordinates> coordinates, boolean skipIntegrityCheck) {
         if (coordinates == null || coordinates.isEmpty()) throw new IllegalArgumentException("Coordinates must be non-empty");
         this.coordinates = coordinates;
@@ -79,6 +84,10 @@ public class CurveFitter {
         }
     }
 
+    /**
+     * Instantiate a {@code CurveFitter} for a given set of data.
+     * @param coordinates the data set on which to operate
+     */
     public CurveFitter(List<? extends Coordinates> coordinates) {
         this(coordinates, false);
     }

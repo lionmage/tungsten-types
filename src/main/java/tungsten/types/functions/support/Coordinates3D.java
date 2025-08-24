@@ -61,14 +61,26 @@ public class Coordinates3D extends Coordinates {
         highError = relativeError;  // error is symmetric
     }
 
+    /**
+     * Get the independent variable x.
+     * @return the x value
+     */
     public RealType getX() {
         return inputs[0];
     }
 
+    /**
+     * Get the independent variable y.
+     * @return the y value
+     */
     public RealType getY() {
         return inputs[1];
     }
 
+    /**
+     * Get the dependent variable z.
+     * @return the z value
+     */
     public RealType getZ() {
         return getValue();
     }

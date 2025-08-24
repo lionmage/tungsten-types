@@ -162,6 +162,10 @@ public class Coordinates {
         return inputs[i];
     }
 
+    /**
+     * Obtain the value of this datum.
+     * @return the value
+     */
     public RealType getValue() {
         return value;
     }
