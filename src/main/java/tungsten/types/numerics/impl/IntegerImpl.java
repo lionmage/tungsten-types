@@ -157,6 +157,11 @@ public class IntegerImpl implements IntegerType {
         return false;
     }
 
+    /**
+     * Compute the sum of the digits of a given integer value.
+     * @param temp an integer value
+     * @return the sum of the digits of {@code temp} in base 10
+     */
     protected IntegerType sumDigits(IntegerType temp) {
         BigInteger sum = BigInteger.ZERO;
 
