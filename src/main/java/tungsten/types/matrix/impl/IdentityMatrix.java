@@ -223,7 +223,7 @@ public class IdentityMatrix implements Matrix<Numeric> {
     public int hashCode() {
         int hash = 5;
         hash = 31 * hash + Objects.hashCode(this.mctx);
-        hash = 31 * hash + (int) (this.elementCount ^ (this.elementCount >>> 32));
+        hash = 31 * hash + Long.hashCode(this.elementCount);
         return hash;
     }
     
