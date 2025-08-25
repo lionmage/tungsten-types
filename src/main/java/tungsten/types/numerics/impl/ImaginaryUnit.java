@@ -189,6 +189,7 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public Numeric add(Numeric addend) {
+        if (Zero.isZero(addend)) return this;
         if (addend instanceof ImaginaryUnit) {
             return new ComplexRectImpl(real(), (RealType) imaginary().multiply(TWO));
         }
@@ -221,6 +222,7 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (One.isUnity(multiplier)) return this;
         if (multiplier instanceof ImaginaryUnit) {
             // i * i = -1
             return new RealImpl(BigDecimal.valueOf(-1L), mctx);
