@@ -435,7 +435,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
     public Matrix<T> scale(T scaleFactor) {
         if (One.isUnity(scaleFactor)) return this;
         ColumnarMatrix<T> scaled = new ColumnarMatrix<>();
-        columns.stream().map(colVec -> colVec.scale(scaleFactor)).forEach(scaled::append);
+        columns.stream().map(colVec -> colVec.scale(scaleFactor)).forEachOrdered(scaled::append);
         return scaled;
     }
 
