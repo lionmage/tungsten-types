@@ -152,6 +152,11 @@ public class IdentityMatrix implements Matrix<Numeric> {
         }
         return result;
     }
+
+    @Override
+    public Matrix<Numeric> subtract(Matrix<Numeric> subtrahend) {
+        return MathUtils.calcIminusA(subtrahend);
+    }
     
     @Override
     public IdentityMatrix inverse() {
