@@ -244,6 +244,41 @@ public class CurveFitter {
     }
 
     /**
+     * Remove a datum from the internal collection of {@code Coordinates}.
+     * A typical application of this method would be to eliminate an outlier
+     * revealed by {@link #maxValueAt()} or {@link #minValueAt()}.
+     * @param coords the datum to be removed
+     * @return true if the datum was present and removed, false if it was not found
+     * @since 0.8
+     */
+    public boolean removeDatum(Coordinates coords) {
+        return coordinates.remove(coords);
+    }
+
+    /**
+     * Remove a datum from the internal collection of {@code Coordinates}
+     * based on the value of the k<sup>th</sup> ordinate, the independent variable x<sub>k</sub>.
+     * @param ordinate      the index of the ordinate to match on
+     * @param ordinateValue the value we wish to match
+     * @return true if any datum matches and was removed, false otherwise
+     * @since 0.8
+     */
+    public boolean removeDatum(int ordinate, RealType ordinateValue) {
+        return coordinates.removeIf(x -> x.getOrdinate(ordinate).equals(ordinateValue));
+    }
+
+    /**
+     * Remove a datum from the internal collection of {@code Coordinates}
+     * based on the value of the dependent variable of the datum.
+     * @param value the value to match
+     * @return true if any datum matches and was removed, false otherwise
+     * @since 0.8
+     */
+    public boolean removeDatumByValue(RealType value) {
+        return coordinates.removeIf(x -> x.getValue().equals(value));
+    }
+
+    /**
      * Takes a {@link List} of raw coordinate data, potentially multidimensional
      * and potentially containing multiple values for a given ordinate, and reduces
      * it to a 2-dimensional set of coordinates.  Multiple values associated with
