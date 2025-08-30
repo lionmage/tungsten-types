@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
 
@@ -99,8 +98,16 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
                 throw new IllegalStateException("Fourier transform requires an even-length List");
             }
             FFTRecursiveTask[] tasks = createSubtasks();
-            
-            ForkJoinTask.invokeAll(tasks[0], tasks[1]);
+
+            // invokeAll() is convenient (especially since it has a handy overloaded version
+            // that takes 2 args for tasks where you split the workload for recursion)
+            // but it makes little sense to do the equivalent of fork(); join(); and then
+            // call join() later to extract the result!
+//            ForkJoinTask.invokeAll(tasks[0], tasks[1]);
+
+            // joins should be performed innermost-first, so forking in reverse order
+            tasks[1].fork();  tasks[0].fork();
+
             return combine(tasks[0].join(), tasks[1].join());
         }
         
