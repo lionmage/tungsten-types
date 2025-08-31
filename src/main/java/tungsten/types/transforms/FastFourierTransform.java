@@ -29,6 +29,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ComplexPolarImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -39,6 +40,8 @@ import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of FFT which uses recursion and the Fork/Join framework
@@ -74,6 +77,10 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
      */
     @Override
     public List<ComplexType> apply(List<ComplexType> t) {
+        if (MathUtils.smallestPowerOf2GTE(t.size()) > (long) t.size()) {
+            Logger.getLogger(FastFourierTransform.class.getName()).log(Level.WARNING,
+                    "Input list of values length {0} is not a power of 2.", t.size());
+        }
         ForkJoinPool commonPool = ForkJoinPool.commonPool();
         FFTRecursiveTask task = new FFTRecursiveTask(t);
         return commonPool.invoke(task);
