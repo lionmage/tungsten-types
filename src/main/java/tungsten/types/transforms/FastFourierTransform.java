@@ -27,6 +27,7 @@ import tungsten.types.Numeric;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.ComplexPolarImpl;
+import tungsten.types.numerics.impl.ComplexRectImpl;
 import tungsten.types.numerics.impl.Pi;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.util.MathUtils;
@@ -77,9 +78,14 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
      */
     @Override
     public List<ComplexType> apply(List<ComplexType> t) {
-        if (MathUtils.smallestPowerOf2GTE(t.size()) > (long) t.size()) {
+        final int targetSize = (int) MathUtils.smallestPowerOf2GTE(t.size());
+        if (targetSize > t.size()) {
             Logger.getLogger(FastFourierTransform.class.getName()).log(Level.WARNING,
-                    "Input list of values length {0} is not a power of 2.", t.size());
+                    "Input list of values length {0} is not a power of 2. Padding with zeros.", t.size());
+            // pad with zeroes
+            ArrayList<ComplexType> padded = new ArrayList<>(t);
+            padded.addAll(Collections.nCopies(targetSize - t.size(), new ComplexRectImpl(new RealImpl(BigDecimal.ZERO, mctx))));
+            t = padded;
         }
         ForkJoinPool commonPool = ForkJoinPool.commonPool();
         FFTRecursiveTask task = new FFTRecursiveTask(t);
