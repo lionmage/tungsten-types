@@ -159,6 +159,26 @@ public class DataFittingTest {
         System.out.println("Slope of linear fit to original data set: " + slope1);
         System.out.println("Slope of linear fit for cleaned data set: " + slope2);
         assertTrue(slope1.compareTo(slope2) > 0, "Corrected slope should be less than original slope");
+
+        // alternate path to remvove outlier
+        Coordinates outlier2 = fitter.maxValueAt();
+        assertEquals(outlier, outlier2, "Outlier results should be consistent");
+        fitter.removeDatum(outlier2);
+        NumericFunction<RealType, RealType> cleaned2 = fitter.fitToData("linear*");
+        assertInstanceOf(Polynomial.class, cleaned2);
+        Polynomial<RealType, RealType> noOutlier2 = (Polynomial<RealType, RealType>) cleaned2;
+        System.out.println("Before sort:");
+        for (Term<RealType, RealType> term : noOutlier2) {
+            System.out.println("Term of order " + term.order("x") + " has coeff = " + term.coefficient());
+        }
+        Polynomial<RealType, RealType> ordered = noOutlier2.sortByOrderIn("x");
+        System.out.println("After sort:");
+        for (Term<RealType, RealType> term : ordered) {
+            System.out.println("Term of order " + term.order("x") + " has coeff = " + term.coefficient());
+        }
+        Term<RealType, RealType> linearTerm = ordered.iterator().next();
+        assertEquals(1L, linearTerm.order("x"));
+        assertEquals(slope2, linearTerm.coefficient(), "Slopes should match");
     }
 
     @Test
