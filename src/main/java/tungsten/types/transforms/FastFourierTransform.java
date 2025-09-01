@@ -86,6 +86,8 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
             ArrayList<ComplexType> padded = new ArrayList<>(t);
             padded.addAll(Collections.nCopies(targetSize - t.size(), new ComplexRectImpl(new RealImpl(BigDecimal.ZERO, mctx))));
             t = padded;
+            Logger.getLogger(FastFourierTransform.class.getName()).log(Level.INFO,
+                    "Padded input to {0} samples.", targetSize);
         }
         ForkJoinPool commonPool = ForkJoinPool.commonPool();
         FFTRecursiveTask task = new FFTRecursiveTask(t);
