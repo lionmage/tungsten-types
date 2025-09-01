@@ -56,12 +56,24 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         super(rtnType);
     }
 
+    /**
+     * Instantiate a polynomial initialized with one or more supplied {@code Term}s.
+     * @param initialTerms the initial terms for this polynomial
+     */
     @SafeVarargs
     public Polynomial(Term<T, R>... initialTerms) {
         super(initialTerms[0].getReturnType());  // use the return type of the first term
         Arrays.stream(initialTerms).forEachOrdered(terms::add);
     }
 
+    /**
+     * Instantiate a polynomial in the given variable name with a {@code List}
+     * of coefficients.  Starting with the coefficient C<sub>k</sub> at index k=0, construct
+     * terms of the form C<sub>k</sub>x<sup>k</sup>, where x represents the
+     * given variable name.
+     * @param variableName the name of the variable for this polynomial
+     * @param coefficients a list of coefficients starting with the constant term
+     */
     public Polynomial(String variableName, List<R> coefficients) {
         super((Class<R>) ClassTools.getInterfaceTypeFor(coefficients.get(0).getClass()));
         long exponent = 0L;
@@ -75,6 +87,14 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         }
     }
 
+    /**
+     * Instantiate a polynomial in the given variable name with an array
+     * of coefficients.  Starting with the coefficient C<sub>k</sub> at index k=0, construct
+     * terms of the form C<sub>k</sub>x<sup>k</sup>, where x represents the
+     * given variable name.
+     * @param variableName the name of the variable for this polynomial
+     * @param coefficients an array of one or more coefficients, starting with the constant term
+     */
     @SafeVarargs
     public Polynomial(String variableName, R... coefficients) {
         super((Class<R>) coefficients.getClass().getComponentType());
@@ -157,6 +177,12 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         }
     }
 
+    /**
+     * Add a term to this polynomial.  The polynomial may increase in length by one term,
+     * but the algorithm attempts to combine the given term with an existing term.
+     * This operation mutates the polynomial and is therefore not thread safe.
+     * @param term the polynomial term to add
+     */
     public void add(Term<? extends T, ? extends R> term) {
         if (term instanceof PolyTerm) {
             PolyTerm<T, R> arg = (PolyTerm<T, R>) term;
@@ -205,6 +231,12 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         }
     }
 
+    /**
+     * Attempt to add a {@code UnaryFunction} to this polynomial, converting the unary function
+     * into a polynomial term if possible.
+     * This operation mutates the polynomial.
+     * @param alienFunc the foreign function we wish to add
+     */
     public void add(UnaryFunction<T, R> alienFunc) {
         if (alienFunc instanceof Product) {
             Product<T, R> prod = (Product<T, R>) alienFunc;
@@ -222,11 +254,21 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
                 " of type " + alienFunc.getClass().getTypeName());
     }
 
+    /**
+     * Multiply this polynomial by the given term (monomial).
+     * @param term the monomial by which to multiply this polynomial
+     * @return the product of {@code this} and {@code term}
+     */
     public Polynomial<T, R> multiply(Term<T, R> term) {
         List<Term<T, R>> multTerms = terms.stream().map(orig -> orig.multiply(term)).collect(Collectors.toList());
         return new Polynomial<>(multTerms, getReturnType());
     }
 
+    /**
+     * Multiply this polynomial by the given foreign function.
+     * @param alienFunc the foreign function by which to multiply this polynomial
+     * @return the product of {@code this} and {@code alienFunc}
+     */
     public Polynomial<T, R> multiply(UnaryFunction<T, R> alienFunc) {
         if (alienFunc instanceof Const) {
             Const<T, R> foreignConst = (Const<T, R>) alienFunc;
