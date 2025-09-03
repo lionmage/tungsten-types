@@ -29,12 +29,19 @@ import java.util.EnumSet;
 /**
  * A simple enumeration representing Euclidean geometric axes.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
 public enum Axis {
-    X_AXIS, Y_AXIS, Z_AXIS;
+    /** Denotes the X axis of a Cartesian/Euclidean space. */
+    X_AXIS,
+    /** Denotes the Y axis of a Cartesian/Euclidean space. */
+    Y_AXIS,
+    /** Denotes the Z axis of a Cartesian/Euclidean space. */
+    Z_AXIS;
 
     // fully qualifying Set to avoid conflict with tungsten.types.Set
+    /** The set of all axes appropriate to a 2-dimensional space, or plane. */
     public static final java.util.Set<Axis> AXES_2D = Collections.unmodifiableSet(EnumSet.of(X_AXIS, Y_AXIS));
+    /** The set of all axes appropriate to a 3-dimensional space. */
     public static final java.util.Set<Axis> AXES_3D = Collections.unmodifiableSet(EnumSet.of(X_AXIS, Y_AXIS, Z_AXIS));
 }
