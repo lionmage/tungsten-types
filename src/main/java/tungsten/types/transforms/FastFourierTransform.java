@@ -109,6 +109,10 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
                 // so leaving this with Collections.singletonList() since this is performance critical
                 // see https://dzone.com/articles/singleton-list-showdown-collectionssingletonlist-v
                 return Collections.singletonList(source.get(0));
+            } else if (length == 2) {
+                // this should be slightly more efficient
+                // subList() gives a view of the incoming list and avoids one level of recursion
+                return combine(source.subList(0, 1), source.subList(1, 2));
             } else if (length % 2 != 0) {
                 throw new IllegalStateException("Fourier transform requires an even-length List");
             }
