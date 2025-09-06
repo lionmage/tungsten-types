@@ -61,9 +61,8 @@ public class FFTUtils {
 
         List<ComplexType> conj = source.stream().map(ComplexType::conjugate).collect(Collectors.toList());
         List<ComplexType> intermediate = fft.apply(conj);
-        conj = intermediate.stream().map(ComplexType::conjugate).collect(Collectors.toList());
         final RealType scale = new RealImpl(BigDecimal.ONE.divide(BigDecimal.valueOf(source.size()), ctx), ctx);
-        return conj.stream().map(z -> (ComplexType) z.multiply(scale)).collect(Collectors.toList());
+        return intermediate.stream().map(ComplexType::conjugate).map(z -> (ComplexType) z.multiply(scale)).collect(Collectors.toList());
     }
 
     /**
