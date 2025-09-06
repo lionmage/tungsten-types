@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
  * @see <a href="https://introcs.cs.princeton.edu/java/97data/FFT.java.html">Princeton's FFT implementation</a>
  */
 public class FFTUtils {
+    private FFTUtils() {} // to prevent instantiation
+
     /**
      * Compute the inverse FFT for the given complex-valued source.
      * @param source a list of complex values, e.g. from the previous application of an FFT
