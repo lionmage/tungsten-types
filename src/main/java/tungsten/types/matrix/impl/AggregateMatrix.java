@@ -34,6 +34,7 @@ import tungsten.types.numerics.impl.One;
 import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
+import tungsten.types.vector.impl.ArrayRowVector;
 import tungsten.types.vector.impl.ListColumnVector;
 import tungsten.types.vector.impl.ListRowVector;
 
@@ -375,6 +376,11 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     public RowVector<T> getRow(long row) {
         final int tileRow = getTileRow(row);
         final long rowIndex = getSubRowIndex(tileRow, row);
+        if (columns() < (long) Integer.MAX_VALUE) {
+            T[] elements = Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream())
+                    .toArray(size -> (T[]) Array.newInstance(clazz, size));
+            return new ArrayRowVector<>(elements);
+        }
         RowVector<T> result = new ListRowVector<>();
         Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream()).forEachOrdered(result::append);
         result.setMathContext(subMatrices[tileRow][0].getRow(rowIndex).getMathContext());
