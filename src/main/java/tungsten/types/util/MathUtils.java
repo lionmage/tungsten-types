@@ -3965,7 +3965,7 @@ public class MathUtils {
                 }
             } else {
                 // matrices are square, but rows and columns are not a power of 2
-                long resize = smallestPowerOf2GTE(lhs.rows());
+                final long resize = smallestPowerOf2GTE(lhs.rows());
                 final RealType zero = new RealImpl(BigDecimal.ZERO, lhs.valueAt(0L, 0L).getMathContext());
                 Matrix<RealType> left = new PaddedMatrix<>(lhs, resize, resize, zero);
                 Matrix<RealType> right = new PaddedMatrix<>(rhs, resize, resize, zero);
