@@ -3956,50 +3956,12 @@ public class MathUtils {
                     // we have 2×2 matrices
                     // we could delegate to the normal multiply for the 2×2 case, but this actually would take longer
 //                    return lhs.multiply(rhs);
-                    final RealType a = lhs.valueAt(0L, 0L);
-                    final RealType b = lhs.valueAt(0L, 1L);
-                    final RealType c = lhs.valueAt(1L, 0L);
-                    final RealType d = lhs.valueAt(1L, 1L);
-                    final RealType A = rhs.valueAt(0L, 0L);
-                    final RealType C = rhs.valueAt(0L, 1L);
-                    final RealType B = rhs.valueAt(1L, 0L);
-                    final RealType D = rhs.valueAt(1L, 1L);
-
-                    // using the Winograd form
-                    final RealType u = (RealType) c.subtract(a).multiply(C.subtract(D));
-                    final RealType v = (RealType) c.add(d).multiply(C.subtract(A));
-                    final RealType aA_product = (RealType) a.multiply(A);
-                    final RealType w = (RealType) aA_product.add(c.add(d).subtract(a).multiply(A.add(D).subtract(C)));
-
-                    RealType[][] result = new RealType[2][2];
-                    result[0][0] = (RealType) aA_product.add(b.multiply(B));
-                    result[0][1] = (RealType) w.add(v).add(a.add(b).subtract(c).subtract(d).multiply(D));
-                    result[1][0] = (RealType) w.add(u).add(B.add(C).subtract(A).subtract(D).multiply(d)); // order not important for multiplying scalars
-                    result[1][1] = (RealType) w.add(u).add(v);
-                    return new BasicMatrix<>(result);
+                    return strassenWinograd2x2Multiply(lhs, rhs);
                 } else {
                     // recursively drill down using the same relations as shown above for the scalar case
-                    final Matrix<RealType> a = new SubMatrix<>(lhs, 0L, 0L, lhs.rows()/2L - 1L, lhs.columns()/2L - 1L); // 0, 0
-                    final Matrix<RealType> b = new SubMatrix<>(lhs, 0L, lhs.columns()/2L, lhs.rows()/2L - 1L, lhs.columns() - 1L); // 0, 1
-                    final Matrix<RealType> c = new SubMatrix<>(lhs, lhs.rows()/2L, 0L, lhs.rows() - 1L, lhs.columns()/2L - 1L); // 1, 0
-                    final Matrix<RealType> d = new SubMatrix<>(lhs, lhs.rows()/2L, lhs.columns()/2L, lhs.rows() - 1L, lhs.columns() - 1L); // 1, 1
-                    final Matrix<RealType> A = new SubMatrix<>(rhs, 0L, 0L, rhs.rows()/2L - 1L, rhs.columns()/2L - 1L); // 0, 0
-                    final Matrix<RealType> C = new SubMatrix<>(rhs, 0L, rhs.columns()/2L, rhs.rows()/2L - 1L, rhs.columns() - 1L); // 0, 1
-                    final Matrix<RealType> B = new SubMatrix<>(rhs, rhs.rows()/2L, 0L, rhs.rows() - 1L, rhs.columns()/2L - 1L); // 1, 0
-                    final Matrix<RealType> D = new SubMatrix<>(rhs, rhs.rows()/2L, rhs.columns()/2L, rhs.rows() - 1L, rhs.columns() - 1L); // 1, 1
-
-                    // using the Winograd form
-                    final Matrix<RealType> u = efficientMatrixMultiply(c.subtract(a), C.subtract(D));
-                    final Matrix<RealType> v = efficientMatrixMultiply(c.add(d), C.subtract(A));
-                    final Matrix<RealType> aAprod = efficientMatrixMultiply(a, A);
-                    final Matrix<RealType> w = aAprod.add(efficientMatrixMultiply(c.add(d).subtract(a), A.add(D).subtract(C)));
-
-                    Matrix<RealType>[][] result = new Matrix[2][2];
-                    result[0][0] = aAprod.add(efficientMatrixMultiply(b, B));
-                    result[0][1] = w.add(v).add(efficientMatrixMultiply(a.add(b).subtract(c).subtract(d), D));
-                    result[1][0] = w.add(u).add(efficientMatrixMultiply(d, B.add(C).subtract(A).subtract(D)));
-                    result[1][1] = w.add(u).add(v);
-                    return new AggregateMatrix<>(result);
+                    ForkJoinPool pool = ForkJoinPool.commonPool();
+                    StrassenWinogradMultiplyTask multiplyTask = new StrassenWinogradMultiplyTask(lhs, rhs);
+                    return pool.invoke(multiplyTask);
                 }
             } else {
                 // matrices are square, but rows and columns are not a power of 2
@@ -4014,6 +3976,74 @@ public class MathUtils {
         }
         // if the above conditions are not met, do it the old-fashioned way
         return lhs.multiply(rhs);
+    }
+
+    private static class StrassenWinogradMultiplyTask extends RecursiveTask<Matrix<RealType>> {
+        Matrix<RealType> lhs, rhs;
+
+        private StrassenWinogradMultiplyTask(Matrix<RealType> lhs, Matrix<RealType> rhs) {
+            this.lhs = lhs;
+            this.rhs = rhs;
+        }
+
+        @Override
+        protected Matrix<RealType> compute() {
+            if (lhs.rows() == 2L) return strassenWinograd2x2Multiply(lhs, rhs);
+
+            final Matrix<RealType> a = new SubMatrix<>(lhs, 0L, 0L, lhs.rows()/2L - 1L, lhs.columns()/2L - 1L); // 0, 0
+            final Matrix<RealType> b = new SubMatrix<>(lhs, 0L, lhs.columns()/2L, lhs.rows()/2L - 1L, lhs.columns() - 1L); // 0, 1
+            final Matrix<RealType> c = new SubMatrix<>(lhs, lhs.rows()/2L, 0L, lhs.rows() - 1L, lhs.columns()/2L - 1L); // 1, 0
+            final Matrix<RealType> d = new SubMatrix<>(lhs, lhs.rows()/2L, lhs.columns()/2L, lhs.rows() - 1L, lhs.columns() - 1L); // 1, 1
+            final Matrix<RealType> A = new SubMatrix<>(rhs, 0L, 0L, rhs.rows()/2L - 1L, rhs.columns()/2L - 1L); // 0, 0
+            final Matrix<RealType> C = new SubMatrix<>(rhs, 0L, rhs.columns()/2L, rhs.rows()/2L - 1L, rhs.columns() - 1L); // 0, 1
+            final Matrix<RealType> B = new SubMatrix<>(rhs, rhs.rows()/2L, 0L, rhs.rows() - 1L, rhs.columns()/2L - 1L); // 1, 0
+            final Matrix<RealType> D = new SubMatrix<>(rhs, rhs.rows()/2L, rhs.columns()/2L, rhs.rows() - 1L, rhs.columns() - 1L); // 1, 1
+
+
+            // using the Winograd form
+            final StrassenWinogradMultiplyTask u = new StrassenWinogradMultiplyTask(c.subtract(a), C.subtract(D));
+            final StrassenWinogradMultiplyTask v = new StrassenWinogradMultiplyTask(c.add(d), C.subtract(A));
+            final StrassenWinogradMultiplyTask aAprod = new StrassenWinogradMultiplyTask(a, A);
+            final StrassenWinogradMultiplyTask wRHS = new StrassenWinogradMultiplyTask(c.add(d).subtract(a), A.add(D).subtract(C));
+            u.fork(); v.fork(); wRHS.fork(); aAprod.fork();
+            final Matrix<RealType> w = aAprod.join().add(wRHS.join());
+
+            final StrassenWinogradMultiplyTask bBprod = new StrassenWinogradMultiplyTask(b, B);
+            final StrassenWinogradMultiplyTask abcdDprod = new StrassenWinogradMultiplyTask(a.add(b).subtract(c).subtract(d), D);
+            final StrassenWinogradMultiplyTask dBCADprod = new StrassenWinogradMultiplyTask(d, B.add(C).subtract(A).subtract(D));
+            dBCADprod.fork();  abcdDprod.fork();  bBprod.fork();
+
+            Matrix<RealType>[][] result = new Matrix[2][2];
+            result[0][0] = aAprod.join().add(bBprod.join());
+            result[0][1] = w.add(v.join()).add(abcdDprod.join());
+            result[1][0] = w.add(u.join()).add(dBCADprod.join());
+            result[1][1] = w.add(u.join()).add(v.join());
+            return new AggregateMatrix<>(result);
+        }
+    }
+
+    private static BasicMatrix<RealType> strassenWinograd2x2Multiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
+        final RealType a = lhs.valueAt(0L, 0L);
+        final RealType b = lhs.valueAt(0L, 1L);
+        final RealType c = lhs.valueAt(1L, 0L);
+        final RealType d = lhs.valueAt(1L, 1L);
+        final RealType A = rhs.valueAt(0L, 0L);
+        final RealType C = rhs.valueAt(0L, 1L);
+        final RealType B = rhs.valueAt(1L, 0L);
+        final RealType D = rhs.valueAt(1L, 1L);
+
+        // using the Winograd form
+        final RealType u = (RealType) c.subtract(a).multiply(C.subtract(D));
+        final RealType v = (RealType) c.add(d).multiply(C.subtract(A));
+        final RealType aA_product = (RealType) a.multiply(A);
+        final RealType w = (RealType) aA_product.add(c.add(d).subtract(a).multiply(A.add(D).subtract(C)));
+
+        RealType[][] result = new RealType[2][2];
+        result[0][0] = (RealType) aA_product.add(b.multiply(B));
+        result[0][1] = (RealType) w.add(v).add(a.add(b).subtract(c).subtract(d).multiply(D));
+        result[1][0] = (RealType) w.add(u).add(B.add(C).subtract(A).subtract(D).multiply(d)); // order not important for multiplying scalars
+        result[1][1] = (RealType) w.add(u).add(v);
+        return new BasicMatrix<>(result);
     }
 
     /**
