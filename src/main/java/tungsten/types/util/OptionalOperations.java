@@ -116,6 +116,8 @@ public class OptionalOperations {
         if (!clazz.isInterface()) throw new IllegalArgumentException(CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE);
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
         if (h == null) {
+            if (quasiPrimitive.doubleValue() == 0d) return (T) ExactZero.getInstance(MathContext.DECIMAL128);
+            else if (quasiPrimitive.doubleValue() == 1d) return (T) One.getInstance(MathContext.DECIMAL128);
             Logger.getLogger(OptionalOperations.class.getName()).log(Level.SEVERE,
                     "Unable to dynamically instantiate {0} as a {1} \u2014 abstract? = {3}",
                     new Object[] { quasiPrimitive, clazz.getName(), ClassTools.isAbstractType(clazz) });
