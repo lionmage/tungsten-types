@@ -376,7 +376,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     public RowVector<T> getRow(long row) {
         final int tileRow = getTileRow(row);
         final long rowIndex = getSubRowIndex(tileRow, row);
-        if (columns() < (long) Integer.MAX_VALUE) {
+        if (columns() < 10_000L) {
             T[] elements = Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream())
                     .toArray(size -> (T[]) Array.newInstance(clazz, size));
             return new ArrayRowVector<>(elements);
