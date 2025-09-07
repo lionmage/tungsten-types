@@ -4022,7 +4022,7 @@ public class MathUtils {
         }
     }
 
-    private static BasicMatrix<RealType> strassenWinograd2x2Multiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
+    private static Matrix<RealType> strassenWinograd2x2Multiply(Matrix<RealType> lhs, Matrix<RealType> rhs) {
         final RealType a = lhs.valueAt(0L, 0L);
         final RealType b = lhs.valueAt(0L, 1L);
         final RealType c = lhs.valueAt(1L, 0L);
