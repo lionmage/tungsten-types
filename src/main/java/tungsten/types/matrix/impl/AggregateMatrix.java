@@ -59,7 +59,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     private final Class<T> clazz;
     private final Lock cacheLock = new ReentrantLock();
     private T detCache;
-    private long columns = -1, rows = -1;
+    private long columns = -1L, rows = -1L;
     private final Matrix<T>[][] subMatrices;
 
     /**
@@ -401,9 +401,11 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public Matrix<T> scale(T scaleFactor) {
-        Matrix<T>[][] result = (Matrix<T>[][]) Array.newInstance(Matrix.class, subMatrices.length, subMatrices[0].length);
-        for (int row = 0; row < subMatrices.length; row++) {
-            for (int column = 0; column < subMatrices[0].length; column++) {
+        final int submCols = subMatrices[0].length;
+        final int submRows = subMatrices.length;
+        Matrix<T>[][] result = (Matrix<T>[][]) Array.newInstance(Matrix.class, submRows, submCols);
+        for (int row = 0; row < submRows; row++) {
+            for (int column = 0; column < submCols; column++) {
                 result[row][column] = subMatrices[row][column].scale(scaleFactor);
             }
         }
@@ -446,8 +448,8 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 53 * hash + (int) (this.columns ^ (this.columns >>> 32));
-        hash = 53 * hash + (int) (this.rows ^ (this.rows >>> 32));
+        hash = 53 * hash + Long.hashCode(this.columns);
+        hash = 53 * hash + Long.hashCode(this.rows);
         hash = 53 * hash + Arrays.deepHashCode(this.subMatrices);
         return hash;
     }
