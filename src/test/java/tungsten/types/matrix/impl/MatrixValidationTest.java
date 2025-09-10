@@ -46,6 +46,7 @@ public class MatrixValidationTest {
             {"0", "0", "1", "1"}
     };
     Matrix<RealType> test1, test2;
+    Matrix<RealType> testA, testB;
 
     public MatrixValidationTest() {
         RealType[][] src = new RealType[][] {{zero, one}, {one.negate(), zero}};
@@ -64,6 +65,10 @@ public class MatrixValidationTest {
         MatrixParser<RealType> parser = new MatrixParser<>(MathContext.DECIMAL32, RealType.class);
         test1 = parser.read(getClass().getClassLoader().getResourceAsStream("test1.matrix"));
         test2 = parser.read(getClass().getClassLoader().getResource("test2.matrix"));
+        // two bigger random matrices
+        // for a real torture test, try using test_matrix_1024_*.matrix instead
+        testA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_A.matrix"));
+        testB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_B.matrix"));
     }
 
     @Test
@@ -158,7 +163,7 @@ public class MatrixValidationTest {
         Matrix<? extends Numeric> inv1 = cm.inverse();
         Matrix<? extends Numeric> inv2 = cm2.inverse();
 
-        System.out.println("cm inverse is:\n" + formatMatrixForDisplay(inv1, (String) null, (String) null));
+        System.out.println("cm inverse is:\n" + formatMatrixForDisplay(inv1, null, (String) null));
 //        System.out.println "cm2 inverse is:\n" + formatMatrixForDisplay(inv2, null, null)
         assertEquals(inv2, inv1, "Cauchy inverse should equal regular matrix inverse");
     }
@@ -182,6 +187,39 @@ public class MatrixValidationTest {
         System.out.println(formatMatrixForDisplay(result2, null, (String) null));
 
         RealType epsilon = new RealImpl("0.001", MathContext.DECIMAL32);
+        assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
+                "Matrix multiplication results must be within \uD835\uDF00 of each other");
+    }
+
+    @Test
+    public void canWeMultiplyBigly() {
+        System.out.println("Comparing performance of Strassen-Winograd for 256x256 matrices");
+        assertEquals(256L, testA.rows());
+        assertEquals(256L, testA.columns());
+        assertEquals(256L, testB.rows());
+        assertEquals(256L, testB.columns());
+
+        long start = System.currentTimeMillis();
+        Matrix<RealType> result1 = testA.multiply(testB);
+        long end = System.currentTimeMillis();
+        System.out.println("test big multiply 1 took " + (end - start) + " ms");
+
+        start = System.currentTimeMillis();
+        Matrix<RealType> result2 = MathUtils.efficientMatrixMultiply(testA, testB);
+        end = System.currentTimeMillis();
+        System.out.println("test big multiply 2 took " + (end - start) + " ms");
+
+        RealType maxDiff = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
+        for (long row = 0L; row < result1.rows(); row++) {
+            for (long idx = 0L; idx < result1.getRow(row).length(); idx++) {
+                RealType diff = result1.getRow(row).elementAt(idx).subtract(result2.getRow(row).elementAt(idx))
+                        .magnitude();
+                if (diff.compareTo(maxDiff) > 0) maxDiff = diff;
+            }
+        }
+        System.out.println("Maximum diff between matrix elements is " + maxDiff);
+
+        RealType epsilon = new RealImpl("0.2", MathContext.DECIMAL32);
         assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
                 "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }

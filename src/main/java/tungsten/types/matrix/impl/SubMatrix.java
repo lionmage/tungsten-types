@@ -168,6 +168,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             return;
         }
         if (!removedRows.contains(row)) removedRows.add(row);
+        removedRows.sort(Comparator.naturalOrder());
     }
     
     public void removeColumm(long column) {
@@ -190,6 +191,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             return;
         }
         if (!removedColumns.contains(column)) removedColumns.add(column);
+        removedColumns.sort(Comparator.naturalOrder());  // ensure biggest values are always at the end
     }
     
     private void geometryChanged() {
@@ -462,7 +464,6 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
     }
 
     private void removeFromList(List<T> source, List<Long> indices) {
-        indices.sort(Comparator.naturalOrder());  // make sure the biggest indices are at the end
         ListIterator<Long> iter = indices.listIterator(indices.size());
         while (iter.hasPrevious()) {  // work backwards through the list of indices and remove
             source.remove(iter.previous().intValue());

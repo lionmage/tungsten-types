@@ -3999,14 +3999,15 @@ public class MathUtils {
             final Matrix<RealType> B = new SubMatrix<>(rhs, rhs.rows()/2L, 0L, rhs.rows() - 1L, rhs.columns()/2L - 1L); // 1, 0
             final Matrix<RealType> D = new SubMatrix<>(rhs, rhs.rows()/2L, rhs.columns()/2L, rhs.rows() - 1L, rhs.columns() - 1L); // 1, 1
 
-
             // using the Winograd form
             final StrassenWinogradMultiplyTask u = new StrassenWinogradMultiplyTask(c.subtract(a), C.subtract(D));
             final StrassenWinogradMultiplyTask v = new StrassenWinogradMultiplyTask(c.add(d), C.subtract(A));
             final StrassenWinogradMultiplyTask aAprod = new StrassenWinogradMultiplyTask(a, A);
-            final StrassenWinogradMultiplyTask wRHS = new StrassenWinogradMultiplyTask(c.add(d).subtract(a), A.add(D).subtract(C));
-            u.fork(); v.fork(); wRHS.fork(); aAprod.fork();
-            final Matrix<RealType> w = aAprod.join().add(wRHS.join());
+//            final StrassenWinogradMultiplyTask wRHS = new StrassenWinogradMultiplyTask(c.add(d).subtract(a), A.add(D).subtract(C));
+            u.fork(); v.fork(); // wRHS.fork();
+            aAprod.fork();
+            final Matrix<RealType> wRHS = c.add(d).subtract(a).multiply(A.add(D).subtract(C));
+            final Matrix<RealType> w = aAprod.join().add(wRHS);
 
             final StrassenWinogradMultiplyTask bBprod = new StrassenWinogradMultiplyTask(b, B);
             final StrassenWinogradMultiplyTask abcdDprod = new StrassenWinogradMultiplyTask(a.add(b).subtract(c).subtract(d), D);
@@ -4031,6 +4032,10 @@ public class MathUtils {
         final RealType C = rhs.valueAt(0L, 1L);
         final RealType B = rhs.valueAt(1L, 0L);
         final RealType D = rhs.valueAt(1L, 1L);
+        List<RealType> cells = List.of(a, b, c, d, A, B, C, D);
+        MathContext mc1 = inferMathContext(cells);
+        MathContext mc2 = new MathContext(mc1.getPrecision() * 2, mc1.getRoundingMode());
+        cells.forEach(x -> OptionalOperations.setMathContext(x, mc2));
 
         // using the Winograd form
         final RealType u = (RealType) c.subtract(a).multiply(C.subtract(D));
