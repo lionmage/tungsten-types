@@ -4279,9 +4279,6 @@ public class MathUtils {
                 y, x));
     }
 
-    private static final Range<RealType> acosRange = new Range<>(new RealImpl(BigDecimal.valueOf(-1L)),
-            new RealImpl(BigDecimal.ONE), BoundType.INCLUSIVE);
-
     /**
      * Compute arccos(z), the inverse function of cos().
      * Real input values in the range [&minus;1,&nbsp;1] will generate a real-valued result.
@@ -4289,6 +4286,7 @@ public class MathUtils {
      * @return the value of arccos(z), typically interpreted as an angle for real results
      */
     public static Numeric arccos(Numeric z) {
+        final Range<RealType> acosRange = RangeUtils.getArcCosInstance(z.getMathContext());
         if (z instanceof RealType && !acosRange.contains((RealType) z)) {
             throw new ArithmeticException("arccos input range is " + acosRange + " for real-valued input");
         }

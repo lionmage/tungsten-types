@@ -189,6 +189,17 @@ public class RangeUtils {
             }
         };
     }
+
+    /**
+     * Returns the input range of the real-valued arccos() or acos() function.
+     * This range would also apply to other functions such as arcsin().
+     * @param mctx the {@code MathContext} for the bounds
+     * @return a range representing the interval [&minus;1, 1]
+     */
+    public static Range<RealType> getArcCosInstance(MathContext mctx) {
+        return new Range<>(new RealImpl(BigDecimal.valueOf(-1L), mctx),
+                new RealImpl(BigDecimal.ONE, mctx), BoundType.INCLUSIVE);
+    }
     
     /**
      * Generate an interval that is symmetric around the origin, with the
