@@ -4236,7 +4236,7 @@ public class MathUtils {
         final MathContext prodCtx = new MathContext(x.getMathContext().getPrecision() * 2 + 4,
                 x.getMathContext().getRoundingMode());
         BigDecimal accum = BigDecimal.ONE;
-        BigDecimal xsq = x.asBigDecimal().multiply(x.asBigDecimal(), prodCtx);
+        BigDecimal xsq = x.asBigDecimal().pow(2, prodCtx);
         for (long k = 1L; k <= n; k++) {
             BigDecimal kval = BigDecimal.valueOf(k);
             BigDecimal twoKplus1 = BigDecimal.valueOf(2L * k + 1L);
