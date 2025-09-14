@@ -148,7 +148,7 @@ public final class OptionalOperations {
                 } else if (quasiPrimitive instanceof Float && ((Float) quasiPrimitive).isInfinite()) {
                     return (T) RealInfinity.getInstance(quasiPrimitive.floatValue() < 0f ? Sign.NEGATIVE : Sign.POSITIVE, MathContext.UNLIMITED);
                 }
-                return (T) new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
+                return (T) new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()), MathContext.DECIMAL128, false);
             case COMPLEX:
                 if (ComplexType.isExtendedEnabled()) {
                     if ((quasiPrimitive instanceof Double && ((Double) quasiPrimitive).isInfinite()) ||
@@ -156,7 +156,7 @@ public final class OptionalOperations {
                         return (T) PointAtInfinity.getInstance();
                     }
                 }
-                RealType realVal = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
+                RealType realVal = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()), MathContext.DECIMAL128);
                 return (T) new ComplexRectImpl(realVal);
         }
         throw new UnsupportedOperationException("No way to construct an instance of " + h + " at this time");
