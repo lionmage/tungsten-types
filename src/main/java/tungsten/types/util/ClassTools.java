@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://www.artima.com/weblogs/viewpost.jsp?thread=208860">Ian Robertson's blog entry regarding this technique.</a>
  */
-public class ClassTools {
+public final class ClassTools {
     private ClassTools() {
         // to prevent instantiation
     }

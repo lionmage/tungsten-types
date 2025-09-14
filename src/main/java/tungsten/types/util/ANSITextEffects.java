@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @see <a href="https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797">ANSI Escape Sequences</a>
  * @since 0.5
  */
-public class ANSITextEffects {
+public final class ANSITextEffects {
     private static final char ESCAPE = '\u001b';
     /**
      * The set of supported text styles.

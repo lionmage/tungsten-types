@@ -66,7 +66,7 @@ import static tungsten.types.Range.BoundType;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
-public class MathUtils {
+public final class MathUtils {
     public static final String THETA = "\u03B8";
     /**
      * The {@link String} representing the System property that

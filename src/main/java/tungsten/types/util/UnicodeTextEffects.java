@@ -53,7 +53,7 @@ import java.util.stream.LongStream;
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-public class UnicodeTextEffects {
+public final class UnicodeTextEffects {
     // Unicode superscript numerals 0 - 9
     private static final String[] superscriptDigits = {
         "\u2070", "\u00B9", "\u00B2", "\u00B3", "\u2074", "\u2075",

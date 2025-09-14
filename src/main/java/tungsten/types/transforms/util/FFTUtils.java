@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @see <a href="https://introcs.cs.princeton.edu/java/97data/FFT.java.html">Princeton's FFT implementation</a>
  */
-public class FFTUtils {
+public final class FFTUtils {
     private FFTUtils() {} // to prevent instantiation
 
     /**

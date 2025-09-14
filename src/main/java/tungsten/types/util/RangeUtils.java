@@ -51,7 +51,7 @@ import static tungsten.types.Range.BoundType;
  *
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-public class RangeUtils {
+public final class RangeUtils {
     private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
     private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
     private static final String CANNOT_APPEND = "Cannot append to this set";

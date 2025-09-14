@@ -54,7 +54,7 @@ import java.util.stream.LongStream;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a> or
  *   <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
-public class OptionalOperations {
+public final class OptionalOperations {
     private static final String CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE = "Supplied Class must not be for a concrete type";
     private static final String INDETERMINATE_TYPE = "Cannot determine element type of matrix";
     public static final String SLOW_MATRIX_SCAN = "tungsten.types.numerics.OptionalOperations.slow.matrix.scan";
