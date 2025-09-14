@@ -170,16 +170,19 @@ public class MatrixValidationTest {
 
     @Test
     public void canWeMultiply() {
+        final String microsec = " \u00B5s";
         System.out.println("Checking implementation of Strassen's algorithm using persisted matrices");
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
         Matrix<RealType> result1 = test1.multiply(test2);
-        long end = System.currentTimeMillis();
-        System.out.println("test multiply 1 took " + (end - start) + " ms");
+        long end = System.nanoTime();
+        long microTime = (end - start)/1000L;  // convert nanos to microseconds
+        System.out.println("test multiply 1 took " + microTime + microsec);
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         Matrix<RealType> result2 = MathUtils.efficientMatrixMultiply(test1, test2);
-        end = System.currentTimeMillis();
-        System.out.println("test multiply 2 took " + (end - start) + " ms");
+        end = System.nanoTime();
+        microTime = (end - start)/1000L;
+        System.out.println("test multiply 2 took " + microTime + microsec);
 
         System.out.println("\nResult 1:");
         System.out.println(formatMatrixForDisplay(result1, null, (String) null));
