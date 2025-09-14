@@ -133,7 +133,7 @@ public final class OptionalOperations {
                     } else if (quasiPrimitive instanceof Float && ((Float) quasiPrimitive).isInfinite()) {
                         throw new ArithmeticException("float infinity cannot be converted to a rational");
                     }
-                    RealType real = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()));
+                    RealType real = new RealImpl(BigDecimal.valueOf(quasiPrimitive.doubleValue()), MathContext.DECIMAL128);
                     try {
                         return (T) real.coerceTo(RationalType.class);
                     } catch (CoercionException e) {
@@ -141,7 +141,7 @@ public final class OptionalOperations {
                     }
                 }
                 // otherwise, just assume it's an integer value and return a rational with a denom of 1
-                return (T) new RationalImpl(quasiPrimitive.longValue(), 1L, MathContext.UNLIMITED);
+                return (T) new RationalImpl(quasiPrimitive.longValue(), 1L, MathContext.DECIMAL128);
             case REAL:
                 if (quasiPrimitive instanceof Double && ((Double) quasiPrimitive).isInfinite()) {
                     return (T) RealInfinity.getInstance(quasiPrimitive.doubleValue() < 0d ? Sign.NEGATIVE : Sign.POSITIVE, MathContext.UNLIMITED);
