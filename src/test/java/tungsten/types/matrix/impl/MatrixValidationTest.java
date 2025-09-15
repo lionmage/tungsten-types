@@ -1,5 +1,6 @@
 package tungsten.types.matrix.impl;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
@@ -47,6 +48,7 @@ public class MatrixValidationTest {
     };
     Matrix<RealType> test1, test2;
     Matrix<RealType> testA, testB;
+    Matrix<RealType> bigA, bigB;
 
     public MatrixValidationTest() {
         RealType[][] src = new RealType[][] {{zero, one}, {one.negate(), zero}};
@@ -69,6 +71,8 @@ public class MatrixValidationTest {
         // for a real torture test, try using test_matrix_1024_*.matrix instead
         testA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_A.matrix"));
         testB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_B.matrix"));
+        bigA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_1024_A.matrix"));
+        bigB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_1024_B.matrix"));
     }
 
     @Test
@@ -196,7 +200,7 @@ public class MatrixValidationTest {
 
     @Test
     public void canWeMultiplyBigly() {
-        System.out.println("Comparing performance of Strassen-Winograd for 256x256 matrices");
+        System.out.println("Comparing performance of Strassen-Winograd for 256\u00D7256 matrices");
         assertEquals(256L, testA.rows());
         assertEquals(256L, testA.columns());
         assertEquals(256L, testB.rows());
@@ -225,6 +229,40 @@ public class MatrixValidationTest {
         RealType epsilon = new RealImpl("0.2", MathContext.DECIMAL32);
         assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
                 "Matrix multiplication results must be within \uD835\uDF00 of each other");
+    }
+
+    @Disabled("This test takes a long time to run, and may fail if monitors are exhausted")
+    @Test
+    public void canWeMultiplyReallyBigly() {
+        System.out.println("Comparing performance of Strassen-Winograd for 1024\u00D71024 matrices");
+        assertEquals(1024L, bigA.rows());
+        assertEquals(1024L, bigA.columns());
+        assertEquals(1024L, bigB.rows());
+        assertEquals(1024L, bigB.columns());
+
+        long start = System.currentTimeMillis();
+        Matrix<RealType> result1 = bigA.multiply(bigB);
+        long end = System.currentTimeMillis();
+        System.out.println("test big multiply 1 took " + (end - start) + " ms");
+
+        start = System.currentTimeMillis();
+        Matrix<RealType> result2 = MathUtils.efficientMatrixMultiply(bigA, bigB);
+        end = System.currentTimeMillis();
+        System.out.println("test big multiply 2 took " + (end - start) + " ms");
+
+        RealType maxDiff = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
+        for (long row = 0L; row < result1.rows(); row++) {
+            for (long idx = 0L; idx < result1.getRow(row).length(); idx++) {
+                RealType diff = result1.getRow(row).elementAt(idx).subtract(result2.getRow(row).elementAt(idx))
+                        .magnitude();
+                if (diff.compareTo(maxDiff) > 0) maxDiff = diff;
+            }
+        }
+        System.out.println("Maximum diff between matrix elements is " + maxDiff);
+
+//        RealType epsilon = new RealImpl("0.2", MathContext.DECIMAL32);
+//        assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
+//                "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }
 
     @Test
