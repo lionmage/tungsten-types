@@ -68,9 +68,11 @@ public class MatrixValidationTest {
         test1 = parser.read(getClass().getClassLoader().getResourceAsStream("test1.matrix"));
         test2 = parser.read(getClass().getClassLoader().getResource("test2.matrix"));
         // two bigger random matrices
-        // for a real torture test, try using test_matrix_1024_*.matrix instead
+        parser = new MatrixParser<>(MathContext.DECIMAL64, RealType.class);
         testA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_A.matrix"));
         testB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_B.matrix"));
+        // for a real torture test, try using test_matrix_1024_*.matrix instead
+        parser = new MatrixParser<>(MathContext.DECIMAL128, RealType.class);
         bigA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_1024_A.matrix"));
         bigB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_1024_B.matrix"));
     }
@@ -93,7 +95,7 @@ public class MatrixValidationTest {
      */
     @Test
     public void wilsonMatrix() {
-        System.out.println("Using Wilson matrix:\n" + formatMatrixForDisplay(W, (String) null, (String) null));
+        System.out.println("Using Wilson matrix:\n" + formatMatrixForDisplay(W, null, (String) null));
         IntegerType det = W.determinant();
         assertTrue(One.isUnity(det), "The determinant of Wilson's matrix should be 1");
         // first row
@@ -103,7 +105,7 @@ public class MatrixValidationTest {
         RowVector<IntegerType> testRow2 = new ArrayRowVector<>(new IntegerImpl("-17"),
                 new IntegerImpl("10"), new IntegerImpl("5"), new IntegerImpl("-3"));
         Matrix<? extends Numeric> Winv = W.inverse();
-        System.out.println("Wilson inverse is:\n" + formatMatrixForDisplay(Winv, (String) null, (String) null));
+        System.out.println("Wilson inverse is:\n" + formatMatrixForDisplay(Winv, null, (String) null));
         assertEquals(testRow, Winv.getRow(0L));
         assertEquals(testRow2, Winv.getRow(2L));
         // check the factorization
@@ -122,12 +124,12 @@ public class MatrixValidationTest {
         Matrix<RealType> P = new BasicMatrix<>(sample);
 
         System.out.println("Initial matrix:");
-        System.out.println(formatMatrixForDisplay(P, (String) null, (String) null));
+        System.out.println(formatMatrixForDisplay(P, null, (String) null));
 
         Matrix<? extends Numeric> R = MathUtils.exp(P);
 
         System.out.println("exp of matrix:");
-        System.out.println(formatMatrixForDisplay(R, (String) null, (String) null));
+        System.out.println(formatMatrixForDisplay(R, null, (String) null));
 
         // ensure that P was not altered in any way
         Matrix<RealType> copP = new BasicMatrix<>(sample);
@@ -153,7 +155,7 @@ public class MatrixValidationTest {
 
         CauchyMatrix<RationalType, IntegerType> cm = new CauchyMatrix<>(a, b, RationalType.class);
 
-        System.out.println("Cauchy Matrix:\n" + formatMatrixForDisplay(cm, (String) null, (String) null));
+        System.out.println("Cauchy Matrix:\n" + formatMatrixForDisplay(cm, null, (String) null));
 
         BasicMatrix<RationalType> cm2 = new BasicMatrix<>(cm);
 
@@ -226,7 +228,7 @@ public class MatrixValidationTest {
         }
         System.out.println("Maximum diff between matrix elements is " + maxDiff);
 
-        RealType epsilon = new RealImpl("0.2", MathContext.DECIMAL32);
+        RealType epsilon = new RealImpl("0.0000001", MathContext.DECIMAL64);
         assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
                 "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }
@@ -260,9 +262,9 @@ public class MatrixValidationTest {
         }
         System.out.println("Maximum diff between matrix elements is " + maxDiff);
 
-//        RealType epsilon = new RealImpl("0.2", MathContext.DECIMAL32);
-//        assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
-//                "Matrix multiplication results must be within \uD835\uDF00 of each other");
+        RealType epsilon = new RealImpl("0.00000001", MathContext.DECIMAL128);
+        assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
+                "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }
 
     @Test

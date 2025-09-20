@@ -3955,12 +3955,11 @@ public final class MathUtils {
                 if (lhs.rows() == 2L) {
                     // we have 2×2 matrices
                     // we could delegate to the normal multiply for the 2×2 case, but this actually would take longer
-//                    return lhs.multiply(rhs);
                     return strassenWinograd2x2Multiply(lhs, rhs);
                 } else {
                     // recursively drill down using the same relations as shown above for the scalar case
                     ForkJoinPool pool = ForkJoinPool.commonPool();
-                    StrassenWinogradMultiplyTask multiplyTask = new StrassenWinogradMultiplyTask(lhs, rhs);
+                    StrassenWinogradMultiplyTask multiplyTask = new StrassenWinogradMultiplyTask(lhs, rhs, computeStrassenThreshold(rhs.columns()));
                     return pool.invoke(multiplyTask);
                 }
             } else {
@@ -3978,17 +3977,34 @@ public final class MathUtils {
         return lhs.multiply(rhs);
     }
 
+    private static long computeStrassenThreshold(long size) {
+        if (size <= 16L) return 0L;  // let the algorithm use the default base behavior
+        if (size < 256L) return 4L;
+        if (size < 1024L) return 8L;
+        return 16L;
+    }
+
     private static class StrassenWinogradMultiplyTask extends RecursiveTask<Matrix<RealType>> {
         Matrix<RealType> lhs, rhs;
+        long threshold = 0L;
 
         private StrassenWinogradMultiplyTask(Matrix<RealType> lhs, Matrix<RealType> rhs) {
             this.lhs = lhs;
             this.rhs = rhs;
         }
 
+        private StrassenWinogradMultiplyTask(Matrix<RealType> lhs, Matrix<RealType> rhs, long threshold) {
+            this(lhs, rhs);
+            if (threshold < 0L || threshold > lhs.rows()) {
+                throw new IllegalArgumentException("threshold must be positive and < " + lhs.rows());
+            }
+            this.threshold = threshold;
+        }
+
         @Override
         protected Matrix<RealType> compute() {
             if (lhs.rows() == 2L) return strassenWinograd2x2Multiply(lhs, rhs);
+            else if (lhs.rows() <= threshold) return lhs.multiply(rhs);
 
             final Matrix<RealType> a = new SubMatrix<>(lhs, 0L, 0L, lhs.rows()/2L - 1L, lhs.columns()/2L - 1L); // 0, 0
             final Matrix<RealType> b = new SubMatrix<>(lhs, 0L, lhs.columns()/2L, lhs.rows()/2L - 1L, lhs.columns() - 1L); // 0, 1
@@ -4000,18 +4016,16 @@ public final class MathUtils {
             final Matrix<RealType> D = new SubMatrix<>(rhs, rhs.rows()/2L, rhs.columns()/2L, rhs.rows() - 1L, rhs.columns() - 1L); // 1, 1
 
             // using the Winograd form
-            final StrassenWinogradMultiplyTask u = new StrassenWinogradMultiplyTask(c.subtract(a), C.subtract(D));
-            final StrassenWinogradMultiplyTask v = new StrassenWinogradMultiplyTask(c.add(d), C.subtract(A));
-            final StrassenWinogradMultiplyTask aAprod = new StrassenWinogradMultiplyTask(a, A);
-//            final StrassenWinogradMultiplyTask wRHS = new StrassenWinogradMultiplyTask(c.add(d).subtract(a), A.add(D).subtract(C));
-            u.fork(); v.fork(); // wRHS.fork();
-            aAprod.fork();
-            final Matrix<RealType> wRHS = c.add(d).subtract(a).multiply(A.add(D).subtract(C));
-            final Matrix<RealType> w = aAprod.join().add(wRHS);
+            final StrassenWinogradMultiplyTask u = new StrassenWinogradMultiplyTask(c.subtract(a), C.subtract(D), threshold);
+            final StrassenWinogradMultiplyTask v = new StrassenWinogradMultiplyTask(c.add(d), C.subtract(A), threshold);
+            final StrassenWinogradMultiplyTask aAprod = new StrassenWinogradMultiplyTask(a, A, threshold);
+            final StrassenWinogradMultiplyTask wRHS = new StrassenWinogradMultiplyTask(c.add(d).subtract(a), A.add(D).subtract(C), threshold);
+            u.fork(); v.fork(); wRHS.fork(); aAprod.fork();
+            final Matrix<RealType> w = aAprod.join().add(wRHS.join());
 
-            final StrassenWinogradMultiplyTask bBprod = new StrassenWinogradMultiplyTask(b, B);
-            final StrassenWinogradMultiplyTask abcdDprod = new StrassenWinogradMultiplyTask(a.add(b).subtract(c).subtract(d), D);
-            final StrassenWinogradMultiplyTask dBCADprod = new StrassenWinogradMultiplyTask(d, B.add(C).subtract(A).subtract(D));
+            final StrassenWinogradMultiplyTask bBprod = new StrassenWinogradMultiplyTask(b, B, threshold);
+            final StrassenWinogradMultiplyTask abcdDprod = new StrassenWinogradMultiplyTask(a.add(b).subtract(c).subtract(d), D, threshold);
+            final StrassenWinogradMultiplyTask dBCADprod = new StrassenWinogradMultiplyTask(d, B.add(C).subtract(A).subtract(D), threshold);
             dBCADprod.fork();  abcdDprod.fork();  bBprod.fork();
 
             Matrix<RealType>[][] result = new Matrix[2][2];
@@ -4032,10 +4046,6 @@ public final class MathUtils {
         final RealType C = rhs.valueAt(0L, 1L);
         final RealType B = rhs.valueAt(1L, 0L);
         final RealType D = rhs.valueAt(1L, 1L);
-        List<RealType> cells = List.of(a, b, c, d, A, B, C, D);
-        MathContext mc1 = inferMathContext(cells);
-        MathContext mc2 = new MathContext(mc1.getPrecision() * 2, mc1.getRoundingMode());
-        cells.forEach(x -> OptionalOperations.setMathContext(x, mc2));
 
         // using the Winograd form
         final RealType u = (RealType) c.subtract(a).multiply(C.subtract(D));
