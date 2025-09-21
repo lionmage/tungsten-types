@@ -344,7 +344,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
      * optimized for the case where both matrices are square and have the same
      * dimensions, and those dimensions are of
      * the form 2<sup>n</sup>&times;2<sup>n</sup>.  Note that this behavior
-     * may result in slower behavior for smaller matrices, but should improve
+     * may result in slower performance for smaller matrices, but should improve
      * as matrix dimensions increase due to parallel computation gains.
      * 
      * @param multiplier the {@link Matrix} with which to multiply this matrix
@@ -411,15 +411,15 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         }
         
         private List<MatMultRecursiveTask> createSubTasks() {
-            long n = size >> 1L;
+            final long n = size >> 1L;
             
-            SubMatrix<T> A00 = new SubMatrix<>(A, 0L, 0L, n - 1, n - 1);
-            SubMatrix<T> A01 = new SubMatrix<>(A, 0L, n, n - 1, size - 1L);
+            SubMatrix<T> A00 = new SubMatrix<>(A, 0L, 0L, n - 1L, n - 1L);
+            SubMatrix<T> A01 = new SubMatrix<>(A, 0L, n, n - 1L, size - 1L);
             SubMatrix<T> A10 = new SubMatrix<>(A, n, 0L, size - 1L, n - 1L);
             SubMatrix<T> A11 = new SubMatrix<>(A, n, n, size - 1L, size - 1L);
             
-            SubMatrix<T> B00 = new SubMatrix<>(B, 0L, 0L, n - 1, n - 1);
-            SubMatrix<T> B01 = new SubMatrix<>(B, 0L, n, n - 1, size - 1L);
+            SubMatrix<T> B00 = new SubMatrix<>(B, 0L, 0L, n - 1L, n - 1L);
+            SubMatrix<T> B01 = new SubMatrix<>(B, 0L, n, n - 1L, size - 1L);
             SubMatrix<T> B10 = new SubMatrix<>(B, n, 0L, size - 1L, n - 1L);
             SubMatrix<T> B11 = new SubMatrix<>(B, n, n, size - 1L, size - 1L);
 
@@ -515,10 +515,10 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 29 * hash + (int) (this.startRow ^ (this.startRow >>> 32));
-        hash = 29 * hash + (int) (this.endRow ^ (this.endRow >>> 32));
-        hash = 29 * hash + (int) (this.startColumn ^ (this.startColumn >>> 32));
-        hash = 29 * hash + (int) (this.endColumn ^ (this.endColumn >>> 32));
+        hash = 29 * hash + Long.hashCode(this.startRow);
+        hash = 29 * hash + Long.hashCode(this.endRow);
+        hash = 29 * hash + Long.hashCode(this.startColumn);
+        hash = 29 * hash + Long.hashCode(this.endColumn);
         hash = 29 * hash + Objects.hashCode(this.removedRows);
         hash = 29 * hash + Objects.hashCode(this.removedColumns);
         return hash;
