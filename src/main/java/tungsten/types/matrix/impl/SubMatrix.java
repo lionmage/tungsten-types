@@ -26,7 +26,6 @@ package tungsten.types.matrix.impl;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
 import tungsten.types.Vector;
-import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.impl.ExactZero;
@@ -176,9 +175,9 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         geometryChanged();
         if (column == 0L) {
             final AtomicLong removedCount = new AtomicLong(1L);
-            // this is cheaper than tracking a removed row, but is irreversible
+            // this is cheaper than tracking a removed column, but is irreversible
             while (removedColumns.contains(++startColumn)) { // incrementally move the start bound inward
-                removedColumns.remove(startColumn); // eat up any adjacent rows that were marked as removed
+                removedColumns.remove(startColumn); // eat up any adjacent columns that were marked as removed
                 removedCount.incrementAndGet();
             }
             // shift all indices
@@ -191,7 +190,7 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
             return;
         }
         if (!removedColumns.contains(column)) removedColumns.add(column);
-        removedColumns.sort(Comparator.naturalOrder());  // ensure biggest values are always at the end
+        removedColumns.sort(Comparator.naturalOrder());  // ensure the biggest values are always at the end
     }
     
     private void geometryChanged() {
