@@ -3970,7 +3970,7 @@ public final class MathUtils {
                 Matrix<RealType> right = new PaddedMatrix<>(rhs, resize, resize, zero);
                 Matrix<RealType> result = efficientMatrixMultiply(left, right);
                 // pick off the extraneous zero columns/rows
-                return new SubMatrix<>(result, 0L, 0L, lhs.rows(), rhs.columns());
+                return new SubMatrix<>(result, 0L, 0L, lhs.rows() - 1L, rhs.columns() - 1L);
             }
         }
         // if the above conditions are not met, do it the old-fashioned way

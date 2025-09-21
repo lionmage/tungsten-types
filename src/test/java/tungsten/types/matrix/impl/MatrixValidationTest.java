@@ -48,6 +48,7 @@ public class MatrixValidationTest {
     };
     Matrix<RealType> test1, test2;
     Matrix<RealType> testA, testB;
+    Matrix<RealType> fiveHundredA, fiveHundredB;
     Matrix<RealType> bigA, bigB;
 
     public MatrixValidationTest() {
@@ -71,6 +72,8 @@ public class MatrixValidationTest {
         parser = new MatrixParser<>(MathContext.DECIMAL64, RealType.class);
         testA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_A.matrix"));
         testB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_256_B.matrix"));
+        fiveHundredA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_500_A.matrix"));
+        fiveHundredB = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_500_B.matrix"));
         // for a real torture test, try using test_matrix_1024_*.matrix instead
         parser = new MatrixParser<>(MathContext.DECIMAL128, RealType.class);
         bigA = parser.read(getClass().getClassLoader().getResourceAsStream("test_matrix_1024_A.matrix"));
@@ -229,6 +232,44 @@ public class MatrixValidationTest {
         System.out.println("Maximum diff between matrix elements is " + maxDiff);
 
         RealType epsilon = new RealImpl("0.0000001", MathContext.DECIMAL64);
+        assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
+                "Matrix multiplication results must be within \uD835\uDF00 of each other");
+    }
+
+    @Test
+    public void canWeMultiplyFiveHundred() {
+        System.out.println("Comparing performance of Strassen-Winograd for 500\u00D7500 matrices");
+        assertEquals(500L, fiveHundredA.rows());
+        assertEquals(500L, fiveHundredA.columns());
+        assertEquals(500L, fiveHundredB.rows());
+        assertEquals(500L, fiveHundredB.columns());
+        // Note: matrix dimensions are not a power of 2, but are close to one.
+        // this test will exercise PaddedMatrix code, as well as trimming off
+        // excess zeroes with SubMatrix.
+
+        long start = System.currentTimeMillis();
+        Matrix<RealType> result1 = fiveHundredA.multiply(fiveHundredB);
+        long end = System.currentTimeMillis();
+        System.out.println("test big multiply 1 took " + (end - start) + " ms");
+
+        start = System.currentTimeMillis();
+        Matrix<RealType> result2 = MathUtils.efficientMatrixMultiply(fiveHundredA, fiveHundredB);
+        end = System.currentTimeMillis();
+        System.out.println("test big multiply 2 took " + (end - start) + " ms");
+
+        RealType maxDiff = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
+        for (long row = 0L; row < result1.rows(); row++) {
+            for (long idx = 0L; idx < result1.getRow(row).length(); idx++) {
+                RealType diff = result1.getRow(row).elementAt(idx).subtract(result2.getRow(row).elementAt(idx))
+                        .magnitude();
+                if (diff.compareTo(maxDiff) > 0) maxDiff = diff;
+            }
+        }
+        System.out.println("Maximum diff between matrix elements is " + maxDiff);
+        assertEquals(result1.rows(), result2.rows(), "Results should have the same number of rows");
+        assertEquals(result1.columns(), result2.columns(), "Results should have the same number of columns");
+
+        RealType epsilon = new RealImpl("0.00001", MathContext.DECIMAL64);
         assertTrue(MathUtils.areEqualToWithin(result1, result2, epsilon),
                 "Matrix multiplication results must be within \uD835\uDF00 of each other");
     }
