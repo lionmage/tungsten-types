@@ -383,7 +383,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
 
     /**
      * Generate a matrix from this matrix with the given column removed.
-     * @param column the index of the row to remove
+     * @param column the index of the column to remove
      * @return the resulting matrix
      */
     public BasicMatrix<T> removeColumn(long column) {
