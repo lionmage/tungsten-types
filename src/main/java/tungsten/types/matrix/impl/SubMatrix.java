@@ -34,6 +34,7 @@ import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.OptionalOperations;
 import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
+import tungsten.types.vector.impl.ArrayRowVector;
 import tungsten.types.vector.impl.ListColumnVector;
 import tungsten.types.vector.impl.ListRowVector;
 
@@ -394,8 +395,26 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         protected Matrix<T> compute() {
             if (size == 1L) {
                 return new SingletonMatrix<>((T) A.valueAt(0L, 0L).multiply(B.valueAt(0L, 0L)));
+            } else if (size == 2L) {
+                T a = A.valueAt(0L, 0L);
+                T b = A.valueAt(0L, 1L);
+                T c = A.valueAt(1L, 0L);
+                T d = A.valueAt(1L, 1L);
+
+                T a2 = B.valueAt(0L, 0L);
+                T b2 = B.valueAt(0L, 1L);
+                T c2 = B.valueAt(1L, 0L);
+                T d2 = B.valueAt(1L, 1L);
+
+                BasicMatrix<T> prod = new BasicMatrix<>();
+                RowVector<T> row1 = new ArrayRowVector<>((T) a.multiply(a2).add(b.multiply(c2)),
+                        (T) a.multiply(b2).add(b.multiply(d2)));
+                RowVector<T> row2 = new ArrayRowVector<>((T) c.multiply(a2).add(d.multiply(c2)),
+                        (T) c.multiply(b2).add(d.multiply(d2)));
+                prod.append(row1);  prod.append(row2);
+                return prod;
             }
-            
+
             List<MatMultRecursiveTask> tasks = createSubTasks();
             ForkJoinTask.invokeAll(tasks);
             
