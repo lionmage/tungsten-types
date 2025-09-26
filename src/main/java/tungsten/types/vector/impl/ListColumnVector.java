@@ -25,6 +25,7 @@ import java.util.stream.Stream;
  */
 public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     public static final long RANDOM_ACCESS_THRESHOLD = 1_000L;
+    private static final String NEGATIVE_INDICES = "Negative indices are not allowed";
     private final List<T> elements;
     private transient long elementCount = -1L;
     private final ReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -93,13 +94,16 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public T elementAt(long position) {
+        if (position < 0L) throw new IndexOutOfBoundsException(NEGATIVE_INDICES);
         Lock lock = rwl.readLock();
         lock.lock();
         try {
             if (elements instanceof RandomAccess) {
                 return elements.get((int) position);
             }
-            return elements.stream().skip(position).findFirst().orElseThrow();
+            return elements.stream().skip(position).findFirst()
+                    .orElseThrow(() -> new IndexOutOfBoundsException("Index " + position +
+                            " does not exist for column vector of length " + length()));
         } finally {
             lock.unlock();
         }
@@ -107,6 +111,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public void setElementAt(T element, long position) {
+        if (position < 0L) throw new IndexOutOfBoundsException(NEGATIVE_INDICES);
         Lock lock = rwl.writeLock();
         lock.lock();
         try {
@@ -252,6 +257,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public ColumnVector<T> trimTo(long rows) {
+        if (rows < 0L) throw new IllegalArgumentException("rows must be positive");
         if (rows >= this.rows()) return this;
         final Lock lock = rwl.readLock();
         lock.lock();

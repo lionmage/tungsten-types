@@ -56,6 +56,7 @@ import java.util.logging.Logger;
  * @param <T> the {@link Numeric} subtype of this matrix
  */
 public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
+    private static final long MAX_ARRAY_SIZE = 10_000L;
     private final Class<T> clazz;
     private final Lock cacheLock = new ReentrantLock();
     private T detCache;
@@ -376,7 +377,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     public RowVector<T> getRow(long row) {
         final int tileRow = getTileRow(row);
         final long rowIndex = getSubRowIndex(tileRow, row);
-        if (columns() < 10_000L) {
+        if (columns() < MAX_ARRAY_SIZE) {
             T[] elements = Arrays.stream(subMatrices[tileRow]).flatMap(tr -> tr.getRow(rowIndex).stream())
                     .toArray(size -> (T[]) Array.newInstance(clazz, size));
             return new ArrayRowVector<>(elements);
