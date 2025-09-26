@@ -262,6 +262,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return whole;
     }
 
+    /**
+     * Convenient constructor for building a continued fraction in the methods of this
+     * class, and any potential subclasses.
+     * @param terms            an array of continued fraction terms
+     * @param repeatsFromIndex the index from which the continued fraction terms repeat
+     * @param mappingFunc      a function to map term indices to term values
+     */
     protected ContinuedFraction(long[] terms, int repeatsFromIndex, Function<Long, Long> mappingFunc) {
         long[] cleanedTerms = annealZeros(terms);
         if (!Arrays.equals(terms, cleanedTerms)) {
@@ -996,10 +1003,20 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return obj.equals(this);
     }
 
+    /**
+     * Determine if we should use angle brackets to denote the
+     * repeating section of a continued fraction.
+     * @return true if angle brackets should be used, or false
+     *   if a vinculum should be used
+     */
     protected boolean useAngleBracketsForRepeating() {
         return Boolean.getBoolean(REPEAT_IN_BRACKETS);
     }
 
+    /**
+     * Determine if we should emit nulls when zero terms are encountered.
+     * @return true if we should emit nulls instead of zeroes, false otherwise
+     */
     protected boolean emitNullsForZeroTerms() {
         if (!System.getProperties().containsKey(EMIT_NULL_ON_ZERO)) return true;
         return Boolean.getBoolean(EMIT_NULL_ON_ZERO);

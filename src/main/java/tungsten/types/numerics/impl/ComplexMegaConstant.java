@@ -42,14 +42,33 @@ import java.util.logging.Logger;
  * @since 0.4
  */
 public class ComplexMegaConstant extends MegaConstant<ComplexType> implements ComplexType {
+    /**
+     * Construct this mega constant with a rational coefficient
+     * @param coefficient the coefficient to use
+     */
     public ComplexMegaConstant(RationalType coefficient) {
         super(ComplexType.class, coefficient);
     }
 
+    /**
+     * Construct this mega constant with a rational coefficient and
+     * arrays of constants and exponents.  The array of constants must
+     * be the same length as the array of constants; each exponent at
+     * index {@code i} matches the constant at index {@code i}.
+     * @param coefficient the coefficient
+     * @param constants   an array of 1 or more constants
+     * @param exponents   an array of 1 or more exponents
+     */
     public ComplexMegaConstant(RationalType coefficient, Numeric[] constants, Long[] exponents) {
         super(ComplexType.class, coefficient, constants, exponents);
     }
 
+    /**
+     * Construct this mega constant with a rational coefficient and
+     * one or more constants.
+     * @param coefficient the coefficient to use
+     * @param constants   a varargs array of constants
+     */
     public ComplexMegaConstant(RationalType coefficient, Numeric... constants) {
         super(ComplexType.class, coefficient, constants);
     }
