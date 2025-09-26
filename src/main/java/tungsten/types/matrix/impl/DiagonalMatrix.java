@@ -234,7 +234,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     }
 
     /**
-     * Compute &#212F;<sup>D</sup> where D is this diagonal matrix.
+     * Compute &#x212F;<sup>D</sup> where D is this diagonal matrix.
      * @return the matrix resulting from computing exp(D)
      */
     public Matrix<? extends Numeric> exp() {
