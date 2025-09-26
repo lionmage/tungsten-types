@@ -56,7 +56,11 @@ import java.util.stream.Collectors;
 public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
     private static final String DIAG_RO_ERROR = "diag vector is a read-only view";
     private final T[] elements;
-    
+
+    /**
+     * Construct a diagonal matrix from a varargs array of elements.
+     * @param elements the diagonal elements of this matrix
+     */
     @SafeVarargs
     public DiagonalMatrix(T... elements) {
         this.elements = Arrays.copyOf(elements, elements.length);
@@ -229,6 +233,10 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         return new DiagonalMatrix<>(result);
     }
 
+    /**
+     * Compute &#212F;<sup>D</sup> where D is this diagonal matrix.
+     * @return the matrix resulting from computing exp(D)
+     */
     public Matrix<? extends Numeric> exp() {
         final Euler e = Euler.getInstance(elements[0].getMathContext());
 
@@ -238,6 +246,10 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         return new DiagonalMatrix<>(result);
     }
 
+    /**
+     * Compute ln(D) where D is this diagonal matrix.
+     * @return the natural logarithm of this matrix
+     */
     public Matrix<? extends Numeric> ln() {
         Numeric[] result = Arrays.stream(elements)
                 .map(element -> element instanceof ComplexType ? MathUtils.ln((ComplexType) element) : MathUtils.ln(limitedUpconvert(element)))

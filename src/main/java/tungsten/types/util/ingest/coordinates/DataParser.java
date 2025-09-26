@@ -66,6 +66,11 @@ public class DataParser {
     private final MathContext mctx;
     private final CurveType readDatumAs;
 
+    /**
+     * Construct a parser for data in textual format.
+     * @param ctx         the {@code MathContext} to use for parsed values
+     * @param readDatumAs the class of curve we are trying to parse
+     */
     public DataParser(MathContext ctx, CurveType readDatumAs) {
         this.mctx = ctx;
         this.readDatumAs = readDatumAs;
