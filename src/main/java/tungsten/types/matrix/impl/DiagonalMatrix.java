@@ -70,10 +70,10 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
      * Constructor which initializes a diagonal matrix with the
      * elements of a vector.  Note that this is equivalent to
      * the <em>diag</em> operator:<br>
-     * For vector <strong>a</strong> with elements a<sub>0</sub>, a<sub>1</sub>, &hellip;, a<sub>n - 1</sub>,
+     * For vector a&#x20D7; with elements a<sub>0</sub>, a<sub>1</sub>, &hellip;, a<sub>n &minus; 1</sub>,
      * the diagonal matrix <strong>D</strong> may be denoted
-     * <strong>D</strong>&nbsp;=&nbsp;diag(a<sub>0</sub>,&thinsp;&hellip;,&thinsp;a<sub>n - 1</sub>)
-     * or <strong>D</strong>&nbsp;=&nbsp;diag(<strong>a</strong>).
+     * <strong>D</strong>&nbsp;=&nbsp;diag(a<sub>0</sub>,&thinsp;&hellip;,&thinsp;a<sub>n &minus; 1</sub>)
+     * or <strong>D</strong>&nbsp;=&nbsp;diag(a&#x20D7;).
      * @param source a vector containing the elements for this diagonal matrix
      */
     public DiagonalMatrix(Vector<T> source) {
