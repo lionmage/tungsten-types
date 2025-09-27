@@ -178,6 +178,12 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
         if (this == o) return true;
         if (!(o instanceof Quotient)) return false;
         Quotient<?, ?> quotient = (Quotient<?, ?>) o;
+        if (this.getComposedFunction().isPresent()) {
+            if (quotient.getComposedFunction().isEmpty()) return false;
+            if (!quotient.getComposedFunction().equals(this.getComposedFunction())) return false;
+        } else {
+            if (quotient.getComposedFunction().isPresent()) return false;
+        }
         return Objects.equals(getReturnType(), quotient.getReturnType()) &&
                 Objects.equals(getArgumentName(), quotient.getArgumentName()) &&
                 Objects.equals(numerator, quotient.numerator) &&

@@ -295,6 +295,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
             if (!getArgumentName().equals(other.getArgumentName())) return false;
             if (termCount() != other.termCount()) return false;
             if (!getReturnType().isAssignableFrom(other.getReturnType())) return false;
+            if (this.getComposedFunction().isPresent() != other.getComposedFunction().isPresent()) return false;
             return parallelStream().allMatch(other.terms::contains);
         }
         return false;

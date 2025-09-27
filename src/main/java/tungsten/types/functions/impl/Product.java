@@ -121,7 +121,6 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             final MathContext ctx = cterm.inspect().getMathContext();
             if (One.isUnity(cterm.inspect())) return;
             try {
-                R one = OptionalOperations.dynamicInstantiate(getReturnType(), 1);
                 R prodOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
                         .reduce(One.getInstance(ctx), Numeric::multiply)
@@ -316,6 +315,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             if (!getArgumentName().equals(other.getArgumentName())) return false;
             if (termCount() != other.termCount()) return false;
             if (!getReturnType().isAssignableFrom(other.getReturnType())) return false;
+            if (this.getComposedFunction().isPresent() != other.getComposedFunction().isPresent()) return false;
             return parallelStream().allMatch(other.terms::contains);
         }
         return false;
