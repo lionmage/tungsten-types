@@ -124,7 +124,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
                 R prodOfConstants = (R) parallelStream().filter(Const.class::isInstance)
                         .map(Const.class::cast).map(Const::inspect)
                         .reduce(One.getInstance(ctx), Numeric::multiply)
-                        .add(cterm.inspect())
+                        .multiply(cterm.inspect())
                         .coerceTo(getReturnType());
                 terms.removeIf(Const.class::isInstance);
                 if (Zero.isZero(prodOfConstants)) terms.clear();  // zero renders all other terms irrelevant
