@@ -447,7 +447,10 @@ public final class RangeUtils {
                 @Override
                 public long cardinality() {
                     RealType count = (RealType) srange.getUpperBound().subtract(srange.getLowerBound()).divide(srange.getStepSize());
-                    return count.asBigDecimal().longValue();
+                    long lcount = count.asBigDecimal().longValue();
+                    if (!srange.isLowerClosed()) lcount--;
+                    if (srange.isUpperClosed() && count.isCoercibleTo(IntegerType.class)) lcount++;
+                    return lcount;
                 }
 
                 @Override
