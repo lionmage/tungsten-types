@@ -288,6 +288,12 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Sin sin = (Sin) o;
+        if (this.getComposedFunction().isPresent()) {
+            if (sin.getComposedFunction().isEmpty()) return false;
+            if (!sin.getComposedFunction().equals(this.getComposedFunction())) return false;
+        } else {
+            if (sin.getComposedFunction().isPresent()) return false;
+        }
         return Objects.equals(mctx, sin.mctx) && Objects.equals(getArgumentName(), sin.getArgumentName());
     }
 

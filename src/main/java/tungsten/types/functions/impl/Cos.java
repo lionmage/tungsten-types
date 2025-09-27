@@ -286,6 +286,12 @@ public class Cos extends UnaryFunction<RealType, RealType> implements Proxable<R
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cos cos = (Cos) o;
+        if (this.getComposedFunction().isPresent()) {
+            if (cos.getComposedFunction().isEmpty()) return false;
+            if (!cos.getComposedFunction().equals(this.getComposedFunction())) return false;
+        } else {
+            if (cos.getComposedFunction().isPresent()) return false;
+        }
         return Objects.equals(mctx, cos.mctx) && Objects.equals(getArgumentName(), cos.getArgumentName());
     }
 

@@ -68,10 +68,20 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
         return apply(theArgument);
     }
 
+    /**
+     * Obtain the inner function, if it exists.
+     * If this function is f(g(x)), the inner function is g(x).
+     * @return an {@code Optional} containing the inner function, or an empty {@code Optional} otherwise
+     */
     public Optional<UnaryFunction<? super T, T>> getComposedFunction() {
         return Optional.ofNullable(composedFunction);
     }
 
+    /**
+     * Obtain the outer function, if it exists.
+     * If this composed function is f(g(x)), the outer function is f(x).
+     * @return an {@code Optional} containing the outer function, or an empty {@code Optional} otherwise
+     */
     public Optional<UnaryFunction<R, ? extends R>> getComposingFunction() {
         return Optional.ofNullable(composingFunction);
     }
