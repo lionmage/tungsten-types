@@ -244,6 +244,11 @@ public class FareySequence implements Set<RationalType> {
             }
 
             @Override
+            public Comparator<? super RationalType> getComparator() {
+                return null;
+            }
+
+            @Override
             public int characteristics() {
                 return SIZED | DISTINCT | IMMUTABLE | ORDERED | SORTED | SUBSIZED | NONNULL;
             }
