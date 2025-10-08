@@ -68,6 +68,9 @@ public class FibonacciNumbers implements Set<IntegerType> {
     private static final String IMMUTABLE_SET = "The set of Fibonacci numbers is immutable";
     private final TreeSet<IntegerType> cache = new TreeSet<>();
 
+    /**
+     * Instantiate a set of Fibonacci numbers.
+     */
     public FibonacciNumbers() {
         cache.add(ONE);  // f1, f0
     }

@@ -162,6 +162,10 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         throw new ArithmeticException("Cannot divide by zero");
     }
 
+    /**
+     * Obtain the sign of this {@code Zero} instance.
+     * @return a {@code Sign} corresponding to positive, negative, or zero
+     */
     public abstract Sign sign();
 
     @Override
