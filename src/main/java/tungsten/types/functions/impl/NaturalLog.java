@@ -49,10 +49,18 @@ import java.math.MathContext;
  * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class NaturalLog extends UnaryFunction<RealType, RealType> {
+    /**
+     * Default no-arg constructor.  The resulting
+     * function uses &ldquo;x&rdquo; as its argument.
+     */
     public NaturalLog() {
         super("x", RealType.class);
     }
 
+    /**
+     * Construct the natural log with the given argument name.
+     * @param argName the argument name
+     */
     public NaturalLog(String argName) {
         super(argName, RealType.class);
     }

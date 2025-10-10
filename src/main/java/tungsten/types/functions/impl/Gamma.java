@@ -64,10 +64,20 @@ import static tungsten.types.util.MathUtils.*;
 public class Gamma extends UnaryFunction<Numeric, Numeric> {
     private final Range<RealType> argRange = RangeUtils.getGammaArgumentInstance();
 
+    /**
+     * Constructor which generates a Gamma function for
+     * a given variable name.
+     * @param varName the variable name
+     */
     public Gamma(String varName) {
         super(varName, Numeric.class);
     }
 
+    /**
+     * Default no-args constructor which generates an instance
+     * of the Gamma function with a default argument name
+     * of &ldquo;z&rdquo;.
+     */
     public Gamma() {
         super("z", Numeric.class);
     }
