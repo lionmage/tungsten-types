@@ -51,9 +51,23 @@ import java.util.Objects;
 public class Sinc extends UnaryFunction<RealType, RealType> {
     private final MathContext mctx;
 
-    protected Sinc(String varName, MathContext ctx) {
+    /**
+     * Obtain a sinc() function with the given input variable name
+     * and the given {@code MathContext}.
+     * @param varName the variable name
+     * @param ctx     the {@code MathContext}
+     */
+    public Sinc(String varName, MathContext ctx) {
         super(varName, RealType.class);
         this.mctx = ctx;
+    }
+
+    /**
+     * Obtain sinc(x).
+     * @param ctx the {@code MathContext}
+     */
+    public Sinc(MathContext ctx) {
+        this("x", ctx);
     }
 
     /**
