@@ -108,6 +108,11 @@ public class ImaginaryUnit implements ComplexType {
             }
 
             @Override
+            public ComplexType inverse() {
+                return ImaginaryUnit.this;
+            }
+
+            @Override
             public Numeric multiply(Numeric multiplier) {
                 if (multiplier instanceof ImaginaryUnit) {
                     // -i * i = 1
