@@ -51,7 +51,8 @@ import static tungsten.types.util.MathUtils.Re;
  * both safe and performant to treat instances of this object as {@code @Polar}
  * where such optimizations exist.
  *
- * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Tarquin.AZ@gmail.com</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 @Polar
 @Constant(name = "imaginary-unit", representation = "\u2148")
@@ -206,6 +207,7 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
+        if (Zero.isZero(subtrahend)) return this;
         if (subtrahend instanceof ImaginaryUnit) {
             return ExactZero.getInstance(mctx);
         }
@@ -222,6 +224,7 @@ public class ImaginaryUnit implements ComplexType {
 
     @Override
     public Numeric multiply(Numeric multiplier) {
+        if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
         if (One.isUnity(multiplier)) return this;
         if (multiplier instanceof ImaginaryUnit) {
             // i * i = -1
