@@ -170,7 +170,8 @@ public class Sin extends UnaryFunction<RealType, RealType> implements Proxable<R
     @Override
     public RealType apply(ArgVector<RealType> arguments) {
         ProxyFunction<RealType, RealType> proxy = obtainProxy();
-        RealType arg = arguments.elementAt(0L);
+        RealType arg = arguments.hasVariableName(getArgumentName()) ?
+                arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         RealType result = proxy.applyWithoutInterpolation(arg);
         if (result == null) {
             result = MathUtils.sin(arg);
