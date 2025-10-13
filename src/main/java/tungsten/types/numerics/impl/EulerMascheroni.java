@@ -28,6 +28,7 @@ import tungsten.types.Set;
 import tungsten.types.annotations.Constant;
 import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.functions.indexed.IndexRange;
 import tungsten.types.numerics.*;
 import tungsten.types.util.MathUtils;
 import tungsten.types.util.OptionalOperations;
@@ -42,7 +43,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.LongStream;
 
 /**
  * The Euler-Mascheroni constant, denoted &#x1D6FE; (the lower-case Greek letter gamma).
@@ -86,6 +86,7 @@ public class EulerMascheroni implements RealType {
     }
 
     private static final RealType TEN = new RealImpl(BigDecimal.TEN);
+    private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE, true);
 
     private void calculate() {
         // explicit advice from Gourdon and Sebah is that we should calculate with 2d digits of precision to get d digits
@@ -97,9 +98,9 @@ public class EulerMascheroni implements RealType {
         final RealType log10 = MathUtils.ln(TEN, compCtx);
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
         IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼⋅n gives us the number of terms to compute
+        IndexRange range = new IndexRange(ONE, iterLimit, false);
 
-        Numeric sum = LongStream.range(1L, iterLimit.asBigInteger().longValueExact()).parallel()
-                .mapToObj(BigInteger::valueOf).map(IntegerImpl::new)
+        Numeric sum = range.parallelStream()
                 .map(k -> computeTerm(k, n))
                 .map(Numeric.class::cast)
                 .reduce(ExactZero.getInstance(compCtx), Numeric::add);

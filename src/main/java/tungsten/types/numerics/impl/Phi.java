@@ -91,6 +91,7 @@ public class Phi implements RealType {
 
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
+        if (ContinuedFraction.class.isAssignableFrom(numtype)) return ContinuedFraction.phi(mctx);
         if (RealType.class.isAssignableFrom(numtype)) return this;
         else if (ComplexType.class.isAssignableFrom(numtype)) {
             return new ComplexPolarImpl(this);
