@@ -163,6 +163,9 @@ public class Euler implements RealType {
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
         switch (htype) {
             case REAL:
+                if (ContinuedFraction.class.isAssignableFrom(numtype)) {
+                    return ContinuedFraction.euler(mctx);
+                }
                 return this;  // it's already a real
             case COMPLEX:
                 return new ComplexRectImpl(this, (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class));
