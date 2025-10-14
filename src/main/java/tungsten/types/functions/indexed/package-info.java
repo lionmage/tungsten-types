@@ -29,11 +29,12 @@
  * <ul>
  *     <li>{@code IndexRange} provides a range of {@code IntegerType} with additional
  *       methods for e.g. iteration.</li>
- *     <li>{@code IndexFunction} maps an iteger index value to any value.</li>
+ *     <li>{@code IndexFunction} maps an integer index value to any value of any type.</li>
  *     <li>{@code Product} computes an N-ary product.</li>
  *     <li>{@code Summation} computes an N-ary sum.</li>
  * </ul>
- * The {@link tungsten.types.functions.indexed.examples examples} subpackage contains sample uses in computing series.
+ * The {@link tungsten.types.functions.indexed.examples examples} subpackage contains
+ * sample uses in computing series.
  * @since 0.8
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
