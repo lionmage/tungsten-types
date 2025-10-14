@@ -33,7 +33,7 @@
  *     <li>{@code Product} computes an N-ary product.</li>
  *     <li>{@code Summation} computes an N-ary sum.</li>
  * </ul>
- * The examples subpackage contains sample uses in computing series.
+ * The {@link tungsten.types.functions.indexed.examples examples} subpackage contains sample uses in computing series.
  * @since 0.8
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
