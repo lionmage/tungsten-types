@@ -161,18 +161,17 @@ public class Euler implements RealType {
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (numtype == Numeric.class) return this;
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
-        switch (htype) {
-            case REAL:
+        return switch (htype) {
+            case REAL -> {
                 if (ContinuedFraction.class.isAssignableFrom(numtype)) {
-                    return ContinuedFraction.euler(mctx);
+                    yield ContinuedFraction.euler(mctx);
                 }
-                return this;  // it's already a real
-            case COMPLEX:
-                return new ComplexRectImpl(this, (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class));
-            default:
-                throw new CoercionException("Euler can only be coerced to real or complex",
-                        this.getClass(), numtype);
-        }
+                yield this;
+            }
+            case COMPLEX -> new ComplexRectImpl(this, (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class));
+            default -> throw new CoercionException("Euler can only be coerced to real or complex",
+                    this.getClass(), numtype);
+        };
     }
 
     @Override
@@ -283,14 +282,11 @@ public class Euler implements RealType {
     public RealType exp(RealType x) {
         // we need to do this check first since asBigDecimal will fail for RealInfinity
         if (x instanceof RealInfinity) {
-            switch (x.sign()) {
-                case NEGATIVE:
-                    return new RealImpl(BigDecimal.ZERO, mctx, false);
-                case POSITIVE:
-                    return x;
-                default:
-                    throw new IllegalStateException("Unknown state for " + x);
-            }
+            return switch (x.sign()) {
+                case NEGATIVE -> new RealImpl(BigDecimal.ZERO, mctx, false);
+                case POSITIVE -> x;
+                default -> throw new IllegalStateException("Unknown state for " + x);
+            };
         }
         if (x.asBigDecimal().compareTo(BigDecimal.ZERO) == 0) return new RealImpl(BigDecimal.ONE, mctx);
         else if (x.asBigDecimal().compareTo(BigDecimal.ONE) == 0) return this;
@@ -352,8 +348,7 @@ public class Euler implements RealType {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Euler) {
-            Euler that = (Euler) o;
+        if (o instanceof Euler that) {
             if (this.mctx.getRoundingMode() != that.mctx.getRoundingMode()) return false;
             return this.numberOfDigits() == that.numberOfDigits();
         }

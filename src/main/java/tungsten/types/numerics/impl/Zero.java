@@ -144,14 +144,11 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
             } else if (aggSign == Sign.POSITIVE && OptionalOperations.sign(divisor) == Sign.NEGATIVE) {
                 aggSign = Sign.NEGATIVE;
             }
-            switch (aggSign) {
-                case POSITIVE:
-                    return PosInfinity.getInstance(mctx);
-                case NEGATIVE:
-                    return NegInfinity.getInstance(mctx);
-                case ZERO:
-                    throw new ArithmeticException("0/0 cannot be interpreted");
-            }
+            return switch (aggSign) {
+                case POSITIVE -> PosInfinity.getInstance(mctx);
+                case NEGATIVE -> NegInfinity.getInstance(mctx);
+                case ZERO -> throw new ArithmeticException("0/0 cannot be interpreted");
+            };
         }
         return this;
     }
@@ -189,13 +186,10 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
      */
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Zero) {
-            final Zero that = (Zero) o;
+        if (o instanceof Zero that) {
             return this.sign() == that.sign() && this.isExact() == that.isExact();
         }
-        if (o instanceof Numeric) {
-            final Numeric that = (Numeric) o;
-            
+        if (o instanceof Numeric that) {
             if (this.isExact() != that.isExact()) return false;
             final Class<? extends Numeric> clazz = that.getClass();
             try {
@@ -231,8 +225,7 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
                 case RATIONAL:
                     return isZero(((RationalType) val).numerator());
                 case REAL:
-                    if (val instanceof ContinuedFraction) {
-                        ContinuedFraction cf = (ContinuedFraction) val;
+                    if (val instanceof ContinuedFraction cf) {
                         return cf.terms() == 1L && cf.termAt(0L) == 0L;
                     }
                     return ((RealType) val).asBigDecimal().compareTo(BigDecimal.ZERO) == 0;

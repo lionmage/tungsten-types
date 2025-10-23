@@ -82,8 +82,7 @@ public class ExactZero extends Zero {
 
     @Override
     public int compareTo(Numeric o) {
-        if (o instanceof Zero) {
-            final Zero that = (Zero) o;
+        if (o instanceof Zero that) {
             switch (that.sign()) {
                 case ZERO:
                     return 0;
