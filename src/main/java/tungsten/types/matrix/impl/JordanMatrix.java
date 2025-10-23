@@ -237,11 +237,9 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof JordanMatrix) {
-            JordanMatrix<? extends Numeric> that = (JordanMatrix<? extends Numeric>) obj;
+        if (obj instanceof JordanMatrix<? extends Numeric> that) {
             return Arrays.equals(this.diagBlocks, that.diagBlocks);
-        } else if (obj instanceof Matrix) {
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) obj;
+        } else if (obj instanceof Matrix<? extends Numeric> that) {
             if (that.rows() != this.rows() || that.columns() != this.columns()) return false;
             // this is lazy, but does leverage the logic of BasicMatrix
             return new BasicMatrix<>(this).equals(obj);
