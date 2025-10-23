@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * A collection of utility methods for rendering text in select styles
@@ -126,7 +125,7 @@ public final class ANSITextEffects {
             throw new IllegalArgumentException("Multiple text styles specified");
         }
         Optional<Effect> textStyle = Arrays.stream(effects).filter(STYLES::contains).findFirst();
-        List<Effect> color = Arrays.stream(effects).filter(COLORS::contains).collect(Collectors.toList());
+        List<Effect> color = Arrays.stream(effects).filter(COLORS::contains).toList();
         textStyle.ifPresentOrElse(style -> buf.append(style.escSet), () -> buf.append('0'));
         color.forEach(colorStyle -> buf.append(';').append(colorStyle.escSet));
         buf.append('m');  // end of command

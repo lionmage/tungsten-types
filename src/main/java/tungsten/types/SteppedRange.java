@@ -199,8 +199,7 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof SteppedRange) {
-            SteppedRange other = (SteppedRange) obj;
+        if (obj instanceof SteppedRange other) {
             if (!stepSize.equals(other.stepSize)) return false;
         }
         return super.equals(obj);  // compare bounds

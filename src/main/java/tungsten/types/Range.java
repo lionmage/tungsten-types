@@ -57,25 +57,19 @@ public class Range<T extends Numeric & Comparable<? super T>> {
         }
         
         public boolean matchesLower(T o) {
-            switch (type) {
-                case INCLUSIVE:
-                    return this.compareTo(o) <= 0;
-                case EXCLUSIVE:
-                    return this.compareTo(o) < 0;
-                default:
-                    throw new IllegalStateException("Unknown bound of type " + type);
-            }
+            return switch (type) {
+                case INCLUSIVE -> this.compareTo(o) <= 0;
+                case EXCLUSIVE -> this.compareTo(o) < 0;
+                default -> throw new IllegalStateException("Unknown bound of type " + type);
+            };
         }
         
         public boolean matchesUpper(T o) {
-            switch (type) {
-                case INCLUSIVE:
-                    return this.compareTo(o) >= 0;
-                case EXCLUSIVE:
-                    return this.compareTo(o) > 0;
-                default:
-                    throw new IllegalStateException("Unknown bound of type " + type);
-            }
+            return switch (type) {
+                case INCLUSIVE -> this.compareTo(o) >= 0;
+                case EXCLUSIVE -> this.compareTo(o) > 0;
+                default -> throw new IllegalStateException("Unknown bound of type " + type);
+            };
         }
         
         public boolean isInclusive() { return type == BoundType.INCLUSIVE; }
@@ -88,8 +82,7 @@ public class Range<T extends Numeric & Comparable<? super T>> {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof Range.Bound) {
-                Bound other = (Bound) obj;
+            if (obj instanceof Range<?>.Bound other) {
                 return other.type == this.type && other.value.equals(this.value);
             }
             return false;
@@ -171,14 +164,11 @@ public class Range<T extends Numeric & Comparable<? super T>> {
      * @return true if {@code val} is less than the lower bound
      */
     public boolean isBelow(T val) {
-        switch (lowerBound.type) {
-            case INCLUSIVE:
-                return val.compareTo(lowerBound.getValue()) < 0;
-            case EXCLUSIVE:
-                return val.compareTo(lowerBound.getValue()) <= 0;
-            default:
-                throw new IllegalStateException("Unknown bound of type " + lowerBound.type);
-        }
+        return switch (lowerBound.type) {
+            case INCLUSIVE -> val.compareTo(lowerBound.getValue()) < 0;
+            case EXCLUSIVE -> val.compareTo(lowerBound.getValue()) <= 0;
+            default -> throw new IllegalStateException("Unknown bound of type " + lowerBound.type);
+        };
     }
     
     /**
@@ -187,14 +177,11 @@ public class Range<T extends Numeric & Comparable<? super T>> {
      * @return true if {@code val} is greater than the upper bound
      */
     public boolean isAbove(T val) {
-        switch (upperBound.type) {
-            case INCLUSIVE:
-                return val.compareTo(upperBound.getValue()) > 0;
-            case EXCLUSIVE:
-                return val.compareTo(upperBound.getValue()) >= 0;
-            default:
-                throw new IllegalStateException("Unknown bound of type " + upperBound.type);
-        }
+        return switch (upperBound.type) {
+            case INCLUSIVE -> val.compareTo(upperBound.getValue()) > 0;
+            case EXCLUSIVE -> val.compareTo(upperBound.getValue()) >= 0;
+            default -> throw new IllegalStateException("Unknown bound of type " + upperBound.type);
+        };
     }
     
     public T getLowerBound() {
@@ -234,8 +221,7 @@ public class Range<T extends Numeric & Comparable<? super T>> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Range) {
-            Range<?> other = (Range<?>) obj;
+        if (obj instanceof Range<?> other) {
             return lowerBound.equals(other.lowerBound) && upperBound.equals(other.upperBound);
         }
         return false;
