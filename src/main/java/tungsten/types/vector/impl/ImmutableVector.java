@@ -133,9 +133,8 @@ public class ImmutableVector<T extends Numeric> implements Vector<T> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ImmutableVector) {
+        if (obj instanceof ImmutableVector<?> that) {
             // unwrap the wrapped vector argument
-            ImmutableVector<T> that = (ImmutableVector<T>) obj;
             return wrapped.equals(that.wrapped);
         }
         return wrapped.equals(obj);
@@ -147,11 +146,9 @@ public class ImmutableVector<T extends Numeric> implements Vector<T> {
      * @return a stream of {@code T}
      */
     public Stream<T> stream() {
-        if (wrapped instanceof RowVector) {
-            RowVector<T> rvec = (RowVector<T>) wrapped;
+        if (wrapped instanceof RowVector<T> rvec) {
             return rvec.stream();
-        } else if (wrapped instanceof ColumnVector) {
-            ColumnVector<T> cvec = (ColumnVector<T>) wrapped;
+        } else if (wrapped instanceof ColumnVector<T> cvec) {
             return cvec.stream();
         }
         // if all else fails, we can generate a stream (albeit not a very performant one)

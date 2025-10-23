@@ -257,12 +257,10 @@ public class IntVector implements Vector<IntegerType> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Vector) {
-            if (obj instanceof IntVector) {
-                IntVector that = (IntVector) obj;
+        if (obj instanceof Vector<? extends Numeric> other) {
+            if (obj instanceof IntVector that) {
                 return Arrays.equals(this.elements, that.elements);
             }
-            Vector<? extends Numeric> other = (Vector<? extends Numeric>) obj;
             if (this.length() == other.length()) {
                 // testing for numeric equality, which should work even across types
                 for (long k = 0L; k < length(); k++) {
