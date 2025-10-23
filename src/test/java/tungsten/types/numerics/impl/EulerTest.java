@@ -268,7 +268,7 @@ public class EulerTest {
             result = instance.coerceTo(numtype);
             fail("Coercion of Euler to RationalType should fail; obtained " + result);
         } catch (CoercionException e) {
-            assertEquals(e.getTargetType(), numtype);
+            assertEquals(numtype, e.getTargetType());
         }
     }
 
