@@ -99,9 +99,8 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
      * @param num a real value
      */
     public ContinuedFraction(RealType num) {
-        if (num instanceof ContinuedFraction) {
+        if (num instanceof ContinuedFraction that) {
             // we just want to copy directly (shallow copy)
-            ContinuedFraction that = (ContinuedFraction) num;
             this.terms = that.terms;
             this.repeatsFromIndex = that.repeatsFromIndex;
             this.mappingFunc = that.mappingFunc;
@@ -382,17 +381,12 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         if (numtype == Numeric.class) return true;
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
-        switch (htype) {
-            case INTEGER:
-                return terms() == 1L;
-            case COMPLEX:
-            case REAL:
-                return true;
-            case RATIONAL:
-                return !isIrrational();
-            default:
-                return false;
-        }
+        return switch (htype) {
+            case INTEGER -> terms() == 1L;
+            case COMPLEX, REAL -> true;
+            case RATIONAL -> !isIrrational();
+            default -> false;
+        };
     }
 
     @Override
@@ -463,8 +457,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     @Override
     public Numeric add(Numeric addend) {
         if (Zero.isZero(addend)) return this;
-        if (addend instanceof ContinuedFraction) {
-            ContinuedFraction rhs = (ContinuedFraction) addend;
+        if (addend instanceof ContinuedFraction rhs) {
             if (rhs.terms() == 1L) {
                 long[] simpleSum = Arrays.copyOf(this.terms, this.terms.length);
                 simpleSum[0] += rhs.termAt(0L);
@@ -511,8 +504,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     @Override
     public Numeric subtract(Numeric subtrahend) {
         if (Zero.isZero(subtrahend)) return this;
-        if (subtrahend instanceof ContinuedFraction) {
-            ContinuedFraction rhs = (ContinuedFraction) subtrahend;
+        if (subtrahend instanceof ContinuedFraction rhs) {
             if (rhs.terms() == 1L) {
                 long[] simpleDiff = Arrays.copyOf(this.terms, this.terms.length);
                 simpleDiff[0] -= rhs.termAt(0L);
@@ -560,8 +552,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     public Numeric multiply(Numeric multiplier) {
         if (One.isUnity(multiplier)) return this;
         if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
-        if (multiplier instanceof ContinuedFraction) {
-            ContinuedFraction rhs = (ContinuedFraction) multiplier;
+        if (multiplier instanceof ContinuedFraction rhs) {
             Iterator<Long> result = GosperTermIterator.multiply(this.iterator(), rhs.iterator());
             ContinuedFraction product = new ContinuedFraction(result, 10);
             if (this.sign() == rhs.sign() && product.termAt(0L) < 0L) {
@@ -601,8 +592,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
         if (One.isUnity(divisor)) return this;
         if (divisor.equals(this)) return One.getInstance(mctx);
-        if (divisor instanceof ContinuedFraction) {
-            ContinuedFraction rhs = (ContinuedFraction) divisor;
+        if (divisor instanceof ContinuedFraction rhs) {
             Iterator<Long> result = GosperTermIterator.divide(this.iterator(), rhs.iterator());
             ContinuedFraction quotient = new ContinuedFraction(result, 10);
             quotient.setMathContext(mctx);
@@ -949,17 +939,13 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
     @Override
     public int compareTo(RealType o) {
         if (o instanceof RealInfinity) {
-            switch (o.sign()) {
-                case NEGATIVE:
-                    return 1;
-                case POSITIVE:
-                    return -1;
-                default:
-                    throw new IllegalStateException("RealInfinity should not have sign " + o.sign());
-            }
+            return switch (o.sign()) {
+                case NEGATIVE -> 1;
+                case POSITIVE -> -1;
+                default -> throw new IllegalStateException("RealInfinity should not have sign " + o.sign());
+            };
         }
-        if (o instanceof ContinuedFraction) {
-            ContinuedFraction that = (ContinuedFraction) o;
+        if (o instanceof ContinuedFraction that) {
             final long extent = computeExtent(this.terms(), that.terms());
             for (long k = 0L; k < extent; k++) {
                 int temp = Long.compare(this.termAt(k), that.termAt(k));
@@ -992,8 +978,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ContinuedFraction) {
-            ContinuedFraction that = (ContinuedFraction) obj;
+        if (obj instanceof ContinuedFraction that) {
             if ((this.mappingFunc == null && that.mappingFunc != null) ||
                     (this.mappingFunc != null && that.mappingFunc == null)) return false;
             return Arrays.equals(this.terms, that.terms) &&
@@ -1253,8 +1238,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
 
             @Override
             public RealType power(Numeric operand) {
-                if (operand instanceof RationalType) {
-                    RationalType exponent = (RationalType) operand;
+                if (operand instanceof RationalType exponent) {
                     long p = exponent.numerator().asBigInteger().longValueExact();
                     long q = exponent.denominator().asBigInteger().longValueExact();
                     if (p == 2L && exponent.denominator().isOdd()) {
@@ -1279,17 +1263,15 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             private long root2term(long k, long n) {
                 final int fiveBlock = (int) ((k - 1L) % 5L);
                 long base = (k - 1L)/5L * 6L + 1L;  // divide by 5 first
-                switch (fiveBlock) {
-                    case 0:
-                        return (base * n - 1L)/2L;
-                    case 1:
-                        return (base * 2L + 4L) * n;
-                    case 2:
+                return switch (fiveBlock) {
+                    case 0 -> (base * n - 1L) / 2L;
+                    case 1 -> (base * 2L + 4L) * n;
+                    case 2 -> {
                         long extBase = base + 4L;
-                        return (extBase * n - 1L)/2L;
-                    default:
-                        return 1L;
-                }
+                        yield (extBase * n - 1L) / 2L;
+                    }
+                    default -> 1L;
+                };
             }
         };
         e.setMathContext(ctx);
@@ -1402,8 +1384,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             ContinuedFraction result = this.pow(exponent);
             result.setMathContext(mctx);
             return result;
-        } else if (operand instanceof RationalType) {
-            RationalType exponent = (RationalType) operand;
+        } else if (operand instanceof RationalType exponent) {
             long p = exponent.numerator().asBigInteger().longValueExact();
             long q = exponent.denominator().asBigInteger().longValueExact();
             ContinuedFraction afterPow = this.pow(p);
