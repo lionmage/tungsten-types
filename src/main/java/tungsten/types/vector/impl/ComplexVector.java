@@ -196,7 +196,7 @@ public class ComplexVector implements Vector<ComplexType> {
      * @return a new vector of complex conjugates of this vector's elements
      */
     public Vector<ComplexType> conjugate() {
-        List<ComplexType> list = elements.stream().map(ComplexType::conjugate).collect(Collectors.toList());
+        List<ComplexType> list = elements.stream().map(ComplexType::conjugate).toList();
         final ComplexVector result = new ComplexVector(list);
         result.setMathContext(mctx);
         return result;
@@ -204,7 +204,7 @@ public class ComplexVector implements Vector<ComplexType> {
 
     @Override
     public Vector<ComplexType> scale(ComplexType factor) {
-        List<ComplexType> list = elements.stream().map(x -> (ComplexType) x.multiply(factor)).collect(Collectors.toList());
+        List<ComplexType> list = elements.stream().map(x -> (ComplexType) x.multiply(factor)).toList();
         final ComplexVector result = new ComplexVector(list);
         result.setMathContext(mctx);
         return result;
