@@ -110,8 +110,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
      * @param term the unary function to add
      */
     public void appendTerm(UnaryFunction<T, R> term) {
-        if (term instanceof Const && termCount() > 0L) {
-            final Const<T, R> cterm = (Const<T, R>) term;
+        if (term instanceof Const<T, R> cterm && termCount() > 0L) {
             final MathContext ctx = cterm.inspect().getMathContext();
             if (Zero.isZero(cterm.inspect())) return;
             try {
@@ -248,7 +247,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         while (iter.hasNext()) {
             Class<T> altArgType = iter.next().getArgumentType();
             if (altArgType != result) {
-                Logger.getLogger(Product.class.getName()).log(Level.WARNING,
+                Logger.getLogger(Sum.class.getName()).log(Level.WARNING,
                         "Mismatched arg types: {0} vs. {1}",
                         new Object[] { altArgType.getTypeName(), result.getTypeName() });
                 if (altArgType.isAssignableFrom(result)) result = altArgType;
@@ -290,8 +289,7 @@ public class Sum<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Sum) {
-            Sum<?, ?> other = (Sum<?, ?>) obj;
+        if (obj instanceof Sum<?, ?> other) {
             if (!getArgumentName().equals(other.getArgumentName())) return false;
             if (termCount() != other.termCount()) return false;
             if (!getReturnType().isAssignableFrom(other.getReturnType())) return false;

@@ -239,15 +239,13 @@ public abstract class ColumnVector<T extends Numeric> implements Vector<T>, Matr
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Vector) {
-            Vector<?> that = (Vector<?>) o;
+        if (o instanceof Vector<?> that) {
             if (this.length() != that.length()) return false;
             for (long i = 0L; i < this.length(); i++) {
                 if (!this.elementAt(i).equals(that.elementAt(i))) return false;
             }
             return true;
-        } else if (o instanceof Matrix) {
-            Matrix<?> that = (Matrix<?>) o;
+        } else if (o instanceof Matrix<?> that) {
             if (that.columns() != this.columns() || that.rows() != this.rows()) return false;
             for (long i = 0L; i < this.rows(); i++) {
                 if (!this.valueAt(i, 0L).equals(that.valueAt(i, 0L))) return false;

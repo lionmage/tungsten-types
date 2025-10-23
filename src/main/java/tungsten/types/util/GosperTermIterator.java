@@ -61,8 +61,7 @@ public class GosperTermIterator implements Iterator<Long> {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof StateVector) {
-                StateVector that = (StateVector) obj;
+            if (obj instanceof StateVector that) {
                 return this.a == that.a &&
                         this.b == that.b &&
                         this.c == that.c &&
