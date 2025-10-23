@@ -188,8 +188,7 @@ public class EulerMascheroni implements RealType {
     @Override
     public Numeric add(Numeric addend) {
         if (Zero.isZero(addend)) return this;
-        if (addend instanceof RealType) {
-            RealType that = (RealType) addend;
+        if (addend instanceof RealType that) {
             return new RealImpl(value.add(that.asBigDecimal(), mctx), mctx, false);
         }
         return addend.add(this);
@@ -199,8 +198,7 @@ public class EulerMascheroni implements RealType {
     public Numeric subtract(Numeric subtrahend) {
         if (subtrahend instanceof EulerMascheroni) return ExactZero.getInstance(mctx);
         if (Zero.isZero(subtrahend)) return this;
-        if (subtrahend instanceof RealType) {
-            RealType that = (RealType) subtrahend;
+        if (subtrahend instanceof RealType that) {
             return new RealImpl(value.subtract(that.asBigDecimal(), mctx), mctx, false);
         }
         return subtrahend.negate().add(this);
@@ -210,8 +208,7 @@ public class EulerMascheroni implements RealType {
     public Numeric multiply(Numeric multiplier) {
         if (One.isUnity(multiplier)) return this;
         if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
-        if (multiplier instanceof RealType) {
-            RealType that = (RealType) multiplier;
+        if (multiplier instanceof RealType that) {
             return new RealImpl(value.multiply(that.asBigDecimal(), mctx), mctx, false);
         }
         return multiplier.multiply(this);
@@ -222,8 +219,7 @@ public class EulerMascheroni implements RealType {
         if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
         if (divisor instanceof EulerMascheroni) return One.getInstance(mctx);
         if (One.isUnity(divisor)) return this;
-        if (divisor instanceof RealType) {
-            RealType that = (RealType) divisor;
+        if (divisor instanceof RealType that) {
             return new RealImpl(value.divide(that.asBigDecimal(), mctx), mctx, false);
         }
         return divisor.inverse().multiply(this);

@@ -281,8 +281,7 @@ public class ZeroVector implements Vector<Numeric> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Vector) {
-            Vector<? extends Numeric> that = (Vector<? extends Numeric>) o;
+        if (o instanceof Vector<? extends Numeric> that) {
             if (that.length() != this.length()) return false;
             return isZeroVector(that);
         }

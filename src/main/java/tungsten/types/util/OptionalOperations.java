@@ -426,16 +426,12 @@ public final class OptionalOperations {
         } catch (NoSuchMethodException ex) {
             if (value instanceof Comparable) {
                 final Zero zero = (Zero) ExactZero.getInstance(value.getMathContext());
-                switch (Integer.signum(zero.compareTo(value))) {
-                    case 1:
-                        return Sign.NEGATIVE;
-                    case 0:
-                        return Sign.ZERO;
-                    case -1:
-                        return Sign.POSITIVE;
-                    default:
-                        throw new IllegalStateException("Signum failed");
-                }
+                return switch (Integer.signum(zero.compareTo(value))) {
+                    case 1 -> Sign.NEGATIVE;
+                    case 0 -> Sign.ZERO;
+                    case -1 -> Sign.POSITIVE;
+                    default -> throw new IllegalStateException("Signum failed");
+                };
             } else {
                 throw new IllegalArgumentException("Cannot obtain sign for " + value);
             }

@@ -202,7 +202,7 @@ public final class UnicodeTextEffects {
                 buf.append(superscriptDigits[digit]);
             } else if (superscriptMap.containsKey(c)) {
                 // special case logic
-                if (buf.length() > 0 && mapsToCombiningCharacter(c)) buf.append('\u2009');
+                if (!buf.isEmpty() && mapsToCombiningCharacter(c)) buf.append('\u2009');
                 buf.append(superscriptMap.get(c));
             }
         }
@@ -219,7 +219,7 @@ public final class UnicodeTextEffects {
                 buf.append(subscriptDigits[digit]);
             } else if (subscriptMap.containsKey(c)) {
                 // add thinspace before combining characters
-                if (buf.length() > 0 && mapsToCombiningCharacter(c)) buf.append('\u2009');
+                if (!buf.isEmpty() && mapsToCombiningCharacter(c)) buf.append('\u2009');
                 buf.append(subscriptMap.get(c));
             }
             if (warnOnce && Character.isUpperCase(c) && !subscriptMap.containsKey(c)) {

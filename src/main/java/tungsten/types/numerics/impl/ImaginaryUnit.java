@@ -263,8 +263,7 @@ public class ImaginaryUnit implements ComplexType {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ImaginaryUnit) return true;
-        if (obj instanceof ComplexType) {
-            final ComplexType that = (ComplexType) obj;
+        if (obj instanceof ComplexType that) {
             return that.isExact() && Zero.isZero(that.real()) && One.isUnity(that.imaginary());
         }
         return false;
