@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class NumericMultiset implements Multiset<Numeric> {
-    private class ElementTuple {
+    private static class ElementTuple {
         private final Numeric value;
         private long multiplicity;
         
@@ -88,8 +88,7 @@ public class NumericMultiset implements Multiset<Numeric> {
         
         @Override
         public boolean equals(Object o) {
-            if (o instanceof ElementTuple) {
-                ElementTuple that = (ElementTuple) o;
+            if (o instanceof ElementTuple that) {
                 return this.value.equals(that.value);
             } else if (o instanceof Numeric) {
                 return this.value.equals(o);

@@ -37,7 +37,6 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.function.Function;
@@ -132,8 +131,8 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
         
         private FFTRecursiveTask[] createSubtasks() {
             SplitTuple split = splitList(source);
-            List<ComplexType> q = split.getEvenElements();  // even
-            List<ComplexType> r = split.getOddElements();  // odd
+            List<ComplexType> q = split.evenElements();  // even
+            List<ComplexType> r = split.oddElements();  // odd
             return new FFTRecursiveTask[] { new FFTRecursiveTask(q), new FFTRecursiveTask(r) };
         }
     }
@@ -177,34 +176,13 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
         return new SplitTuple(evenElements, oddElements);
     }
 
-    private static class SplitTuple {
-        private final List<ComplexType> evenElements;
-        private final List<ComplexType> oddElements;
-
-        SplitTuple(List<ComplexType> even, List<ComplexType> odd) {
-            this.evenElements = even;
-            this.oddElements  = odd;
-        }
-
-        public List<ComplexType> getEvenElements() {
-            return evenElements;
-        }
-
-        public List<ComplexType> getOddElements() {
-            return oddElements;
-        }
-
+    private record SplitTuple(List<ComplexType> evenElements, List<ComplexType> oddElements) {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             SplitTuple that = (SplitTuple) o;
             return evenElements.equals(that.evenElements) && oddElements.equals(that.oddElements);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(evenElements, oddElements);
         }
     }
 }
