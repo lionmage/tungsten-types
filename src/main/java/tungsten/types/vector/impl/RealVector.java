@@ -221,7 +221,7 @@ public class RealVector implements Vector<RealType> {
                 for (int x = 0; x < 7; x++) {
                     long index = cpTable[y][x].getIndex();
                     if (index < 0L) continue;
-                    RealType coeff = cpTable[y][x].getCoeff();
+                    RealType coeff = cpTable[y][x].coeff();
                     try {
                         RealType accum = result.elementAt(index) == null ? (RealType) ExactZero.getInstance(mctx).coerceTo(RealType.class) : result.elementAt(index);
                         result.setElementAt((RealType) accum.add(this.elementAt(y).multiply(other.elementAt(x)).multiply(coeff)), index);
@@ -287,8 +287,7 @@ public class RealVector implements Vector<RealType> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Vector) {
-            Vector<? extends Numeric> that = (Vector<? extends Numeric>) o;
+        if (o instanceof Vector<? extends Numeric> that) {
             if (this.length() != that.length()) return false;
             for (long idx = 0L; idx < this.length(); idx++) {
                 if (!this.elementAt(idx).equals(that.elementAt(idx))) return false;

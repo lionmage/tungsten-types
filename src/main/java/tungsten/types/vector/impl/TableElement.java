@@ -29,7 +29,6 @@ import tungsten.types.numerics.impl.ComplexRectImpl;
 import tungsten.types.numerics.impl.RealImpl;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 /**
  * Package private class implementing a very simple utility class.
@@ -38,49 +37,34 @@ import java.util.Objects;
  *
  * @author Robert Poole <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
  */
-class TableElement {
-    private final int index;
-    private final RealType coeff;
+record TableElement(int index, RealType coeff) {
     private static final RealType ZERO = new RealImpl(BigDecimal.ZERO);
 
-    public TableElement(int index, int coefficient) {
-        this.index = index;
-        switch (coefficient) {
-            case 0:
-                coeff = new RealImpl(BigDecimal.ZERO);
-                break;
-            case 1:
-                coeff = new RealImpl(BigDecimal.ONE);
-                break;
-            case -1:
-                coeff = new RealImpl(BigDecimal.ONE.negate());
-                break;
-            default:
-                throw new IllegalArgumentException("Only allowed coefficients are -1, 0, or 1.");
-        }
+    TableElement(int index, int coeff) {
+        this(index, switch (coeff) {
+            case 0 -> new RealImpl(BigDecimal.ZERO);
+            case 1 -> new RealImpl(BigDecimal.ONE);
+            case -1 -> new RealImpl(BigDecimal.ONE.negate());
+            default -> throw new IllegalArgumentException("Only allowed coefficients are -1, 0, or 1");
+        });
     }
-    
-    public RealType getCoeff() { return coeff; }
-    public ComplexType getCplxCoeff() { return new ComplexRectImpl(coeff, ZERO); }
-    public long getIndex() { return index; }
+
+    public ComplexType getCplxCoeff() {
+        return new ComplexRectImpl(coeff, ZERO);
+    }
+
+    public long getIndex() {
+        return index;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof TableElement) {
-            TableElement that = (TableElement) o;
+        if (o instanceof TableElement that) {
             // we're only comparing the index because different instances
             // may have different coefficients depending on where they're stored
             // in our table, but we still need to match only on the index
             return this.index == that.index;
         }
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 29 * hash + this.index;
-        hash = 29 * hash + Objects.hashCode(this.coeff);
-        return hash;
     }
 }
