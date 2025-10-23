@@ -440,9 +440,7 @@ public final class RangeUtils {
      * @return a {@code Set} of real values
      */
     public static Set<RealType> asRealSet(Range<RealType> range) {
-        if (range instanceof SteppedRange) {
-            SteppedRange srange = (SteppedRange) range;
-
+        if (range instanceof SteppedRange srange) {
             return new Set<>() {
                 @Override
                 public long cardinality() {
@@ -515,8 +513,7 @@ public final class RangeUtils {
 
                 @Override
                 public boolean equals(Object obj) {
-                    if (obj instanceof Set) {
-                        Set<?> that = (Set<?>) obj;
+                    if (obj instanceof Set<?> that) {
                         if (!that.countable() || !that.isOfType(RealType.class)) return false;
                         if (this.cardinality() != that.cardinality()) return false;
                         Set<RealType> other = (Set<RealType>) that;
@@ -579,8 +576,7 @@ public final class RangeUtils {
                     // the elements of other are already contained within this set
                     return this;
                 }
-                if (range instanceof NotchedRange) {
-                    NotchedRange<RealType> notchedRange = (NotchedRange<RealType>) range;
+                if (range instanceof NotchedRange<RealType> notchedRange) {
                     Set<RealType> notches = notchedRange.getNotches();
                     if (notches.cardinality() <= other.cardinality() &&
                             StreamSupport.stream(notches.spliterator(), true).allMatch(other::contains)) {
@@ -605,8 +601,7 @@ public final class RangeUtils {
                     throw new IllegalStateException("While computing union set", e);
                 }
             }
-            if (other instanceof RangeSet) {
-                RangeSet that = (RangeSet) other;
+            if (other instanceof RangeSet that) {
                 if (range.contains(that.range)) return this;
                 else if (that.range.contains(range)) return that;
                 if (!range.overlaps(that.range)) {
@@ -630,8 +625,7 @@ public final class RangeUtils {
                     throw new IllegalStateException("While computing intersection set", e);
                 }
             }
-            if (other instanceof RangeSet) {
-                RangeSet that = (RangeSet) other;
+            if (other instanceof RangeSet that) {
                 if (range.overlaps(that.range)) {
                     if (range.contains(that.range)) return that;
                     else if (that.range.contains(range)) return this;
@@ -669,8 +663,7 @@ public final class RangeUtils {
                 Set<RealType> rangeSet = asRealSet(((NotchedRange<RealType>) range).getInnerRange());
                 return new DiffSet<>(rangeSet, new UnionSet<>(other, notches));
             }
-            if (other instanceof RangeSet) {
-                RangeSet that = (RangeSet) other;
+            if (other instanceof RangeSet that) {
                 if (!range.overlaps(that.range)) return this;
                 if (that.range.contains(range)) return EmptySet.getInstance();
                 final Range<RealType> topRange = new Range<>(that.range.getUpperBound(),
@@ -706,8 +699,7 @@ public final class RangeUtils {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof RangeSet)) return false;
-            RangeSet realTypes = (RangeSet) o;
+            if (!(o instanceof RangeSet realTypes)) return false;
             return Objects.equals(range, realTypes.range);
         }
 

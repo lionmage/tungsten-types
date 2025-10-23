@@ -279,16 +279,12 @@ public final class MathUtils {
     public static Numeric gamma(Numeric z) {
         // special case for small values of z: Γ(z) ∼ 1/z − γ, z → 0
         // first, handle the special values of zero
-        if (z instanceof Zero) {
-            Zero input = (Zero) z;
-            switch (input.sign()) {
-                case ZERO:
-                    throw new ArithmeticException("\uD835\uDEAA(n) is not analytic at 0");
-                case POSITIVE:
-                    return PosInfinity.getInstance(input.getMathContext());
-                case NEGATIVE:
-                    return NegInfinity.getInstance(input.getMathContext());
-            }
+        if (z instanceof Zero input) {
+            return switch (input.sign()) {
+                case ZERO -> throw new ArithmeticException("\uD835\uDEAA(n) is not analytic at 0");
+                case POSITIVE -> PosInfinity.getInstance(input.getMathContext());
+                case NEGATIVE -> NegInfinity.getInstance(input.getMathContext());
+            };
         }
         // next, check if we're within some neighborhood of 0
         final Comparator<Numeric> comp = obtainGenericComparator();
@@ -326,21 +322,23 @@ public final class MathUtils {
                     RealType num = (RealType) factorial(m2).coerceTo(RealType.class);
                     OptionalOperations.setMathContext(num, z.getMathContext());  // an insurance policy
                     RealType denom = (RealType) computeIntegerExponent(two, m2).multiply(factorial(m));
-                    switch (msign) {
-                        case POSITIVE:
+                    return switch (msign) {
+                        case POSITIVE ->
                             // See https://proofwiki.org/wiki/Gamma_Function_of_Positive_Half-Integer
-                            return num.multiply(sqrtPi).divide(denom);
-                        case NEGATIVE:
+                            num.multiply(sqrtPi).divide(denom);
+                        case NEGATIVE -> {
                             // See https://proofwiki.org/wiki/Gamma_Function_of_Negative_Half-Integer
                             if (m.isOdd()) denom = denom.negate();
-                            return denom.multiply(sqrtPi).divide(num);
-                        case ZERO:
+                            yield denom.multiply(sqrtPi).divide(num);
+                        }
+                        case ZERO -> {
                             Logger.getLogger(MathUtils.class.getName()).log(Level.SEVERE,
                                     "This code should never have been reached.  Corner cases for \uD835\uDEAA(0) and \uD835\uDEAA({0}) " +
                                             "should have already handled this scenario while computing \uD835\uDEAA({1}).  Condition violated: m \u2260 0",
-                                    new Object[] {onehalf, zz});
+                                    new Object[]{onehalf, zz});
                             throw new IllegalStateException("\uD835\uDEAA(" + zz + ") [non-reduced z = " + z + "] failed with condition violated: m \u2260 0");
-                    }
+                        }
+                    };
                 } catch (CoercionException ce) {
                     throw new IllegalStateException("While computing \uD835\uDEAA(" + zz + ")", ce);
                 }
@@ -1556,8 +1554,7 @@ public final class MathUtils {
         } else if (val instanceof RealType) {
             noFrac = val.isCoercibleTo(IntegerType.class);
             intermediate = ((RealType) val).asBigDecimal().toBigInteger();
-        } else if (val instanceof RationalType) {
-            RationalType that = (RationalType) val;
+        } else if (val instanceof RationalType that) {
             // use integer division instead of BigDecimal -> BigInteger conversion
             IntegerType[] quotient = that.divideWithRemainder();
             intermediate = quotient[0].asBigInteger();
@@ -1629,14 +1626,11 @@ public final class MathUtils {
         }
         if (exponent instanceof RealInfinity) {
             if (base.sign() == Sign.POSITIVE) {
-                switch (((RealInfinity) exponent).sign()) {
-                    case NEGATIVE:
-                        return new RealImpl(BigDecimal.ZERO, mctx);
-                    case POSITIVE:
-                        return RealInfinity.getInstance(Sign.POSITIVE, mctx);
-                    default:
-                        throw new IllegalStateException("Unknown state for " + exponent);
-                }
+                return switch (((RealInfinity) exponent).sign()) {
+                    case NEGATIVE -> new RealImpl(BigDecimal.ZERO, mctx);
+                    case POSITIVE -> RealInfinity.getInstance(Sign.POSITIVE, mctx);
+                    default -> throw new IllegalStateException("Unknown state for " + exponent);
+                };
             } else {
                 if (((RealInfinity) exponent).sign() == Sign.NEGATIVE) {
                     return new RealImpl(BigDecimal.ZERO, mctx);
@@ -3324,8 +3318,7 @@ public final class MathUtils {
             return diagonalElements;
         }
         // if M is block-diagonal, then the eigenvalues of M are the eigenvalues of all submatrices on the diagonal
-        if (M instanceof AggregateMatrix) {
-            AggregateMatrix<? extends Numeric> blockMatrix = (AggregateMatrix<? extends Numeric>) M;
+        if (M instanceof AggregateMatrix<? extends Numeric> blockMatrix) {
             if (blockMatrix.subMatrixRows() != blockMatrix.subMatrixColumns()) {
                 Logger.getLogger(MathUtils.class.getName()).log(Level.WARNING,
                         "Block matrix is {0}×{1} (detected as square) but the tiles are laid out {2}×{3} (non-square).",
@@ -3582,17 +3575,11 @@ public final class MathUtils {
         if (U.rows() != U.columns() || !U.isUpperTriangular()) throw new IllegalArgumentException("Matrix U must be upper-triangular and square");
         final Class<T> clazz = U.getRow(0L).getElementType(); // U is upper-triangular, so row 0 should consist of all non-zero elements
         NumericHierarchy h = NumericHierarchy.forNumericType(clazz);
-        Vector<T> x;
-        switch (h) {
-            case COMPLEX:
-                x = (Vector<T>) new ComplexVector(c.length());
-                break;
-            case REAL:
-                x = (Vector<T>) new RealVector(c.length());
-                break;
-            default:
-                throw new UnsupportedOperationException("No vector type defined for " + clazz.getTypeName());
-        }
+        Vector<T> x = switch (h) {
+            case COMPLEX -> (Vector<T>) new ComplexVector(c.length());
+            case REAL -> (Vector<T>) new RealVector(c.length());
+            default -> throw new UnsupportedOperationException("No vector type defined for " + clazz.getTypeName());
+        };
         final long n = U.rows();  // also U.columns() would work since U is an upper-triangular square matrix
 
         for (long i = n - 1L; i >= 0L; i--) {
@@ -4165,19 +4152,19 @@ public final class MathUtils {
     public static IntegerType trunc(Numeric val) {
         NumericHierarchy hval = NumericHierarchy.forNumericType(val.getClass());
         if (hval == null) throw new IllegalArgumentException("Cannot truncate values of " + val.getClass().getTypeName());
-        switch (hval) {
-            case RATIONAL:
+        return switch (hval) {
+            case RATIONAL -> {
                 IntegerType[] wholeAndFrac = ((RationalType) val).divideWithRemainder();
-                return wholeAndFrac[0];
-            case REAL:
+                yield wholeAndFrac[0];
+            }
+            case REAL -> {
                 RealType rval = (RealType) val;
-                return new IntegerImpl(rval.asBigDecimal().toBigInteger(),
+                yield new IntegerImpl(rval.asBigDecimal().toBigInteger(),
                         rval.isExact() && rval.isCoercibleTo(IntegerType.class));
-            case INTEGER:
-                return (IntegerType) val;
-            default:
-                throw new ArithmeticException("Cannot truncate " + val);
-        }
+            }
+            case INTEGER -> (IntegerType) val;
+            default -> throw new ArithmeticException("Cannot truncate " + val);
+        };
     }
 
     /**
