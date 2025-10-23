@@ -42,7 +42,6 @@ import java.math.MathContext;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -116,8 +115,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
      * @param term the unary function to append
      */
     public void appendTerm(UnaryFunction<T, R> term) {
-        if (term instanceof Const && termCount() > 0L) {
-            final Const<T, R> cterm = (Const<T, R>) term;
+        if (term instanceof Const<T, R> cterm && termCount() > 0L) {
             final MathContext ctx = cterm.inspect().getMathContext();
             if (One.isUnity(cterm.inspect())) return;
             try {
@@ -199,7 +197,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
                     .map(Const::inspect).reduce(Product::safeReduce);
             R value = safeCoerce(cval.orElseThrow());
             if (Zero.isZero(value)) return Const.getInstance(value);
-            List<UnaryFunction<T, R>> cleaned = terms.stream().filter(f -> !Const.isConstEquivalent(f)).collect(Collectors.toList());
+            List<UnaryFunction<T, R>> cleaned = terms.stream().filter(f -> !Const.isConstEquivalent(f)).toList();
             if (cleaned.isEmpty()) return Const.getInstance(value);
             Product<T, R> p = new Product<>(getArgumentName(), getReturnType());
             p.terms.addAll(cleaned);
@@ -310,8 +308,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Product) {
-            Product<?, ?> other = (Product<?, ?>) obj;
+        if (obj instanceof Product<?, ?> other) {
             if (!getArgumentName().equals(other.getArgumentName())) return false;
             if (termCount() != other.termCount()) return false;
             if (!getReturnType().isAssignableFrom(other.getReturnType())) return false;

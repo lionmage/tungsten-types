@@ -238,11 +238,9 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
      * @param alienFunc the foreign function we wish to add
      */
     public void add(UnaryFunction<T, R> alienFunc) {
-        if (alienFunc instanceof Product) {
-            Product<T, R> prod = (Product<T, R>) alienFunc;
+        if (alienFunc instanceof Product<T, R> prod) {
             this.add(termFromProd(prod));
-        } else if (alienFunc instanceof Sum) {
-            Sum<T, R> sum = (Sum<T, R>) alienFunc;
+        } else if (alienFunc instanceof Sum<T, R> sum) {
             sum.stream().forEach(this::add);
         } else if (alienFunc instanceof Reflexive) {
             this.add(new PolyTerm<>(List.of(alienFunc.expectedArguments()[0]), List.of(1L), getReturnType()));
@@ -270,22 +268,18 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
      * @return the product of {@code this} and {@code alienFunc}
      */
     public Polynomial<T, R> multiply(UnaryFunction<T, R> alienFunc) {
-        if (alienFunc instanceof Const) {
-            Const<T, R> foreignConst = (Const<T, R>) alienFunc;
+        if (alienFunc instanceof Const<T, R> foreignConst) {
             List<Term<T, R>> scaleTerms = termStream().map(orig -> orig.scale(foreignConst.inspect()))
                     .collect(Collectors.toList());
             return new Polynomial<>(scaleTerms, getReturnType());
-        } else if (alienFunc instanceof Pow) {
-            Pow<T, R> powerFunc = (Pow<T, R>) alienFunc;
+        } else if (alienFunc instanceof Pow<T, R> powerFunc) {
             List<Term<T, R>> multTerms = termStream().map(orig -> orig.multiply(powerFunc)).collect(Collectors.toList());
             return new Polynomial<>(multTerms, getReturnType());
-        } else if (alienFunc instanceof Sum) {
-            Sum<T, R> sum = (Sum<T, R>) alienFunc;
+        } else if (alienFunc instanceof Sum<T, R> sum) {
             Polynomial<T, R> result = new Polynomial<>(getReturnType());
             sum.stream().map(this::multiply).forEach(result::add);
             return result;
-        } else if (alienFunc instanceof Product) {
-            Product<T, R> prod = (Product<T, R>) alienFunc;
+        } else if (alienFunc instanceof Product<T, R> prod) {
             if (prod.termCount() == 1L) return multiply(prod.stream().findFirst().orElseThrow());
             Term<T, R> pterm = termFromProd(prod);
             return this.multiply(pterm);
@@ -313,9 +307,9 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
             // Fortunately, we don't need the arg type or return type of Pow here, but it really
             // bothers me that even Pow<?, ?> causes issues.  Still haven't found a good solution.
             List<Pow> subterms = product.stream().filter(Pow.class::isInstance).map(Pow.class::cast)
-                    .collect(Collectors.toList());  // Trying to make this a List<Pow<T, R>> or a List<Pow<?, ?>> causes build issues
+                    .toList();  // Trying to make this a List<Pow<T, R>> or a List<Pow<?, ?>> causes build issues
             List<String> varNames = subterms.stream().map(f -> f.expectedArguments()[0]).collect(Collectors.toList());
-            List<Numeric> exponents = subterms.stream().map(Pow::getExponent).collect(Collectors.toList());
+            List<Numeric> exponents = subterms.stream().map(Pow::getExponent).toList();
             if (exponents.stream().anyMatch(RationalType.class::isInstance)) {
                 List<RationalType> rationalExponents = exponents.stream().map(this::safeCoerce).collect(Collectors.toList());
                 return new RationalExponentPolyTerm<>(coeff, varNames, rationalExponents);
@@ -421,8 +415,7 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         if (!term.isConstant() && !args.contains(varName)) throw new IllegalArgumentException("Term does not reference " + varName);
 
         if (term.isConstant()) return Const.getInstance(term.coefficient());
-        if (term instanceof PolyTerm) {
-            PolyTerm<T, R> polyTerm = (PolyTerm<T, R>) term;
+        if (term instanceof PolyTerm<T, R> polyTerm) {
             R coeff = polyTerm.coefficient();
             IntegerType exponent = new IntegerImpl(BigInteger.valueOf(polyTerm.order(varName)));
             Pow<T, R> pow = new Pow<>(varName, exponent, term.getReturnType());

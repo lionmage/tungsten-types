@@ -108,8 +108,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
                     RationalType exponent = exponentFor(argName);
 
                     if (Zero.isZero(exponent)) continue;
-                    if (arguments.elementAt(index) instanceof ComplexType) {
-                        ComplexType element = (ComplexType) arguments.elementAt(index);
+                    if (arguments.elementAt(index) instanceof ComplexType element) {
                         ComplexType intermediate = MathUtils.generalizedExponent(element, exponent, arguments.getMathContext());
                         accum = accum.multiply(intermediate);
                     } else {
@@ -159,8 +158,7 @@ public class RationalExponentPolyTerm<T extends Numeric, R extends Numeric> exte
         }
         Set<String> mergedVars = new LinkedHashSet<>(varNames);
         Arrays.stream(multiplier.expectedArguments()).forEachOrdered(mergedVars::add);
-        if (multiplier instanceof RationalExponentPolyTerm) {
-            RationalExponentPolyTerm<T, R> other = (RationalExponentPolyTerm<T, R>) multiplier;
+        if (multiplier instanceof RationalExponentPolyTerm<T, R> other) {
             List<RationalType> mergedExponents = mergedVars.stream()
                     .map(varName -> exponentFor(varName).add(other.exponentFor(varName)))
                     .map(RationalType.class::cast).collect(Collectors.toList());

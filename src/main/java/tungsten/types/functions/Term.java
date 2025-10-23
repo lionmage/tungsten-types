@@ -50,7 +50,7 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
      */
     protected Term(Collection<String> variableNames, Map<String, Range<RealType>> inputRanges, Class<R> clazz) {
         this(variableNames, clazz);
-        varNames.stream().forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
+        varNames.forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
     }
 
     /**
@@ -77,7 +77,7 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
     protected Term(Class<R> clazz, Map<String, Range<RealType>> inputRanges, String... variableNames) {
         this(clazz, variableNames);
         // only copy the ranges that apply
-        varNames.stream().forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
+        varNames.forEach(varName -> rangeMap.put(varName, inputRanges.get(varName)));
     }
 
     @Override
@@ -148,8 +148,7 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Term)) return false;
-        Term<?, ?> term = (Term<?, ?>) o;
+        if (!(o instanceof Term<?, ?> term)) return false;
         return rangeMap.equals(term.rangeMap) && varNames.equals(term.varNames);
     }
 

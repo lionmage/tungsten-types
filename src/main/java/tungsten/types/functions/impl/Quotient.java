@@ -176,8 +176,7 @@ public class Quotient<T extends Numeric, R extends Numeric> extends UnaryFunctio
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Quotient)) return false;
-        Quotient<?, ?> quotient = (Quotient<?, ?>) o;
+        if (!(o instanceof Quotient<?, ?> quotient)) return false;
         if (this.getComposedFunction().isPresent()) {
             if (quotient.getComposedFunction().isEmpty()) return false;
             if (!quotient.getComposedFunction().equals(this.getComposedFunction())) return false;

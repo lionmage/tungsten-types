@@ -299,7 +299,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
         }
         if (!isConstant()) {
             // if we already appended something to the buffer, append U+22C5 (dot operator)
-            if (buf.length() > 0) buf.append(DOT_OPERATOR);
+            if (!buf.isEmpty()) buf.append(DOT_OPERATOR);
             for (String varName : varNames) {
                 long exponent = order(varName);
                 if (exponent == 0L) continue;
@@ -314,7 +314,7 @@ public class PolyTerm<T extends Numeric, R extends Numeric> extends Term<T, R> {
                 buf.setLength(buf.length() - 1);
             }
         }
-        if (buf.length() == 0 && One.isUnity(coefficient())) return "\uD835\uDFCF";  // bold mathematical 1, surrogate pair for U+1D7CF
+        if (buf.isEmpty() && One.isUnity(coefficient())) return "\uD835\uDFCF";  // bold mathematical 1, surrogate pair for U+1D7CF
 
         return buf.toString();
     }
