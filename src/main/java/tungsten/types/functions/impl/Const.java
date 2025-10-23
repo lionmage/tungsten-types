@@ -81,16 +81,13 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
      */
     public static boolean isConstEquivalent(UnaryFunction<?, ?> fn) {
         if (fn instanceof Const) return true;
-        if (fn instanceof Product) {
-            Product<?, ?> prod = (Product<?, ?>) fn;
+        if (fn instanceof Product<?, ?> prod) {
             return prod.stream().allMatch(Const::isConstEquivalent);
         }
-        if (fn instanceof Sum) {
-            Sum<?, ?> sum = (Sum<?, ?>) fn;
+        if (fn instanceof Sum<?, ?> sum) {
             return sum.stream().allMatch(Const::isConstEquivalent);
         }
-        if (fn instanceof Quotient) {
-            Quotient<?, ?> q = (Quotient<?, ?>) fn;
+        if (fn instanceof Quotient<?, ?> q) {
             return isConstEquivalent(q.getNumerator()) && isConstEquivalent(q.getDenominator());
         }
 
@@ -111,22 +108,19 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
                 RealType realVal = (RealType) ((Const<?, ?>) fn).inspect().coerceTo(RealType.class);
                 return new Const<>(realVal);
             }
-            if (fn instanceof Product) {
-                Product<?, ?> prod = (Product<?, ?>) fn;
+            if (fn instanceof Product<?, ?> prod) {
                 Numeric val = prod.stream().map(Const::getConstEquivalent).map(Const::inspect)
                         .map(Numeric.class::cast)
                         .reduce(One.getInstance(MathContext.UNLIMITED), Numeric::multiply);
                 return new Const<>((RealType) val.coerceTo(RealType.class));
             }
-            if (fn instanceof Sum) {
-                Sum<?, ?> sum = (Sum<?, ?>) fn;
+            if (fn instanceof Sum<?, ?> sum) {
                 Numeric val = sum.stream().map(Const::getConstEquivalent).map(Const::inspect)
                         .map(Numeric.class::cast)
                         .reduce(ExactZero.getInstance(MathContext.UNLIMITED), Numeric::add);
                 return new Const<>((RealType) val.coerceTo(RealType.class));
             }
-            if (fn instanceof Quotient) {
-                Quotient<?, ?> quotient = (Quotient<?, ?>) fn;
+            if (fn instanceof Quotient<?, ?> quotient) {
                 Const<? super RealType, RealType> num = getConstEquivalent(quotient.getNumerator());
                 Const<? super RealType, RealType> denom = getConstEquivalent(quotient.getDenominator());
                 return new Const<>((RealType) num.inspect().divide(denom.inspect()));

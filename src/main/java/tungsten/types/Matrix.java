@@ -365,8 +365,7 @@ public interface Matrix<T extends Numeric> {
      * @return a matrix that is this matrix raised to the {@code n}<sup>th</sup> power
      */
     default Matrix<? extends Numeric> pow(Numeric n) {
-        if (n instanceof RationalType) {
-            RationalType exponent = (RationalType) n;
+        if (n instanceof RationalType exponent) {
             Matrix<Numeric> intermediate = (Matrix<Numeric>) pow(exponent.numerator());
             if (exponent.denominator().isPowerOf2()) {
                 long denom = exponent.denominator().asBigInteger().longValueExact();

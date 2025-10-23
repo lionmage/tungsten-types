@@ -226,8 +226,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
         if (this.columns() != multiplier.rows()) {
             throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
-        if (multiplier instanceof DiagonalMatrix) {
-            DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
+        if (multiplier instanceof DiagonalMatrix<T> other) {
             ColumnarMatrix<T> result = new ColumnarMatrix<>();
             for (long column = 0L; column < columns(); column++) {
                 result.append(getColumn(column).scale(other.valueAt(column, column)));
@@ -475,8 +474,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
+        if (o instanceof Matrix<? extends Numeric> that) {
             if (columns() != that.columns()) return false;
             for (long column = 0L; column < columns(); column++) {
                 if (!getColumn(column).equals(that.getColumn(column))) return false;
