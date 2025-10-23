@@ -94,6 +94,11 @@ with IntelliJ and its Gradle integration, I have decided to move Groovy-specific
 into a [separate project](https://github.com/lionmage/tungsten-groovy).
 Methods to support Groovy operator overloading will remain.
 
+As of version 0.9, the library is built against Java 17.
+This allows for cleaning up some visually complex code and allows for using JUnit 6.
+More and more packages now have a baseline of Java 17, and I really wanted to use some of the
+new language features, so it just made sense to upgrade.
+
 As of version 0.5, I am publishing packages to GitHub.  This library may be included in Maven
 dependencies with the following snippet:
 
@@ -111,7 +116,7 @@ dependencies with the following snippet:
 <dependency>
   <groupId>tungsten</groupId>
   <artifactId>tungsten-types</artifactId>
-  <version>0.7</version>
+  <version>0.9</version>
 </dependency>
 ```
 
