@@ -31,7 +31,7 @@ import tungsten.types.numerics.impl.RealImpl;
 import java.math.BigDecimal;
 
 /**
- * Package private class implementing a very simple utility class.
+ * Package private class encapsulating a mapping from an index to a coefficient.
  * This is intended for doing lookups of vector indices for things like cross
  * products.
  *
