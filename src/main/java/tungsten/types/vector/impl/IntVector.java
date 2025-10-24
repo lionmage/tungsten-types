@@ -51,6 +51,10 @@ public class IntVector implements Vector<IntegerType> {
     private final BigInteger[] elements;
     private MathContext mctx = MathContext.UNLIMITED;
 
+    /**
+     * Construct an {@code IntVector} from an array of {@code BigInteger}s.
+     * @param elements an array of {@code BigInteger} values
+     */
     protected IntVector(BigInteger[] elements) {
         this.elements = elements;
     }
