@@ -42,10 +42,18 @@ import java.util.logging.Logger;
 public class Range<T extends Numeric & Comparable<? super T>> {
     public enum BoundType { INCLUSIVE, EXCLUSIVE }
 
+    /**
+     * A representation of a bound for a range.
+     */
     public class Bound implements Comparable<T> {
         private final BoundType type;
         private final T value;
-        
+
+        /**
+         * Create a {@code Bound} for the given value and of the given type.
+         * @param value the value associated with this bound
+         * @param type  the type of this bound
+         */
         public Bound(T value, BoundType type) {
             this.value = value;
             this.type  = type;
@@ -55,7 +63,13 @@ public class Range<T extends Numeric & Comparable<? super T>> {
         public int compareTo(T o) {
             return value.compareTo(o);
         }
-        
+
+        /**
+         * Determine if the given value is within the lower
+         * bound of this range.
+         * @param o the value to test
+         * @return true if and only if {@code o} is within the lower bound
+         */
         public boolean matchesLower(T o) {
             return switch (type) {
                 case INCLUSIVE -> this.compareTo(o) <= 0;
@@ -63,7 +77,13 @@ public class Range<T extends Numeric & Comparable<? super T>> {
                 default -> throw new IllegalStateException("Unknown bound of type " + type);
             };
         }
-        
+
+        /**
+         * Determine if the given value is within the upper
+         * bound of this range.
+         * @param o the value to test
+         * @return true if and only if {@code o} is within the upper bound
+         */
         public boolean matchesUpper(T o) {
             return switch (type) {
                 case INCLUSIVE -> this.compareTo(o) >= 0;
@@ -71,8 +91,17 @@ public class Range<T extends Numeric & Comparable<? super T>> {
                 default -> throw new IllegalStateException("Unknown bound of type " + type);
             };
         }
-        
+
+        /**
+         * Determine whether this bound is inclusive.
+         * @return true if and only if this bound is inclusive
+         */
         public boolean isInclusive() { return type == BoundType.INCLUSIVE; }
+
+        /**
+         * Obtain the value associated with this bound.
+         * @return the value
+         */
         public T getValue() { return value; }
 
         @Override
@@ -103,24 +132,55 @@ public class Range<T extends Numeric & Comparable<? super T>> {
         this.lowerBound = new Bound(lowerVal, type);
         this.upperBound = new Bound(upperVal, type);
     }
-    
+
+    /**
+     * Generate a {@code Range} with the given bounds.
+     * @param lowerVal  the lower bound
+     * @param lowerType the type of the lower bound
+     * @param upperVal  the upper bound
+     * @param upperType the type of the upper bound
+     */
     public Range(T lowerVal, BoundType lowerType, T upperVal, BoundType upperType) {
         this.lowerBound = new Bound(lowerVal, lowerType);
         this.upperBound = new Bound(upperVal, upperType);
     }
-    
+
+    /**
+     * Determine whether this {@code Range} contains the given value.
+     * @param val the value to test
+     * @return true if and only if {@code val} falls within this range
+     */
     public boolean contains(T val) {
         return lowerBound.matchesLower(val) && upperBound.matchesUpper(val);
     }
 
+    /**
+     * Determine whether this {@code Range} contains the given range.
+     * @param range the range to test
+     * @return true if {@code range} falls within this range entirely
+     */
     public boolean contains(Range<T> range) {
         return lowerBound.matchesLower(range.getLowerBound()) && upperBound.matchesUpper(range.getUpperBound());
     }
 
+    /**
+     * Determine whether the given range overlaps with this range.
+     * @param range the range to test
+     * @return true if there is some overlap between {@code this} and {@code range}
+     */
     public boolean overlaps(Range<T> range) {
         return this.contains(range.getLowerBound()) || this.contains(range.getUpperBound());
     }
 
+    /**
+     * Given two {@code Range}s, pick the narrowest.  In the case where {@code A} entirely
+     * contains {@code B}, this returns {@code B}, and vice versa.  In the case of overlapping
+     * ranges, an intersection is computed.  Otherwise, create a notched range that contains
+     * {@code A} and {@code B}.
+     * @param A the first {@code Range}
+     * @param B the second {@code Range}
+     * @return a {@code Range} representing the narrowest of {@code A} and {@code B}
+     */
     public static Range<RealType> chooseNarrowest(Range<RealType> A, Range<RealType> B) {
         if (A.contains(B)) return B;
         if (B.contains(A)) return A;
