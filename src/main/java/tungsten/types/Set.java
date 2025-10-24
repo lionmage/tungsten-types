@@ -38,6 +38,12 @@ import java.util.stream.StreamSupport;
  */
 public interface Set<T> extends Iterable<T> {
     /**
+     * Error message to be emitted when calling mutator methods on
+     * the result of {@code Set.of()}.
+     */
+    String IMMUTABLE = "Set is immutable";
+
+    /**
      * Returns the cardinality (size) of this set.  If this is an
      * infinite set, returns -1.
      * @return the cardinality of a finite set, or -1 for an infinite set
@@ -156,12 +162,12 @@ public interface Set<T> extends Iterable<T> {
 
             @Override
             public void append(T element) {
-                throw new UnsupportedOperationException("Set is immutable");
+                throw new UnsupportedOperationException(IMMUTABLE);
             }
 
             @Override
             public void remove(T element) {
-                throw new UnsupportedOperationException("Set is immutable");
+                throw new UnsupportedOperationException(IMMUTABLE);
             }
 
             @Override
@@ -211,8 +217,7 @@ public interface Set<T> extends Iterable<T> {
 
             @Override
             public boolean equals(Object obj) {
-                if (obj instanceof Set) {
-                    Set<?> that = (Set<?>) obj;
+                if (obj instanceof Set<?> that) {
                     if (that.countable() && this.cardinality() == that.cardinality()) {
                         return StreamSupport.stream(that.spliterator(), true).map(elementType::cast).allMatch(this::contains);
                     }
