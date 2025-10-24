@@ -60,6 +60,12 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
         notches = Set.of(except);
     }
 
+    /**
+     * Construct a {@code NotchedRange} using an existing range, excluding elements of the
+     * supplied {@code Set}.
+     * @param source   the original range
+     * @param excluded the elements to exclude
+     */
     public NotchedRange(Range<T> source, Set<T> excluded) {
         super(source.getLowerBound(), source.isLowerClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE,
                 source.getUpperBound(), source.isUpperClosed() ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE);

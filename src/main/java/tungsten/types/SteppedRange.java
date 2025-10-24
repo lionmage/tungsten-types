@@ -49,6 +49,14 @@ import java.util.stream.StreamSupport;
 public class SteppedRange extends Range<RealType> implements Iterable<RealType> {
     private final RealType stepSize;
 
+    /**
+     * Construct a stepped range that begins with {@code start} (inclusive) and
+     * covers the range from {@code start} to {@code end} in increments of {@code stepSize}.
+     * @param start    the beginning of the range
+     * @param end      the end of the range
+     * @param endType  the type of the range's end
+     * @param stepSize the increment size
+     */
     public SteppedRange(RealType start, RealType end, BoundType endType, RealType stepSize) {
         super(start, BoundType.INCLUSIVE, end, endType);
         if (stepSize.compareTo((RealType) end.subtract(start)) > 0) {
@@ -179,10 +187,19 @@ public class SteppedRange extends Range<RealType> implements Iterable<RealType> 
         };
     }
 
+    /**
+     * Obtain a parallel stream of the elements in this stepped range.
+     * @return a parallel {@code Stream<RealType>}
+     */
     public Stream<RealType> parallelStream() {
         return StreamSupport.stream(this.spliterator(), true);
     }
 
+    /**
+     * Obtain the step size of this stepped range.
+     * This is the amount by which an iteration is incremented.
+     * @return the step size
+     */
     public RealType getStepSize() {
         return stepSize;
     }
