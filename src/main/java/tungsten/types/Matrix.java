@@ -26,6 +26,8 @@ package tungsten.types;
 
 import tungsten.types.annotations.Columnar;
 import tungsten.types.exceptions.CoercionException;
+import tungsten.types.matrix.impl.BasicMatrix;
+import tungsten.types.matrix.impl.ColumnarMatrix;
 import tungsten.types.matrix.impl.IdentityMatrix;
 import tungsten.types.matrix.impl.ZeroMatrix;
 import tungsten.types.numerics.*;
@@ -419,7 +421,7 @@ public interface Matrix<T extends Numeric> {
      * elements A<sub>j,k</sub> and the subtrahend has elements
      * B<sub>j,k</sub>, the resulting matrix M has elements
      * A<sub>j,k</sub>&nbsp;&minus;&nbsp;B<sub>j,k</sub>.
-     * @param subtrahend the matrix to be added to {@code this}
+     * @param subtrahend the matrix to be subtracted from {@code this}
      * @return a {@code Matrix} that is the difference between {@code this} and {@code subtrahend}
      */
     default Matrix<T> subtract(Matrix<T> subtrahend) {
@@ -434,22 +436,20 @@ public interface Matrix<T extends Numeric> {
             // optimized calculation of A-I
             return MathUtils.calcAminusI(this);
         }
-        Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(subtrahend); // safer than subtrahend.valueAt(0L, 0L).getClass()
-        final MathContext ctx = subtrahend.getClass().isAnnotationPresent(Columnar.class) ?
-                subtrahend.getColumn(0L).getMathContext() :
-                subtrahend.getRow(0L).getMathContext();
-        if (clazz == null || clazz == Numeric.class) {
-            Logger.getLogger(Matrix.class.getName()).log(Level.FINE,
-                    "Subtrahend matrix elements are of an abstract Numeric type; using lhs element type instead.");
-            clazz = (Class<T>) OptionalOperations.findTypeFor(this);
+        final boolean columnar = subtrahend.getClass().isAnnotationPresent(Columnar.class);
+        final Matrix<T> negatedSubtrahend;
+        if (columnar) {
+            ColumnarMatrix<T> temp = new ColumnarMatrix<>();
+            LongStream.range(0L, subtrahend.columns()).mapToObj(subtrahend::getColumn)
+                    .map(ColumnVector::negate).forEachOrdered(temp::append);
+            negatedSubtrahend = temp;
+        } else {
+            BasicMatrix<T> temp = new BasicMatrix<>();
+            LongStream.range(0L, subtrahend.rows()).mapToObj(subtrahend::getRow)
+                    .map(RowVector::negate).forEachOrdered(temp::append);
+            negatedSubtrahend = temp;
         }
-        try {
-            final T negOne = (T) new RealImpl(BigDecimal.valueOf(-1L), ctx).coerceTo(clazz);
-            return this.add(subtrahend.scale(negOne));
-        } catch (CoercionException ce) {
-            throw new IllegalStateException("While subtracting a " +
-                    subtrahend.rows() + MULT_SIGN + subtrahend.columns() + " matrix", ce);
-        }
+        return this.add(negatedSubtrahend);
     }
 
     /**
