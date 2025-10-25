@@ -186,8 +186,8 @@ public class Const<T extends Numeric, R extends Numeric> extends UnaryFunction<T
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Const) {
-            return value.equals(((Const<?, ?>) obj).inspect());
+        if (obj instanceof Const<?, ?> constant) {
+            return value.equals(constant.inspect());
         }
         return false;
     }
