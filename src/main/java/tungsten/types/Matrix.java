@@ -31,7 +31,6 @@ import tungsten.types.matrix.impl.ColumnarMatrix;
 import tungsten.types.matrix.impl.IdentityMatrix;
 import tungsten.types.matrix.impl.ZeroMatrix;
 import tungsten.types.numerics.*;
-import tungsten.types.numerics.impl.RealImpl;
 import tungsten.types.numerics.impl.Zero;
 import tungsten.types.util.ClassTools;
 import tungsten.types.util.MathUtils;
@@ -42,7 +41,6 @@ import tungsten.types.vector.impl.ArrayColumnVector;
 import tungsten.types.vector.impl.ArrayRowVector;
 
 import java.lang.reflect.Array;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.concurrent.*;
