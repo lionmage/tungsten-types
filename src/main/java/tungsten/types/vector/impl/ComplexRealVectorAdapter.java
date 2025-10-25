@@ -44,8 +44,9 @@ import java.math.MathContext;
  *  or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class ComplexRealVectorAdapter implements Vector<ComplexType> {
+    private static final String NO_COERCION = "Adapter does not support coercion of underlying Vector<RealType>";
+    private final RealType ZERO;
     private final Vector<RealType> realVector;
-    private static final RealType ZERO = new RealImpl(BigDecimal.ZERO);
 
     /**
      * Construct a {@code ComplexRealVectorAdapter} which wraps a
@@ -54,6 +55,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
      */
     public ComplexRealVectorAdapter(Vector<RealType> realvect) {
         realVector = realvect;
+        ZERO = new RealImpl(BigDecimal.ZERO, realvect.getMathContext());
     }
 
     @Override
@@ -72,7 +74,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
         if (Zero.isZero(element.imaginary())) {
             realVector.setElementAt(element.real(), position);
         }
-        throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>");
+        throw new UnsupportedOperationException(NO_COERCION);
     }
 
     @Override
@@ -80,7 +82,7 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
         if (Zero.isZero(element.imaginary())) {
             realVector.append(element.real());
         }
-        throw new UnsupportedOperationException("Adapter does not support coercion of underlying Vector<RealType>");
+        throw new UnsupportedOperationException(NO_COERCION);
     }
 
     @Override
