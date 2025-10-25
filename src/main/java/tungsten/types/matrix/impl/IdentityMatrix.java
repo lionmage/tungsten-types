@@ -176,13 +176,11 @@ public class IdentityMatrix implements Matrix<Numeric> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof IdentityMatrix) {
-            IdentityMatrix that = (IdentityMatrix) o;
+        if (o instanceof IdentityMatrix that) {
             return this.elementCount == that.elementCount;
         }
         // OK, test the elements to see if we're equivalent to an Identity matrix
-        if (o instanceof Matrix) {
-            final Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
+        if (o instanceof Matrix<? extends Numeric> that) {
             if (elementCount != that.rows() || elementCount != that.columns()) return false;
 
             // the diagonal should be all 1 values

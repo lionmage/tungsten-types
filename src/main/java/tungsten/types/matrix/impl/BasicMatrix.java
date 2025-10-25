@@ -525,8 +525,7 @@ public class BasicMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
+        if (o instanceof Matrix<? extends Numeric> that) {
             if (rows() != that.rows()) return false;
             for (long row = 0L; row < rows(); row++) {
                 if (!getRow(row).equals(that.getRow(row))) return false;

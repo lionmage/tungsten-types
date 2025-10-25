@@ -216,8 +216,7 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
+        if (o instanceof Matrix<? extends Numeric> that) {
             if (this.rows() != that.rows() || this.columns() != that.columns()) return false;
             for (long row = 0L; row < rows(); row++) {
                 for (long column = 0L; column < columns(); column++) {
@@ -232,8 +231,8 @@ public class ParametricMatrix<T extends Numeric> implements Matrix<T> {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 29 * hash + (int) (this.rows ^ (this.rows >>> 32));
-        hash = 29 * hash + (int) (this.columns ^ (this.columns >>> 32));
+        hash = 29 * hash + Long.hashCode(this.rows);
+        hash = 29 * hash + Long.hashCode(this.columns);
         hash = 29 * hash + Objects.hashCode(this.generatorFunction);
         return hash;
     }

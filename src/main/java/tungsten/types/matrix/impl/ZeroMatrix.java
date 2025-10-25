@@ -144,8 +144,7 @@ public class ZeroMatrix extends ParametricMatrix<Numeric> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ZeroMatrix) {
-            ZeroMatrix that = (ZeroMatrix) o;
+        if (o instanceof ZeroMatrix that) {
             if (this == that) return true;
             return this.rows() == that.rows() && this.columns() == that.columns();
         }

@@ -513,19 +513,17 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            if (o instanceof SubMatrix) {
-                SubMatrix<?> other = (SubMatrix<?>) o;
+        if (o instanceof Matrix<? extends Numeric> other) {
+            if (o instanceof SubMatrix<?> subm) {
                 // test for referential equality for speed
-                if (other.original != this.original) return false;
-                return this.startRow == other.startRow &&
-                        this.endRow  == other.endRow &&
-                        this.startColumn == other.startColumn &&
-                        this.endColumn   == other.endColumn &&
-                        this.getRemovedRowIndices().equals(other.getRemovedRowIndices()) &&
-                        this.getRemovedColumnIndices().equals(other.getRemovedColumnIndices());
+                if (subm.original != this.original) return false;
+                return this.startRow == subm.startRow &&
+                        this.endRow  == subm.endRow &&
+                        this.startColumn == subm.startColumn &&
+                        this.endColumn   == subm.endColumn &&
+                        this.getRemovedRowIndices().equals(subm.getRemovedRowIndices()) &&
+                        this.getRemovedColumnIndices().equals(subm.getRemovedColumnIndices());
             } else {
-                Matrix<? extends Numeric> other = (Matrix<? extends Numeric>) o;
                 if (rows() != other.rows()) return false;
                 for (long row = 0L; row < rows(); row++) {
                     if (!getRow(row).equals(other.getRow(row))) return false;

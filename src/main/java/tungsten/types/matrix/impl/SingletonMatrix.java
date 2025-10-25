@@ -158,8 +158,7 @@ public class SingletonMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
+        if (o instanceof Matrix<? extends Numeric> that) {
             if (that.rows() != 1L || that.columns() != 1L) return false;
             return element.equals(that.valueAt(0L, 0L));
         }

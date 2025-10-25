@@ -415,14 +415,13 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            if (o instanceof AggregateMatrix) {
-                AggregateMatrix<? extends Numeric> that = (AggregateMatrix<? extends Numeric>) o;
-                if (subMatrices.length == that.subMatrices.length &&
-                        subMatrices[0].length == that.subMatrices[0].length) {
+        if (o instanceof Matrix<? extends Numeric> that) {
+            if (o instanceof AggregateMatrix<? extends Numeric> agm) {
+                if (subMatrices.length == agm.subMatrices.length &&
+                        subMatrices[0].length == agm.subMatrices[0].length) {
                     for (int tileRow = 0; tileRow < subMatrices.length; tileRow++) {
                         for (int tileColumn = 0; tileColumn < subMatrices[tileRow].length; tileColumn++) {
-                            if (!subMatrices[tileRow][tileColumn].equals(that.subMatrices[tileRow][tileColumn])) return false;
+                            if (!subMatrices[tileRow][tileColumn].equals(agm.subMatrices[tileRow][tileColumn])) return false;
                         }
                     }
                     return true;
@@ -430,7 +429,6 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             }
             
             // else do it the old-fashioned way
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
             if (rows() != that.rows()) return false;
             if (that.getClass().isAnnotationPresent(Columnar.class)) {
                 for (long column = 0L; column < columns(); column++) {

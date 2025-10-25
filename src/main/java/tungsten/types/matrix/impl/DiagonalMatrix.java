@@ -158,8 +158,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         if (this.columns() != multiplier.rows()) {
             throw new ArithmeticException("Multiplier rows must match the columns of this diagonal matrix");
         }
-        if (multiplier instanceof DiagonalMatrix) {
-            DiagonalMatrix<T> other = (DiagonalMatrix<T>) multiplier;
+        if (multiplier instanceof DiagonalMatrix<T> other) {
             final Class<T> clazz = (Class<T>) OptionalOperations.findCommonType((Class<? extends Numeric>) elements.getClass().getComponentType(),
                     OptionalOperations.findTypeFor(other));
             T[] prod = (T[]) Array.newInstance(clazz, elements.length);
@@ -384,16 +383,18 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
             @Override
             public Vector<T> crossProduct(Vector<T> other) {
                 NumericHierarchy h = NumericHierarchy.forNumericType(getElementType());
-                switch (h) {
-                    case REAL:
+                return switch (h) {
+                    case REAL -> {
                         RealVector realVector = new RealVector((RealType[]) elements, getMathContext());
-                        return (Vector<T>) realVector.crossProduct((Vector<RealType>) other);
-                    case COMPLEX:
+                        yield (Vector<T>) realVector.crossProduct((Vector<RealType>) other);
+                    }
+                    case COMPLEX -> {
                         ComplexVector cplxVector = new ComplexVector((ComplexType[]) elements, getMathContext());
-                        return (Vector<T>) cplxVector.crossProduct((Vector<ComplexType>) other);
-                    default:
-                        throw new ArithmeticException("Cross product is supported only for real and complex vectors");
-                }
+                        yield (Vector<T>) cplxVector.crossProduct((Vector<ComplexType>) other);
+                    }
+                    default ->
+                            throw new ArithmeticException("Cross product is supported only for real and complex vectors");
+                };
             }
 
             @Override
@@ -448,13 +449,11 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Matrix) {
-            if (o instanceof DiagonalMatrix) {
-                DiagonalMatrix<? extends Numeric> that = (DiagonalMatrix<? extends Numeric>) o;
-                return Arrays.equals(this.elements, that.elements);
+        if (o instanceof Matrix<? extends Numeric> that) {
+            if (o instanceof DiagonalMatrix<? extends Numeric> dmtx) {
+                return Arrays.equals(this.elements, dmtx.elements);
             }
 
-            Matrix<? extends Numeric> that = (Matrix<? extends Numeric>) o;
             if (rows() != that.rows() || columns() != that.columns()) return false;
             // check to ensure the other matrix is both upper AND lower triangular
             if (that.isUpperTriangular() && that.isLowerTriangular()) {
