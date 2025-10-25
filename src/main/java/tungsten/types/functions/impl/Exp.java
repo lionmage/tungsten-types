@@ -130,8 +130,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Exp) {
-            Exp fn = (Exp) obj;
+        if (obj instanceof Exp fn) {
             if (fn.getComposedFunction().isPresent() != this.getComposedFunction().isPresent()) return false;
             if (fn.getComposedFunction().isPresent() && this.getComposedFunction().isPresent()) {
                 // if both Exp instances have composed functions, ensure they are the same function

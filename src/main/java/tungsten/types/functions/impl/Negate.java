@@ -75,10 +75,9 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     public static boolean isNegateEquivalent(UnaryFunction<?, ?> fn) {
         if (fn instanceof Negate) return true;
-        if (fn instanceof Product) {
+        if (fn instanceof Product<?, ?> prod) {
             // for a Product to qualify, it has to have at least 1 non-constant term,
             // and the product of the constant terms must be -1
-            Product<?, ?> prod = (Product<?, ?>) fn;
             if (prod.termCount() < 2L || prod.stream().allMatch(Const.class::isInstance)) return false;
             Numeric coeffProd =  prod.stream().filter(Const.class::isInstance).map(Const.class::cast)
                     .map(Const::inspect)
@@ -93,8 +92,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
                 throw new IllegalStateException(e);
             }
         }
-        if (fn instanceof Quotient) {
-            Quotient<?, ?> quotient = (Quotient<?, ?>) fn;
+        if (fn instanceof Quotient<?, ?> quotient) {
             UnaryFunction<?, ?> num = quotient.getNumerator();
             UnaryFunction<?, ?> denom = quotient.getDenominator();
             if (isNegateEquivalent(num) && isNegateEquivalent(denom)) {
@@ -174,8 +172,7 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Negate) {
-            Negate<?, ?> that = (Negate<?, ?>) obj;
+        if (obj instanceof Negate<?, ?> that) {
             return this.getReturnType().isAssignableFrom(that.getReturnType());
         }
         return false;

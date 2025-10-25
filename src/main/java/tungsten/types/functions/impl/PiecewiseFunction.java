@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * A piecewise function that contains other functions, each of which has a specific range
@@ -92,7 +91,7 @@ public class PiecewiseFunction<T extends Numeric & Comparable<? super T>, R exte
     public boolean checkAggregateBounds() {
         if (internalMap.size() < 2) return true;  // no chance of conflicts, so bail out quickly
         List<Range<T>> sortedRanges = internalMap.keySet().stream().sorted(Comparator.comparing(Range::getLowerBound))
-                .collect(Collectors.toList());
+                .toList();
         // ensure that none of the ranges overlap
         for (int index = 1; index < sortedRanges.size(); index++) {
             if (sortedRanges.get(index).contains(sortedRanges.get(index - 1).getUpperBound())) {
