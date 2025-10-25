@@ -46,7 +46,8 @@ import java.util.stream.Collectors;
 /**
  * Implementation of a complex-valued vector.
  *
- * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class ComplexVector implements Vector<ComplexType> {
     private final List<ComplexType> elements;
@@ -157,7 +158,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public Vector<ComplexType> add(Vector<ComplexType> addend) {
         if (this.length() != addend.length()) {
-            throw new ArithmeticException("Cannot add vectors of different length");
+            throw new ArithmeticException("Cannot add vectors of different lengths");
         }
         ComplexVector result = new ComplexVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
@@ -171,7 +172,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public Vector<ComplexType> subtract(Vector<ComplexType> subtrahend) {
         if (this.length() != subtrahend.length()) {
-            throw new ArithmeticException("Cannot subtract vectors of different length");
+            throw new ArithmeticException("Cannot subtract vectors of different lengths");
         }
         ComplexVector result = new ComplexVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
@@ -213,7 +214,7 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public ComplexType dotProduct(Vector<ComplexType> other) {
         if (this.length() != other.length()) {
-            throw new ArithmeticException("Cannot compute dot product for vectors of different length");
+            throw new ArithmeticException("Cannot compute dot product for vectors of different lengths");
         }
         final RealType zero;
         try {

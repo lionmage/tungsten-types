@@ -42,7 +42,8 @@ import java.util.stream.Collectors;
 /**
  * Implementation of a real-valued vector.
  *
- * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 public class RealVector implements Vector<RealType> {
     private final List<RealType> elements;
@@ -138,7 +139,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public Vector<RealType> add(Vector<RealType> addend) {
         if (this.length() != addend.length()) {
-            throw new ArithmeticException("Cannot add vectors of different length");
+            throw new ArithmeticException("Cannot add vectors of different lengths");
         }
         RealVector result = new RealVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
@@ -152,7 +153,7 @@ public class RealVector implements Vector<RealType> {
     @Override
     public Vector<RealType> subtract(Vector<RealType> subtrahend) {
         if (this.length() != subtrahend.length()) {
-            throw new ArithmeticException("Cannot subtract vectors of different length");
+            throw new ArithmeticException("Cannot subtract vectors of different lengths");
         }
         RealVector result = new RealVector(this.length());
         for (long idx = 0L; idx < length(); idx++) {
