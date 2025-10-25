@@ -130,8 +130,8 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
             } catch (CoercionException e) {
                 throw new IllegalArgumentException("Constant product cannot be coerced to function return type", e);
             }
-        } else if (term instanceof Product) {
-            ((Product<T, R>) term).stream().forEach(this::appendTerm);
+        } else if (term instanceof Product<T, R> prod) {
+            prod.stream().forEach(this::appendTerm);
         } else {
             terms.add(term);
         }

@@ -76,8 +76,7 @@ public class Tan extends Quotient<RealType, RealType> implements Periodic {
         StringBuilder buf = new StringBuilder().append("tan");
         Optional<UnaryFunction<RealType, ? extends RealType>> encompassing = this.getComposingFunction();
         encompassing.ifPresent(f -> {
-            if (f instanceof Pow) {
-                Pow<?, ?> power = (Pow<?, ?>) f;
+            if (f instanceof Pow<?, ?> power) {
                 Numeric exponent = power.getExponent();
                 if (exponent instanceof IntegerType) {
                     int n = ((IntegerType) exponent).asBigInteger().intValueExact();

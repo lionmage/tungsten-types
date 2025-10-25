@@ -100,7 +100,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
         RealType alpha0 = alpha == null ? (RealType) TWO.multiply(epsilon) : alpha;
         List<Range<RealType>> zones = new ArrayList<>();
         Map<Range<RealType>, UnaryFunction<RealType, RealType>> fnMap = viewOfFunctionMap();
-        List<Range<RealType>> ranges = fnMap.keySet().stream().sorted().collect(Collectors.toList());
+        List<Range<RealType>> ranges = fnMap.keySet().stream().sorted().toList();
         List<Sigmoid> sigFunctions = new ArrayList<>();
         for (int i = 0; i < ranges.size() - 1; i++) {
             // taking the average between these values will help if there's a gap
@@ -211,7 +211,7 @@ public class RealPiecewiseFunction extends PiecewiseFunction<RealType, RealType>
                 }
                 int index = transitionZones.indexOf(rangeForTransition.get());
                 Sigmoid sig = sigmoids.get(index);
-                List<Range<RealType>> orderedRanges = viewOfFunctionMap().keySet().stream().sorted().collect(Collectors.toList());
+                List<Range<RealType>> orderedRanges = viewOfFunctionMap().keySet().stream().sorted().toList();
                 UnaryFunction<RealType, RealType> f1 = viewOfFunctionMap().get(orderedRanges.get(index));
                 UnaryFunction<RealType, RealType> f2 = viewOfFunctionMap().get(orderedRanges.get(index + 1));
                 return sigmoidInterpolate(arg, sig, f1, f2);

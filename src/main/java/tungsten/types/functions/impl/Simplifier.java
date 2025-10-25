@@ -88,8 +88,8 @@ public class Simplifier<T extends RealType> extends MetaFunction<T, T, T> {
             return simplified;
         }
         // otherwise, attempt to simplify this function as-is
-        if (original instanceof Simplifiable) {
-            return (UnaryFunction<T, T>) ((Simplifiable) original).simplify();
+        if (original instanceof Simplifiable sim) {
+            return (UnaryFunction<T, T>) sim.simplify();
         }
 
         // fall through

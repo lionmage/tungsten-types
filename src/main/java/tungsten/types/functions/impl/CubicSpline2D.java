@@ -72,8 +72,7 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CubicSpline2D)) return false;
-        CubicSpline2D that = (CubicSpline2D) o;
+        if (!(o instanceof CubicSpline2D that)) return false;
         return Objects.equals(a, that.a) && Objects.equals(b, that.b) &&
                 Objects.equals(c, that.c) && Objects.equals(d, that.d) &&
                 Objects.equals(scope, that.scope);

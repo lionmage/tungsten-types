@@ -164,18 +164,20 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (h == null) throw new ArithmeticException("Unable to compute exponent of " + arg);
         try {
             final T intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
-            switch (h) {
-                case COMPLEX:
-                    return (R) MathUtils.generalizedExponent((ComplexType) intermediate, exponent, ctx).coerceTo(getReturnType());
-                case REAL:
+            return switch (h) {
+                case COMPLEX ->
+                        (R) MathUtils.generalizedExponent((ComplexType) intermediate, exponent, ctx).coerceTo(getReturnType());
+                case REAL -> {
                     if (exponent instanceof ComplexType) {
-                        return (R) MathUtils.generalizedExponent((RealType) intermediate, (ComplexType) exponent, ctx).coerceTo(getReturnType());
+                        yield (R) MathUtils.generalizedExponent((RealType) intermediate, (ComplexType) exponent, ctx).coerceTo(getReturnType());
                     }
-                    return (R) MathUtils.generalizedExponent((RealType) intermediate, exponent, ctx).coerceTo(getReturnType());
-                default:
+                    yield (R) MathUtils.generalizedExponent((RealType) intermediate, exponent, ctx).coerceTo(getReturnType());
+                }
+                default -> {
                     RealType coerced = (RealType) intermediate.coerceTo(RealType.class);
-                    return (R) MathUtils.generalizedExponent(coerced, exponent, ctx).coerceTo(getReturnType());
-            }
+                    yield (R) MathUtils.generalizedExponent(coerced, exponent, ctx).coerceTo(getReturnType());
+                }
+            };
         } catch (CoercionException e) {
             throw new ArithmeticException("Type incompatibility while computing exponent");
         }
@@ -276,8 +278,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     @Override
     public <R2 extends R> UnaryFunction<T, R2> andThen(UnaryFunction<R, R2> after) {
         final Class<R2> myOutputClazz = after.getReturnType();
-        if (after instanceof Pow) {
-            final Pow<R, R2> afterPow = (Pow<R, R2>) after;
+        if (after instanceof Pow<R, R2> afterPow) {
             Numeric expProd = this.exponent.multiply(afterPow.getExponent());
             if (One.isUnity(expProd)) {
                 final Class<T> myArgClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);

@@ -110,8 +110,7 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Sigmoid) {
-            Sigmoid other = (Sigmoid) obj;
+        if (obj instanceof Sigmoid other) {
             return Objects.equals(getArgumentName(), other.getArgumentName()) &&
                     x0.equals(other.getCentroid()) &&
                     alpha.equals(other.alpha);
