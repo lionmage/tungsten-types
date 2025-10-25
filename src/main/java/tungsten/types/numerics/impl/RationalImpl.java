@@ -301,8 +301,7 @@ public class RationalImpl implements RationalType {
     @Override
     public Numeric add(Numeric addend) {
         final int addendPrecision = addend.getMathContext().getPrecision();
-        if (addend instanceof RationalType) {
-            RationalType that = (RationalType) addend;
+        if (addend instanceof RationalType that) {
             BigInteger denomnew = this.denominator.multiply(that.denominator().asBigInteger());
             BigInteger numleft = this.numerator.multiply(that.denominator().asBigInteger());
             BigInteger numright = that.numerator().asBigInteger().multiply(this.denominator);
@@ -311,8 +310,7 @@ public class RationalImpl implements RationalType {
             sum.setMathContext(addendPrecision > 0 && addendPrecision < mctx.getPrecision() ?
                     addend.getMathContext() : mctx);
             return sum.reduce();
-        } else if (addend instanceof IntegerType) {
-            IntegerType that = (IntegerType) addend;
+        } else if (addend instanceof IntegerType that) {
             BigInteger scaled = this.denominator.multiply(that.asBigInteger());
             boolean exactness = this.isExact() && that.isExact();
             RationalImpl sum = new RationalImpl(this.numerator.add(scaled), this.denominator, exactness);
@@ -338,8 +336,7 @@ public class RationalImpl implements RationalType {
     @Override
     public Numeric subtract(Numeric subtrahend) {
         final int subtrahendPrecision = subtrahend.getMathContext().getPrecision();
-        if (subtrahend instanceof RationalType) {
-            RationalType that = (RationalType) subtrahend;
+        if (subtrahend instanceof RationalType that) {
             BigInteger denomnew = this.denominator.multiply(that.denominator().asBigInteger());
             BigInteger numleft = this.numerator.multiply(that.denominator().asBigInteger());
             BigInteger numright = that.numerator().asBigInteger().multiply(this.denominator);
@@ -348,8 +345,7 @@ public class RationalImpl implements RationalType {
             diff.setMathContext(subtrahendPrecision > 0 && subtrahendPrecision < mctx.getPrecision() ?
                     subtrahend.getMathContext() : mctx);
             return diff.reduce();
-        } else if (subtrahend instanceof IntegerType) {
-            IntegerType that = (IntegerType) subtrahend;
+        } else if (subtrahend instanceof IntegerType that) {
             BigInteger scaled = this.denominator.multiply(that.asBigInteger());
             boolean exactness = this.isExact() && that.isExact();
             RationalImpl diff = new RationalImpl(this.numerator.subtract(scaled), this.denominator, exactness);
@@ -375,15 +371,13 @@ public class RationalImpl implements RationalType {
 
     @Override
     public Numeric multiply(Numeric multiplier) {
-        if (multiplier instanceof RationalType) {
-            final RationalType that = (RationalType) multiplier;
+        if (multiplier instanceof RationalType that) {
             RationalImpl result = new RationalImpl(numerator.multiply(that.numerator().asBigInteger()),
                     denominator.multiply(that.denominator().asBigInteger()),
                     exact && that.isExact());
             result.setMathContext(mctx);
             return result.reduce();
-        } else if (multiplier instanceof IntegerType) {
-            final IntegerType that = (IntegerType) multiplier;
+        } else if (multiplier instanceof IntegerType that) {
             if (that.equals(denominator())) return numerator();  // small optimization
             final RationalType intermediate = new RationalImpl(numerator.multiply(that.asBigInteger()),
                     denominator, exact && that.isExact()).reduce();
@@ -508,13 +502,11 @@ public class RationalImpl implements RationalType {
             return this.isExact() && this.numerator.equals(this.denominator);
         }
         // if it isn't one of the above special constants, round up the usual suspects
-        if (other instanceof RealType) {
-            final RealType that = (RealType) other;
+        if (other instanceof RealType that) {
             if (this.isExact() != that.isExact()) return false;
 
             return this.asBigDecimal().compareTo(that.asBigDecimal()) == 0;
-        } else if (other instanceof RationalType) {
-            final RationalType that = (RationalType) other;
+        } else if (other instanceof RationalType that) {
             if (this.isExact() != that.isExact()) return false;
             // the following test is more "correct" but is slower
             if (RationalType.reduceForEqualityTest()) {
@@ -528,8 +520,7 @@ public class RationalImpl implements RationalType {
             // ... and this is the faster "good enough" test
             return numerator.equals(that.numerator().asBigInteger()) &&
                     denominator.equals(that.denominator().asBigInteger());
-        } else if (other instanceof Numeric) {
-            final Numeric that = (Numeric) other;
+        } else if (other instanceof Numeric that) {
             if (that.isCoercibleTo(RationalType.class)) {
                 if (this.isExact() != that.isExact()) return false;
 

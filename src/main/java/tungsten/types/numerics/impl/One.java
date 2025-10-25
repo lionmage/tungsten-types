@@ -157,13 +157,12 @@ public class One implements Numeric, Comparable<Numeric> {
     public Numeric add(Numeric addend) {
         if (Zero.isZero(addend)) return this;
         if (isArgumentRealOrCplx(addend)) {
-            if (addend instanceof RealType) {
+            if (addend instanceof RealType that) {
                 if (addend instanceof ContinuedFraction) {
                     final ContinuedFraction one = new ContinuedFraction(1L);
                     return addend.add(one);
                 }
                 // small optimization
-                RealType that = (RealType) addend;
                 return new RealImpl(BigDecimal.ONE.add(that.asBigDecimal(), mctx), mctx, that.isExact());
             }
             RealType unity = obtainRealUnity();
@@ -177,14 +176,13 @@ public class One implements Numeric, Comparable<Numeric> {
         if (isUnity(subtrahend)) return ExactZero.getInstance(mctx);
         if (Zero.isZero(subtrahend)) return this;
         if (isArgumentRealOrCplx(subtrahend)) {
-            if (subtrahend instanceof RealType) {
+            if (subtrahend instanceof RealType that) {
                 if (subtrahend instanceof ContinuedFraction) {
                     final ContinuedFraction one = new ContinuedFraction(1L);
                     one.setMathContext(mctx);
                     return one.subtract(subtrahend);
                 }
                 // small optimization
-                RealType that = (RealType) subtrahend;
                 return new RealImpl(BigDecimal.ONE.subtract(that.asBigDecimal(), mctx), mctx, that.isExact());
             }
             RealType unity = obtainRealUnity();
@@ -239,9 +237,7 @@ public class One implements Numeric, Comparable<Numeric> {
     @Override
     public boolean equals(Object o) {
         if (o instanceof One) return true;
-        if (o instanceof Numeric) {
-            final Numeric that = (Numeric) o;
-            
+        if (o instanceof Numeric that) {
             if (!that.isExact()) return false;
             Class<? extends Numeric> clazz = that.getClass();
             try {
@@ -270,22 +266,23 @@ public class One implements Numeric, Comparable<Numeric> {
         if (val != null) {
             NumericHierarchy htype = NumericHierarchy.forNumericType(val.getClass());
             if (htype == null) return false;
-            switch (htype) {
-                case INTEGER:
-                    return ((IntegerType) val).asBigInteger().equals(BigInteger.ONE);
-                case RATIONAL:
+            return switch (htype) {
+                case INTEGER -> ((IntegerType) val).asBigInteger().equals(BigInteger.ONE);
+                case RATIONAL -> {
                     final RationalType rational = (RationalType) val;
-                    return rational.numerator().equals(rational.denominator());
-                case REAL:
-                    if (val instanceof ContinuedFraction) {
-                        ContinuedFraction cf = (ContinuedFraction) val;
-                        return cf.terms() == 1L && cf.termAt(0L) == 1L;
+                    yield rational.numerator().equals(rational.denominator());
+                }
+                case REAL -> {
+                    if (val instanceof ContinuedFraction cf) {
+                        yield cf.terms() == 1L && cf.termAt(0L) == 1L;
                     }
-                    return ((RealType) val).asBigDecimal().compareTo(BigDecimal.ONE) == 0;
-                case COMPLEX:
+                    yield ((RealType) val).asBigDecimal().compareTo(BigDecimal.ONE) == 0;
+                }
+                case COMPLEX -> {
                     final ComplexType that = (ComplexType) val;
-                    return isUnity(that.real()) && Zero.isZero(that.imaginary());
-            }
+                    yield isUnity(that.real()) && Zero.isZero(that.imaginary());
+                }
+            };
         }
         return false;
     }

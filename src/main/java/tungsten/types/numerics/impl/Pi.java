@@ -162,15 +162,12 @@ public class Pi implements RealType {
         if (numtype == Numeric.class) return this;
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
         if (htype == null) throw new CoercionException("Unknown type for coercion", this.getClass(), numtype);
-        switch (htype) {
-            case REAL:
-                return this;  // it's already a real
-            case COMPLEX:
-                return new ComplexRectImpl(this);
-            default:
-                throw new CoercionException("Pi can only be coerced to real or complex",
-                        this.getClass(), numtype);
-        }
+        return switch (htype) {
+            case REAL -> this;  // it's already a real
+            case COMPLEX -> new ComplexRectImpl(this);
+            default -> throw new CoercionException("Pi can only be coerced to real or complex",
+                    this.getClass(), numtype);
+        };
     }
 
     @Override
@@ -199,8 +196,7 @@ public class Pi implements RealType {
             RealImpl real = new RealImpl(value.pow(2, mctx), mctx,false);
             real.setIrrational(true);
             return real;
-        } else if (multiplier instanceof RealType) {
-            RealType remult = (RealType) multiplier;
+        } else if (multiplier instanceof RealType remult) {
             MathContext ctx = remult.getMathContext().getPrecision() == 0 ? mctx :
                     new MathContext(Math.min(remult.getMathContext().getPrecision(), mctx.getPrecision()));
             RealImpl real = new RealImpl(value.multiply(remult.asBigDecimal(), ctx), ctx, false);
@@ -339,8 +335,7 @@ public class Pi implements RealType {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Pi) {
-            Pi that = (Pi) o;
+        if (o instanceof Pi that) {
             if (this.mctx.getRoundingMode() != that.mctx.getRoundingMode()) return false;
             return this.numberOfDigits() == that.numberOfDigits();
         }

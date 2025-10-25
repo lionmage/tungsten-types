@@ -272,8 +272,8 @@ public class Phi implements RealType {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Phi) {
-            return mctx.equals(((Phi) obj).getMathContext());
+        if (obj instanceof Phi phi) {
+            return mctx.equals(phi.getMathContext());
         }
         return false;
     }
