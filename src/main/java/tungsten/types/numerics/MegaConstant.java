@@ -354,8 +354,7 @@ public abstract class MegaConstant<T extends Numeric> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MegaConstant)) return false;
-        MegaConstant<?> that = (MegaConstant<?>) o;
+        if (!(o instanceof MegaConstant<?> that)) return false;
         // value is computed, so don't include it in the comparison
         return Objects.equals(masqueradesAs, that.masqueradesAs) &&
                 Objects.equals(rationalCoefficient, that.rationalCoefficient) &&
