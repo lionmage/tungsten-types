@@ -83,14 +83,11 @@ public class ExactZero extends Zero {
     @Override
     public int compareTo(Numeric o) {
         if (o instanceof Zero that) {
-            switch (that.sign()) {
-                case ZERO:
-                    return 0;
-                case POSITIVE:
-                    return -1;
-                case NEGATIVE:
-                    return 1;
-            }
+            return switch (that.sign()) {
+                case ZERO -> 0;
+                case POSITIVE -> -1;
+                case NEGATIVE -> 1;
+            };
         }
         return super.compareTo(o);
     }
