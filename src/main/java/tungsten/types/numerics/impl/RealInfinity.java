@@ -131,14 +131,11 @@ public class RealInfinity implements RealType {
         if (RealType.class.isAssignableFrom(numtype) ||
                 (ComplexType.class.isAssignableFrom(numtype) && ComplexType.isExtendedEnabled())) return true;
 
-        switch (sign) {
-            case POSITIVE:
-                return numtype.isAssignableFrom(PosInfinity.class);
-            case NEGATIVE:
-                return numtype.isAssignableFrom(NegInfinity.class);
-            default:
-                throw new IllegalStateException(ERROR_INVALID_SIGN);
-        }
+        return switch (sign) {
+            case POSITIVE -> numtype.isAssignableFrom(PosInfinity.class);
+            case NEGATIVE -> numtype.isAssignableFrom(NegInfinity.class);
+            default -> throw new IllegalStateException(ERROR_INVALID_SIGN);
+        };
     }
 
     @Override
@@ -168,22 +165,18 @@ public class RealInfinity implements RealType {
             return sign == Sign.NEGATIVE ? NegZero.getInstance(mctx) : this;
         } else if (addend instanceof NegInfinity) {
             return sign == Sign.POSITIVE ? PosZero.getInstance(mctx) : this;
-        } else if (addend instanceof RealInfinity) {
-            final RealInfinity rei = (RealInfinity) addend;
+        } else if (addend instanceof RealInfinity rei) {
             return rei.sign() != sign ? pickZeroForSign() : this;
         }
         return this;
     }
 
     private Zero pickZeroForSign() {
-        switch (sign) {
-            case POSITIVE:
-                return (Zero) PosZero.getInstance(mctx);
-            case NEGATIVE:
-                return (Zero) NegZero.getInstance(mctx);
-            default:
-                throw new IllegalStateException(ERROR_INVALID_SIGN);
-        }
+        return switch (sign) {
+            case POSITIVE -> (Zero) PosZero.getInstance(mctx);
+            case NEGATIVE -> (Zero) NegZero.getInstance(mctx);
+            default -> throw new IllegalStateException(ERROR_INVALID_SIGN);
+        };
     }
 
     @Override
@@ -192,8 +185,7 @@ public class RealInfinity implements RealType {
             return sign == Sign.POSITIVE ? PosZero.getInstance(mctx) : this;
         } else if (subtrahend instanceof NegInfinity) {
             return sign == Sign.NEGATIVE ? NegZero.getInstance(mctx) : this;
-        } else if (subtrahend instanceof RealInfinity) {
-            final RealInfinity rei = (RealInfinity) subtrahend;
+        } else if (subtrahend instanceof RealInfinity rei) {
             return rei.sign() == sign ? pickZeroForSign() : this;
         }
         return this;
@@ -228,8 +220,7 @@ public class RealInfinity implements RealType {
         if (divisor instanceof PosInfinity) {
             return sign == Sign.NEGATIVE ? One.getInstance(mctx).negate() : One.getInstance(mctx);
         }
-        if (divisor instanceof RealInfinity) {
-            final RealInfinity dval = (RealInfinity) divisor;
+        if (divisor instanceof RealInfinity dval) {
             return sign != dval.sign() ? One.getInstance(mctx).negate() : One.getInstance(mctx);
         }
         if (OptionalOperations.sign(divisor) != sign) {
@@ -240,27 +231,21 @@ public class RealInfinity implements RealType {
 
     @Override
     public Numeric inverse() {
-        switch (sign) {
-            case POSITIVE:
-                return PosZero.getInstance(mctx);
-            case NEGATIVE:
-                return NegZero.getInstance(mctx);
-            default:
-                throw new IllegalStateException(ERROR_INVALID_SIGN);
-        }
+        return switch (sign) {
+            case POSITIVE -> PosZero.getInstance(mctx);
+            case NEGATIVE -> NegZero.getInstance(mctx);
+            default -> throw new IllegalStateException(ERROR_INVALID_SIGN);
+        };
     }
 
     @Override
     public Numeric sqrt() {
-        switch (sign) {
-            case POSITIVE:
-                return this;
-            case NEGATIVE:
-                return new ComplexRectImpl(getZeroInstance(),
-                        RealInfinity.getInstance(Sign.POSITIVE, mctx));
-            default:
-                throw new IllegalStateException(ERROR_INVALID_SIGN);
-        }
+        return switch (sign) {
+            case POSITIVE -> this;
+            case NEGATIVE -> new ComplexRectImpl(getZeroInstance(),
+                    RealInfinity.getInstance(Sign.POSITIVE, mctx));
+            default -> throw new IllegalStateException(ERROR_INVALID_SIGN);
+        };
     }
     
     private RealType getZeroInstance() {
@@ -281,20 +266,16 @@ public class RealInfinity implements RealType {
     @Override
     public int compareTo(RealType t) {
         if (t instanceof RealInfinity && t.sign() == sign) return 0;
-        switch (sign) {
-            case POSITIVE:
-                return 1;
-            case NEGATIVE:
-                return -1;
-            default:
-                throw new IllegalStateException(ERROR_INVALID_SIGN);
-        }
+        return switch (sign) {
+            case POSITIVE -> 1;
+            case NEGATIVE -> -1;
+            default -> throw new IllegalStateException(ERROR_INVALID_SIGN);
+        };
     }
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Numeric) {
-            Numeric that = (Numeric) o;
+        if (o instanceof Numeric that) {
             return MathUtils.isInfinity(that, this.sign);
         }
         return false;

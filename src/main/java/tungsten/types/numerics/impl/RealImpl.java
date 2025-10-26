@@ -170,18 +170,12 @@ public class RealImpl implements RealType {
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
         if (htype == null) return numtype == Numeric.class;
-        switch (htype) {
-            case COMPLEX:
-            case REAL:
-                return true;
-            case INTEGER:
-                return this.isIntegralValue();
-            case RATIONAL:
-                return !this.isIrrational();
-            default:
-                // some unknown type, return false by default
-                return false;
-        }
+        return switch (htype) {
+            case COMPLEX, REAL -> true;
+            case INTEGER -> this.isIntegralValue();
+            case RATIONAL -> !this.isIrrational();
+            default -> false; // some unknown type, return false by default
+        };
     }
 
     @Override
@@ -224,18 +218,15 @@ public class RealImpl implements RealType {
     @Override
     public Numeric add(Numeric addend) {
         final boolean exactness = exact && addend.isExact();
-        if (addend instanceof RealType) {
-            final RealType that = (RealType) addend;
+        if (addend instanceof RealType that) {
             final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(this.isIrrational() || that.isIrrational());
             return result;
-        } else if (addend instanceof RationalType) {
-            final RationalType that = (RationalType) addend;
+        } else if (addend instanceof RationalType that) {
             final RealImpl result = new RealImpl(val.add(that.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(this.isIrrational());
             return result;
-        } else if (addend instanceof IntegerType) {
-            final IntegerType that = (IntegerType) addend;
+        } else if (addend instanceof IntegerType that) {
             BigDecimal sum = val.add(new BigDecimal(that.asBigInteger(), mctx));
             final RealImpl result = new RealImpl(sum, mctx, exactness);
             result.setIrrational(this.isIrrational());
@@ -259,9 +250,8 @@ public class RealImpl implements RealType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
-        if (subtrahend instanceof RealType) {
+        if (subtrahend instanceof RealType that) {
             // corner case where both operands are real, to avoid intermediate object creation
-            RealType that = (RealType) subtrahend;
             RealImpl result = new RealImpl(val.subtract(that.asBigDecimal(), mctx), mctx, this.exact && that.isExact());
             result.setIrrational(this.isIrrational() || that.isIrrational());
             return result;
@@ -272,20 +262,17 @@ public class RealImpl implements RealType {
     @Override
     public Numeric multiply(Numeric multiplier) {
         final boolean exactness = exact && multiplier.isExact();
-        if (multiplier instanceof RealType) {
-            RealType remult = (RealType) multiplier;
+        if (multiplier instanceof RealType remult) {
             final RealImpl result = new RealImpl(val.multiply(remult.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(this.isIrrational() || remult.isIrrational());
             return result;
-        } else if (multiplier instanceof RationalType) {
-            RationalType ratmult = (RationalType) multiplier;
+        } else if (multiplier instanceof RationalType ratmult) {
             BigDecimal num = new BigDecimal(ratmult.numerator().asBigInteger());
             BigDecimal denom = new BigDecimal(ratmult.denominator().asBigInteger());
             final RealImpl result = new RealImpl(val.multiply(num).divide(denom, mctx), mctx, exactness);
             result.setIrrational(this.isIrrational());
             return result;
-        } else if (multiplier instanceof IntegerType) {
-            IntegerType intmult = (IntegerType) multiplier;
+        } else if (multiplier instanceof IntegerType intmult) {
             if (isIntegralValue()) {
                 return new IntegerImpl(val.toBigIntegerExact().multiply(intmult.asBigInteger()), exactness) {
                     @Override
@@ -320,13 +307,11 @@ public class RealImpl implements RealType {
         if (Zero.isZero(divisor)) throw new ArithmeticException("Division by 0");
         if (One.isUnity(divisor)) return this;
         final boolean exactness = exact && divisor.isExact();
-        if (divisor instanceof RealType) {
-            RealType redivisor = (RealType) divisor;
+        if (divisor instanceof RealType redivisor) {
             final RealImpl result = new RealImpl(val.divide(redivisor.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(this.isIrrational() || redivisor.isIrrational());
             return result;
-        } else if (divisor instanceof RationalType) {
-            RationalType ratdivisor = (RationalType) divisor;
+        } else if (divisor instanceof RationalType ratdivisor) {
             if (isIntegralValue()) {
                 IntegerType me = new IntegerImpl(val.toBigIntegerExact(), exactness) {
                     @Override
@@ -339,8 +324,7 @@ public class RealImpl implements RealType {
             final RealImpl result = new RealImpl(val.divide(ratdivisor.asBigDecimal(), mctx), mctx, exactness);
             result.setIrrational(this.isIrrational());
             return result;
-        } else if (divisor instanceof IntegerType) {
-            IntegerType intdivisor = (IntegerType) divisor;
+        } else if (divisor instanceof IntegerType intdivisor) {
             if (isIntegralValue()) {
                 final RationalImpl rationalValue = new RationalImpl(val.toBigIntegerExact(), intdivisor.asBigInteger(),
                     exactness);
@@ -460,17 +444,14 @@ public class RealImpl implements RealType {
         } else if (o instanceof One) {
             return exact && val.compareTo(BigDecimal.ONE) == 0;
         }
-        if (o instanceof RealType) {
-            RealType that = (RealType) o;
+        if (o instanceof RealType that) {
             if (this.isExact() != that.isExact()) return false;
             return val.compareTo(that.asBigDecimal()) == 0;
-        } else if (this.isIntegralValue() && o instanceof IntegerType) {
-            IntegerType that = (IntegerType) o;
+        } else if (this.isIntegralValue() && o instanceof IntegerType that) {
             return val.toBigIntegerExact().equals(that.asBigInteger());
         } else if (!this.isIrrational() && o instanceof RationalType) {
             return rationalize().equals(o);
-        } else if (o instanceof ComplexType) {
-            ComplexType that = (ComplexType) o;
+        } else if (o instanceof ComplexType that) {
             // it's cheaper to extract the real portion of a complex value
             // than to upconvert oneself for a comparison
             if (that.isCoercibleTo(RealType.class)) {
@@ -509,26 +490,20 @@ public class RealImpl implements RealType {
     @Override
     public IntegerType floor() {
         final BigInteger trunc = this.asBigDecimal().toBigInteger();
-        switch (this.sign()) {
-            case POSITIVE:
-                return new IntegerImpl(trunc, exact);
-            case NEGATIVE:
-                return new IntegerImpl(this.isIntegralValue() ? trunc : trunc.subtract(BigInteger.ONE), exact);
-            default:
-                return new IntegerImpl(BigInteger.ZERO, exact);
-        }
+        return switch (this.sign()) {
+            case POSITIVE -> new IntegerImpl(trunc, exact);
+            case NEGATIVE -> new IntegerImpl(this.isIntegralValue() ? trunc : trunc.subtract(BigInteger.ONE), exact);
+            default -> new IntegerImpl(BigInteger.ZERO, exact);
+        };
     }
 
     @Override
     public IntegerType ceil() {
         final BigInteger trunc = this.asBigDecimal().toBigInteger();
-        switch (this.sign()) {
-            case NEGATIVE:
-                return new IntegerImpl(trunc, exact);
-            case POSITIVE:
-                return new IntegerImpl(this.isIntegralValue() ? trunc : trunc.add(BigInteger.ONE), exact);
-            default:
-                return new IntegerImpl(BigInteger.ZERO, exact);
-        }
+        return switch (this.sign()) {
+            case NEGATIVE -> new IntegerImpl(trunc, exact);
+            case POSITIVE -> new IntegerImpl(this.isIntegralValue() ? trunc : trunc.add(BigInteger.ONE), exact);
+            default -> new IntegerImpl(BigInteger.ZERO, exact);
+        };
     }
 }
