@@ -324,25 +324,19 @@ public class IntegerImpl implements IntegerType {
                     new Object[] { numtype.getTypeName(), val });
             throw new CoercionException("Specified type cannot be inferred", this.getClass(), numtype);
         }
-        switch (hval) {
-            case INTEGER:
-                return this;
-            case RATIONAL:
-                return new RationalImpl(this);
-            case REAL:
-                return new RealImpl(this);
-            case COMPLEX:
-                return new ComplexRectImpl(new RealImpl(this));
-            default:
-                throw new CoercionException("Cannot coerce integer to specified type",
-                        this.getClass(), numtype);
-        }
+        return switch (hval) {
+            case INTEGER -> this;
+            case RATIONAL -> new RationalImpl(this);
+            case REAL -> new RealImpl(this);
+            case COMPLEX -> new ComplexRectImpl(new RealImpl(this));
+            default -> throw new CoercionException("Cannot coerce integer to specified type",
+                    this.getClass(), numtype);
+        };
     }
 
     @Override
     public Numeric add(Numeric addend) {
-        if (addend instanceof IntegerType) {
-            IntegerType that = (IntegerType) addend;
+        if (addend instanceof IntegerType that) {
             return new IntegerImpl(val.add(that.asBigInteger()), exact && that.isExact());
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(addend.getClass());
@@ -363,8 +357,7 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public Numeric subtract(Numeric subtrahend) {
-        if (subtrahend instanceof IntegerType) {
-            IntegerType that = (IntegerType) subtrahend;
+        if (subtrahend instanceof IntegerType that) {
             return new IntegerImpl(val.subtract(that.asBigInteger()), exact && that.isExact());
         } else {
             Class<?> iface = ClassTools.getInterfaceTypeFor(subtrahend.getClass());
@@ -386,11 +379,9 @@ public class IntegerImpl implements IntegerType {
     @Override
     public Numeric multiply(Numeric multiplier) {
         final boolean exactness = this.isExact() && multiplier.isExact();
-        if (multiplier instanceof IntegerType) {
-            final IntegerType that = (IntegerType) multiplier;
+        if (multiplier instanceof IntegerType that) {
             return new IntegerImpl(val.multiply(that.asBigInteger()), exactness);
-        } else if (multiplier instanceof RationalType) {
-            final RationalType that = (RationalType) multiplier;
+        } else if (multiplier instanceof RationalType that) {
             BigInteger numResult = val.multiply(that.numerator().asBigInteger());
             BigInteger denomResult = that.denominator().asBigInteger();
             final BigInteger gcd = numResult.gcd(denomResult);
@@ -419,8 +410,7 @@ public class IntegerImpl implements IntegerType {
 
     @Override
     public Numeric divide(Numeric divisor) {
-        if (divisor instanceof IntegerType) {
-            final IntegerType that = (IntegerType) divisor;
+        if (divisor instanceof IntegerType that) {
             final boolean exactness = this.isExact() && divisor.isExact();
             BigInteger[] resultAndRemainder = val.divideAndRemainder(that.asBigInteger());
             // if the remainder is 0, we can return an integer
@@ -496,12 +486,10 @@ public class IntegerImpl implements IntegerType {
         } else if (other instanceof One) {
             return exact && val.equals(BigInteger.ONE);
         }
-        if (other instanceof IntegerType) {
-            final IntegerType that = (IntegerType) other;
+        if (other instanceof IntegerType that) {
             if (this.isExact() != that.isExact()) return false;
             return val.equals(that.asBigInteger());
-        } else if (other instanceof Numeric) {
-            final Numeric that = (Numeric) other;
+        } else if (other instanceof Numeric that) {
             if (that.isCoercibleTo(IntegerType.class)) {
                 if (this.isExact() != that.isExact()) return false;
 
