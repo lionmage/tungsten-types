@@ -42,8 +42,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
+ * Tests for {@code Pi} constant.
  *
- * @author tarquin
+ * @author Robert Poole
  */
 public class PiTest {
     private static final String pi100 = "3.1415926535 8979323846 2643383279 5028841971 6939937510 5820974944 5923078164 0628620899 8628034825 3421170679";
@@ -120,18 +121,18 @@ public class PiTest {
         Class<? extends Numeric> numtype = RealType.class;
         Pi instance = Pi.getInstance(MathContext.DECIMAL64);
         Numeric result = instance.coerceTo(numtype);
-        assertTrue(result instanceof RealType);
+        assertInstanceOf(RealType.class, result);
         
         numtype = ComplexType.class;
         result = instance.coerceTo(numtype);
-        assertTrue(result instanceof ComplexType);
+        assertInstanceOf(ComplexType.class, result);
         
         numtype = RationalType.class;
         try {
             result = instance.coerceTo(numtype);
             fail("Should not be able to coerce Pi to a rational.");
         } catch (Exception e) {
-            assertTrue(e instanceof CoercionException);
+            assertInstanceOf(CoercionException.class, e);
         }
     }
 
@@ -168,7 +169,7 @@ public class PiTest {
     public void testMultiply() {
         System.out.println("multiply");
         Pi instance = Pi.getInstance(MathContext.DECIMAL64);
-        RealType multiplier = (RealType) instance.inverse();
+        RealType multiplier = instance.inverse();
         RealType expResult = new RealImpl(BigDecimal.ONE, MathContext.DECIMAL64);
         RealType result = (RealType) instance.multiply(multiplier);
         assertTrue(MathUtils.areEqualToWithin(expResult, result, new RealImpl("0.0000000000000001")));

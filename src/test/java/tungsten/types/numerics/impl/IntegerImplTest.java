@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * @author tarquin
+ * @author Robert Poole
  */
 public class IntegerImplTest {
     
@@ -212,7 +212,7 @@ public class IntegerImplTest {
         } catch (Exception e) {
             System.err.println("Expected exception (don't panic)");
             e.printStackTrace();
-            assertTrue(e instanceof IndexOutOfBoundsException);
+            assertInstanceOf(IndexOutOfBoundsException.class, e);
         }
     }
 
@@ -227,14 +227,14 @@ public class IntegerImplTest {
         Numeric expResult = new IntegerImpl(BigInteger.valueOf(8L));
         Numeric result = instance.pow(exponent);
         assertEquals(expResult, result);
-        assertTrue(result instanceof IntegerType);
+        assertInstanceOf(IntegerType.class, result);
         
         // also test negative exponents
         exponent = new IntegerImpl("-2");
         expResult = new RationalImpl("1/4");
         result = instance.pow(exponent);
         assertEquals(expResult, result);
-        assertTrue(result instanceof RationalType);
+        assertInstanceOf(RationalType.class, result);
     }
 
     /**
@@ -260,7 +260,7 @@ public class IntegerImplTest {
         IntegerImpl instance = new IntegerImpl("-42");
         try {
             Numeric result = instance.coerceTo(numtype);
-            assertTrue(result instanceof RealType);
+            assertInstanceOf(RealType.class, result);
             assertTrue(result.isExact());
         } catch (CoercionException ex) {
             ex.printStackTrace();

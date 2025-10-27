@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * @author tarquin
+ * @author Robert Poole
  */
 public class NumericHierarchyTest {
     
@@ -57,7 +57,7 @@ public class NumericHierarchyTest {
         System.out.println("values");
         NumericHierarchy[] result = NumericHierarchy.values();
         assertEquals(4, result.length);
-        assertEquals(result[0], NumericHierarchy.INTEGER);
+        assertEquals(NumericHierarchy.INTEGER, result[0]);
         // and test ordering
         int comp = NumericHierarchy.REAL.compareTo(NumericHierarchy.RATIONAL);
         assertTrue(comp > 0); // REAL comes after RATIONAL
@@ -80,7 +80,7 @@ public class NumericHierarchyTest {
             result = NumericHierarchy.valueOf(name);
             fail("valueOf() should not return a result for bogus value");
         } catch (Exception e) {
-            assertTrue(e instanceof IllegalArgumentException);
+            assertInstanceOf(IllegalArgumentException.class, e);
         }
     }
 

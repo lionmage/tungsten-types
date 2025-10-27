@@ -39,8 +39,9 @@ import java.math.MathContext;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Tests for rectangular complex values.
  *
- * @author Robert Poole <Tarquin.AZ@gmail.com>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public class ComplexRectImplTest {
     private final RealType one = new RealImpl(BigDecimal.ONE);
@@ -172,7 +173,7 @@ public class ComplexRectImplTest {
         ComplexRectImpl instance = new ComplexRectImpl(one, zero);
         Numeric result = instance.coerceTo(numtype);
         assertEquals(one, result);
-        assertTrue(result instanceof RealType);
+        assertInstanceOf(RealType.class, result);
     }
 
     /**
@@ -254,7 +255,7 @@ public class ComplexRectImplTest {
         ComplexRectImpl instance = (ComplexRectImpl) twoTwo.multiply(twoTwo);
         ComplexType expResult = twoTwo;
         Numeric result = instance.sqrt();
-        assertTrue(result instanceof ComplexType);
+        assertInstanceOf(ComplexType.class, result);
         assertTrue(expResult.isExact());
         assertTrue(result.isExact());
         assertEquals(expResult, result);

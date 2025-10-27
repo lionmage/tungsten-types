@@ -40,8 +40,9 @@ import java.math.RoundingMode;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Tests for {@code Euler} constant.
  *
- * @author tarquin
+ * @author Robert Poole
  */
 public class EulerTest {
     private static final String E_10000 = 
