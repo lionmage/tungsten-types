@@ -38,6 +38,7 @@ import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Tests for {@code IntegerImpl}.
  *
  * @author Robert Poole
  */
@@ -316,7 +317,7 @@ public class IntegerImplTest {
     @Test
     public void testDivide() {
         System.out.println("divide");
-        Numeric divisor = new IntegerImpl(BigInteger.valueOf(2L));
+        Numeric divisor = new IntegerImpl(BigInteger.TWO);
         IntegerImpl instance = new IntegerImpl("16");
         Numeric expResult = new IntegerImpl(BigInteger.ONE);
         Numeric result = instance;
@@ -343,7 +344,7 @@ public class IntegerImplTest {
     public void testSqrt() {
         System.out.println("sqrt");
         IntegerImpl instance = new IntegerImpl(BigInteger.valueOf(8L));
-        IntegerType expResult = new IntegerImpl(BigInteger.valueOf(2L), false);
+        IntegerType expResult = new IntegerImpl(BigInteger.TWO, false);
         IntegerType result = instance.sqrt();
         assertEquals(expResult, result);
         assertFalse(result.isExact());
@@ -401,14 +402,4 @@ public class IntegerImplTest {
         result = instance.sign();
         assertEquals(expResult, result);
     }
-//
-//    @Test
-//    public void testStream() {
-//        String expResult = "5877432";
-//        IntegerImpl instance = new IntegerImpl(expResult);
-////        Stream<Character> stream = instance.stream(10);
-//        String result = instance.stream(10).collect(StringBuilder::new,
-//                (x, y) -> x.insert(0, y), StringBuilder::append).toString();
-//        assertEquals(expResult, result);
-//    }
 }
