@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @since 0.6
  */
-public class RegressionHelper {
+public final class RegressionHelper {
     private RegressionHelper() {
         // no instantiation allowed
     }
