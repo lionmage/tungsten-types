@@ -223,9 +223,10 @@ public class MatrixValidationTest {
 
         RealType maxDiff = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
         for (long row = 0L; row < result1.rows(); row++) {
-            for (long idx = 0L; idx < result1.getRow(row).length(); idx++) {
-                RealType diff = result1.getRow(row).elementAt(idx).subtract(result2.getRow(row).elementAt(idx))
-                        .magnitude();
+            RowVector<RealType> row1 = result1.getRow(row);
+            RowVector<RealType> row2 = result2.getRow(row);
+            for (long idx = 0L; idx < row1.length(); idx++) {
+                RealType diff = row1.elementAt(idx).subtract(row2.elementAt(idx)).magnitude();
                 if (diff.compareTo(maxDiff) > 0) maxDiff = diff;
             }
         }
@@ -259,9 +260,10 @@ public class MatrixValidationTest {
 
         RealType maxDiff = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
         for (long row = 0L; row < result1.rows(); row++) {
-            for (long idx = 0L; idx < result1.getRow(row).length(); idx++) {
-                RealType diff = result1.getRow(row).elementAt(idx).subtract(result2.getRow(row).elementAt(idx))
-                        .magnitude();
+            RowVector<RealType> row1 = result1.getRow(row);
+            RowVector<RealType> row2 = result2.getRow(row);
+            for (long idx = 0L; idx < row1.length(); idx++) {
+                RealType diff = row1.elementAt(idx).subtract(row2.elementAt(idx)).magnitude();
                 if (diff.compareTo(maxDiff) > 0) maxDiff = diff;
             }
         }
@@ -295,9 +297,10 @@ public class MatrixValidationTest {
 
         RealType maxDiff = new RealImpl(BigDecimal.ZERO, MathContext.DECIMAL128);
         for (long row = 0L; row < result1.rows(); row++) {
-            for (long idx = 0L; idx < result1.getRow(row).length(); idx++) {
-                RealType diff = result1.getRow(row).elementAt(idx).subtract(result2.getRow(row).elementAt(idx))
-                        .magnitude();
+            RowVector<RealType> row1 = result1.getRow(row);
+            RowVector<RealType> row2 = result2.getRow(row);
+            for (long idx = 0L; idx < row1.length(); idx++) {
+                RealType diff = row1.elementAt(idx).subtract(row2.elementAt(idx)).magnitude();
                 if (diff.compareTo(maxDiff) > 0) maxDiff = diff;
             }
         }
