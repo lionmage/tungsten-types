@@ -26,21 +26,20 @@
 package tungsten.types.functions.indexed;
 
 import org.junit.jupiter.api.Test;
+import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.indexed.examples.HarmonicSeries;
 import tungsten.types.functions.indexed.examples.PiSeries;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.impl.EulerMascheroni;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.Pi;
-import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.numerics.impl.*;
 import tungsten.types.util.MathUtils;
 
+import java.math.BigInteger;
 import java.math.MathContext;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static tungsten.types.util.MathUtils.areEqualToWithin;
 
 /**
@@ -68,5 +67,38 @@ public class TestOperations {
         RealType epsilon = new RealImpl("0.0000001", MathContext.DECIMAL128);
 
         assertTrue(areEqualToWithin(Pi.getInstance(MathContext.DECIMAL128), result1, epsilon));
+    }
+
+    @Test
+    public void testProduct() {
+        IndexRange range = new IndexRange(1L, 10_000L);
+        System.out.println("Range for product: " + range);
+        final IntegerType two = new IntegerImpl(BigInteger.TWO, true);
+
+        IndexFunction<RationalType> term = new IndexFunction<>("n", RationalType.class) {
+            private final IntegerType four = new IntegerImpl("4");
+            private final IntegerType one = new IntegerImpl(BigInteger.ONE, true);
+
+            @Override
+            protected RationalType compute(IntegerType index) {
+                Numeric fourNsq = four.multiply(index.pow(two));
+                IntegerType num = (IntegerType) fourNsq;
+                IntegerType denom = (IntegerType) fourNsq.subtract(one);
+                return new RationalImpl(num, denom, MathContext.DECIMAL128);
+            }
+        };
+
+        RealType expected = (RealType) Pi.getInstance(MathContext.DECIMAL128).divide(two);
+        RealType epsilon = new RealImpl("0.00005", MathContext.DECIMAL128);
+
+        Product<RationalType> prod = new Product<>(term, MathContext.DECIMAL128);
+        try {
+            RationalType result = prod.evaluate(range);
+            System.out.println("Result of product: " + result.asBigDecimal().toPlainString());
+            System.out.println("\uD835\uDF0B/2 = " + expected);
+            assertTrue(areEqualToWithin(expected, (RealType) result.coerceTo(RealType.class), epsilon));
+        } catch (CoercionException e) {
+            fail("Cannot coerce product to real");
+        }
     }
 }
