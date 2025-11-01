@@ -334,8 +334,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         }
         // first check a sub-case where we're adding to another AggregateMatrix
         // and its sub-matrices have the same dimensions
-        if (addend instanceof AggregateMatrix) {
-            final AggregateMatrix<T> coercedAddend = (AggregateMatrix<T>) addend;
+        if (addend instanceof AggregateMatrix<T> coercedAddend) {
             if (checkSubmatrixDimensions(coercedAddend)) {
                 Matrix<T>[][] result = (Matrix<T>[][]) Array.newInstance(Matrix.class, subMatrices.length, subMatrices[0].length);
                 for (int tileRow = 0; tileRow < subMatrices.length; tileRow++) {

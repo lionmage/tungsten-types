@@ -209,8 +209,7 @@ public class DiagonalMatrix<T extends Numeric> implements Matrix<T>  {
         } else {
             if (!n.isCoercibleTo(IntegerType.class)) {
                 // maybe it's a rational type?
-                if (n instanceof RationalType) {
-                    final RationalType ratN = (RationalType) n;
+                if (n instanceof RationalType ratN) {
                     Matrix<? extends Numeric> intermediate = this.pow(ratN.numerator());
                     return MathUtils.nthRoot(intermediate, ratN.denominator());
                 }
