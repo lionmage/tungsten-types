@@ -213,8 +213,7 @@ public class NumericMultiset implements Multiset<Numeric> {
         NumericMultiset union = new NumericMultiset(this);
         Iterator<Numeric> iter = other.iterator();
         while (iter.hasNext()) {
-            if (other instanceof Multiset) {
-                Multiset<Numeric> that = (Multiset<Numeric>) other;
+            if (other instanceof Multiset<Numeric> that) {
                 final Numeric value = iter.next();
                 long count = that.multiplicity(value);
                 for (long k = 0L; k < count; k++) union.append(value);
@@ -233,8 +232,7 @@ public class NumericMultiset implements Multiset<Numeric> {
                 .map(x -> x.value).filter(other::contains).iterator();
         while (iter.hasNext()) {
             final Numeric element = iter.next();
-            if (other instanceof Multiset) {
-                Multiset<Numeric> that = (Multiset<Numeric>) other;
+            if (other instanceof Multiset<Numeric> that) {
                 long count = Math.min(that.multiplicity(element), this.multiplicity(element));
                 for (long k = 0L; k < count; k++) intersec.append(element);
             } else {
@@ -253,8 +251,7 @@ public class NumericMultiset implements Multiset<Numeric> {
         while (iter.hasNext()) {
             final Numeric element = iter.next();
             if (other.contains(element)) {
-                if (other instanceof Multiset) {
-                    Multiset<Numeric> that = (Multiset<Numeric>) other;
+                if (other instanceof Multiset<Numeric> that) {
                     long count = that.multiplicity(element);
                     for (long k = 0L; k < count; k++) diff.remove(element);
                 } else {

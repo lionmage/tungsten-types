@@ -128,8 +128,7 @@ public class FareySequence implements Set<RationalType> {
     @Override
     public Set<RationalType> union(Set<RationalType> other) {
         if (other.cardinality() == 0L) return this;
-        if (other instanceof FareySequence) {
-            FareySequence seq = (FareySequence) other;
+        if (other instanceof FareySequence seq) {
             return this.order() > seq.order() ? this : seq;
         }
         if (other.countable() && other.cardinality() > 0L) {
@@ -150,8 +149,7 @@ public class FareySequence implements Set<RationalType> {
     @Override
     public Set<RationalType> intersection(Set<RationalType> other) {
         if (other.cardinality() == 0L) return EmptySet.getInstance();
-        if (other instanceof FareySequence) {
-            FareySequence seq = (FareySequence) other;
+        if (other instanceof FareySequence seq) {
             return this.order() < seq.order() ? this : seq;
         }
         NumericSet result = new NumericSet();
@@ -295,12 +293,10 @@ public class FareySequence implements Set<RationalType> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Set) {
-            if (obj instanceof FareySequence) {
-                FareySequence farey = (FareySequence) obj;
+        if (obj instanceof Set<?> that) {
+            if (obj instanceof FareySequence farey) {
                 return this.order == farey.order();
             }
-            Set<?> that = (Set<?>) obj;
             if (!that.isOfType(RationalType.class)) return false;
             if (this.cardinality() != that.cardinality()) return false;
             return this.difference((Set<RationalType>) that).cardinality() == 0L;

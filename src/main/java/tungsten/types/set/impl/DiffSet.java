@@ -133,8 +133,7 @@ public class DiffSet<T> implements Set<T> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Set) {
-            if (obj instanceof DiffSet) {
-                DiffSet<?> that = (DiffSet<?>) obj;
+            if (obj instanceof DiffSet<?> that) {
                 return this.left.equals(that.left) && this.right.equals(that.right);
             }
 

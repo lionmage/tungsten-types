@@ -99,8 +99,7 @@ public class EmptySet implements Set<Object> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Set) {
-            Set<?> that = (Set<?>) obj;
+        if (obj instanceof Set<?> that) {
             return that.cardinality() == 0L;
         }
         return false;

@@ -236,8 +236,7 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Set) {
-            if (obj instanceof UnionSet) {
-                UnionSet<?> that = (UnionSet<?>) obj;
+            if (obj instanceof UnionSet<?> that) {
                 return set1.equals(that.set1) && set2.equals(that.set2);
             }
             Set<T> other = (Set<T>) obj;

@@ -118,9 +118,8 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
 
         for (int col = 0; col < row.columns(); col++) {
             // ignore non-complex elements for now
-            if (!(row.elementAt(col) instanceof ComplexType)) continue;
+            if (!(row.elementAt(col) instanceof ComplexType value)) continue;
 
-            ComplexType value = (ComplexType) row.elementAt(col);
             int width = 0;
             // real portion
             RealType real = value.real();
@@ -170,7 +169,7 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
     public String render(Numeric value, int column) {
         StringBuilder buf = new StringBuilder();
 
-        if (!(value instanceof ComplexType)) {
+        if (!(value instanceof ComplexType cpVal)) {
             if (value instanceof RealType) {
                 buf.append(trimDecimalPlaces(value.toString()));
             } else {
@@ -192,7 +191,6 @@ public class ComplexCellRenderer implements CellRenderingStrategy {
             return buf.toString();
         }
 
-        ComplexType cpVal = (ComplexType) value;
         // real portion
         RealType reVal = cpVal.real();
         if (reVal.getClass().isAnnotationPresent(Constant.class)) {
