@@ -51,8 +51,8 @@ public class CubicSpline2D extends UnaryFunction<RealType, RealType> {
                     arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
             RealType diff = (RealType) x.subtract(scope.getLowerBound()); // x - x₀
             return (RealType) a.add(b.multiply(diff))
-                    .add(c.multiply(MathUtils.computeIntegerExponent(diff, 2)))
-                    .add(d.multiply(MathUtils.computeIntegerExponent(diff, 3)));
+                    .add(c.multiply(MathUtils.computeIntegerExponent(diff, 2L)))
+                    .add(d.multiply(MathUtils.computeIntegerExponent(diff, 3L)));
         }
         throw new ArithmeticException("Spline defined over range " + scope +
                 " cannot be evaluated for arguments " + arguments);
