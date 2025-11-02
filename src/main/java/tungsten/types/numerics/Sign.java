@@ -62,15 +62,11 @@ public enum Sign {
     }
     
     public Sign negate() {
-        switch (this) {
-            case POSITIVE:
-                return NEGATIVE;
-            case NEGATIVE:
-                return POSITIVE;
-            case ZERO:
-            default:
-                return ZERO;
-        }
+        return switch (this) {
+            case POSITIVE -> NEGATIVE;
+            case NEGATIVE -> POSITIVE;
+            default -> ZERO;
+        };
     }
     
     public String getSymbol() { return symbol; }
