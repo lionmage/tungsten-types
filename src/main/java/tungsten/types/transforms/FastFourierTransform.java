@@ -139,8 +139,8 @@ public class FastFourierTransform implements Function<List<ComplexType>, List<Co
     
     private List<ComplexType> combine(List<ComplexType> q, List<ComplexType> r) {
         assert q.size() == r.size();
-        final RealImpl one = new RealImpl(BigDecimal.ONE, mctx, true);
-        final RealImpl negtwo = new RealImpl("-2", mctx);  // defaults to exact = true
+        final RealType one = new RealImpl(BigDecimal.ONE, mctx, true);
+        final RealType negtwo = new RealImpl("-2", mctx);  // defaults to exact = true
         RealType negtwopiovern = (RealType) Pi.getInstance(mctx).multiply(negtwo)
                 .divide(new RealImpl(BigDecimal.valueOf(2L * q.size())));
         List<ComplexType> result = new ArrayList<>(q.size() * 2);
