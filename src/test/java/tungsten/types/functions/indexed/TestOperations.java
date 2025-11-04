@@ -46,6 +46,8 @@ import static tungsten.types.util.MathUtils.areEqualToWithin;
  * Tests for indexed functions.
  */
 public class TestOperations {
+    private static final IntegerType one = new IntegerImpl(BigInteger.ONE, true);
+
     @Test
     public void testHarmonicSeries() {
         IntegerType N = new IntegerImpl("10000", true);
@@ -77,7 +79,6 @@ public class TestOperations {
 
         IndexFunction<RationalType> term = new IndexFunction<>("n", RationalType.class) {
             private final IntegerType four = new IntegerImpl("4");
-            private final IntegerType one = new IntegerImpl(BigInteger.ONE, true);
 
             @Override
             protected RationalType compute(IntegerType index) {
@@ -128,8 +129,6 @@ public class TestOperations {
             fail("Cannot coerce product to real");
         }
     }
-
-    IntegerType one = new IntegerImpl(BigInteger.ONE, true);
 
     private IntegerType eTerm(IntegerType n) {
         if (n.asBigInteger().equals(BigInteger.ONE)) return one;
