@@ -101,4 +101,38 @@ public class TestOperations {
             fail("Cannot coerce product to real");
         }
     }
+
+    @Test
+    public void eulerProduct() {
+        IndexRange range = new IndexRange(1L, 1_000L);
+        System.out.println("Range for product: " + range);
+        RealType expected = Euler.getInstance(MathContext.DECIMAL128).magnitude();
+        RealType epsilon = new RealImpl("0.00000001", MathContext.DECIMAL128);
+
+        IndexFunction<RationalType> term = new IndexFunction<>(RationalType.class) {
+            @Override
+            protected RationalType compute(IntegerType index) {
+                IntegerType e_n = eTerm(index);
+                IntegerType num = (IntegerType) e_n.add(one);
+                IntegerType denom = e_n;
+                return new RationalImpl(num, denom, MathContext.DECIMAL128);
+            }
+        };
+        Product<RationalType> prod = new Product<>(term, MathContext.DECIMAL128);
+        try {
+            RationalType result = prod.evaluate(range);
+            System.out.println("Result of product: " + result.asBigDecimal().toPlainString());
+            System.out.println("\u212F = " + expected);
+            assertTrue(areEqualToWithin(expected, (RealType) result.coerceTo(RealType.class), epsilon));
+        } catch (CoercionException e) {
+            fail("Cannot coerce product to real");
+        }
+    }
+
+    IntegerType one = new IntegerImpl(BigInteger.ONE, true);
+
+    private IntegerType eTerm(IntegerType n) {
+        if (n.asBigInteger().equals(BigInteger.ONE)) return one;
+        return (IntegerType) n.multiply(eTerm((IntegerType) n.subtract(one)).add(one));
+    }
 }
