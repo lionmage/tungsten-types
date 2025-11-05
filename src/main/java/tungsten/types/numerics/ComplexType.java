@@ -52,7 +52,17 @@ public interface ComplexType extends Numeric {
      * @return the complex conjugate of {@code this}
      */
     ComplexType conjugate();
+
+    /**
+     * Obtain the real component of this complex value.
+     * @return the real part of this complex value
+     */
     RealType real();
+
+    /**
+     * Obtain the imaginary component of this complex value.
+     * @return the imaginary part of this complex value
+     */
     RealType imaginary();
     /**
      * In polar form, the argument of a complex

@@ -75,11 +75,37 @@ public interface Numeric {
      * @param <R> the return type of the calculation, which may not be the same as {@code this.getClass()}
      */
     <R extends Numeric & Comparable<R>> R magnitude();
+
+    /**
+     * Compute the additive inverse of this value.
+     * @return the negative of {@code this}
+     */
     Numeric negate();
-    
+
+    /**
+     * Compute the sum of this and the supplied value.
+     * @param addend the value to add to {@code this}
+     * @return the sum of {@code this} and {@code addend}
+     */
     Numeric add(Numeric addend);
+    /**
+     * Compute the difference of this and the supplied value.
+     * @param subtrahend the value to subtract from {@code this}
+     * @return the difference between {@code this} and {@code subtrahend}
+     */
     Numeric subtract(Numeric subtrahend);
+    /**
+     * Compute the product of this and the supplied value.
+     * @param multiplier the value to multiply {@code this} by
+     * @return the product of {@code this} and {@code multiplier}
+     */
     Numeric multiply(Numeric multiplier);
+
+    /**
+     * Divide this value by the supplied value.
+     * @param divisor the value to divide {@code this} by
+     * @return the dividend of {@code this} and {@code divisor}
+     */
     Numeric divide(Numeric divisor);
 
     /**
