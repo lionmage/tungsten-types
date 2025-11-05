@@ -246,10 +246,18 @@ public class IntVector implements Vector<IntegerType> {
         return mctx;
     }
 
+    /**
+     * Set the {@code MathContext} for this vector.
+     * @param mctx the {@code MathContext}
+     */
     public void setMathContext(MathContext mctx) {
         this.mctx = mctx;
     }
 
+    /**
+     * Obtain a {@link Stream} of values contained by this vector, in index order.
+     * @return a stream of {@code IntegerType} values
+     */
     public Stream<IntegerType> stream() {
         return Arrays.stream(elements).map(IntegerImpl::new);
     }

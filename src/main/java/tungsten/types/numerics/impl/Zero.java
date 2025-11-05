@@ -93,7 +93,11 @@ public abstract class Zero implements Numeric, Comparable<Numeric> {
         }
         return retval;
     }
-    
+
+    /**
+     * Obtain a real value equivalent to zero.
+     * @return a real value equivalent to this object
+     */
     protected RealType obtainRealZero() {
         return new RealImpl(BigDecimal.ZERO, mctx, isExact());
     }
