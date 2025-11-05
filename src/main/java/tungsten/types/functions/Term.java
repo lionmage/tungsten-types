@@ -101,10 +101,25 @@ public abstract class Term<T extends Numeric, R extends Numeric> extends Numeric
         return super.andThen(after);
     }
 
+    /**
+     * Compute the product of two terms.
+     * @param multiplier the term by which to multiply {@code this}
+     * @return the product of {@code this} and {@code multiplier}
+     */
     public abstract Term<T, R> multiply(Term<T, R> multiplier);
 
+    /**
+     * Compute the product of this term and a power function.
+     * @param multiplier the function by which to multiply {@code this}
+     * @return the product of {@code this} and {@code multiplier}
+     */
     public abstract Term<T, R> multiply(Pow<T, R> multiplier);
 
+    /**
+     * Scale this term by the given value.
+     * @param multiplier the value by which to multiply {@code this}
+     * @return a new term that is {@code this} scaled by {@code multiplier}
+     */
     public abstract Term<T, R> scale(R multiplier);
 
     /**
