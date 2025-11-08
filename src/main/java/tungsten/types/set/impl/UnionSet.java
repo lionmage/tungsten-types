@@ -72,6 +72,8 @@ public class UnionSet<T extends Comparable<? super T>> implements Set<T> {
         if (set1.cardinality() == 0L && set2.cardinality() == 0L) {
             return 0L;
         }
+        if (set1.cardinality() == 0L) return set2.cardinality();
+        else if (set2.cardinality() == 0L) return set1.cardinality();
         return StreamSupport.stream(this.spliterator(), false).count();
     }
 
