@@ -782,6 +782,33 @@ public final class MathUtils {
         return s.add(twoMplus1).multiply(zetaT_kn(n, m + 1L, s, bn)).divide(sigma.add(twoMplus1)).magnitude();
     }
 
+    private static Numeric lambertWGuess(Numeric z) {
+        final MathContext ctx = z.getMathContext();
+        final Euler e = Euler.getInstance(ctx);
+        final Numeric one = One.getInstance(ctx);
+        RealType re = Re(z);
+        if (RangeUtils.lambertWRangeA(ctx).contains(re)) {
+            Numeric ez = e.multiply(z);
+            Numeric sterm = ez.add(one).sqrt();
+            Numeric numlog = z instanceof ComplexType ? ln((ComplexType) sterm.add(one)) : ln((RealType) sterm.add(one));
+            Numeric num = ez.multiply(numlog);
+            Numeric denom = one.add(ez).add(sterm);
+            return num.divide(denom);
+        } else if (RangeUtils.lambertWRangeB(ctx).contains(re)) {
+            return z.divide(e);
+        } else if (RangeUtils.lambertWRangeC(ctx).contains(re)) {
+            if (z instanceof ComplexType cplx) {
+                return ln(cplx).subtract(ln(ln(cplx)));
+            }
+            return ln(re).subtract(ln(ln(re)));
+        }
+        if (z instanceof ComplexType cplx) {
+            return ln(cplx);
+        }
+        // otherwise, we're in the branch cut and the function cannot be calculated
+        throw new ArithmeticException("Cannot compute initial w\u2080 for Lambert W function at " + z);
+    }
+
     /**
      * Determine if a given value is an infinity with the given sign.
      * Note that for {@link PointAtInfinity}, this will always return false
