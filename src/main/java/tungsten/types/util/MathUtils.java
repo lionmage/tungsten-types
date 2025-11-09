@@ -810,6 +810,35 @@ public final class MathUtils {
     }
 
     /**
+     * Compute the Lambert W<sub>0</sub> function for a given argument.
+     * The calculation is done iteratively using Halley's method.
+     * @param z any {@code Numeric} value, including {@code ComplexType}
+     * @return the value of W<sub>0</sub>(z)
+     */
+    public static Numeric lambertW(Numeric z) {
+        final MathContext ctx = z.getMathContext();
+        if (RangeUtils.lambertWBranchCut(ctx).contains(Re(z)) && Zero.isZero(Im(z))) {
+            throw new ArithmeticException(z + " falls on a branch cut for W\u2080");
+        }
+
+        final Euler e = Euler.getInstance(ctx);
+        final Numeric one = One.getInstance(ctx);
+        final RealType two = new RealImpl(BigDecimal.valueOf(2L), ctx);
+        Numeric prev = lambertWGuess(z);
+        for (int iter = 0; iter < ctx.getPrecision() + 3; iter++) {
+            Numeric epow = prev instanceof ComplexType ? e.exp((ComplexType) prev) : e.exp(Re(prev));
+            Numeric prodPow = prev.multiply(epow);
+            Numeric num = prodPow.subtract(z);
+            Numeric denTerm1 = epow.multiply(prev.add(one));
+            Numeric denTerm2 = prev.add(two).multiply(num)
+                    .divide(two.multiply(prev).add(two));
+            Numeric denom = denTerm1.subtract(denTerm2);
+            prev = prev.subtract(num.divide(denom));
+        }
+        return prev;
+    }
+
+    /**
      * Determine if a given value is an infinity with the given sign.
      * Note that for {@link PointAtInfinity}, this will always return false
      * since complex infinity has no sign.
