@@ -29,10 +29,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.Pi;
-import tungsten.types.numerics.impl.RealImpl;
-import tungsten.types.numerics.impl.RealInfinity;
+import tungsten.types.numerics.impl.*;
 import tungsten.types.set.impl.*;
 
 import java.math.BigDecimal;
@@ -200,7 +197,57 @@ public final class RangeUtils {
         return new Range<>(new RealImpl(BigDecimal.valueOf(-1L), mctx),
                 new RealImpl(BigDecimal.ONE, mctx), BoundType.INCLUSIVE);
     }
-    
+
+    /**
+     * Returns the branch cut along the negative real axis for the W<sub>0</sub>
+     * Lambert function.
+     * @param mctx the {@code MathContext} for this range
+     * @return a range from &minus;&infin; to &minus;1/&#x212f;
+     */
+    public static Range<RealType> lambertWBranchCut(MathContext mctx) {
+        final Euler e = Euler.getInstance(mctx);
+        return new Range<>(RealInfinity.getInstance(Sign.NEGATIVE, mctx), BoundType.EXCLUSIVE,
+                e.inverse().negate(), BoundType.INCLUSIVE);
+    }
+
+    /**
+     * The real range of the Lambert W<sub>0</sub> function
+     * between &minus;1/&#x212f; and 0.
+     * @param mctx the {@code MathContext} for this range
+     * @return the range (&minus;1/&#x212f;, 0)
+     */
+    public static Range<RealType> lambertWRangeA(MathContext mctx) {
+        final Euler e = Euler.getInstance(mctx);
+        final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
+        return new Range<>(e.inverse().negate(), BoundType.EXCLUSIVE,
+                zero, BoundType.EXCLUSIVE);
+    }
+
+    /**
+     * The real range of the Lambert W<sub>0</sub> function
+     * between 0 and &#x212f;.
+     * @param mctx the {@code MathContext} for this range
+     * @return the range [0, &#x212f;]
+     */
+    public static Range<RealType> lambertWRangeB(MathContext mctx) {
+        final Euler e = Euler.getInstance(mctx);
+        final RealType zero = new RealImpl(BigDecimal.ZERO, mctx);
+        return new Range<>(zero, BoundType.INCLUSIVE,
+                e, BoundType.INCLUSIVE);
+    }
+
+    /**
+     * The real range of the Lambert W<sub>0</sub> function
+     * between &#x212f; and +&infin;.
+     * @param mctx the {@code MathContext} for this range
+     * @return the range (&#x212f;, &infin;)
+     */
+    public static Range<RealType> lambertWRangeC(MathContext mctx) {
+        final Euler e = Euler.getInstance(mctx);
+        return new Range<>(e, BoundType.EXCLUSIVE,
+                RealInfinity.getInstance(Sign.POSITIVE, mctx), BoundType.EXCLUSIVE);
+    }
+
     /**
      * Generate an interval that is symmetric around the origin, with the
      * specified bound type on both ends.  Negative values for {@code distance}
