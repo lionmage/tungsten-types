@@ -812,8 +812,11 @@ public final class MathUtils {
     /**
      * Compute the Lambert W<sub>0</sub> function for a given argument.
      * The calculation is done iteratively using Halley's method.
+     * Note that W<sub>0</sub>(z) has a branch cut on the negative
+     * real axis in (&minus;&infin;,&nbsp;&minus;1/&#x212f;].
      * @param z any {@code Numeric} value, including {@code ComplexType}
      * @return the value of W<sub>0</sub>(z)
+     * @since 0.9
      */
     public static Numeric lambertW(Numeric z) {
         final MathContext ctx = z.getMathContext();
