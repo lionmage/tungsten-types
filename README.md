@@ -39,7 +39,7 @@ numeric types:
   * Implementations of trig functions such as sin, cos, and a highly optimized atan.
   * Hyperbolic functions sinh, cosh, tanh.
   * Logarithms are supported for multiple types, including continued fractions.
-  * Specialized functions that show up a lot, such as 𝚪(z), ln𝚪(z) and 𝜁(s).
+  * Specialized functions that show up a lot, such as 𝚪(z), ln𝚪(z), W₀(z) and 𝜁(s).
   * Multiple ways to compute exponents for all `Numeric` data types.
   * Methods for computing factorials, binomial coefficients, etc.
   * Methods for obtaining pseudorandom values:
@@ -116,6 +116,7 @@ dependencies with the following snippet:
 <dependency>
   <groupId>tungsten</groupId>
   <artifactId>tungsten-types</artifactId>
+  <!-- When 1.0 is published, the following will reflect that -->
   <version>0.9</version>
 </dependency>
 ```
