@@ -823,10 +823,13 @@ public final class MathUtils {
         if (RangeUtils.lambertWBranchCut(ctx).contains(Re(z)) && Zero.isZero(Im(z))) {
             throw new ArithmeticException(z + " falls on a branch cut for W\u2080");
         }
+        if (Zero.isZero(z)) return ExactZero.getInstance(ctx);
+        if (z instanceof Euler) return One.getInstance(ctx);
 
         final Euler e = Euler.getInstance(ctx);
         final Numeric one = One.getInstance(ctx);
         final RealType two = new RealImpl(BigDecimal.valueOf(2L), ctx);
+        final RealType epsilon = MathUtils.computeIntegerExponent(TEN, 1L - ctx.getPrecision(), ctx);
         Numeric prev = lambertWGuess(z);
         for (int iter = 0; iter < ctx.getPrecision() + 3; iter++) {
             Numeric epow = prev instanceof ComplexType ? e.exp((ComplexType) prev) : e.exp(Re(prev));
@@ -836,7 +839,14 @@ public final class MathUtils {
             Numeric denTerm2 = prev.add(two).multiply(num)
                     .divide(two.multiply(prev).add(two));
             Numeric denom = denTerm1.subtract(denTerm2);
-            prev = prev.subtract(num.divide(denom));
+            Numeric nxt = prev.subtract(num.divide(denom));
+            if (prev instanceof ComplexType pcplx && nxt instanceof ComplexType ncplx) {
+                if (areEqualToWithin(pcplx.real(), ncplx.real(), epsilon) &&
+                    areEqualToWithin(pcplx.imaginary(), ncplx.imaginary(), epsilon)) break;
+            } else if (prev instanceof RealType pre && nxt instanceof RealType nre) {
+                if (areEqualToWithin(pre, nre, epsilon)) break;
+            }
+            prev = nxt;
         }
         return prev;
     }
