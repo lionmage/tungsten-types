@@ -92,9 +92,9 @@ public class EulerMascheroni implements RealType {
         // explicit advice from Gourdon and Sebah is that we should calculate with 2d digits of precision to get d digits
         final MathContext compCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
         // This is an approximation of alpha.  The value satisfies the relationship
-        // 𝛼(ln(𝛼) - 1) = 1
-        final RealImpl alpha = new RealImpl("3.5911", false);
-        alpha.setMathContext(compCtx);
+        // 𝛼(ln(𝛼) - 1) = 1 and is approximately 3.5911
+        // It can be calculated as 1/W(1/e)
+        final RealType alpha = (RealType) MathUtils.lambertW(Euler.getInstance(compCtx).inverse()).inverse();
         final RealType log10 = MathUtils.ln(TEN, compCtx);
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
         IntegerType iterLimit = ((RealType) alpha.multiply(n)).ceil();  // 𝛼⋅n gives us the number of terms to compute
