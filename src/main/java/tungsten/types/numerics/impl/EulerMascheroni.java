@@ -93,7 +93,7 @@ public class EulerMascheroni implements RealType {
         final MathContext compCtx = new MathContext(mctx.getPrecision() * 2, mctx.getRoundingMode());
         // This is an approximation of alpha.  The value satisfies the relationship
         // 𝛼(ln(𝛼) - 1) = 1 and is approximately 3.5911
-        // It can be calculated as 1/W(1/e)
+        // It can be calculated as 1/W(1/e) (the relationship was pointed out by Steven Stadnicki)
         final RealType alpha = (RealType) MathUtils.lambertW(Euler.getInstance(compCtx).inverse()).inverse();
         final RealType log10 = MathUtils.ln(TEN, compCtx);
         RealType n = (RealType) new RealImpl(BigDecimal.valueOf(mctx.getPrecision() + 1L), compCtx).multiply(log10);
