@@ -843,8 +843,8 @@ public final class MathUtils {
             if (prev instanceof ComplexType pcplx && nxt instanceof ComplexType ncplx) {
                 if (areEqualToWithin(pcplx.real(), ncplx.real(), epsilon) &&
                     areEqualToWithin(pcplx.imaginary(), ncplx.imaginary(), epsilon)) break;
-            } else if (prev instanceof RealType pre && nxt instanceof RealType nre) {
-                if (areEqualToWithin(pre, nre, epsilon)) break;
+            } else if (prev instanceof RealType p_re && nxt instanceof RealType n_re) {
+                if (areEqualToWithin(p_re, n_re, epsilon)) break;
             }
             prev = nxt;
         }
