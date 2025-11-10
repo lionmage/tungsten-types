@@ -782,6 +782,12 @@ public final class MathUtils {
         return s.add(twoMplus1).multiply(zetaT_kn(n, m + 1L, s, bn)).divide(sigma.add(twoMplus1)).magnitude();
     }
 
+    /**
+     * Compute the initial guess w<sub>0</sub> for the Halley method calculation
+     * of Lambert's W function.
+     * @param z the point at which we are evaluating W<sub>0</sub>
+     * @return the initial guess w<sub>0</sub>
+     */
     private static Numeric lambertWGuess(Numeric z) {
         final MathContext ctx = z.getMathContext();
         final Euler e = Euler.getInstance(ctx);
