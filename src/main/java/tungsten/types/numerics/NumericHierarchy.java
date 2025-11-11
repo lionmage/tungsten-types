@@ -52,11 +52,20 @@ public enum NumericHierarchy {
     NumericHierarchy(Class<? extends Numeric> clazz) {
         this.clazz = clazz;
     }
-    
+
+    /**
+     * Obtain the base {@code Numeric} type for this value.
+     * @return a {@code Class<? extends Numeric>} associated with this hierarchy value
+     */
     public Class<? extends Numeric> getNumericType() {
         return clazz;
     }
-    
+
+    /**
+     * Obtain a value for a given {@code Numeric} subtype.
+     * @param clazz the {@code Numeric} subtype
+     * @return the associated value
+     */
     public static NumericHierarchy forNumericType(Class<? extends Numeric> clazz) {
         NumericHierarchy retval;
         

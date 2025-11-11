@@ -65,11 +65,26 @@ public abstract class MegaConstant<T extends Numeric> {
     protected final List<Numeric> constants = new ArrayList<>();
     protected final List<Long> exponents = new ArrayList<>();
 
+    /**
+     * Construct a mega constant of the given type and with the given rational
+     * coefficient.
+     * @param evaluatesAs the {@code Numeric} subtype of this mega constant
+     * @param coefficient the leading coefficient of this mega constant
+     */
     public MegaConstant(Class<T> evaluatesAs, RationalType coefficient) {
         this.masqueradesAs = evaluatesAs;
         this.rationalCoefficient = coefficient;
     }
 
+    /**
+     * Construct a mega constant of the given type and rational coefficient
+     * with the given set of constant terms and their exponents.
+     * @param evaluatesAs the {@code Numeric} subtype of this mega constant
+     * @param coefficient the leading coefficient of this mega constant
+     * @param constants   the array of constant numeric values
+     * @param exponents   the array of exponents to apply to the constants
+     * @throws IllegalArgumentException if {@code constants.length != exponents.length}
+     */
     public MegaConstant(Class<T> evaluatesAs, RationalType coefficient, Numeric[] constants, Long[] exponents) {
         this(evaluatesAs, coefficient);
         if (constants.length != exponents.length) throw new IllegalArgumentException("Arrays of constants and exponents must be of equal length");
