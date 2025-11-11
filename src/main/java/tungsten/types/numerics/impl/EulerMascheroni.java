@@ -70,6 +70,11 @@ public class EulerMascheroni implements RealType {
     private static final Map<MathContext, EulerMascheroni> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
 
+    /**
+     * Instantiate the Euler-Mascheroni constant for the given
+     * {@code MathContext}.
+     * @param mctx the {@code MathContext}
+     */
     protected EulerMascheroni(MathContext mctx) {
         this.mctx = mctx;
         calculate();

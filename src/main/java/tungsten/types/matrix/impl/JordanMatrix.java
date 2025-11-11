@@ -274,6 +274,12 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
     public class JordanBlock extends ParametricMatrix<T> {
         private final T lambda;
 
+        /**
+         * Instantiate a Jordan block with a given lambda value
+         * and of a given dimension.
+         * @param lambda the lambda value for this block
+         * @param n      the width and height of the Jordan block
+         */
         public JordanBlock(T lambda, long n) {
             super(n, n, (row, column) -> {
                 if (row.longValue() == column.longValue()) return lambda;
@@ -283,6 +289,10 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
             this.lambda = lambda;
         }
 
+        /**
+         * Obtain the lambda value for this Jordan block.
+         * @return the lambda value
+         */
         public T getLambda() { return lambda; }
 
         @Override
