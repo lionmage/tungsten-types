@@ -69,12 +69,23 @@ public class JordanMatrix<T extends Numeric> implements Matrix<T> {
     private T one, zero;
     private final JordanBlock[] diagBlocks;
 
+    /**
+     * Construct a Jordan matrix from an array of Jordan blocks.
+     * The blocks are laid out diagonally in order.
+     * @param blocks the array of Jordan blocks
+     */
     public JordanMatrix(JordanBlock[] blocks) {
         this.diagBlocks = blocks;
         clazz = (Class<T>) ClassTools.getInterfaceTypeFor(blocks[0].getLambda().getClass());
         generateInternalValues();
     }
 
+    /**
+     * Construct a Jordan matrix from an array of lambda values and an array
+     * of dimensions for each lambda block.
+     * @param lambdas         the lambda values to use
+     * @param blockDimensions the dimensions for each lambda-valued block
+     */
     public JordanMatrix(T[] lambdas, long[] blockDimensions) {
         if (lambdas.length != blockDimensions.length) {
             throw new IllegalArgumentException("Lambda values and block sizes must be of the same dimension");

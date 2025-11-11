@@ -71,6 +71,12 @@ public class MatrixParser<T extends Numeric> {
     private final Class<T> matrixType;
     private final MathContext mctx;
 
+    /**
+     * Instantiate a matrix parser for a given {@code MathContext} and a given
+     * Numeric subtype.  All matrix elements will be parsed to the indicated type.
+     * @param mctx the {@code MathContext} to assign to all parsed values
+     * @param type the type of the parsed values
+     */
     public MatrixParser(MathContext mctx, Class<T> type) {
         if (!type.isInterface()) {
             throw new IllegalArgumentException("Type argument must not be a concrete class");

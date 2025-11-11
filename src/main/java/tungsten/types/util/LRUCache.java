@@ -38,6 +38,10 @@ import java.util.Map;
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     private final int cacheSize;
 
+    /**
+     * Instantiate a LRU cache of a given size.
+     * @param cacheSize the size of the cache
+     */
     public LRUCache(int cacheSize) {
         super(16, 0.75f, true);  // this superclass constructor specifies access order instead of insertion order
         this.cacheSize = cacheSize;
@@ -47,6 +51,10 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
     protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
         return size() >= cacheSize;
     }
-    
+
+    /**
+     * Obtain the cache size for this LRU cache.
+     * @return the size of this cache
+     */
     public int getCacheSize() { return cacheSize; }
 }

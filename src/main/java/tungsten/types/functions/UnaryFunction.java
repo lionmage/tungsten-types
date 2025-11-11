@@ -61,6 +61,12 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
         this.argumentName = varName;
     }
 
+    /**
+     * A convenience method to apply this function to a single
+     * argument.
+     * @param argument the sole argument to this function
+     * @return the result of applying this function
+     */
     public R apply(T argument) {
         // only a single argument, so ordering doesn't matter
         final ArgMap<T> theArgument = new ArgMap<>();
