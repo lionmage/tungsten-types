@@ -67,6 +67,9 @@ import static tungsten.types.Range.BoundType;
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  */
 public final class MathUtils {
+    /**
+     * The default variable name for an angular value.
+     */
     public static final String THETA = "\u03B8";
     /**
      * The {@link String} representing the System property that
@@ -2179,6 +2182,10 @@ public final class MathUtils {
         return diag.multiply(col);
     }
 
+    /**
+     * For data structures (e.g., vectors or matrices), copies may be made
+     * up to this dimensional value; beyond this size, a view may be returned.
+     */
     public static long MAX_CLONE_DEPTH = (long) Integer.MAX_VALUE >> 4L;
 
     /**

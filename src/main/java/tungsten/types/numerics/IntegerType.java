@@ -44,8 +44,23 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
      * @return the modulus, or remainder
      */
     IntegerType modulus(IntegerType divisor);
+
+    /**
+     * Determine whether this integer is even.
+     * @return true if and only if this value is even
+     */
     boolean isEven();
+
+    /**
+     * Determine whether this integer is odd.
+     * @return true if and only if this value is odd
+     */
     boolean isOdd();
+
+    /**
+     * Determine whether this value is a perfect square.
+     * @return true if this integer value is a perfect square
+     */
     boolean isPerfectSquare();
     /**
      * The number of digits in this integer in base 10.
@@ -84,12 +99,25 @@ public interface IntegerType extends Numeric, Comparable<IntegerType> {
     
     @Override
     IntegerType sqrt();
-    
+
+    /**
+     * Determine whether this integer is a power of 2.
+     * @return true if this integer is positive and a power of 2
+     */
     default boolean isPowerOf2() {
         return sign() != Sign.NEGATIVE && asBigInteger().bitCount() == 1;
     }
-    
+
+    /**
+     * Return a {@code BigInteger} value equivalent to this {@code IntegerType}.
+     * @return a {@code BigInteger} equivalent to {@code this}
+     */
     BigInteger asBigInteger();
+
+    /**
+     * Obtain the sign of this value.
+     * @return the {@code Sign} for this value
+     */
     Sign sign();
 
     /*

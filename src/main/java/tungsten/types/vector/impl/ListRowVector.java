@@ -24,27 +24,48 @@ import java.util.stream.Stream;
  * @param <T> the type of the elements of this {@code RowVector}
  */
 public class ListRowVector<T extends Numeric> extends RowVector<T> {
+    /**
+     * The threshold for using a random access internal representation.
+     * Vectors with this number of elements or fewer should use a {@code List}
+     * implementation that also implements {@link RandomAccess}.
+     */
     public static final long RANDOM_ACCESS_THRESHOLD = 1_000L;
     private static final String NEGATIVE_INDICES = "Negative indices are not allowed";
     private final List<T> elements;
     private transient long elementCount = -1L;
     private final ReadWriteLock rwl = new ReentrantReadWriteLock();
 
+    /**
+     * Construct a row vector with no initial elements.
+     * It is encouraged to use {@link ListRowVector#ListRowVector(Class)} instead.
+     */
     public ListRowVector() {
         elements = new LinkedList<>();
         elementCount = 0L;
     }
 
+    /**
+     * Instantiate a row vector for elements of the given type.
+     * @param clazz the element type
+     */
     public ListRowVector(Class<T> clazz) {
         super(clazz);
         elements = new LinkedList<>();
         elementCount = 0L;
     }
 
+    /**
+     * Instantiate a row vector for elements of the given type.
+     * @param type the {@code NumericHierarchy} corresponding to the {@code Numeric} subtype
+     */
     public ListRowVector(NumericHierarchy type) {
         this((Class<T>) type.getNumericType());
     }
 
+    /**
+     * Instantiate a row vector with the given elements.
+     * @param source the {@code List} of elements
+     */
     public ListRowVector(List<T> source) {
         super((Class<T>) ClassTools.getInterfaceTypeFor(ClassTools.getBaseTypeFor(source)));
         elements = source;
@@ -64,6 +85,10 @@ public class ListRowVector<T extends Numeric> extends RowVector<T> {
         source.stream().forEachOrdered(elements::add);
     }
 
+    /**
+     * Construct a row vector from the given vector.
+     * @param source the source {@code Vector}
+     */
     public ListRowVector(Vector<T> source) {
         super(source.getElementType());
         if (source.length() < RANDOM_ACCESS_THRESHOLD) {
