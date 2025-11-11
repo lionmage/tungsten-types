@@ -81,6 +81,9 @@ public class Coordinates {
         value  = coordinateValues.get(coordinateValues.size() - 1);
     }
 
+    /**
+     * Default no-args constructor intended for use by subclasses.
+     */
     protected Coordinates() {
         // this is intended for subclasses only
     }

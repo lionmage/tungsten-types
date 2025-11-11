@@ -174,14 +174,26 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
                 decDegrees.getMathContext() : DEFAULT_CONTEXT;
     }
 
+    /**
+     * Obtain the degrees portion of this angle as an integer.
+     * @return the whole number of degrees
+     */
     public IntegerType getDegrees() {
         return degrees;
     }
 
+    /**
+     * Obtain the minutes portion of this angle as an integer.
+     * @return the whole number of minutes
+     */
     public IntegerType getMinutes() {
         return minutes;
     }
 
+    /**
+     * Obtain the seconds portion of this angle as a real value.
+     * @return the seconds
+     */
     public RealType getSeconds() {
         return seconds;
     }
