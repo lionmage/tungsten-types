@@ -26,14 +26,12 @@ package tungsten.types.util;
 import org.junit.jupiter.api.Test;
 import tungsten.types.Matrix;
 import tungsten.types.Numeric;
+import tungsten.types.exceptions.CoercionException;
 import tungsten.types.matrix.impl.BasicMatrix;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.Pi;
-import tungsten.types.numerics.impl.RationalImpl;
-import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.numerics.impl.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -41,6 +39,7 @@ import java.math.MathContext;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tungsten.types.util.MathUtils.areEqualToWithin;
 import static tungsten.types.util.UnicodeTextEffects.formatMatrixForDisplay;
 
 public class MathUtilsTest {
@@ -84,6 +83,25 @@ public class MathUtilsTest {
         result = MathUtils.gamma(three);
 
         assertEquals(expectedResult2, result);
+    }
+
+    @Test
+    public void lambertWTests() throws CoercionException {
+        RealType epsilon = new RealImpl("0.00000001", MathContext.DECIMAL128);
+        Euler e = Euler.getInstance(MathContext.DECIMAL128);
+        Numeric one = One.getInstance(MathContext.DECIMAL128);
+        RealType result = (RealType) MathUtils.lambertW(e.exp((RealType) one.add(e)));
+        assertTrue(areEqualToWithin(e, result, epsilon));
+
+        RealType two = new RealImpl("2.00", MathContext.DECIMAL128);
+        RealType expected2 = MathUtils.ln(two);
+        RealType result2 = (RealType) MathUtils.lambertW(two.multiply(expected2));
+        assertTrue(areEqualToWithin(expected2, result2, epsilon));
+
+        // coercion in case 1/2 is converted to a rational
+        RealType expected3 = (RealType) two.inverse().coerceTo(RealType.class);
+        RealType result3 = (RealType) MathUtils.lambertW(e.sqrt().divide(two));
+        assertTrue(areEqualToWithin(expected3, result3, epsilon));
     }
 
     @Test
