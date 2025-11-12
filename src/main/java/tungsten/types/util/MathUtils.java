@@ -826,6 +826,7 @@ public final class MathUtils {
      * @param z any {@code Numeric} value, including {@code ComplexType}
      * @return the value of W<sub>0</sub>(z)
      * @since 0.9
+     * @apiNote the result should be accurate to within 1&ndash;2 ULPs
      */
     public static Numeric lambertW(Numeric z) {
         final MathContext ctx = z.getMathContext();
