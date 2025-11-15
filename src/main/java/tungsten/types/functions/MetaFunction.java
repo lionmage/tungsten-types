@@ -43,11 +43,18 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
         implements Function<NumericFunction<T, R>, NumericFunction<T, R2>> {
     private final ArgMap<T> curryMap = new ArgMap<>();
 
+    /**
+     * Default no-args constructor, intended for use by subclasses.
+     */
     protected MetaFunction() {
         // default, don't do much for now
     }
 
-
+    /**
+     * Constructor which takes a mapping from argument names
+     * to values.
+     * @param sourceArgs a {@code Map} of argument names to values
+     */
     protected MetaFunction(Map<String, T> sourceArgs) {
         curryMap.putAll(sourceArgs);
     }
@@ -94,6 +101,10 @@ public abstract class MetaFunction<T extends Numeric, R extends Numeric, R2 exte
         return curryMap.containsKey(varName);
     }
 
+    /**
+     * Obtain an unmodifiable map of argument names to values.
+     * @return an unmodifiable map of argument names to values
+     */
     protected ArgMap<T> mappedArgsView() { return new ArgMap<>(Collections.unmodifiableMap(curryMap)); }
 
     /**

@@ -25,6 +25,7 @@ package tungsten.types.numerics.impl;
 
 import tungsten.types.Numeric;
 import tungsten.types.annotations.Constant;
+import tungsten.types.annotations.ConstantFactory;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.*;
 import tungsten.types.util.ClassTools;
@@ -61,6 +62,7 @@ public class One implements Numeric, Comparable<Numeric> {
     private static final Map<MathContext, One> instanceMap = new HashMap<>();
     private static final Lock instanceLock = new ReentrantLock();
 
+    @ConstantFactory
     public static Numeric getInstance(MathContext mctx) {
         instanceLock.lock();
         try {
@@ -131,6 +133,10 @@ public class One implements Numeric, Comparable<Numeric> {
         return this;
     }
 
+    /**
+     * Always returns positive.
+     * @return always {@link Sign#POSITIVE}
+     */
     public Sign sign() { return Sign.POSITIVE; }
 
     @Override

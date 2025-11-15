@@ -57,6 +57,10 @@ import java.util.stream.LongStream;
 public final class OptionalOperations {
     private static final String CLASS_MUST_NOT_BE_FOR_CONCRETE_TYPE = "Supplied Class must not be for a concrete type";
     private static final String INDETERMINATE_TYPE = "Cannot determine element type of matrix";
+    /**
+     * System property governing whether we scan the elements of a matrix
+     * slowly (all elements covered) or quickly (abbreviated scan).
+     */
     public static final String SLOW_MATRIX_SCAN = "tungsten.types.numerics.OptionalOperations.slow.matrix.scan";
 
     private OptionalOperations() {

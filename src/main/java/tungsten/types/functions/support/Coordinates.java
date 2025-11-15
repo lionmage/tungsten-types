@@ -49,7 +49,13 @@ import java.util.stream.Collectors;
  */
 public class Coordinates {
     private static final String MISMATCHED_ARITY = "Mismatched arity";
+    /**
+     * The independent variables of this datum.
+     */
     protected RealType[] inputs;
+    /**
+     * The dependent variable of this datum.
+     */
     protected RealType value;
     /**
      * If {@code lowError == null}, this represents the symmetric error bounds
