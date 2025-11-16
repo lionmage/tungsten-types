@@ -43,6 +43,7 @@ import java.util.stream.StreamSupport;
  *   or <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Gmail</a>
  */
 public class PrimeNumbers implements Set<IntegerType> {
+    private static final String IMMUTABLE_SET = "The set of prime numbers is immutable";
     private final SortedSet<BigInteger> primes = new TreeSet<>();
 
     public PrimeNumbers() {
@@ -98,12 +99,12 @@ public class PrimeNumbers implements Set<IntegerType> {
 
     @Override
     public void append(IntegerType element) {
-        throw new UnsupportedOperationException("The set of prime numbers is immutable");
+        throw new UnsupportedOperationException(IMMUTABLE_SET);
     }
 
     @Override
     public void remove(IntegerType element) {
-        throw new UnsupportedOperationException("The set of prime numbers is immutable");
+        throw new UnsupportedOperationException(IMMUTABLE_SET);
     }
 
     @Override
