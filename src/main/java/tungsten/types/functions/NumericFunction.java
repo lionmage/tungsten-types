@@ -31,9 +31,22 @@ import tungsten.types.numerics.RealType;
 import java.util.Arrays;
 import java.util.function.Function;
 
+/**
+ * A function that takes one or more numeric arguments (supplied in an argument
+ * vector) and returns a numeric value.
+ * @param <T> the {@code Numeric} subtype of the arguments
+ * @param <R> the {@code Numeric} subtype of the result
+ */
 public abstract class NumericFunction<T extends Numeric, R extends Numeric> implements Function<ArgVector<T>, R> {
+    /**
+     * The {@code Class} representing the return type of this function.
+     */
     protected final Class<R> returnType;
 
+    /**
+     * A constructor which takes the return type of this function.
+     * @param returnType the {@code Class} representing the return type of this function
+     */
     protected NumericFunction(Class<R> returnType) {
         this.returnType = returnType;
     }
@@ -69,7 +82,7 @@ public abstract class NumericFunction<T extends Numeric, R extends Numeric> impl
      * @return true if arguments are sound, false otherwise
      */
     protected boolean checkArguments(ArgVector<T> arguments) {
-        if (arguments.arity() != this.arity()) return false;
+        if (arguments.arity() < this.arity()) return false;
         return Arrays.stream(expectedArguments()).allMatch(arguments::hasVariableName);
     }
 
