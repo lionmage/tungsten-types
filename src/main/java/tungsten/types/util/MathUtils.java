@@ -826,7 +826,13 @@ public final class MathUtils {
      * @param z any {@code Numeric} value, including {@code ComplexType}
      * @return the value of W<sub>0</sub>(z)
      * @since 0.9
-     * @apiNote the result should be accurate to within 1&ndash;2 ULPs
+     * @apiNote The result should be accurate to within 1&ndash;2 ULPs, and
+     *   will only belong to the principal (order 0) branch.
+     * @see <a href="https://en.wikipedia.org/wiki/Lambert_W_function">the Wikipedia article</a>
+     * @see <a href="https://math.stackexchange.com/questions/939962/lambert-w-function-calculation">a Math StackExchange
+     *   article</a> about ways of calculating W<sub>0</sub>
+     * @see <a href="https://math.stackexchange.com/questions/420119/lambert-function-approximation-w-0-branch/464668#464668">a Math
+     *   StackExchange article</a> about ways to approximate W<sub>0</sub>
      */
     public static Numeric lambertW(Numeric z) {
         final MathContext ctx = z.getMathContext();
