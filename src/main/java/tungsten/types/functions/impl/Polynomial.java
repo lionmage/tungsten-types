@@ -336,12 +336,22 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         }
     }
 
+    /**
+     * Add this polynomial to another.
+     * @param other the other polynomial to add
+     * @return the sum of {@code this} and {@code other}
+     */
     public Polynomial<T, R> add(Polynomial<T, R> other) {
         Polynomial<T, R> aggregate = new Polynomial<>(terms, getReturnType());
         other.termStream().forEach(aggregate::add);
         return aggregate;
     }
 
+    /**
+     * Multiply this polynomial with another.
+     * @param other the other polynomial to multiply
+     * @return the product of {@code this} and {@code other}
+     */
     public Polynomial<T, R> multiply(Polynomial<T, R> other) {
         Polynomial<T, R> product = new Polynomial<>(getReturnType());
         for (Term<T, R> myterm : terms) {
