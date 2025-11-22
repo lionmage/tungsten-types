@@ -168,6 +168,10 @@ public abstract class MegaConstant<T extends Numeric> {
         }
     }
 
+    /**
+     * Append a new {@code ConstantTuple} to this mega-constant.
+     * @param tuple the tuple to append
+     */
     protected void append(ConstantTuple tuple) {
         append(tuple.getConstantValue(), tuple.getExponent());
     }
@@ -206,6 +210,10 @@ public abstract class MegaConstant<T extends Numeric> {
         return value;
     }
 
+    /**
+     * Obtain the aggregate value for this mega-constant.
+     * @return the value of this mega-constant
+     */
     public T getValue() {
         long stamp = valueGuard.tryOptimisticRead();
         if (value != null && valueGuard.validate(stamp)) return value;
@@ -298,6 +306,10 @@ public abstract class MegaConstant<T extends Numeric> {
      */
     protected abstract MegaConstant<T> doCombine(MegaConstant<T> other) throws CoercionException;
 
+    /**
+     * Obtain the leading rational coefficient for this mega-constant.
+     * @return the leading coefficient
+     */
     public RationalType leadingCoefficient() {
         return rationalCoefficient;
     }
@@ -382,23 +394,44 @@ public abstract class MegaConstant<T extends Numeric> {
         return Objects.hash(masqueradesAs, rationalCoefficient, constants, exponents);
     }
 
+    /**
+     * A tuple consisting of a constant value C and an exponent n,
+     * representing C<sup>n</sup>.  The exponent field is mutable.
+     */
     public static class ConstantTuple {
         private final Numeric constantValue;
         private long exponent;
 
+        /**
+         * Construct a tuple from a given value and exponent.
+         * @param val      the base value
+         * @param exponent the exponent for this value
+         */
         public ConstantTuple(Numeric val, long exponent) {
             this.constantValue = val;
             this.exponent = exponent;
         }
 
+        /**
+         * Obtain the constant value from this tuple.
+         * @return the base constant value
+         */
         public Numeric getConstantValue() {
             return constantValue;
         }
 
+        /**
+         * Obtain the exponent from this tuple
+         * @return the exponent
+         */
         public long getExponent() {
             return exponent;
         }
 
+        /**
+         * Set the exponent of this tuple.
+         * @param exponent the new exponent
+         */
         public void setExponent(long exponent) {
             this.exponent = exponent;
         }

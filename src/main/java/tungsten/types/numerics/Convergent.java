@@ -76,18 +76,34 @@ public class Convergent {
         qPrime = qq;
     }
 
+    /**
+     * Obtain the value of p.
+     * @return the value of p
+     */
     public BigInteger getP() {
         return p;
     }
 
+    /**
+     * Obtain the value of q.
+     * @return the value of q
+     */
     public BigInteger getQ() {
         return q;
     }
 
+    /**
+     * Obtain the value of p&#x2032;.
+     * @return the value of p&#x2032;
+     */
     public BigInteger getpPrime() {
         return pPrime;
     }
 
+    /**
+     * Obtain the value of q&#x2032;.
+     * @return the value of q&#x2032;
+     */
     public BigInteger getqPrime() {
         return qPrime;
     }
