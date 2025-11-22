@@ -43,6 +43,11 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
         implements Iterable<Term<T, R>> {
     private final List<Term<T, R>> terms = new ArrayList<>();
 
+    /**
+     * Instantiate a polynomial from a list of {@code Term}s and a return type.
+     * @param supplied a {@code List} of {@code Term}s
+     * @param rtnType  the {@code Numeric} return type of this polynomial
+     */
     protected Polynomial(List<Term<T, R>> supplied, Class<R> rtnType) {
         super(rtnType);
         terms.addAll(supplied);
@@ -138,7 +143,8 @@ public class Polynomial<T extends Numeric, R extends Numeric> extends NumericFun
      * the regex-based parser.  Parsing the contents of individual terms is up
      * to the {@link String}-based constructor for that term type.
      *
-     * @param init a textual representation of a polynomial
+     * @param init    a textual representation of a polynomial
+     * @param rtnType the return type of this function
      */
     public Polynomial(String init, Class<R> rtnType) {
         super(rtnType);
