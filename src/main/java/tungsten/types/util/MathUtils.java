@@ -1292,8 +1292,8 @@ public final class MathUtils {
     public static RealType computeIntegerExponent(RealType x, long n, MathContext mctx) {
         if (n == 0L) return new RealImpl(BigDecimal.ONE, mctx, x.isExact());
         if (n == 1L) return x;
-        if (x instanceof ContinuedFraction) {
-            ContinuedFraction cfResult = ((ContinuedFraction) x).pow(n);
+        if (x instanceof ContinuedFraction cf) {
+            ContinuedFraction cfResult = cf.pow(n);
             cfResult.setMathContext(mctx);
             return cfResult;
         }
@@ -1396,8 +1396,8 @@ public final class MathUtils {
      * @return the natural logarithm of {@code x}
      */
     public static RealType ln(RealType x, MathContext mctx) {
-        if (x instanceof ContinuedFraction) {
-            ContinuedFraction result = log((ContinuedFraction) x, ContinuedFraction.euler(mctx));
+        if (x instanceof ContinuedFraction cf) {
+            ContinuedFraction result = log(cf, ContinuedFraction.euler(mctx));
             result.setMathContext(mctx);
             return result;
         }
@@ -1550,9 +1550,9 @@ public final class MathUtils {
      * @return the logarithm of {@code x} in {@code base}
      */
     public static RealType log(RealType x, RealType base, MathContext mctx) {
-        if (x instanceof ContinuedFraction) {
+        if (x instanceof ContinuedFraction cf) {
             // if base is already a continued fraction, this will just perform a shallow copy
-            ContinuedFraction result = log((ContinuedFraction) x, new ContinuedFraction(base));
+            ContinuedFraction result = log(cf, new ContinuedFraction(base));
             result.setMathContext(mctx);
             return result;
         }
@@ -1894,8 +1894,8 @@ public final class MathUtils {
      */
     public static RealType nthRoot(RealType a, IntegerType n, MathContext mctx) {
         if (n.sign() != Sign.POSITIVE) throw new IllegalArgumentException("Degree of root must be positive");
-        if (a instanceof ContinuedFraction) {
-            ContinuedFraction cf = ((ContinuedFraction) a).nthRoot(n.asBigInteger().longValueExact());
+        if (a instanceof ContinuedFraction cfa) {
+            ContinuedFraction cf = cfa.nthRoot(n.asBigInteger().longValueExact());
             cf.setMathContext(mctx);
             return cf;
         }
