@@ -87,7 +87,7 @@ public class ComplexPolarImplTest {
         RationalType factor = new RationalImpl("7/9", MathContext.DECIMAL128);
         ComplexPolarImpl polar = new ComplexPolarImpl(mod, (RealType) Pi.getInstance(MathContext.DECIMAL128).multiply(factor));
 
-        Set<ComplexType> roots = polar.nthRoots(3);
+        Set<ComplexType> roots = polar.nthRoots(3L);
         assertEquals(3L, roots.cardinality());
         for (ComplexType root : roots) {
             ComplexType power = MathUtils.computeIntegerExponent(root, 3L, MathContext.DECIMAL128);
