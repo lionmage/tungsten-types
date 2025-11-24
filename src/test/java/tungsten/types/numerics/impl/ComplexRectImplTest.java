@@ -31,12 +31,14 @@ import tungsten.types.Set;
 import tungsten.types.numerics.ComplexType;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static tungsten.types.util.MathUtils.areEqualToWithin;
 
 /**
  * Tests for rectangular complex values.
@@ -271,13 +273,17 @@ public class ComplexRectImplTest {
      */
     @Test
     public void testNthRoots_IntegerType() {
-        System.out.println("nthRoots");
+        System.out.println("nthRoots (IntegerType)");
         IntegerType n = new IntegerImpl(BigInteger.valueOf(3L));
         ComplexRectImpl instance = twoTwo;
-//        Set<ComplexType> expResult = null;
         Set<ComplexType> result = instance.nthRoots(n);
-//        assertEquals(expResult, result);
         assertEquals(3L, result.cardinality());
+        RealType epsilon = new RealImpl("0.00000001", MathContext.DECIMAL64);
+        for (ComplexType root : result) {
+            ComplexType power = MathUtils.computeIntegerExponent(root, n);
+            areEqualToWithin(instance.real(), power.real(), epsilon);
+            areEqualToWithin(instance.imaginary(), power.imaginary(), epsilon);
+        }
     }
 
     /**
@@ -285,13 +291,17 @@ public class ComplexRectImplTest {
      */
     @Test
     public void testNthRoots_long() {
-        System.out.println("nthRoots");
+        System.out.println("nthRoots (long)");
         long n = 5L;
         ComplexRectImpl instance = twoTwo;
-//        Set<ComplexType> expResult = null;
         Set<ComplexType> result = instance.nthRoots(n);
-//        assertEquals(expResult, result);
-        assertEquals(5L, result.cardinality());
+        assertEquals(n, result.cardinality());
+        RealType epsilon = new RealImpl("0.00000001", MathContext.DECIMAL64);
+        for (ComplexType root : result) {
+            ComplexType power = MathUtils.computeIntegerExponent(root, n, MathContext.DECIMAL128);
+            areEqualToWithin(instance.real(), power.real(), epsilon);
+            areEqualToWithin(instance.imaginary(), power.imaginary(), epsilon);
+        }
     }
 
     /**
