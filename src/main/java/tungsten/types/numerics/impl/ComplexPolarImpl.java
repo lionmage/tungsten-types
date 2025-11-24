@@ -238,14 +238,14 @@ public class ComplexPolarImpl implements ComplexType {
             // special case where argument is exactly 𝞹
             return argument;
         }
-        final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(TWO);
         RealType realVal = argument;
         Range<RealType> atan2range = RangeUtils.getAngularInstance(mctx);
-        
+
         if (atan2range.contains(realVal)) {
             // already in the range (-𝞹, 𝞹]
             return argument;
         } else {
+            final RealType twopi = (RealType) Pi.getInstance(mctx).multiply(TWO);
             // reduce values > 𝞹
             while (atan2range.isAbove(realVal)) {
                 realVal = (RealType) realVal.subtract(twopi);

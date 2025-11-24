@@ -27,8 +27,12 @@ package tungsten.types.numerics.impl;
 
 import org.junit.jupiter.api.Test;
 import tungsten.types.Numeric;
+import tungsten.types.Set;
 import tungsten.types.numerics.ComplexType;
+import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
+import tungsten.types.util.MathUtils;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static tungsten.types.util.MathUtils.areEqualToWithin;
 
@@ -75,5 +79,21 @@ public class ComplexPolarImplTest {
         assertInstanceOf(ComplexPolarImpl.class, negOfNeg);
         assertFalse(negOfNeg.isExact());
         ComplexPolarImpl.equalToWithin(polar, (ComplexPolarImpl) negOfNeg, epsilon);
+    }
+
+    @Test
+    public void rootsAndPowers() {
+        RealType mod = new RealImpl("27.00", MathContext.DECIMAL128);
+        RationalType factor = new RationalImpl("7/9", MathContext.DECIMAL128);
+        ComplexPolarImpl polar = new ComplexPolarImpl(mod, (RealType) Pi.getInstance(MathContext.DECIMAL128).multiply(factor));
+
+        Set<ComplexType> roots = polar.nthRoots(3);
+        assertEquals(3L, roots.cardinality());
+        for (ComplexType root : roots) {
+            ComplexType power = MathUtils.computeIntegerExponent(root, 3L, MathContext.DECIMAL128);
+            assertInstanceOf(ComplexPolarImpl.class, root);
+            assertInstanceOf(ComplexPolarImpl.class, power);
+            assertTrue(ComplexPolarImpl.equalToWithin(polar, (ComplexPolarImpl) power, epsilon));
+        }
     }
 }
