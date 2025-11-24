@@ -78,7 +78,7 @@ public class ComplexPolarImplTest {
         ComplexType negOfNeg = neg.negate();
         assertInstanceOf(ComplexPolarImpl.class, negOfNeg);
         assertFalse(negOfNeg.isExact());
-        ComplexPolarImpl.equalToWithin(polar, (ComplexPolarImpl) negOfNeg, epsilon);
+        assertTrue(ComplexPolarImpl.equalToWithin(polar, (ComplexPolarImpl) negOfNeg, epsilon));
     }
 
     @Test
