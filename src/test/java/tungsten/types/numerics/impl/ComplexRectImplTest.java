@@ -262,10 +262,12 @@ public class ComplexRectImplTest {
         assertTrue(result.isExact());
         assertEquals(expResult, result);
         assertEquals(two.multiply(two.sqrt()), result.magnitude());
-//        System.setProperty(ComplexRectImpl.FAST_MAGNITUDE, "true");
-//        result = instance.sqrt();
-//        assertEquals(expResult.real(), ((ComplexType) result).real());
-//        assertEquals(expResult.imaginary(), ((ComplexType) result).imaginary());
+        // and now test the fast magnitude calculation
+        System.setProperty(ComplexRectImpl.FAST_MAGNITUDE, "true");
+        result = instance.sqrt();
+        assertInstanceOf(ComplexType.class, result);
+        assertEquals(expResult.real(), ((ComplexType) result).real());
+        assertEquals(expResult.imaginary(), ((ComplexType) result).imaginary());
     }
 
     /**
