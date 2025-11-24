@@ -90,8 +90,8 @@ public class ComplexPolarImplTest {
         Set<ComplexType> roots = polar.nthRoots(3L);
         assertEquals(3L, roots.cardinality());
         for (ComplexType root : roots) {
-            ComplexType power = MathUtils.computeIntegerExponent(root, 3L, MathContext.DECIMAL128);
             assertInstanceOf(ComplexPolarImpl.class, root);
+            ComplexType power = MathUtils.computeIntegerExponent(root, 3L, MathContext.DECIMAL128);
             assertInstanceOf(ComplexPolarImpl.class, power);
             assertTrue(ComplexPolarImpl.equalToWithin(polar, (ComplexPolarImpl) power, epsilon));
         }
