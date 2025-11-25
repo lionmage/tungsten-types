@@ -178,15 +178,15 @@ public class ComplexPolarImpl implements ComplexType {
     @Override
     public ComplexType negate() {
         final Pi pi = Pi.getInstance(mctx);
-        final ComplexPolarImpl negval = new ComplexPolarImpl(modulus, (RealType) argument.add(pi), false);
-        negval.setMathContext(mctx);
+        ComplexPolarImpl negval = new ComplexPolarImpl(modulus, (RealType) argument.add(pi), false);
+        negval.mctx = mctx;
         return negval;
     }
 
     @Override
     public ComplexType conjugate() {
         ComplexPolarImpl conj = new ComplexPolarImpl(modulus, argument.negate(), exact);
-        conj.setMathContext(mctx);
+        conj.mctx = mctx;
         return conj;
     }
 
