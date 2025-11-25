@@ -206,7 +206,7 @@ public class ComplexRectImpl implements ComplexType {
         final BigDecimal im = imag.asBigDecimal();
         BigDecimal resq = re.multiply(re, mctx);
         BigDecimal imsq = im.multiply(im, mctx);
-        BigDecimal root = resq.add(imsq, mctx).sqrt(mctx);
+        BigDecimal root = resq.add(imsq).sqrt(mctx);
         // this is a kludge -- anything not an integer is considered inexact
         return new RealImpl(root, mctx, this.isExact() && root.stripTrailingZeros().scale() <= 0);
     }
