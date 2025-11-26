@@ -73,7 +73,7 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
      * Note that the decimal point and subsequent digits are optional. A single optional whitespace
      * character is allowed before the terminating degree sign.
      */
-    private static final Pattern decimalDegreesPattern = Pattern.compile("([+-]?\\d+\\.?\\d*)\\s?\\u00B0");
+    private static final Pattern decimalDegreesPattern = Pattern.compile("([+-\u2212]?\\d+\\.?\\d*)\\s?\\u00B0");
     /**
      * Pattern for matching angles specified in degrees, minutes, seconds notation.
      * Note that both the prime &prime; and apostrophe/single quote are permitted for denoting arcminutes.
@@ -81,7 +81,7 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
      * There is no substitute for the degree symbool &deg; since it is unambiguous and available on most
      * keyboards through various input schemes.
      */
-    private static final Pattern DMSpattern = Pattern.compile("([+-]?\\d+)\\u00B0\\s?(\\d+)['\u2032]\\s?(\\d+\\.?\\d*)[\"\u2033]");
+    private static final Pattern DMSpattern = Pattern.compile("([+-\u2212]?\\d+)\\u00B0\\s?(\\d+)['\u2032]\\s?(\\d+\\.?\\d*)[\"\u2033]");
 
     private IntegerType degrees;
     private IntegerType minutes;
