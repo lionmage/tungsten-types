@@ -91,10 +91,10 @@ public class AngularDegrees implements Comparable<AngularDegrees> {
 
     /**
      * Constructor using degrees, minutes, and seconds (DMS) values.
-     * @param degrees an integer value for degrees of arc in the range [0,&nbsp;359],
+     * @param degrees an integer value for degrees of arc in the range [0,&nbsp;359]&nbsp;&sub;&nbsp;&Zopf;,
      *                with corresponding negative values supported
-     * @param minutes an integer value for minutes of arc in the range [0,&nbsp;59]
-     * @param seconds a real value for seconds of arc in the range [0,&nbsp;60)
+     * @param minutes an integer value for minutes of arc in the range [0,&nbsp;59]&nbsp;&sub;&nbsp;&Zopf;
+     * @param seconds a real value for seconds of arc in the range [0,&nbsp;60)&nbsp;&sub;&nbsp;&Ropf;
      */
     public AngularDegrees(IntegerType degrees, IntegerType minutes, RealType seconds) {
         this.degrees = degrees;
