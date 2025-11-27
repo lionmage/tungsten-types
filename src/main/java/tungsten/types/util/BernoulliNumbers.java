@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * the precomputed Bernoulli numbers will be dynamically computed using
  * the <a href="https://proofwiki.org/wiki/Definition:Bernoulli_Numbers/Recurrence_Relation">recurrence relation</a>
  * for the Bernoulli numbers.
- * @author Robert Poole <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
+ * @author Robert Poole, <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  *   or <a href="mailto:Tarquin.AZ@gmail.com">Gmail</a>
  * @see <a href="https://en.wikipedia.org/wiki/Bernoulli_number#Efficient_computation_of_Bernoulli_numbers">algorithms
  *   for efficiently caclculating the Bernoulli numbers</a> (with an example written in Julia)

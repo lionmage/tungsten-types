@@ -40,7 +40,8 @@ import java.util.stream.StreamSupport;
  * of values that are excluded from the range.  This is useful for function input ranges
  * that exclude a single value or a periodic set of values, e.g., 1/x has an input range
  * of &minus;&infin; &ndash; &infin; excluding 0.
- * @author Robert Poole, <a href="mailto:Tarquin.AZ@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Gmail</a>
+ *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  * @param <T> a class or interface that extends {@link Numeric} and {@link Comparable}
  */
 public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Range<T> {
@@ -100,7 +101,9 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
                 Set<IntegerType> aggregate = RangeUtils.asSet(range.forNumericType(IntegerType.class)).intersection(new CoercionWrapperSet<>(notches, IntegerType.class));
                 if (aggregate.cardinality() != 0L) return false;
             }
-            // TODO need to handle the general case
+            for (T notch : notches) {
+                if (range.contains(notch)) return false;
+            }
         }
         return super.contains(range);
     }
