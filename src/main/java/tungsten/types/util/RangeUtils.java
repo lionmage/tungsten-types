@@ -362,6 +362,7 @@ public final class RangeUtils {
      * @return a {@code Set} representing the notched range
      * @param <T> the numeric subtype of the range and the resulting set
      * @apiNote Currently, only real and integer ranges are supported.
+     * @since 1.0
      */
     public static <T extends Numeric & Comparable<? super T>> Set<T> asSet(NotchedRange<T> range) {
         NumericHierarchy h = NumericHierarchy.forNumericType(range.getLowerBound().getClass());
