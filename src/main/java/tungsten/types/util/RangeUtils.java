@@ -27,6 +27,7 @@ import tungsten.types.*;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
+import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.*;
@@ -354,6 +355,24 @@ public final class RangeUtils {
     }
 
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
+
+    /**
+     * Generate a set from a notched range.
+     * @param range a notched range, that is, a range with certain values excluded
+     * @return a {@code Set} representing the notched range
+     * @param <T> the numeric subtype of the range and the resulting set
+     * @apiNote Currently, only real and integer ranges are supported.
+     */
+    public static <T extends Numeric & Comparable<? super T>> Set<T> asSet(NotchedRange<T> range) {
+        NumericHierarchy h = NumericHierarchy.forNumericType(range.getLowerBound().getClass());
+        if (h == null) throw new IllegalArgumentException("Cannot generate Set of target type");
+        Set<T> orig = switch (h) {
+            case REAL -> (Set<T>) asRealSet((Range<RealType>) range.getInnerRange());
+            case INTEGER -> (Set<T>) asSet((Range<IntegerType>) range.getInnerRange());
+            default -> throw new IllegalStateException("Currently there is no support for generating a Set from a Range of " + h);
+        };
+        return new DiffSet<>(orig, range.getNotches());
+    }
 
     /**
      * Generate a set from a range of integer values.
