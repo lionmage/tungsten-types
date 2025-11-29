@@ -357,21 +357,25 @@ public final class RangeUtils {
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE);
 
     /**
-     * Generate a set from a notched range.
+     * Generate a set of integers from a notched range.
      * @param range a notched range, that is, a range with certain values excluded
      * @return a {@code Set} representing the notched range
-     * @param <T> the numeric subtype of the range and the resulting set
-     * @apiNote Currently, only real and integer ranges are supported.
      * @since 1.0
      */
-    public static <T extends Numeric & Comparable<? super T>> Set<T> asSet(NotchedRange<T> range) {
-        NumericHierarchy h = NumericHierarchy.forNumericType(range.getLowerBound().getClass());
-        if (h == null) throw new IllegalArgumentException("Cannot generate Set of target type");
-        Set<T> orig = switch (h) {
-            case REAL -> (Set<T>) asRealSet((Range<RealType>) range.getInnerRange());
-            case INTEGER -> (Set<T>) asSet((Range<IntegerType>) range.getInnerRange());
-            default -> throw new IllegalStateException("Currently there is no support for generating a Set from a Range of " + h);
-        };
+    public static Set<IntegerType> asSet(NotchedRange<IntegerType> range) {
+        Set<IntegerType> orig = asSet(range.getInnerRange());
+        // Since all sets of integers are finite and countable, the following should be just fine.
+        return orig.difference(range.getNotches());
+    }
+
+    /**
+     * Generate a set of real values from a notched range.
+     * @param range a notched range, that is, a range with certain values excluded
+     * @return a {@code Set} representing the notched range
+     * @since 1.0
+     */
+    public static Set<RealType> asRealSet(NotchedRange<RealType> range) {
+        Set<RealType> orig = asRealSet(range.getInnerRange());
         return new DiffSet<>(orig, range.getNotches());
     }
 
