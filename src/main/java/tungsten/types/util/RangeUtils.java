@@ -478,8 +478,7 @@ public final class RangeUtils {
 
             @Override
             public boolean equals(Object obj) {
-                if (obj instanceof Set) {
-                    Set<?> that = (Set<?>) obj;
+                if (obj instanceof Set<?> that) {
                     if (!that.countable() || that.cardinality() != this.cardinality()) return false;
                     if (!that.isOfType(IntegerType.class)) return false;
                     Set<IntegerType> foreignInts = (Set<IntegerType>) that;
