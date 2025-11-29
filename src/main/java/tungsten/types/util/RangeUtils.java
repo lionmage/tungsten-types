@@ -725,9 +725,9 @@ public final class RangeUtils {
 
         @Override
         public Set<RealType> difference(Set<RealType> other) {
-            if (range instanceof NotchedRange) {
-                Set<RealType> notches = ((NotchedRange<RealType>) range).getNotches();
-                Set<RealType> rangeSet = asRealSet(((NotchedRange<RealType>) range).getInnerRange());
+            if (range instanceof NotchedRange<RealType> notchedRange) {
+                Set<RealType> notches = notchedRange.getNotches();
+                Set<RealType> rangeSet = asRealSet(notchedRange.getInnerRange());
                 return new DiffSet<>(rangeSet, new UnionSet<>(other, notches));
             }
             if (other instanceof RangeSet that) {
