@@ -14,7 +14,7 @@ numeric types:
 * Numerics that are actually comparable implement the Comparable interface.
 * Full support for complex numbers in both polar and rectangular form.
 * Simple continued fractions are supported and may be freely mixed with other numeric types.
-  * Arithnetic operations are implemented using Gosper's algorithm.
+  * Arithmetic operations are implemented using Gosper's algorithm.
   * Support for integer exponents and roots allows computing any rational power.
   * Implementations of ℯ, ϕ, and 𝜋 with effectively infinite representations, although 𝜋 is an approximation.
   * Special iterators designed to rehabilitate sequences of terms in a non-standard form.
