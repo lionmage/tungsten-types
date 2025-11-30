@@ -32,15 +32,11 @@ import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.IntegerType;
 import tungsten.types.numerics.RationalType;
 import tungsten.types.numerics.RealType;
-import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.IntegerImpl;
-import tungsten.types.numerics.impl.RealImpl;
-import tungsten.types.numerics.impl.RealInfinity;
 import tungsten.types.util.MathUtils;
+import tungsten.types.util.RangeUtils;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 
 /**
  * A basic implementation of the natural logarithm function ln(x) for positive
@@ -117,9 +113,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
         return super.andThen(after);
     }
 
-    private static final Range<RealType> lnRange = new Range<>(new RealImpl(BigDecimal.ZERO),
-            RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED),
-            Range.BoundType.EXCLUSIVE);
+    private static final Range<RealType> lnRange = RangeUtils.POSITIVE_REALS;
 
     @Override
     public Range<RealType> inputRange(String argName) {
