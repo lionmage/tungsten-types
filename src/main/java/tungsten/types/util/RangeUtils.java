@@ -65,6 +65,18 @@ public final class RangeUtils {
             new Range<>(RealInfinity.getInstance(Sign.NEGATIVE, MathContext.UNLIMITED),
                     RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED), BoundType.EXCLUSIVE);
     /**
+     * The range representing the set of positive reals, &Ropf;<sup>+</sup>.
+     */
+    public static final Range<RealType> POSITIVE_REALS =
+            new Range<>(new RealImpl(BigDecimal.ZERO), RealInfinity.getInstance(Sign.POSITIVE, MathContext.UNLIMITED),
+                    BoundType.EXCLUSIVE);
+    /**
+     * The range representing the set of negative reals, &Ropf;<sup>&minus;</sup>.
+     */
+    public static final Range<RealType> NEGATIVE_REALS =
+            new Range<>(RealInfinity.getInstance(Sign.NEGATIVE, MathContext.UNLIMITED), new RealImpl(BigDecimal.ZERO),
+                    BoundType.EXCLUSIVE);
+    /**
      * A range specifying all integer values that fit into (i.e., can be losslessly converted to)
      * a {@code long}.  Any {@code IntegerType} value contained by this range can be safely
      * converted to a {@code long} using {@code value.asBigInteger().longValueExact()}.
