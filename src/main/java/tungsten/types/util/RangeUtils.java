@@ -364,7 +364,7 @@ public final class RangeUtils {
      */
     public static Set<IntegerType> asSet(NotchedRange<IntegerType> range) {
         Set<IntegerType> orig = asSet(range.getInnerRange());
-        // Since all sets of integers are finite and countable, the following should be just fine.
+        // Since all sets of integers are countable (and most generated integer sets are finite), the following should be just fine.
         return orig.difference(range.getNotches());
     }
 
