@@ -646,18 +646,6 @@ public final class RangeUtils {
                     // the elements of other are already contained within this set
                     return this;
                 }
-                if (range instanceof NotchedRange<RealType> notchedRange) {
-                    Set<RealType> notches = notchedRange.getNotches();
-                    if (notches.cardinality() <= other.cardinality() &&
-                            StreamSupport.stream(notches.spliterator(), true).allMatch(other::contains)) {
-                        Set<RealType> lhs = asRealSet(notchedRange.getInnerRange());
-                        if (other.cardinality() > notches.cardinality()) {
-                            Set<RealType> remainder = other.difference(notches);
-                            return new UnionSet<>(lhs, remainder);
-                        }
-                        return lhs;
-                    }
-                }
                 NumericSet outOfRange = new NumericSet();
                 StreamSupport.stream(other.spliterator(), false).filter(realVal -> !range.contains(realVal))
                         .forEach(outOfRange::append);
@@ -728,11 +716,6 @@ public final class RangeUtils {
 
         @Override
         public Set<RealType> difference(Set<RealType> other) {
-            if (range instanceof NotchedRange<RealType> notchedRange) {
-                Set<RealType> notches = notchedRange.getNotches();
-                Set<RealType> rangeSet = asRealSet(notchedRange.getInnerRange());
-                return new DiffSet<>(rangeSet, new UnionSet<>(other, notches));
-            }
             if (other instanceof RangeSet that) {
                 if (!range.overlaps(that.range)) return this;
                 if (that.range.contains(range)) return EmptySet.getInstance();
