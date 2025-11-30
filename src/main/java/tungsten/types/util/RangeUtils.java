@@ -27,7 +27,6 @@ import tungsten.types.*;
 import tungsten.types.Set;
 import tungsten.types.exceptions.CoercionException;
 import tungsten.types.numerics.IntegerType;
-import tungsten.types.numerics.NumericHierarchy;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.Sign;
 import tungsten.types.numerics.impl.*;
@@ -499,7 +498,7 @@ public final class RangeUtils {
 
             @Override
             public String toString() {
-                return "{x in \u2124 \u2208\u2009" + range + "\u2009}";
+                return "{x \u2208 \u2124 \u2229\u2009" + range + "\u2009}";
             }
         };
     }
@@ -768,7 +767,7 @@ public final class RangeUtils {
 
         @Override
         public String toString() {
-            return "{x in \u211D \u2208\u2009" + range + "\u2009}";
+            return "{x \u2208 \u211D \u2229\u2009" + range + "\u2009}";
         }
     }
 }
