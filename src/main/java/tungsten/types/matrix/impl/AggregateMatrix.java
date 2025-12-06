@@ -57,6 +57,7 @@ import java.util.logging.Logger;
  */
 public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
     private static final long MAX_ARRAY_SIZE = 10_000L;
+    private static final long MIN_RECURSIVE_MULTIPLY = 256L; // minimum dimension for invoking recursive multiplication
     private final Class<T> clazz;
     private final Lock cacheLock = new ReentrantLock();
     private T detCache;
@@ -369,6 +370,21 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
         if (this.columns() != multiplier.rows()) {
             throw new ArithmeticException("Multiplier must have the same number of rows as this matrix has columns");
         }
+        if (multiplier.columns() < MIN_RECURSIVE_MULTIPLY) {
+            BasicMatrix<T> result = new BasicMatrix<>();
+
+            for (long row = 0L; row < rows(); row++) {
+                final RowVector<T> rowvec = this.getRow(row);
+                RowVector<T> resRow = new ArrayRowVector<>(clazz, multiplier.columns());
+                for (long column = 0L; column < multiplier.columns(); column++) {
+                    resRow.setElementAt(rowvec.dotProduct(multiplier.getColumn(column)), column);
+                }
+                result.append(resRow);
+            }
+
+            return result;
+        }
+        // delegate to SubMatrix
         return new SubMatrix<>(this).multiply(multiplier);
     }
 
