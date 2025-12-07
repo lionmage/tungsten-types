@@ -444,7 +444,7 @@ public class AggregateMatrix<T extends Numeric> implements Matrix<T> {
             }
             
             // else do it the old-fashioned way
-            if (rows() != that.rows()) return false;
+            if (rows() != that.rows() || columns() != that.columns()) return false;
             if (that.getClass().isAnnotationPresent(Columnar.class)) {
                 for (long column = 0L; column < columns(); column++) {
                     if (!getColumn(column).equals(that.getColumn(column))) return false;
