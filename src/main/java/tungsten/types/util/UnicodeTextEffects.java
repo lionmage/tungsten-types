@@ -164,7 +164,12 @@ public final class UnicodeTextEffects {
     private UnicodeTextEffects() {
         // this class should never be instantiable
     }
-    
+
+    /**
+     * Given an integer, generate a superscript representing that integer.
+     * @param n any integer
+     * @return a {@code String} in the form of a superscript of the value of {@code n}
+     */
     public static String numericSuperscript(int n) {
         StringBuilder buf = new StringBuilder();
         int digit;
@@ -179,6 +184,11 @@ public final class UnicodeTextEffects {
         return buf.toString();
     }
 
+    /**
+     * Given an integer, generate a subscript representing that integer.
+     * @param n any integer
+     * @return a {@code String} in the form of a subscript of the value of {@code n}
+     */
     public static String numericSubscript(int n) {
         StringBuilder buf = new StringBuilder();
         int digit;
@@ -192,7 +202,12 @@ public final class UnicodeTextEffects {
         if (n < 0) buf.insert(0, subscriptMap.get('-'));
         return buf.toString();
     }
-    
+
+    /**
+     * Given a {@code String}, generate a superscripted version.
+     * @param source the {@code String} to convert into a superscript
+     * @return a {@code String} that is a superscripted version of {@code source}
+     */
     public static String convertToSuperscript(String source) {
         StringBuilder buf = new StringBuilder();
         
@@ -209,6 +224,11 @@ public final class UnicodeTextEffects {
         return buf.toString();
     }
 
+    /**
+     * Given a {@code String}, generate a subscripted version.
+     * @param source the {@code String} to convert into a subscript
+     * @return a {@code String} that is a subscripted version of {@code source}
+     */
     public static String convertToSubscript(String source) {
         StringBuilder buf = new StringBuilder();
         boolean warnOnce = true;
@@ -558,10 +578,24 @@ public final class UnicodeTextEffects {
         return buf.toString();
     }
 
+    /**
+     * Compute the position of a decimal point in a given {@code CharSequence}.
+     * @param original the character sequence to inspect
+     * @param decPos   the assumed position of a decimal point with standard indexing
+     * @return the actual position of the decimal point, taking combining characters and
+     *   surrogate pairs into account
+     */
     public static int computeActualDecimalPointCharPosition(CharSequence original, int decPos) {
         return computeCharacterWidth(original, 0, decPos);
     }
 
+    /**
+     * Compute the position of a decimal point in a {@code String} representation
+     * of some numeric value.  If a decimal point is not found, it is assumed to
+     * exist just past the end of {@code original}.
+     * @param original the {@code String} to inspect
+     * @return the position of the decimal point in {@code original}
+     */
     public static int computeActualDecimalPointCharPosition(String original) {
         final char DEC_POINT = DecimalFormatSymbols.getInstance().getDecimalSeparator();
         int decPointIdx = original.indexOf(DEC_POINT);
@@ -808,8 +842,8 @@ public final class UnicodeTextEffects {
             RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
             FractionalHorizontalBlock block = FULL;
             for (FractionalHorizontalBlock candidate : values()) {
-                if (onlyFrac.compareTo(candidate.value) <= 0) block = candidate;
-                else break;
+                if (candidate.value.compareTo(onlyFrac) > 0) continue;
+                block = candidate;
             }
             return block;
         }
@@ -821,8 +855,8 @@ public final class UnicodeTextEffects {
             RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
             FractionalHorizontalBlock block = FULL;
             for (FractionalHorizontalBlock candidate : values()) {
-                if (onlyFrac.asBigDecimal().compareTo(candidate.value.asBigDecimal()) <= 0) block = candidate;
-                else break;
+                if (candidate.value.asBigDecimal().compareTo(onlyFrac.asBigDecimal()) > 0) continue;
+                block = candidate;
             }
             return block;
         }
@@ -868,8 +902,8 @@ public final class UnicodeTextEffects {
             RationalType onlyFrac = takeFraction ? (RationalType) frac.subtract(MathUtils.trunc(frac)) : frac;
             FractionalVerticalBlock block = FULL;
             for (FractionalVerticalBlock candidate : values()) {
-                if (onlyFrac.compareTo(candidate.value) <= 0) block = candidate;
-                else break;
+                if (candidate.value.compareTo(onlyFrac) <= 0) continue;
+                block = candidate;
             }
             return block;
         }
@@ -881,8 +915,8 @@ public final class UnicodeTextEffects {
             FractionalVerticalBlock block = FULL;
             RealType onlyFrac = (RealType) frac.subtract(MathUtils.trunc(frac));
             for (FractionalVerticalBlock candidate : values()) {
-                if (onlyFrac.asBigDecimal().compareTo(candidate.value.asBigDecimal()) <= 0) block = candidate;
-                else break;
+                if (candidate.value.asBigDecimal().compareTo(onlyFrac.asBigDecimal()) > 0) continue;
+                block = candidate;
             }
             return block;
         }
@@ -928,8 +962,8 @@ public final class UnicodeTextEffects {
             RationalType onlyFrac = takeFraction ? (RationalType) frac.magnitude().subtract(MathUtils.trunc(frac.magnitude())) : frac.magnitude();
             FractionalVerticalInverseBlock block = FULL;
             for (FractionalVerticalInverseBlock candidate : values()) {
-                if (onlyFrac.compareTo(candidate.value) <= 0) block = candidate;
-                else break;
+                if (candidate.value.compareTo(onlyFrac) > 0) continue;
+                block = candidate;
             }
             return block;
         }
@@ -940,8 +974,8 @@ public final class UnicodeTextEffects {
             RealType onlyFrac = (RealType) frac.magnitude().subtract(MathUtils.trunc(frac.magnitude()));
             FractionalVerticalInverseBlock block = FULL;
             for (FractionalVerticalInverseBlock candidate : values()) {
-                if (onlyFrac.asBigDecimal().compareTo(candidate.value.asBigDecimal()) <= 0) block = candidate;
-                else break;
+                if (candidate.value.asBigDecimal().compareTo(onlyFrac.asBigDecimal()) > 0) continue;
+                block = candidate;
             }
             return block;
         }
@@ -999,35 +1033,42 @@ public final class UnicodeTextEffects {
         // no negatives
         if (values.parallelStream().anyMatch(value -> value.sign() == Sign.NEGATIVE)) throw new IllegalArgumentException("Negative histogram values are unsupported");
         final RealType maxVal = values.parallelStream().max(RealType::compareTo).orElseThrow();
-        final RealType blockSize = (RealType) maxVal.divide(new IntegerImpl(BigInteger.valueOf(blockHeight)));
+        try {
+            final RealType blockSize = (RealType) maxVal.divide(new IntegerImpl(BigInteger.valueOf(blockHeight))).coerceTo(RealType.class);
 
-        int width = values.size();
-        if (spaceBetween) width += values.size() - 1;
-        for (int row = 0; row < blockHeight; row++) {
-            StringBuilder buf = new StringBuilder(width);
-            RealType rowTop = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row + 1L)));
-            RealType rowBottom = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row)));
-            for (RealType value : values) {
-                if (value.compareTo(rowBottom) <= 0) {
-                    buf.append(row % hruleInterval == 0 ? HorizontalFill.LIGHT_TRIPLE_DASH : HorizontalFill.EMPTY);
-                } else {
-                    // plot the full or partial block
-                    if (value.compareTo(rowTop) >= 0) {
-                        buf.append(FractionalVerticalBlock.FULL);
+            int width = values.size();
+            if (spaceBetween) width += values.size() - 1;
+            for (int row = 0; row < blockHeight; row++) {
+                StringBuilder buf = new StringBuilder(width);
+                RealType rowTop = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row + 1L))).coerceTo(RealType.class);
+                RealType rowBottom = (RealType) blockSize.multiply(new IntegerImpl(BigInteger.valueOf(row))).coerceTo(RealType.class);
+                for (RealType value : values) {
+                    if (value.compareTo(rowBottom) <= 0) {
+                        buf.append(row % hruleInterval == 0 ? HorizontalFill.LIGHT_TRIPLE_DASH : HorizontalFill.EMPTY);
                     } else {
-                        RealType frac = (RealType) value.subtract(rowBottom).divide(blockSize);
-                        buf.append(FractionalVerticalBlock.forFraction(frac));
+                        // plot the full or partial block
+                        if (value.compareTo(rowTop) >= 0) {
+                            buf.append(FractionalVerticalBlock.FULL);
+                        } else {
+                            RealType frac = (RealType) value.subtract(rowBottom).divide(blockSize);
+                            buf.append(FractionalVerticalBlock.forFraction(frac));
+                        }
                     }
+                    if (spaceBetween && buf.length() < width)
+                        buf.append(row % hruleInterval == 0 ? HorizontalFill.LIGHT_TRIPLE_DASH : HorizontalFill.EMPTY);
                 }
-                if (spaceBetween && buf.length() < width) buf.append(row % hruleInterval == 0 ? HorizontalFill.LIGHT_TRIPLE_DASH : HorizontalFill.EMPTY);
+
+                // finally, append completed row to our collection
+                rows.add(buf.toString());
             }
 
-            // finally, append completed row to our collection
-            rows.add(buf.toString());
+            Collections.reverse(rows);
+            return rows;
+        } catch (CoercionException ex) {
+            Logger.getLogger(UnicodeTextEffects.class.getName()).log(Level.SEVERE,
+                    "While generating histogram plot", ex);
+            throw new IllegalStateException(ex);
         }
-
-        Collections.reverse(rows);
-        return rows;
     }
 
     /**
