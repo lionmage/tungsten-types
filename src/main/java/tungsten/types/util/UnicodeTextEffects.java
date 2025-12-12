@@ -1090,44 +1090,50 @@ public final class UnicodeTextEffects {
 
         if (values.parallelStream().anyMatch(value -> value.sign() == Sign.NEGATIVE)) throw new IllegalArgumentException("Negative histogram values are unsupported");
         final RealType maxVal = values.parallelStream().max(RealType::compareTo).orElseThrow();
-        final RealType blockSize = (RealType) maxVal.divide(new IntegerImpl(BigInteger.valueOf(blockWidth)));
+        try {
+            final RealType blockSize = (RealType) maxVal.divide(new IntegerImpl(BigInteger.valueOf(blockWidth))).coerceTo(RealType.class);
 
-        for (int k = 0; k < values.size(); k++) {
-            StringBuilder buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
-            if (labels != null) {
-                // if there are labels, render them right-justified
-                if (labels[k].length() > labelBlockWidth) {
-                    // label is too long, so render with an ellipsis
-                    buf.append(labels[k], 0, labelBlockWidth - 1).append('\u2026');
-                } else {
-                    int fill = labelBlockWidth - labels[k].length();
-                    if (fill > 0) buf.append(" ".repeat(fill));
-                    buf.append(labels[k]);
-                }
-            }
-            // compute the number of solid blocks
-            RealType barWidth = (RealType) values.get(k).divide(blockSize);
-            int solidFill = barWidth.floor().asBigInteger().intValue();
-            RealType frac = (RealType) barWidth.subtract(barWidth.floor());
-            buf.append(FractionalHorizontalBlock.FULL.nOf(solidFill)).append(FractionalHorizontalBlock.forFraction(frac));
-            // fill in the remainder of the row
-            for (int j = solidFill + 1; j < blockWidth; j++) {
-                buf.append(j % vruleInterval == 0 ? VerticalFill.LIGHT_TRIPLE_DASH : VerticalFill.EMPTY);
-            }
-            rows.add(buf.toString());
-
-            // and then add a row of space if needed
-            if (spaceBetween && k < values.size() - 1) {
-                buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
+            for (int k = 0; k < values.size(); k++) {
+                StringBuilder buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
                 if (labels != null) {
-                    buf.append(" ".repeat(labelBlockWidth));
+                    // if there are labels, render them right-justified
+                    if (labels[k].length() > labelBlockWidth) {
+                        // label is too long, so render with an ellipsis
+                        buf.append(labels[k], 0, labelBlockWidth - 1).append('\u2026');
+                    } else {
+                        int fill = labelBlockWidth - labels[k].length();
+                        if (fill > 0) buf.append(" ".repeat(fill));
+                        buf.append(labels[k]);
+                    }
                 }
-                for (int j = 0; j < blockWidth; j++) {
+                // compute the number of solid blocks
+                RealType barWidth = (RealType) values.get(k).divide(blockSize).coerceTo(RealType.class);
+                int solidFill = barWidth.floor().asBigInteger().intValue();
+                RealType frac = (RealType) barWidth.subtract(barWidth.floor()).coerceTo(RealType.class);
+                buf.append(FractionalHorizontalBlock.FULL.nOf(solidFill)).append(FractionalHorizontalBlock.forFraction(frac));
+                // fill in the remainder of the row
+                for (int j = solidFill + 1; j < blockWidth; j++) {
                     buf.append(j % vruleInterval == 0 ? VerticalFill.LIGHT_TRIPLE_DASH : VerticalFill.EMPTY);
                 }
-
                 rows.add(buf.toString());
+
+                // and then add a row of space if needed
+                if (spaceBetween && k < values.size() - 1) {
+                    buf = new StringBuilder(blockWidth + (labels == null ? 0 : labelBlockWidth));
+                    if (labels != null) {
+                        buf.append(" ".repeat(labelBlockWidth));
+                    }
+                    for (int j = 0; j < blockWidth; j++) {
+                        buf.append(j % vruleInterval == 0 ? VerticalFill.LIGHT_TRIPLE_DASH : VerticalFill.EMPTY);
+                    }
+
+                    rows.add(buf.toString());
+                }
             }
+        } catch (CoercionException ex) {
+            Logger.getLogger(UnicodeTextEffects.class.getName()).log(Level.SEVERE,
+                    "While generating horizontal histogram plot", ex);
+            throw new IllegalStateException(ex);
         }
 
         return rows;
