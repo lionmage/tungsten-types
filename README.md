@@ -116,8 +116,7 @@ dependencies with the following snippet:
 <dependency>
   <groupId>tungsten</groupId>
   <artifactId>tungsten-types</artifactId>
-  <!-- When 1.0 is published, the following will reflect that -->
-  <version>0.9</version>
+  <version>1.0</version>
 </dependency>
 ```
 
