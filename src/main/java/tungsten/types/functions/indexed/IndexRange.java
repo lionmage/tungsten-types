@@ -45,6 +45,7 @@ import java.util.stream.StreamSupport;
  */
 public class IndexRange extends Range<IntegerType> implements Iterable<IntegerType> {
     private static final IntegerType ONE = new IntegerImpl(BigInteger.ONE, true);
+    private static final IntegerType MIN_SPLIT = new IntegerImpl(BigInteger.valueOf(5L), true);
 
     /**
      * Create an index range from bounds.
@@ -59,13 +60,26 @@ public class IndexRange extends Range<IntegerType> implements Iterable<IntegerTy
 
     /**
      * Convenience constructor that takes primitive {@code long} values.
+     * The upper and lower bounds are inclusive.
      * @param lower the lower bound
      * @param upper the upper bound
      */
     public IndexRange(long lower, long upper) {
+        this(lower, upper, true);
+    }
+
+    /**
+     * Convenience constructor that takes primitive {@code long} values
+     * and an argument that determines whether the upper bound is open or closed.
+     * @param lower       the lower bound, inclusive
+     * @param upper       the upper bound
+     * @param upperClosed if {@code true}, treat the upper bound as closed (inclusive)
+     */
+    public IndexRange(long lower, long upper, boolean upperClosed) {
         super(new IntegerImpl(BigInteger.valueOf(lower)),
+                BoundType.INCLUSIVE,
                 new IntegerImpl(BigInteger.valueOf(upper)),
-                BoundType.INCLUSIVE);
+                upperClosed ? BoundType.INCLUSIVE : BoundType.EXCLUSIVE);
     }
 
     @Override
@@ -94,9 +108,7 @@ public class IndexRange extends Range<IntegerType> implements Iterable<IntegerTy
 
     @Override
     public Spliterator<IntegerType> spliterator() {
-        final IntegerType TWO = new IntegerImpl(BigInteger.TWO, true);
         final IntegerType limit = isUpperClosed() ? getUpperBound() : (IntegerType) getUpperBound().subtract(ONE);
-        if (((IntegerType) limit.subtract(getLowerBound())).compareTo(TWO) <= 0) return null;
 
         return new Spliterator<>() {
             IntegerType current = isLowerClosed() ? getLowerBound() : (IntegerType) getLowerBound().add(ONE);
@@ -111,9 +123,11 @@ public class IndexRange extends Range<IntegerType> implements Iterable<IntegerTy
 
             @Override
             public Spliterator<IntegerType> trySplit() {
+                IntegerType span = (IntegerType) limit.subtract(current);
+                if (span.compareTo(MIN_SPLIT) <= 0) return null;
                 // using .divide(TWO).add(current) could result in a RationalType result, which would cause
                 // a ClassCastException
-                IntegerType midway = (IntegerType) ((IntegerType) limit.subtract(current)).rightShift(ONE).add(current);
+                IntegerType midway = (IntegerType) span.rightShift(ONE).add(current);
                 IndexRange subrange = new IndexRange(current, midway, true);
                 current = (IntegerType) midway.add(ONE);
                 return subrange.spliterator();
