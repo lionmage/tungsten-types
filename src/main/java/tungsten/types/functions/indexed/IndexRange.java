@@ -32,6 +32,7 @@ import tungsten.types.numerics.impl.IntegerImpl;
 import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -99,6 +100,7 @@ public class IndexRange extends Range<IntegerType> implements Iterable<IntegerTy
 
             @Override
             public IntegerType next() {
+                if (current.compareTo(last) > 0) throw new NoSuchElementException("No more elements in range");
                 IntegerType value = current;
                 current = (IntegerType) current.add(ONE);
                 return value;
