@@ -1089,6 +1089,26 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
         return new ContinuedFraction(new CFCleaner(concatenation.iterator()), size);
     }
 
+    /**
+     * Given a {@code List} of terms, concatenate this continued fraction with the list
+     * of terms and return a new continued fraction.
+     * @param rhs a list of terms
+     * @return the concatenation of {@code this} with the terms contained in {@code rhs}
+     * @since 1.2
+     */
+    public ContinuedFraction concat(List<Long> rhs) {
+        ContinuedFraction me = new ContinuedFraction(this.terms, this.repeatsFromIndex, this.mappingFunc) {
+            @Override
+            protected boolean emitNullsForZeroTerms() {
+                return false;
+            }
+        };
+        Stream<Long> concatenation = Stream.concat(StreamSupport.stream(me.spliterator(), false),
+                rhs.stream());
+        int size = this.terms() > 0L ? terms.length + rhs.size() : 5;
+        return new ContinuedFraction(new CFCleaner(concatenation.iterator()), size);
+    }
+
     /*
      The following section provides factory methods that produce various constants.
      */
