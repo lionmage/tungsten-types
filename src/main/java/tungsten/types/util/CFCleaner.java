@@ -110,7 +110,7 @@ public class CFCleaner implements Iterator<Long> {
             } else {
                 deque.addLast(peek);
             }
-            if (deque.size() > 2) break; //  || !source.hasNext() not necessary since while loop does this test above
+            if (deque.size() > 2) break;
         }
         if (source != null && !source.hasNext()) {
             Logger.getLogger(CFCleaner.class.getName()).log(Level.FINE,
