@@ -158,7 +158,7 @@ public class ImaginaryUnit implements ComplexType {
      */
     @Override
     public RealType argument() {
-        // since this value lies on the positive imaginary axis, the argument is pi/2
+        // since this value lies on the positive imaginary axis, the argument is 𝜋/2
         return (RealType) Pi.getInstance(mctx).divide(TWO);
     }
 
@@ -182,7 +182,7 @@ public class ImaginaryUnit implements ComplexType {
     @Override
     public Numeric coerceTo(Class<? extends Numeric> numtype) throws CoercionException {
         if (numtype.isAnnotationPresent(Polar.class)) {
-            // an exact representation of pi/2 is not possible, so marking this as not exact
+            // an exact representation of 𝜋/2 is not possible, so marking this as not exact
             return new ComplexPolarImpl(magnitude(), argument(), false);
         }
         if (!isCoercibleTo(numtype)) {
