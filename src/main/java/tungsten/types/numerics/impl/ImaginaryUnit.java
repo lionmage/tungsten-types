@@ -46,12 +46,12 @@ import static tungsten.types.util.MathUtils.Re;
 
 /**
  * A representation of the imaginary unit &#x2148;, or the unit imaginary number.
- * Note that although this class has been marked with the {@link Polar @Polar interface},
+ * Note that although this class has been marked with the {@link Polar @Polar annotation},
  * it does not have any specific internal representation.  Nevertheless, it is
  * both safe and performant to treat instances of this object as {@code @Polar}
  * where such optimizations exist.
  *
- * @author Robert Poole, <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Tarquin.AZ@gmail.com</a>
+ * @author Robert Poole, <a href="mailto:Tarquin.AZ+Tungsten@gmail.com">Gmail</a>
  *   or <a href="mailto:tarquin@alum.mit.edu">MIT alumni e-mail</a>
  */
 @Polar
