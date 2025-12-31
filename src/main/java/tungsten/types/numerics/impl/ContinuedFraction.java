@@ -385,7 +385,6 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             case INTEGER -> terms() == 1L;
             case COMPLEX, REAL -> true;
             case RATIONAL -> !isIrrational();
-            default -> false;
         };
     }
 
@@ -950,9 +949,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             for (long k = 0L; k < extent; k++) {
                 int temp = Long.compare(this.termAt(k), that.termAt(k));
                 if (temp == 0) continue;
-                if (k % 2L == 0L) return temp;
-                // for odd terms, flip the order of the comparison
-                else return -temp;
+                return k % 2L == 0L ? temp : -temp; // for odd terms, flip the order of the comparison
             }
             // if we fell through here, all the terms tht exist on both
             // sides are the same, so pick whichever has more terms as the winner
