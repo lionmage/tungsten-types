@@ -153,7 +153,7 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
                 // A column-friendly version of the recursive algorithm.
                 ColumnVector<T> firstColumn = columns.get(0);
                 ColumnarMatrix<T> intermediate = this.removeColumn(0L);
-                Numeric accum = ExactZero.getInstance(valueAt(0L, 0L).getMathContext());
+                Numeric accum = ExactZero.getInstance(firstColumn.getMathContext());
                 for (long row = 0L; row < rows(); row++) {
                     Numeric coeff = firstColumn.elementAt(row);
                     if (row % 2L == 1L) coeff = coeff.negate(); // alternate sign of the coefficient
@@ -392,9 +392,9 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
 
     /**
      * Exchange two rows of this matrix.
-     * Note that this is not an efficient operation since this matrix is column major.
      * @param row1 the first row
      * @param row2 the second row
+     * @apiNote This is not an efficient operation since this matrix is column major.
      */
     public void exchangeRows(long row1, long row2) {
         if (row1 < 0L || row1 >= rows()) throw new IndexOutOfBoundsException("row1 must be within bounds 0 - " + (rows() - 1L));
