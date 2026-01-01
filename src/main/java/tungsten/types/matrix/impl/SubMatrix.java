@@ -291,12 +291,12 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         if (Zero.isZero(det)) throw new ArithmeticException("This submatrix is singular");
         
         final Numeric scale = det.inverse();
-        List<FutureTask<T>> subtasks = new LinkedList<>();
+        List<FutureTask<Numeric>> subtasks = new LinkedList<>();
         BasicMatrix<Numeric> result = new BasicMatrix<>();
         ExecutorService executor = Executors.newCachedThreadPool();
         for (long row = 0L; row < rows(); row++) {
             for (long column = 0L; column < columns(); column++) {
-                FutureTask<T> task = computeCofactor(row, column);
+                FutureTask<Numeric> task = computeCofactor(row, column);
                 subtasks.add(task);
                 executor.submit(task);
             }
@@ -317,13 +317,13 @@ public class SubMatrix<T extends Numeric> implements Matrix<T> {
         return result.transpose();  // adjoint scaled by 1/det
     }
     
-    private FutureTask<T> computeCofactor(long row, long column) {
+    private FutureTask<Numeric> computeCofactor(long row, long column) {
         SubMatrix<T> sub = this.duplicate();
         sub.removeRow(row);
         sub.removeColumm(column);
         return new FutureTask<>(() -> {
-            T intermediate = sub.determinant();
-            if ((row + column) % 2L == 1L) intermediate = (T) intermediate.negate();
+            Numeric intermediate = sub.determinant();
+            if ((row + column) % 2L == 1L) intermediate = intermediate.negate();
             return intermediate;
         });
     }
