@@ -1121,6 +1121,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
             @Override
             public Numeric subtract(Numeric subtrahend) {
                 if (subtrahend instanceof Phi) return ExactZero.getInstance(getMathContext());
+                if (One.isUnity(subtrahend)) return inverse();  // ϕ - 1 = 1/ϕ
                 return super.subtract(subtrahend);
             }
 
