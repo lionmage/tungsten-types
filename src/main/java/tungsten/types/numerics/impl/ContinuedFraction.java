@@ -951,7 +951,7 @@ public class ContinuedFraction implements RealType, Iterable<Long> {
                 if (temp == 0) continue;
                 return k % 2L == 0L ? temp : -temp; // for odd terms, flip the order of the comparison
             }
-            // if we fell through here, all the terms tht exist on both
+            // if we fell through here, all the terms that exist on both
             // sides are the same, so pick whichever has more terms as the winner
             if (this.terms() > extent || this.terms() < 0L) return 1;
             else if (that.terms() > extent || that.terms() < 0L) return -1;
