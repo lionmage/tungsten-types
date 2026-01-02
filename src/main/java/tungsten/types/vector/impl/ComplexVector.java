@@ -35,13 +35,11 @@ import tungsten.types.util.MathUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * Implementation of a complex-valued vector.
@@ -311,6 +309,21 @@ public class ComplexVector implements Vector<ComplexType> {
     @Override
     public MathContext getMathContext() {
         return mctx;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mctx, elements);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Vector<?> vector) {
+            if (vector.length() != this.length()) return false;
+            if (!ComplexType.class.isAssignableFrom(vector.getElementType())) return false;
+            return LongStream.range(0L, vector.length()).allMatch(i -> this.elementAt(i).equals(vector.elementAt(i)));
+        }
+        return false;
     }
 
     @Override
