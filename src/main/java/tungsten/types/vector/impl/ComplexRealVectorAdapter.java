@@ -32,6 +32,7 @@ import tungsten.types.numerics.impl.Zero;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.stream.LongStream;
 
 /**
  * This class adapts any real vector class to its complex equivalent.
@@ -144,5 +145,28 @@ public class ComplexRealVectorAdapter implements Vector<ComplexType> {
     @Override
     public MathContext getMathContext() {
         return realVector.getMathContext();
+    }
+
+    @Override
+    public int hashCode() {
+        return 3 + 7 * realVector.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Vector<?> vector) {
+            if (vector.length() != realVector.length()) return false;
+            if (RealType.class.isAssignableFrom(vector.getElementType())) {
+                return realVector.equals(vector);
+            }
+            // compare each element as a ComplexType
+            return LongStream.range(0L, vector.length()).allMatch(i -> this.elementAt(i).equals(vector.elementAt(i)));
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return realVector + " as complex";
     }
 }
