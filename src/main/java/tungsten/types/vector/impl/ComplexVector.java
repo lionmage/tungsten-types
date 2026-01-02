@@ -318,6 +318,5 @@ public class ComplexVector implements Vector<ComplexType> {
         final MathContext displayCtx = new MathContext(3);
         return elements.stream().map(x -> MathUtils.round(x, displayCtx)).map(Object::toString)
                 .collect(Collectors.joining(",\u2009", "\u27E8", "\u27E9"));
-
     }
 }
