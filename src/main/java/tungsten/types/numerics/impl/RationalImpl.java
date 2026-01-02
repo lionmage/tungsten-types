@@ -414,9 +414,9 @@ public class RationalImpl implements RationalType {
     public Numeric divide(Numeric divisor) {
         if (Zero.isZero(divisor)) throw new ArithmeticException("Division by zero");
         if (One.isUnity(divisor)) return this;
-        if (divisor instanceof IntegerType) {
+        if (divisor instanceof IntegerType idiv) {
             IntegerType num = numerator();
-            BigInteger gcd = numerator.abs().gcd(((IntegerType) divisor).asBigInteger().abs());
+            BigInteger gcd = numerator.abs().gcd(idiv.asBigInteger().abs());
             if (!BigInteger.ONE.equals(gcd)) {
                 IntegerType common = new IntegerImpl(gcd, num.isExact() && divisor.isExact());
                 num = (IntegerType) num.divide(common);
