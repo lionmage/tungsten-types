@@ -34,6 +34,7 @@ import tungsten.types.util.MathUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -122,9 +123,7 @@ public class IdentityMatrix implements Matrix<Numeric> {
                 "Scaling identity matrix by {0} with MathContext = {1}",
                 new Object[] { scaleFactor, scaleFactor.getMathContext() });
         Numeric[] elements = new Numeric[(int) elementCount];
-        for (int idx = 0; idx < (int) elementCount; idx++) {
-            elements[idx] = scaleFactor;
-        }
+        Arrays.fill(elements, scaleFactor);
         return new DiagonalMatrix<>(elements);
     }
 
