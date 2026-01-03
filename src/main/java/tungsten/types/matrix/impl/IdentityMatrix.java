@@ -130,7 +130,7 @@ public class IdentityMatrix implements Matrix<Numeric> {
     @Override
     public RealType norm() {
         if (useFrobeniusNorm()) {
-            return (RealType) new RealImpl(BigDecimal.valueOf(elementCount), mctx).sqrt();
+            return new RealImpl(BigDecimal.valueOf(elementCount).sqrt(mctx), mctx);
         } else {
             return new RealImpl(BigDecimal.ONE, mctx);
         }
