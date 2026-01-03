@@ -140,6 +140,11 @@ public class ImmutableVector<T extends Numeric> implements Vector<T> {
         return wrapped.equals(obj);
     }
 
+    @Override
+    public Class<T> getElementType() {
+        return wrapped.getElementType();
+    }
+
     /**
      * Obtain a {@code Stream} of the elements in this {@code Vector}
      * in index order.
