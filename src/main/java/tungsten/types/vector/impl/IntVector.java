@@ -233,8 +233,10 @@ public class IntVector implements Vector<IntegerType> {
     @Override
     public RealType computeAngle(Vector<IntegerType> other) {
         try {
-            RealType cosine = (RealType) this.dotProduct(other).divide(this.magnitude().multiply(other.magnitude()))
-                    .coerceTo(RealType.class);
+            // the dot product returns an integer, so coerce to real here
+            RealType cosine = (RealType) this.dotProduct(other).coerceTo(RealType.class)
+                    .divide(this.magnitude().multiply(other.magnitude()))
+                    .coerceTo(RealType.class);  // coerce the result, just to be safe
             return (RealType) MathUtils.arccos(cosine).coerceTo(RealType.class);
         } catch (CoercionException e) {
             throw new ArithmeticException("Unable to compute angle between vectors " + this + " and " + other);
