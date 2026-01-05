@@ -216,7 +216,7 @@ public class ZeroVector implements Vector<Numeric> {
 
             @Override
             public T elementAt(long position) {
-                if (position < 0 || position >= parent.length()) {
+                if (position < 0L || position >= parent.length()) {
                     throw new IndexOutOfBoundsException(position + " is out of range [0, " + parent.length() + ")");
                 }
                 return coercedZero;
@@ -230,6 +230,16 @@ public class ZeroVector implements Vector<Numeric> {
             @Override
             public void append(T element) {
                 parent.append(element);
+            }
+
+            @Override
+            public RealType magnitude() {
+                return parent.magnitude();
+            }
+
+            @Override
+            public Class<T> getElementType() {
+                return clazz;
             }
 
             @Override
