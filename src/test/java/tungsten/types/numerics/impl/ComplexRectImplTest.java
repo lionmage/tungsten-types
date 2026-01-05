@@ -315,12 +315,10 @@ public class ComplexRectImplTest {
         Object o = new ComplexRectImpl(new RealImpl("2.00000"),
                 new RealImpl("2.000"), true);
         ComplexRectImpl instance = twoTwo;
-        boolean result = instance.equals(o);
-        assertTrue(result, "2 + 2i always equals itself, even with different trailing zeros");
+        assertEquals(instance, o, "2 + 2i always equals itself, even with different trailing zeros");
 
         o = oneOne;
-        result = instance.equals(o);
-        assertFalse(result, "1 + 1i should not equal 2 + 2i");
+        assertNotEquals(instance, o, "1 + 1i should not equal 2 + 2i");
     }
 
     /**
