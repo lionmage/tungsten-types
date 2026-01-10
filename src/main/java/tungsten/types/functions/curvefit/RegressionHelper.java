@@ -136,21 +136,43 @@ public final class RegressionHelper {
         return X;
     }
 
+    /**
+     * Given a set of X, Y data, obtain a column vector of dependent variables.
+     * @param data a set of 2D data
+     * @return the column vector representing the Y values
+     */
     public static ColumnVector<RealType> observedValuesFor(List<Coordinates2D> data) {
         RealType[] yvec = data.stream().map(Coordinates2D::getY).toArray(RealType[]::new);
         return new ArrayColumnVector<>(yvec);
     }
 
+    /**
+     * Given a set of X, Y, Z data, obtain a column vector of dependent variables.
+     * @param data a set of 3D data
+     * @return the column vector representing the Z values
+     */
     public static ColumnVector<RealType> observedValuesFor3D(List<Coordinates3D> data) {
         RealType[] zvec = data.stream().map(Coordinates3D::getZ).toArray(RealType[]::new);
         return new ArrayColumnVector<>(zvec);
     }
 
+    /**
+     * Given a set of multidimensional data, obtain a column vector of dependent variables.
+     * @param data a set of multivariate data
+     * @return the column vector representing the dependent variable values
+     */
     public static ColumnVector<RealType> observedValuesForMulti(List<Coordinates> data) {
         RealType[] values = data.stream().map(Coordinates::getValue).toArray(RealType[]::new);
         return new ArrayColumnVector<>(values);
     }
 
+    /**
+     * Given a set of X, Y data with standard deviation values, construct a
+     * weight matrix for use in weighted linear regression.  The weights
+     * are the inverses of the variances.
+     * @param data a set of 2D data
+     * @return a diagonal matrix containing the weights
+     */
     public static DiagonalMatrix<RealType> weightMatrixFor(List<Coordinates2D> data) {
         RealType[] diag = data.stream().map(Coordinates2D::getSigma)
                 .map(x -> MathUtils.computeIntegerExponent(x, -2L))
