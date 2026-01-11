@@ -46,7 +46,7 @@ numeric types:
     * evenly distributed over a given range
     * as Gaussian noise from a thread-safe `Supplier` with a specified mean and standard deviation
   * Concurrency is leveraged for many algorithms to speed up computation.
-* There is preliminary support for data reduction and curve fitting.
+* There is basic (and extensible) support for data reduction and curve fitting.
 * Most `toString()` methods attempt to generate an accurate representation in standard mathematical notation using Unicode.
   * Constants render using the appropriate symbol.
   * Composed functions will make a best effort to render the composition symbolically.
@@ -116,7 +116,7 @@ dependencies with the following snippet:
 <dependency>
   <groupId>tungsten</groupId>
   <artifactId>tungsten-types</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 </dependency>
 ```
 
