@@ -84,7 +84,7 @@ takes the form of adding methods to basic types so that Groovy can use them with
 built-in operators. This also has the side benefit of making testing much faster using
 e.g. GroovyConsole (built into IntelliJ IDEA). Operator overloading has been applied to
 both vector and matrix types in addition to all numeric types. Per Groovy convention,
-Vector supports negative indexing for the [] operator.  Continued fractions support
+`Vector` supports negative indexing for the [] operator.  Continued fractions support
 the [] operator for indexing terms, although negative indexing only works for continued
 fractions that are finite (i.e., rational).
 
