@@ -52,9 +52,9 @@ import java.util.stream.Collectors;
  *  or <a href="mailto:tarquin@alumni.mit.edu">MIT alumni e-mail</a>
  */
 public class CurveFitter {
-    final CurveType characteristic;
-    List<? extends Coordinates> coordinates;
-    final ServiceLoader<CurveFittingStrategy> loader;
+    protected final CurveType characteristic;
+    private List<? extends Coordinates> coordinates;
+    private final ServiceLoader<CurveFittingStrategy> loader;
 
     /**
      * Instantiate a {@code CurveFitter} for a given set of data.
