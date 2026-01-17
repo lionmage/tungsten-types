@@ -99,9 +99,16 @@ public class CurveFitter {
             TreeSet<RealType> values = new TreeSet<>();
             return coordinates.parallelStream().map(Coordinates2D.class::cast)
                     .map(Coordinates2D::getX).allMatch(values::add);
+        } else if (characteristic == CurveType.CURVE_3D) {
+            // we need to ensure that there are no duplicate (X, Y) pairs
+            HashSet<XYTuple> values = new HashSet<>();
+            return coordinates.stream().map(Coordinates3D.class::cast)
+                    .map(C -> new XYTuple(C.getX(), C.getY())).allMatch(values::add);
         }
         return true;
     }
+
+    private record XYTuple(RealType x, RealType y) {}
 
     private final Supplier<StrategyNotFoundException> noMatchingStrategy =
             () -> new StrategyNotFoundException("No matching strategy found");
