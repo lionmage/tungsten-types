@@ -307,8 +307,8 @@ public class EulerMascheroni implements RealType {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof EulerMascheroni) {
-            return mctx.equals(((EulerMascheroni) obj).getMathContext());
+        if (obj instanceof EulerMascheroni that) {
+            return mctx.equals(that.getMathContext());
         }
         return false;
     }
