@@ -90,7 +90,7 @@ public final class MathUtils {
      * The implementation of Weierstrass' method of computing &#x1D6AA;(z) is multi-threaded
      * for performance, with the complete series of N terms subdivided into blockSize groups
      * which are computed separately, then multiplied together in-order to produce a result.
-     * The System property that governs this value is represented by this {@link String},
+     * The System property that governs this value is represented by this {@code String},
      * and the default value is 250.
      */
     public static final String GAMMA_BLOCK_SIZE = "tungsten.types.numerics.MathUtils.Gamma.blockSize";
@@ -504,7 +504,7 @@ public final class MathUtils {
     }
 
     /**
-     * Computes the sum terms for Stirling approximation of ln&#x1D6AA;(z).
+     * Computes the terms of the sum for Stirling approximation of ln&#x1D6AA;(z).
      * These terms are of the form B<sub>2n</sub>/(2n&sdot;(2n &minus; 1)&sdot;z<sup>2n&nbsp;&minus;&nbsp;1</sup>)
      * and contribute to a finite sum.
      * @param z   the argument to {@link #lnGamma(Numeric)}
@@ -2346,7 +2346,8 @@ public final class MathUtils {
      * @since 0.5
      */
     public static <T extends Numeric> ColumnVector<T> vec(Matrix<T> M) {
-        ListColumnVector<T> result = new ListColumnVector<>();  // Note: would be better with explicit Class<T> argument
+        Class<T> clazz = (Class<T>) OptionalOperations.findTypeFor(M);
+        ListColumnVector<T> result = new ListColumnVector<>(clazz);  // Note: would be better with explicit Class<T> argument
         LongStream.range(0L, M.columns()).mapToObj(M::getColumn).flatMap(ColumnVector::stream).forEachOrdered(result::append);
         return result;
     }
@@ -4288,7 +4289,7 @@ public final class MathUtils {
      * result of ln(z) using {@code z.argument()}, which results in an
      * infinite loop.<br>
      * One solution is to compute arctan() using some kind of power series.
-     * We've already implemented Maclaurin series (special case of Taylor
+     * We've already implemented a Maclaurin series (special case of Taylor
      * series) for cos() and sin(), but Euler discovered a series for arctan()
      * that converges faster.  That's what's implemented here, though only
      * for real values.
