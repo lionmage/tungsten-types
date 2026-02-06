@@ -55,7 +55,7 @@ public class Phi implements RealType {
     private final BigDecimal value;
     private static final Map<MathContext, Phi> instanceMap = new ConcurrentHashMap<>();
 
-    protected Phi(MathContext mctx) {
+    private Phi(MathContext mctx) {
         this.mctx = mctx;
         BigDecimal two = BigDecimal.valueOf(2L);
         BigDecimal five = BigDecimal.valueOf(5L);
