@@ -256,14 +256,18 @@ public class Pi implements RealType {
     public Set<ComplexType> nthRoots(IntegerType n) {
         return this.magnitude().nthRoots(n);
     }
-    
+
+    /**
+     * Obtain the number of significant digits in this approximation of &pi;.
+     * @return the number of digits
+     */
     public long numberOfDigits() {
         return mctx.getPrecision();
     }
 
     private static final IntegerType SIXTEEN = new IntegerImpl(BigInteger.valueOf(16L));
 
-    protected static RationalType safeReduce(RationalType A, RationalType B) {
+    private static RationalType safeReduce(RationalType A, RationalType B) {
         Numeric sum = A.add(B);
         try {
             return (RationalType) sum.coerceTo(RationalType.class);
@@ -294,16 +298,16 @@ public class Pi implements RealType {
     
     private static final List<RationalType> termCache = new LinkedList<>();
 
-    protected RationalType getFromCache(long k) {
+    private RationalType getFromCache(long k) {
         return termCache.stream().skip(k).findFirst().orElse(null);
     }
 
-    protected boolean cacheTerm(RationalType term, long k) {
+    private boolean cacheTerm(RationalType term, long k) {
         if (getFromCache(k) != null || termsInCache() > k) return false;
         return termCache.add(term);
     }
 
-    protected long termsInCache() {
+    private long termsInCache() {
         return termCache.stream().count();
     }
 
