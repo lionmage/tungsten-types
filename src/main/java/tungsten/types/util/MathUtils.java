@@ -4843,6 +4843,12 @@ public final class MathUtils {
      */
     public static Numeric arithmeticMean(Numeric... x) {
         final MathContext ctx = inferMathContext(Arrays.asList(x));
+        if (x.length == 2 && x[0] instanceof ContinuedFraction cf1 && x[1] instanceof ContinuedFraction cf2) {
+            Iterator<Long> mean = GosperTermIterator.mean(cf1.iterator(), cf2.iterator());
+            var result = new ContinuedFraction(mean, 5);
+            result.setMathContext(ctx);
+            return result;
+        }
         IntegerType n = new IntegerImpl(BigInteger.valueOf(x.length)) {
             @Override
             public MathContext getMathContext() {
