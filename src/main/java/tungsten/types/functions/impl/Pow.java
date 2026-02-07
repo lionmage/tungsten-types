@@ -224,7 +224,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Differentiable
     public UnaryFunction<T, R> diff(SimpleDerivative<RealType> diffEngine) {
-        final Class<T> myArgClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+        final Class<T> myArgClazz = getArgumentType();  // (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
         final Numeric diffExponent = exponent.subtract(ONE);
         try {
             final R coeff = (R) exponent.coerceTo(getReturnType());
