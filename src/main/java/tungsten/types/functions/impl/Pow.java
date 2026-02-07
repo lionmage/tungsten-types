@@ -224,7 +224,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
 
     @Differentiable
     public UnaryFunction<T, R> diff(SimpleDerivative<RealType> diffEngine) {
-        final Class<T> myArgClazz = getArgumentType();  // (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+        final Class<T> myArgClazz = getArgumentType();
         final Numeric diffExponent = exponent.subtract(ONE);
         try {
             final R coeff = (R) exponent.coerceTo(getReturnType());
@@ -235,7 +235,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                         new Pow<>((RationalType) diffExponent, getReturnType()));
             } else {
                 final long n = ((IntegerType) diffExponent.coerceTo(IntegerType.class)).asBigInteger().longValueExact();
-                outerdiff = new Product<>(getArgumentName(), Const.getInstance(coeff), new Pow<>(n));
+                outerdiff = new Product<>(getArgumentName(), Const.getInstance(coeff), new Pow<>(n, getReturnType()));
             }
             if (getComposedFunction().isPresent()) {
                 if (RealType.class.isAssignableFrom(myArgClazz)) {
@@ -266,7 +266,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                     throw new RuntimeException(e);
                 }
             } else if (One.isUnity(expProd)) {
-                final Class<T> myArgClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+                final Class<T> myArgClazz = getArgumentType();
 
                 return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, myArgClazz).forReturnType(getReturnType());
             }
@@ -288,7 +288,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         if (after instanceof Pow<R, R2> afterPow) {
             Numeric expProd = this.exponent.multiply(afterPow.getExponent());
             if (One.isUnity(expProd)) {
-                final Class<T> myArgClazz = (Class<T>) ClassTools.getTypeArguments(NumericFunction.class, this.getClass()).get(0);
+                final Class<T> myArgClazz = getArgumentType();
                 return new Reflexive<>(getArgumentName(), RangeUtils.ALL_REALS, myArgClazz).forReturnType(myOutputClazz);
             } else if (Zero.isZero(expProd)) {
                 try {
