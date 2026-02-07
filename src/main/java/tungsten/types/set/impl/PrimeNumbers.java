@@ -46,6 +46,9 @@ public class PrimeNumbers implements Set<IntegerType> {
     private static final String IMMUTABLE_SET = "The set of prime numbers is immutable";
     private final SortedSet<BigInteger> primes = new TreeSet<>();
 
+    /**
+     * Create a new instance of the set of prime numbers.
+     */
     public PrimeNumbers() {
         primes.add(BigInteger.TWO);
         primes.add(BigInteger.valueOf(3L));

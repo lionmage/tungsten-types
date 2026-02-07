@@ -150,6 +150,10 @@ public class NegInfinity implements Numeric, Comparable<Numeric> {
         }
     }
 
+    /**
+     * Obtain the sign of this infinity.
+     * @return always returns {@code Sign.NEGATIVE}
+     */
     public Sign sign() { return Sign.NEGATIVE; }
     
     @Override

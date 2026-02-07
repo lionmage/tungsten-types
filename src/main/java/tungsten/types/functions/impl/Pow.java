@@ -147,6 +147,13 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         this.exponent = exponent;
     }
 
+    /**
+     * Constructor that takes an argument name, an exponent, and the return type of this function.
+     * @param argName  the variable name of the single argument
+     * @param exponent the exponent to use during evaluation
+     * @param rtnType  the return type of this function
+     * @apiNote Currently, only integer and rational exponents are supported.
+     */
     protected Pow(String argName, Numeric exponent, Class<R> rtnType) {
         super(argName, rtnType);
         if (supportedExponentTypes.stream().noneMatch(t -> t.isAssignableFrom(exponent.getClass()))) {
