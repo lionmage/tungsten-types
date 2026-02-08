@@ -190,6 +190,11 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
             }
 
             @Override
+            public Class<RealType> getArgumentType() {
+                return RealType.class;
+            }
+
+            @Override
             public RealType apply(ArgVector<RealType> arguments) {
                 return (RealType) super.apply(arguments).multiply(scale);
             }
