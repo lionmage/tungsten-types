@@ -900,6 +900,8 @@ public final class MathUtils {
         }
         // factorial() already checks for negative values, so we just need to check that k <= n
         if (k.compareTo(n) > 0) throw new IllegalArgumentException("k must be \u2264 n");
+        if (Zero.isZero(k) || k.equals(n)) return new IntegerImpl(BigInteger.ONE);
+        if (One.isUnity(k)) return n;
         try {
             return (IntegerType) factorial(n).divide(factorial(k).multiply(factorial((IntegerType) n.subtract(k)))).coerceTo(IntegerType.class);
         } catch (CoercionException e) {
@@ -918,7 +920,9 @@ public final class MathUtils {
      * @return the binomial coefficient
      */
     public static IntegerType nChooseK(long n, long k) {
+        if (k == 0L || k == n) return new IntegerImpl(BigInteger.ONE);
         IntegerType N = new IntegerImpl(BigInteger.valueOf(n));
+        if (k == 1L) return N;
         IntegerType K = new IntegerImpl(BigInteger.valueOf(k));
         return nChooseK(N, K);
     }
