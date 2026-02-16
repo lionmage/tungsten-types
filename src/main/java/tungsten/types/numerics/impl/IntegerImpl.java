@@ -171,7 +171,7 @@ public class IntegerImpl implements IntegerType {
         return new IntegerImpl(sum);
     }
 
-    private transient long numDigitsCache = -1L;
+    private volatile long numDigitsCache = -1L;
     private final Lock numDigitsLock = new ReentrantLock();
 
     /**

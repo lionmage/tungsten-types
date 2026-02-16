@@ -58,11 +58,26 @@ public abstract class MegaConstant<T extends Numeric> {
     protected static final char TIMES = '\u2062'; // invisible times
     protected static final char DIVISION_SLASH = '\u2215'; // Division Slash
 
-    protected transient T value;
+    /**
+     * The equivalent value of this {@code MegaConstant}.
+     */
+    protected volatile T value;
     private final StampedLock valueGuard = new StampedLock();
+    /**
+     * The {@code Numeric} type that this {@code MegaConstant} masquerades as.
+     */
     protected Class<T> masqueradesAs;
+    /**
+     * The leading coefficient of this {@code MegaConstant}
+     */
     protected RationalType rationalCoefficient;
+    /**
+     * The {@code List} of constituent constants.
+     */
     protected final List<Numeric> constants = new ArrayList<>();
+    /**
+     * The {@code List} of integer exponents for the constituent constants.
+     */
     protected final List<Long> exponents = new ArrayList<>();
 
     /**

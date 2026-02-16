@@ -232,34 +232,27 @@ public class ComplexRectImpl implements ComplexType {
     }
 
     // computing the argument is costly enough that we should cache it
-    private transient RealType argCache;
+    private volatile RealType argCache;
     private final Lock argLock = new ReentrantLock();
 
     @Override
     public RealType argument() {
         if (real.sign() == Sign.ZERO) {
             final Pi pi = Pi.getInstance(mctx);
-            switch (imag.sign()) {
-                case NEGATIVE:
-                    return (RealType) pi.divide(TWO).negate();
-                case POSITIVE:
-                    return (RealType) pi.divide(TWO);
-                case ZERO:
+            return switch (imag.sign()) {
+                case NEGATIVE -> (RealType) pi.divide(TWO).negate();
+                case POSITIVE -> (RealType) pi.divide(TWO);
+                case ZERO ->
                     // this is an indeterminate case, so we pick 0
-                    return ComplexRectImpl.ZERO;
-                default:
-                    throw new IllegalStateException("Invalid sign value for imaginary component");
-            }
+                        ComplexRectImpl.ZERO;
+            };
         }
         if (imag.sign() == Sign.ZERO) {
-            switch (real.sign()) {
-                case POSITIVE:
-                    return ComplexRectImpl.ZERO;
-                case NEGATIVE:
-                    return Pi.getInstance(mctx);
-                default:
-                    throw new IllegalStateException("We should never have reached this statement");
-            }
+            return switch (real.sign()) {
+                case POSITIVE -> ComplexRectImpl.ZERO;
+                case NEGATIVE -> Pi.getInstance(mctx);
+                default -> throw new IllegalStateException("We should never have reached this statement");
+            };
         }
         // for the general case, we need to compute the arctangent
         argLock.lock();
@@ -285,14 +278,11 @@ public class ComplexRectImpl implements ComplexType {
     public boolean isCoercibleTo(Class<? extends Numeric> numtype) {
         if (numtype == Numeric.class) return true;
         NumericHierarchy htype = NumericHierarchy.forNumericType(numtype);
-        switch (htype) {
-            case COMPLEX:
-                return true;
-            case REAL:
-                return imag.asBigDecimal().compareTo(BigDecimal.ZERO) == 0;
-            default:
-                return false;
-        }
+        return switch (htype) {
+            case COMPLEX -> true;
+            case REAL -> imag.asBigDecimal().compareTo(BigDecimal.ZERO) == 0;
+            default -> false;
+        };
     }
 
     @Override
@@ -317,11 +307,10 @@ public class ComplexRectImpl implements ComplexType {
     @Override
     public Numeric add(Numeric addend) {
         if (Zero.isZero(addend)) return this;
-        if (addend instanceof ComplexType) {
+        if (addend instanceof ComplexType that) {
             if (addend instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
                 return PointAtInfinity.getInstance();
             }
-            ComplexType that = (ComplexType) addend;
             return new ComplexRectImpl((RealType) this.real.add(that.real()),
                     (RealType) this.imag.add(that.imaginary()),
                     this.exact && that.isExact());
@@ -340,12 +329,11 @@ public class ComplexRectImpl implements ComplexType {
     @Override
     public Numeric subtract(Numeric subtrahend) {
         if (Zero.isZero(subtrahend)) return this;
-        if (subtrahend instanceof ComplexType) {
+        if (subtrahend instanceof ComplexType that) {
             if (subtrahend instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
                 // complex infinity has no sign
                 return PointAtInfinity.getInstance();
             }
-            ComplexType that = (ComplexType) subtrahend;
             return new ComplexRectImpl((RealType) this.real.subtract(that.real()),
                     (RealType) this.imag.subtract(that.imaginary()),
                     this.exact && that.isExact());
@@ -365,12 +353,11 @@ public class ComplexRectImpl implements ComplexType {
     public Numeric multiply(Numeric multiplier) {
         if (One.isUnity(multiplier)) return this;
         if (Zero.isZero(multiplier)) return ExactZero.getInstance(mctx);
-        if (multiplier instanceof ComplexType) {
+        if (multiplier instanceof ComplexType cmult) {
             if (multiplier instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
                 if (Zero.isZero(this)) throw new ArithmeticException("0 \u22C5 ∞ is undefined");
                 return PointAtInfinity.getInstance();
             }
-            ComplexType cmult = (ComplexType) multiplier;
             RealType realresult = (RealType) real.multiply(cmult.real()).subtract(imag.multiply(cmult.imaginary()));
             RealType imagresult = (RealType) real.multiply(cmult.imaginary()).add(imag.multiply(cmult.real()));
             return new ComplexRectImpl(realresult, imagresult, exact && cmult.isExact());
@@ -395,11 +382,10 @@ public class ComplexRectImpl implements ComplexType {
             throw new ArithmeticException("Division by 0");
         }
         if (One.isUnity(divisor)) return this;
-        if (divisor instanceof ComplexType) {
+        if (divisor instanceof ComplexType cdiv) {
             if (divisor instanceof PointAtInfinity && ComplexType.isExtendedEnabled()) {
                 return ExactZero.getInstance(mctx); // was: new ComplexRectImpl(ZERO, ZERO)
             }
-            ComplexType cdiv = (ComplexType) divisor;
             ComplexType conj = cdiv.conjugate();
             ComplexType num = (ComplexType) this.multiply(conj);
             try {
@@ -475,9 +461,8 @@ public class ComplexRectImpl implements ComplexType {
             return exact && One.isUnity(this.real) &&
                     Zero.isZero(this.imag);
         }
-        if (o instanceof ComplexType) {
+        if (o instanceof ComplexType that) {
             if (o instanceof PointAtInfinity) return false;
-            final ComplexType that = (ComplexType) o;
             boolean requal = this.real.equals(that.real());
             boolean iequal = this.imag.equals(that.imaginary());
             boolean exactness = this.exact && that.isExact();

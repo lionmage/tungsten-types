@@ -32,7 +32,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     public static final long RANDOM_ACCESS_THRESHOLD = 1_000L;
     private static final String NEGATIVE_INDICES = "Negative indices are not allowed";
     private final List<T> elements;
-    private transient long elementCount = -1L;
+    private volatile long elementCount = -1L;
     private final ReadWriteLock rwl = new ReentrantReadWriteLock();
 
     /**
