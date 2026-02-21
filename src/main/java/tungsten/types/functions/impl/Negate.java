@@ -64,8 +64,9 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     @Override
     public R apply(ArgVector<T> arguments) {
+        T arg = arguments.hasVariableName(getArgumentName()) ? arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
         try {
-            return (R) arguments.elementAt(0L).negate().coerceTo(getReturnType());
+            return (R) arg.negate().coerceTo(getReturnType());
         } catch (CoercionException e) {
             throw new ArithmeticException("Could not coerce result of negation");
         }
@@ -73,6 +74,11 @@ public class Negate<T extends Numeric, R extends Numeric> extends UnaryFunction<
 
     private static final RealType NEGONE_CMP = new RealImpl("-1");
 
+    /**
+     * Given a unary function, determine if it is equivalent to &fnof;(x)&nbsp;=&nbsp;&minus;x
+     * @param fn the function to test
+     * @return {@code true} if {@code fn} is equivalent to the negate function
+     */
     public static boolean isNegateEquivalent(UnaryFunction<?, ?> fn) {
         if (fn instanceof Negate) return true;
         if (fn instanceof Product<?, ?> prod) {
