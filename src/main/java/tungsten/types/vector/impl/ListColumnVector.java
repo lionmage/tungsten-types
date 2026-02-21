@@ -11,6 +11,7 @@ import tungsten.types.vector.ColumnVector;
 import tungsten.types.vector.RowVector;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -32,7 +33,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     public static final long RANDOM_ACCESS_THRESHOLD = 1_000L;
     private static final String NEGATIVE_INDICES = "Negative indices are not allowed";
     private final List<T> elements;
-    private volatile long elementCount = -1L;
+    private final AtomicLong elementCount = new AtomicLong(-1L);
     private final ReadWriteLock rwl = new ReentrantReadWriteLock();
 
     /**
@@ -42,7 +43,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
      */
     public ListColumnVector() {
         elements = new LinkedList<>();
-        elementCount = 0L;
+        elementCount.set(0L);
     }
 
     /**
@@ -52,7 +53,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
     public ListColumnVector(Class<T> clazz) {
         super(clazz);
         elements = new LinkedList<>();
-        elementCount = 0L;
+        elementCount.set(0L);
     }
 
     /**
@@ -102,20 +103,21 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
 
     @Override
     public long length() {
-        if (elementCount < 0L) {
+//        elementCount.compareAndSet(-1L, elements instanceof RandomAccess ? elements.size() : elements.stream().count());
+        if (elementCount.get() < 0L) {
             if (elements instanceof RandomAccess) {
-                elementCount = elements.size();
+                elementCount.set(elements.size());
             } else {
                 Lock lock = rwl.readLock();
                 lock.lock();
                 try {
-                    elementCount = elements.stream().count();
+                    elementCount.set(elements.stream().count());
                 } finally {
                     lock.unlock();
                 }
             }
         }
-        return elementCount;
+        return elementCount.get();
     }
 
     @Override
@@ -141,14 +143,16 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
         Lock lock = rwl.writeLock();
         lock.lock();
         try {
-            if (position > (long) elements.size()) {
+            if (position > length()) {
                 final T zero = OptionalOperations.dynamicInstantiate(getElementType(), 0d);
-                int count = (int) position - elements.size();
+                int count = (int) (position - length());
                 elements.addAll(Collections.nCopies(count, zero));
-                assert position == (long) elements.size();
+                elementCount.getAndAdd(count);
+                assert position == length();
             }
-            if (position == (long) elements.size()) {
+            if (position == length()) {
                 elements.add(element);
+                elementCount.getAndIncrement();
                 return;
             } else if (elements instanceof RandomAccess) {
                 elements.set((int) position, element);
@@ -183,7 +187,7 @@ public class ListColumnVector<T extends Numeric> extends ColumnVector<T> {
             // may likewise refuse to append an element
             // besides which, if add() throws an exception, the next line of code won't
             // execute no matter what!
-            if (success && elementCount >= 0L) elementCount++;
+            if (success && elementCount.get() >= 0L) elementCount.getAndIncrement();
         } finally {
             lock.unlock();
         }
