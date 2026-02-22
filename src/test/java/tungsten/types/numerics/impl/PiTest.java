@@ -97,19 +97,13 @@ public class PiTest {
         System.out.println("isCoercibleTo");
         Class<? extends Numeric> numtype = RealType.class;
         Pi instance = Pi.getInstance(MathContext.DECIMAL128);
-        boolean expResult = true;
-        boolean result = instance.isCoercibleTo(numtype);
-        assertEquals(expResult, result);
+        assertTrue(instance.isCoercibleTo(numtype));
         
         numtype = IntegerType.class;
-        expResult = false;
-        result = instance.isCoercibleTo(numtype);
-        assertEquals(expResult, result);
+        assertFalse(instance.isCoercibleTo(numtype));
         
         numtype = ComplexType.class;
-        expResult = true;
-        result = instance.isCoercibleTo(numtype);
-        assertEquals(expResult, result);
+        assertTrue(instance.isCoercibleTo(numtype));
     }
 
     /**
