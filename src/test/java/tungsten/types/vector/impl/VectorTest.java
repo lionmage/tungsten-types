@@ -69,7 +69,7 @@ public class VectorTest {
         Vector<RealType> diagonal_III = diagonal_I.negate();
         assertEquals(2L, diagonal_III.length());
         for (long k = 0; k < diagonal_III.length(); k++) {
-            assertSame(diagonal_III.elementAt(k).sign(), Sign.NEGATIVE);
+            assertSame(Sign.NEGATIVE, diagonal_III.elementAt(k).sign());
         }
         Vector<RealType> diff = diagonal_I.add(diagonal_III);
         assertTrue(ZeroVector.isZeroVector(diff), "Adding a vector to its negation should = 0\u20D7");
