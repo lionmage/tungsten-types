@@ -93,7 +93,7 @@ public class VectorTest {
         assertEquals(MathUtils.round(diagonal_I.elementAt(1L), MathContext.DECIMAL64),
                 MathUtils.round(col2.elementAt(0L), MathContext.DECIMAL64));
         assertEquals(MathUtils.round(diagonal_I.elementAt(0L).negate(), MathContext.DECIMAL64),
-                MathUtils.round(col2.elementAt(1), MathContext.DECIMAL64));
+                MathUtils.round(col2.elementAt(1L), MathContext.DECIMAL64));
         assertEquals(MathUtils.round(col.negate(), MathContext.DECIMAL64),
                 MathUtils.round(col2, MathContext.DECIMAL64),
                 "Result of left-multiplication is negative of right-multiplication.");
