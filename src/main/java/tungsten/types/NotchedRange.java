@@ -47,6 +47,13 @@ import java.util.stream.StreamSupport;
 public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Range<T> {
     private final Set<T> notches;
 
+    /**
+     * Construct a notched range with the given bounds and one or more notches.
+     * @param lowerVal the lower bound of this range
+     * @param upperVal the upper bound of this range
+     * @param type     the {@link tungsten.types.Range.BoundType type} of the upper and lower bounds
+     * @param except   one or more values that are exceptions (notches) to this range
+     */
     @SafeVarargs
     public NotchedRange(T lowerVal, T upperVal, BoundType type, T... except) {
         super(lowerVal, upperVal, type);
@@ -54,6 +61,14 @@ public class NotchedRange<T extends Numeric & Comparable<? super T>> extends Ran
         notches = Set.of(except);
     }
 
+    /**
+     * Construct a notched range with the given bounds and one or more notches.
+     * @param lowerVal  the lower bound of this range
+     * @param lowerType the type of the lower bound
+     * @param upperVal  the upper bound of this range
+     * @param upperType the type of the upper bound
+     * @param except    one or more values that are exceptions (notches) to this range
+     */
     @SafeVarargs
     public NotchedRange(T lowerVal, BoundType lowerType, T upperVal, BoundType upperType, T... except) {
         super(lowerVal, lowerType, upperVal, upperType);
