@@ -246,6 +246,7 @@ public class Product<T extends Numeric, R extends Numeric> extends UnaryFunction
     @Override
     public Range<RealType> inputRange(String argName) {
         return terms.parallelStream().map(f -> f.inputRange(argName))
+                .filter(Objects::nonNull)
                 .reduce(RangeUtils.ALL_REALS, Range::chooseNarrowest);
     }
 
