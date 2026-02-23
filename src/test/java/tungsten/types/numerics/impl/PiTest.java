@@ -104,6 +104,9 @@ public class PiTest {
         
         numtype = ComplexType.class;
         assertTrue(instance.isCoercibleTo(numtype));
+
+        numtype = RationalType.class;
+        assertFalse(instance.isCoercibleTo(numtype));
     }
 
     /**
