@@ -140,7 +140,7 @@ public class Sinc extends UnaryFunction<RealType, RealType> {
 
     @Override
     public String toString() {
-        String arg = this.getComposedFunction().isPresent() ? getComposedFunction().get().toString() : getArgumentName();
+        String arg = this.getComposedFunction().map(UnaryFunction::toString).orElse(getArgumentName());
         return "sinc(" + arg + ")";
     }
 }
