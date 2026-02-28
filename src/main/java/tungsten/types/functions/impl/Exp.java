@@ -76,7 +76,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
         }
         final RealType arg = arguments.hasVariableName(getArgumentName()) ?
                 arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
-        RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
+        RealType intermediate = getComposedFunction().map(f -> f.apply(arg)).orElse(arg);
         final Euler e = Euler.getInstance(arg.getMathContext());
         return e.exp(intermediate);
     }
@@ -102,8 +102,7 @@ public class Exp extends UnaryFunction<RealType, RealType> {
 
     @Override
     public Range<RealType> inputRange(String argName) {
-        if (getComposedFunction().isPresent()) return  getComposedFunction().get().inputRange(argName);
-        return RangeUtils.ALL_REALS;
+        return getComposedFunction().map(f -> f.inputRange(argName)).orElse(RangeUtils.ALL_REALS);
     }
 
     @Override

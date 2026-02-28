@@ -80,7 +80,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
         }
         final RealType arg = arguments.hasVariableName(getArgumentName()) ?
                 arguments.forVariableName(getArgumentName()) : arguments.elementAt(0L);
-        RealType intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
+        RealType intermediate = getComposedFunction().map(f -> f.apply(arg)).orElse(arg);
         return MathUtils.ln(intermediate);
     }
 
@@ -117,7 +117,7 @@ public class NaturalLog extends UnaryFunction<RealType, RealType> {
 
     @Override
     public Range<RealType> inputRange(String argName) {
-        return getComposedFunction().isPresent() ? getComposedFunction().get().inputRange(argName) : lnRange;
+        return getComposedFunction().map(f -> f.inputRange(argName)).orElse(lnRange);
     }
 
     @Override

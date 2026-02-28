@@ -170,7 +170,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
         NumericHierarchy h = NumericHierarchy.forNumericType(arg.getClass());
         if (h == null) throw new ArithmeticException("Unable to compute exponent of " + arg);
         try {
-            final T intermediate = getComposedFunction().isEmpty() ? arg : getComposedFunction().get().apply(arg);
+            final T intermediate = getComposedFunction().map(f -> f.apply(arg)).orElse(arg);
             return switch (h) {
                 case COMPLEX ->
                         (R) MathUtils.generalizedExponent((ComplexType) intermediate, exponent, ctx).coerceTo(getReturnType());
