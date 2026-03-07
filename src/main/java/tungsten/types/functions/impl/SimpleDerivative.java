@@ -127,11 +127,14 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
                     } catch (IllegalAccessException | InvocationTargetException sevEx) {
                         Logger.getLogger(SimpleDerivative.class.getName())
                                 .log(Level.SEVERE,
-                                        "Reflection problem while accessing @Differentiable method",
+                                        "Reflection problem while accessing @Differentiable method.",
                                         sevEx);
                         throw new IllegalStateException(sevEx);
                     }
                 }
+                Logger.getLogger(SimpleDerivative.class.getName()).log(Level.SEVERE,
+                        "Found @Differentiable method {0} with incorrect return type {1}.",
+                        new Object[] {method, method.getReturnType()});
             }
         }
         // default to the base strategy if we don't have another one
