@@ -29,6 +29,7 @@ import tungsten.types.exceptions.CoercionException;
 import tungsten.types.functions.*;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.OptionalOperations;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -194,6 +195,11 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
 
     protected UnaryFunction<T, T> productStrategy(Product<T, T> product) {
         final String argName = product.expectedArguments()[0];
+        if (product.termCount() == 0L) {
+            final T zero = OptionalOperations.dynamicInstantiate(product.getReturnType(), 0d);
+            // empty product is 1 (unity), so derivative is 0
+            return Const.getInstance(zero);
+        }
         if (product.termCount() == 1L) {
             // degenerate case
             return product.stream().map(this::apply).findFirst().orElseThrow();
