@@ -230,9 +230,8 @@ public class SimpleDerivative<T extends RealType> extends MetaFunction<T, T, T> 
             public T apply(ArgVector<T> arguments) {
                 T arg = arguments.forVariableName(varName);
                 try {
-                    // we should be able to get away with this since T is declared as extending RealType
                     return (T) input.apply((T) arg.add(epsilon)).subtract(input.apply((T) arg.subtract(epsilon)))
-                            .divide(two.multiply(epsilon)).coerceTo(RealType.class);
+                            .divide(two.multiply(epsilon)).coerceTo(input.getArgumentType());
                 } catch (CoercionException e) {
                     throw new IllegalStateException(e);
                 }
