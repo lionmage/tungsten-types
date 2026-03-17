@@ -236,6 +236,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 if (RealType.class.isAssignableFrom(myArgClazz)) {
                     UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
                     UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
+                    // I'm not happy with this, but the extra casting prevents a compile problem.
                     return (UnaryFunction<T, R>) new Product<>(getArgumentName(),
                             outerdiff.composeWith((UnaryFunction<? super T, T>) inner),
                             innerdiff).forReturnType(getReturnType());
