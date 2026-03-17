@@ -236,9 +236,9 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 if (RealType.class.isAssignableFrom(myArgClazz)) {
                     UnaryFunction<RealType, RealType> inner = (UnaryFunction<RealType, RealType>) getComposedFunction().get();
                     UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
-                    return new Product<>(getArgumentName(),
+                    return (UnaryFunction<T, R>) new Product<>(getArgumentName(),
                             outerdiff.composeWith((UnaryFunction<? super T, T>) inner),
-                            innerdiff);
+                            innerdiff).forReturnType(getReturnType());
                 } else {
                     throw new UnsupportedOperationException("Differentiation of inner function not supported for type " + myArgClazz.getTypeName());
                 }
