@@ -238,7 +238,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                     UnaryFunction<RealType, RealType> innerdiff = diffEngine.apply(inner);
                     // I'm not happy with this, but the extra casting prevents a compile problem.
                     return (UnaryFunction<T, R>) new Product<>(getArgumentName(),
-                            outerdiff.composeWith((UnaryFunction<? super T, T>) inner),
+                            (UnaryFunction<RealType, RealType>) outerdiff.composeWith((UnaryFunction<? super T, T>) inner),
                             innerdiff).forReturnType(getReturnType());
                 } else {
                     throw new UnsupportedOperationException("Differentiation of inner function not supported for type " + myArgClazz.getTypeName());
