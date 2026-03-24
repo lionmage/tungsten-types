@@ -259,7 +259,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 try {
                     return Const.getInstance((R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnType()));
                 } catch (CoercionException e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException("Could not coerce unity to " + getReturnType().getTypeName(), e);
                 }
             } else if (One.isUnity(expProd)) {
                 final Class<T> myArgClazz = getArgumentType();
@@ -290,7 +290,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 try {
                     return Const.getInstance((R2) One.getInstance(MathContext.UNLIMITED).coerceTo(myOutputClazz));
                 } catch (CoercionException e) {
-                    throw new IllegalStateException("Could not coerce unity to " + myOutputClazz.getTypeName());
+                    throw new IllegalStateException("Could not coerce unity to " + myOutputClazz.getTypeName(), e);
                 }
             }
             // create a new instance of Pow with a merged exponent
