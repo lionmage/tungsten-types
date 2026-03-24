@@ -54,6 +54,7 @@ import java.util.Objects;
  */
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
+    public static final String COULD_NOT_COERCE_UNITY = "Could not coerce unity to ";
     private final Numeric exponent;
 
     /**
@@ -259,7 +260,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 try {
                     return Const.getInstance((R) One.getInstance(MathContext.UNLIMITED).coerceTo(getReturnType()));
                 } catch (CoercionException e) {
-                    throw new IllegalStateException("Could not coerce unity to " + getReturnType().getTypeName(), e);
+                    throw new IllegalStateException(COULD_NOT_COERCE_UNITY + getReturnType().getTypeName(), e);
                 }
             } else if (One.isUnity(expProd)) {
                 final Class<T> myArgClazz = getArgumentType();
@@ -290,7 +291,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
                 try {
                     return Const.getInstance((R2) One.getInstance(MathContext.UNLIMITED).coerceTo(myOutputClazz));
                 } catch (CoercionException e) {
-                    throw new IllegalStateException("Could not coerce unity to " + myOutputClazz.getTypeName(), e);
+                    throw new IllegalStateException(COULD_NOT_COERCE_UNITY + myOutputClazz.getTypeName(), e);
                 }
             }
             // create a new instance of Pow with a merged exponent
