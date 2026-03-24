@@ -55,6 +55,7 @@ import java.util.Objects;
 public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, R> implements Rewritable {
     private static final IntegerImpl ONE = new IntegerImpl(BigInteger.ONE);
     public static final String COULD_NOT_COERCE_UNITY = "Could not coerce unity to ";
+    public static final String UNSUPPORTED_EXPONENT_TYPE = "Unsupported exponent type: ";
     private final Numeric exponent;
 
     /**
@@ -143,7 +144,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     protected Pow(String argName, Numeric exponent) {
         super(argName);
         if (supportedExponentTypes.stream().noneMatch(t -> t.isAssignableFrom(exponent.getClass()))) {
-            throw new IllegalArgumentException("Unsupported exponent type: " + exponent.getClass().getTypeName());
+            throw new IllegalArgumentException(UNSUPPORTED_EXPONENT_TYPE + exponent.getClass().getTypeName());
         }
         this.exponent = exponent;
     }
@@ -158,7 +159,7 @@ public class Pow<T extends Numeric, R extends Numeric> extends UnaryFunction<T, 
     protected Pow(String argName, Numeric exponent, Class<R> rtnType) {
         super(argName, rtnType);
         if (supportedExponentTypes.stream().noneMatch(t -> t.isAssignableFrom(exponent.getClass()))) {
-            throw new IllegalArgumentException("Unsupported exponent type: " + exponent.getClass().getTypeName());
+            throw new IllegalArgumentException(UNSUPPORTED_EXPONENT_TYPE + exponent.getClass().getTypeName());
         }
         this.exponent = exponent;
     }
