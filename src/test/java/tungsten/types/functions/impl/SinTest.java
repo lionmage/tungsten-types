@@ -23,7 +23,6 @@
  *
  */
 
-// ... existing code ...
 package tungsten.types.functions.impl;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +42,6 @@ import java.math.MathContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tungsten.types.util.MathUtils.areEqualToWithin;
-//import static tungsten.types.numerics.impl.AngularDegrees.toRadians;
 import tungsten.types.util.AngularDegrees;
 
 class SinTest {
@@ -252,4 +250,3 @@ class SinTest {
                 "sin(x) should equal sin(x + period)");
     }
 }
-// ... existing code ...
