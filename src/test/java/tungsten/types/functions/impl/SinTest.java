@@ -47,7 +47,6 @@ import static tungsten.types.util.MathUtils.areEqualToWithin;
 import tungsten.types.util.AngularDegrees;
 
 class SinTest {
-
     private MathContext mctx;
     private RealType epsilon;
     private Sin sinFunction;
@@ -76,7 +75,7 @@ class SinTest {
     void testApplyAtPiDividedBy2() {
         Pi pi = Pi.getInstance(mctx);
         ArgVector<RealType> args = new UnaryArgVector<>("theta",
-                (RealType) pi.divide(new RealImpl(BigDecimal.valueOf(2), mctx)));
+                (RealType) pi.divide(new RealImpl(two, mctx)));
         RealType result = sinFunction.apply(args);
 
         RealType expected = new RealImpl(BigDecimal.ONE, mctx);
@@ -114,7 +113,7 @@ class SinTest {
     void testApplyAtPiDividedBy3() {
         Pi pi = Pi.getInstance(mctx);
         ArgVector<RealType> args = new UnaryArgVector<>("theta",
-                (RealType) pi.divide(new RealImpl(BigDecimal.valueOf(3), mctx)));
+                (RealType) pi.divide(new RealImpl(three, mctx)));
         RealType result = sinFunction.apply(args);
 
         // Expected value is √3/2 ≈ 0.8660...
@@ -138,8 +137,8 @@ class SinTest {
     void testApplyAt3PiDividedBy2() {
         Pi pi = Pi.getInstance(mctx);
         ArgVector<RealType> args = new UnaryArgVector<>("theta",
-                (RealType) pi.multiply(new RealImpl(BigDecimal.valueOf(3), mctx))
-                        .divide(new RealImpl(BigDecimal.valueOf(2), mctx)));
+                (RealType) pi.multiply(new RealImpl(three, mctx))
+                        .divide(new RealImpl(two, mctx)));
         RealType result = sinFunction.apply(args);
 
         RealType expected = new RealImpl(BigDecimal.ONE.negate(), mctx);
@@ -151,7 +150,7 @@ class SinTest {
     void testApplyAt2Pi() {
         Pi pi = Pi.getInstance(mctx);
         ArgVector<RealType> args = new UnaryArgVector<>("theta",
-                (RealType) pi.multiply(new RealImpl(BigDecimal.valueOf(2), mctx)));
+                (RealType) pi.multiply(new RealImpl(two, mctx)));
         RealType result = sinFunction.apply(args);
 
         RealType expected = new RealImpl(BigDecimal.ZERO, mctx);
@@ -195,7 +194,7 @@ class SinTest {
 
         Pi pi = Pi.getInstance(mctx);
         ArgVector<RealType> args = new UnaryArgVector<>("theta",
-                (RealType) pi.divide(new RealImpl(BigDecimal.valueOf(2), mctx)));
+                (RealType) pi.divide(new RealImpl(two, mctx)));
         RealType result = derivative.apply(args);
 
         // The derivative of sin(x) is cos(x), and cos(π/2) = 0
@@ -222,7 +221,7 @@ class SinTest {
 
         // Test at π/2
         ArgVector<RealType> args2 = new UnaryArgVector<>("theta",
-                (RealType) pi.divide(new RealImpl(BigDecimal.valueOf(2), mctx)));
+                (RealType) pi.divide(new RealImpl(two, mctx)));
         RealType result2 = derivative.apply(args2);
         RealType expected2 = new RealImpl(BigDecimal.ZERO, mctx);
         assertTrue(areEqualToWithin(expected2, result2, epsilon),
