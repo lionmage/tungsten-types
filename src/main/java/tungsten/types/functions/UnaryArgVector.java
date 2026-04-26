@@ -48,7 +48,12 @@ public class UnaryArgVector<T extends Numeric> extends ArgVector<T> {
 
     @Override
     public void append(String label, T value) {
-        if ((argname != null && !argname.equals(label)) || super.length() > 0L) {
+        // use arity() and not length() so we get an accurate count of elements in the superclass
+        // otherwise, we'd be using the local version of arity() which always returns 1
+        if ((argname != null && !argname.equals(label)) || super.arity() > 0L) {
+            if (argname == null) {
+                throw new IllegalStateException("This vector is in an inconsistent state");
+            }
             throw new UnsupportedOperationException("This vector cannot have more than 1 element, and it must be named " + argname);
         }
         super.append(label, value);
