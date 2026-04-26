@@ -69,7 +69,10 @@ public class ArgMap<T extends Numeric> extends HashMap<String, T> {
      * Square brackets are optional.
      *
      * @param init the formatted string specifying variable mappings
+     * @deprecated Since this constructor relies on an unreliable mechanism to obtain the type.
+     *      Use {@link ArgMap#ArgMap(String, Class)} instead.
      */
+    @Deprecated(since = "1.4")
     public ArgMap(String init) {
         super();
         // it would be nice to use the 2-arg version of this constructor and just pass in the Class
