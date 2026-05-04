@@ -166,6 +166,8 @@ class TanTest {
         RealType twoPi = (RealType) pi.multiply(two);
         
         Tan tan = new Tan(varName, mctx);
+        assertTrue(MathUtils.areEqualToWithin(pi, tan.period(), epsilon),
+                "Period of tan(x) is π");
         
         // Test that tan(x + 2π) = tan(x)
         ArgVector<RealType> args1 = new UnaryArgVector<>(varName, (RealType) pi.divide(four));
