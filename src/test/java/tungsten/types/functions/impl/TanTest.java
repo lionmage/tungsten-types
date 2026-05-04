@@ -23,7 +23,6 @@
  *
  */
 
-// ... existing code ...
 package tungsten.types.functions.impl;
 
 import org.junit.jupiter.api.Test;
