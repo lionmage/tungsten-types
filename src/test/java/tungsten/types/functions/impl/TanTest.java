@@ -134,9 +134,8 @@ class TanTest {
         
         RealType result = tanPrime.apply(args);
         // The derivative of tan(x) is sec²(x), and sec(π/4) = √2, so sec²(π/4) = 2
-        RealType expected = new RealImpl(BigDecimal.valueOf(2L), mctx);
-        
-        assertTrue(MathUtils.areEqualToWithin(result, expected, epsilon),
+
+        assertTrue(MathUtils.areEqualToWithin(result, two, epsilon),
                 "tan'(π/4) should be approximately 2.0");
     }
 
