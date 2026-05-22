@@ -79,7 +79,7 @@ class GammaTest {
         // Γ(5) = 4! = 24
         UnaryArgVector<Numeric> vec5 = new UnaryArgVector<>("z", getIntFor(5L));
         RealType result5 = (RealType) gamma.apply(vec5);
-        assertTrue(areEqualToWithin(new RealImpl(BigDecimal.valueOf(24), ctx), result5,
+        assertTrue(areEqualToWithin(new RealImpl(BigDecimal.valueOf(24L), ctx), result5,
                 epsilon));
 
         // Γ(10) = 9! = 362880
@@ -87,7 +87,7 @@ class GammaTest {
         RealType result10 = (RealType) gamma.apply(vec10);
         System.out.println("result10: " + result10 + ", value = " + result10.asBigDecimal().toPlainString());
         // the result should be an integer anyway, so as long as we're within 0.5 we are good
-        assertTrue(areEqualToWithin(new RealImpl(BigDecimal.valueOf(362880), ctx), result10,
+        assertTrue(areEqualToWithin(new RealImpl(BigDecimal.valueOf(362880L), ctx), result10,
                 new RealImpl("0.5", ctx)));
     }
 
