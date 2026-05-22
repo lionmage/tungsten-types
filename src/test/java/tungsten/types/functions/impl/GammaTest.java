@@ -47,7 +47,7 @@ import static tungsten.types.util.MathUtils.areEqualToWithin;
 class GammaTest {
     private static final MathContext ctx = new MathContext(34, RoundingMode.HALF_UP);
     private static final RealImpl epsilon = new RealImpl(BigDecimal.TEN.pow(-18, ctx), ctx); // Qwen3 generated new BigDecimal("1E-30")
-    public static final BigDecimal TWO = BigDecimal.valueOf(2L);
+    private static final BigDecimal TWO = BigDecimal.valueOf(2L);
 
     private IntegerType getIntFor(long val) {
         return new IntegerImpl(BigInteger.valueOf(val)) {
