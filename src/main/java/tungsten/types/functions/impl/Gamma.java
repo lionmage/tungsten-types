@@ -99,7 +99,7 @@ public class Gamma extends UnaryFunction<Numeric, Numeric> {
                 // can't use Stirling's approximation here, so use the slow way to compute Gamma
                 return MathUtils.gamma(z);
             case POSITIVE:
-                final Euler e = Euler.getInstance(z.getMathContext());
+                final Euler e = Euler.getInstance(z.getMathContext().getPrecision() < 8 ? MathContext.DECIMAL32 : z.getMathContext());
                 Numeric logGamma = MathUtils.lnGamma(z);
                 return logGamma instanceof ComplexType ? e.exp((ComplexType) logGamma) :
                         e.exp(Re(logGamma));
@@ -115,7 +115,7 @@ public class Gamma extends UnaryFunction<Numeric, Numeric> {
     }
 
     private Numeric computeForNegativeReal(Numeric z) {
-        final MathContext ctx = z.getMathContext();
+        final MathContext ctx = z.getMathContext().getPrecision() < 8 ? MathContext.DECIMAL32 : z.getMathContext();
         final Euler e = Euler.getInstance(ctx);
         final RealType pi = Pi.getInstance(ctx);
         Numeric piz = z.multiply(pi); // this will be either complex or real

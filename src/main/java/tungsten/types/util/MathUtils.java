@@ -456,7 +456,7 @@ public final class MathUtils {
      * @since 0.4
      */
     public static Numeric lnGamma(Numeric z) {
-        final MathContext ctx = z.getMathContext();
+        final MathContext ctx = z.getMathContext().getPrecision() < 8 ? MathContext.DECIMAL32 : z.getMathContext();
         final RealType pi = Pi.getInstance(ctx);
         if (Arg(z).magnitude().compareTo(pi) >= 0) {
             throw new IllegalArgumentException("|Arg(z)| must be < \uD835\uDF0B");
