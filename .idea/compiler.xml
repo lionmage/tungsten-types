@@ -4,6 +4,15 @@
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
-    <bytecodeTargetLevel target="11" />
+    <bytecodeTargetLevel target="17" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-encoding UTF-8" />
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="IdeaProjects.tungsten-types.main" options="" />
+      <module name="tungsten-types" options="" />
+      <module name="tungsten-types.test" options="" />
+      <module name="tungsten-types.tungsten-types" options="" />
+    </option>
   </component>
 </project>
