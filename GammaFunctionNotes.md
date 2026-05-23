@@ -4,13 +4,15 @@ To be clear, this work is an ongoing effort.  My initial attempt is no doubt na�
 product, but this form is easy to understand and evaluate concurrently.  (More on concurrency later...)
 I'll be looking at [the Lanczos approximation](https://en.wikipedia.org/wiki/Lanczos_approximation) as the next
 logical step in improving speed and accuracy for my implementation of 𝚪(z).
+*Note:* Looking back at this document in May 2026, it's clear I had many reasons for avoiding the
+implementation of Lanczos's approximation.
 
 ## Why should we even bother?
 Why would we want to compute such a difficult function at all? The function 𝚪(z) is a generalization of factorial
 for all rational, real, and complex numbers.  𝚪(n) = (n - 1)! for all positive integers n.
-The difficulty comes in computing 𝚪(z) for non-integer values, as this involves an infinite product.
+The difficulty comes in computing 𝚪(z) for noninteger values, as this involves an infinite product.
 Anywhere you wish to generalize things that use factorials for all real or complex numbers, you need to use
-the Gamma function.  One example would be computing binomial coefficients where both n and k are non-integers.
+the Gamma function.  One example would be computing binomial coefficients where both n and k are nonintegers.
 
 ## Where we are at right now
 I chose to use the Euler limit form of the formula for 𝚪(z) —
@@ -28,7 +30,10 @@ The central part of the algorithm's initial implementation can be summarized nea
 
 The `z.inverse()` correlates exactly with the 1/z term in front of the infinite product, and `gammaTerm()`
 computes the k^th term of the infinite product.  Each term can itself be computed independently, so no shared
-state, just a clean map/reduce style of coding with Java streams.
+state, just a clean map/reduce style of coding with Java streams.  *Note:* Reviewing this code a long time
+later (May 2026), it's obvious that `reduce()` is being used incorrectly here.  That may have been one of the problems
+with getting this code to perform better.  The identity supplied to `reduce()` must be something like
+`One.getInstance(...)` and the result of the reduction should have then been multiplied by `z.inverse()`.
 
 This thing takes a ridiculous number of iterations to converge.  I mean thousands upon thousands, not just hundreds.
 And if you do this in a single-threaded way, that's going to take an awful long time...
@@ -58,6 +63,8 @@ this behavior with series that have alternating sign.  Since the Euler limit for
 and since its terms don't appear to have any negatives, the Riemann Series Theorem may not apply — but the general
 idea that reordering can alter a sum (or a product) of an _infinite_ series still applies.
 Regardless, it seems that some ordering is necessary here.
+*Note:* Of course, we're dealing with an infinite product here, not an infinite sum, so the most likely
+problem with the parallel code was the poor choice of identity (see comments above). [May 2026]
 
 Consider this alternate concurrent implementation:
 
@@ -83,8 +90,8 @@ Consider this alternate concurrent implementation:
         }).reduce(z.inverse(), Numeric::multiply);
         executor.shutdown();  // we should have exhausted all outstanding term calculations; shut down regardless
 
-OK, not nearly as elegant as the previous implementation, but at least here we get a result that's at least as
-good as obtained using the original code in non-parallel mode!  Here, the main problem is subdivided into blocks
+OK, not nearly as elegant as the previous implementation, but here we get a result that's at least as
+good as that obtained using the original code in non-parallel mode!  Here, the main problem is subdivided into blocks
 of 250 terms to compute and multiply, and that multiplication is performed in-order for each of these blocks.
 
 These results are then reduced into a final result, again performing the reduction in-order.  The concurrency gives
@@ -92,7 +99,7 @@ us a bit more headroom, so if we pick 8N^2 as our iteration limit, we can get...
 Still not great, but better.  Pushing the iteration limit even higher risks causing memory errors, and I can
 confirm that the laptop fans are revving quite a bit higher while running these calculations.
 
-One advantage of this version over the pure Stream-based version is that ParallelStream implementations use
+One advantage of this version over the pure Stream-based version is that `ParallelStream` implementations use
 fork-join behind the scenes to do the work, which seems like a bit of overkill here.  I have done plenty of
 fork-join code before (see my FFT implementation), but usually that sort of stuff is valuable for recursion.
 This code isn't recursive, just highly parallelizable.
