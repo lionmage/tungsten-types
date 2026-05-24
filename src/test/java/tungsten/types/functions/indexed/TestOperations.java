@@ -36,6 +36,7 @@ import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.*;
 import tungsten.types.util.MathUtils;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
@@ -133,5 +134,40 @@ public class TestOperations {
     private IntegerType eTerm(IntegerType n) {
         if (n.asBigInteger().equals(BigInteger.ONE)) return one;
         return (IntegerType) n.multiply(eTerm((IntegerType) n.subtract(one)).add(one));
+    }
+
+    @Test
+    public void aperysConstant() {
+        final RealType three = new RealImpl("3", MathContext.DECIMAL128);
+        final IntegerType ithree = new IntegerImpl("3", true);
+        final IntegerType one = new IntegerImpl(BigInteger.ONE, true);
+        final RealType epsilon = new RealImpl(BigDecimal.ONE.scaleByPowerOfTen(-9), MathContext.DECIMAL128);
+        // it takes about 100,000 terms to calculate Apéry's constant to 10 digits
+        IndexRange range = new IndexRange(1L, 100_000L);
+
+        long start = System.nanoTime();
+        // Apéry's constant
+        RealType zeta3 = (RealType) MathUtils.zeta(three);
+        long end = System.nanoTime();
+        System.out.println("\uD835\uDF01(3) = " + zeta3);
+        // convert nanos to µs (1000 ns = 1 µs)
+        System.out.println("Calculation time: " + ((end - start)/1000L) + "\u00B5s");
+
+        IndexFunction<RationalType> term = new IndexFunction<>(RationalType.class) {
+            @Override
+            protected RationalType compute(IntegerType index) {
+                IntegerType denom = (IntegerType) index.pow(ithree);
+                return new RationalImpl(one, denom, MathContext.DECIMAL128);
+            }
+        };
+        Summation<RationalType> aperySum = new Summation<>(term, MathContext.DECIMAL128);
+        start = System.currentTimeMillis();
+        RationalType result = aperySum.evaluate(range);
+        end = System.currentTimeMillis();
+        RealType converted = new RealImpl(result, MathContext.DECIMAL128);
+        System.out.println("Computed \u22111\u2215n\u00B3: " + converted);
+        System.out.println("Calculation time: " + (end - start) + "ms");
+        assertTrue(areEqualToWithin(zeta3, converted, epsilon),
+                "Result should be equal to \uD835\uDF01(3)");
     }
 }
