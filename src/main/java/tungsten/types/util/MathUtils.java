@@ -729,11 +729,13 @@ public final class MathUtils {
                 new Object[] {reN, negS});
         Numeric midTerm = (s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) negS, ctx) :
                 generalizedExponent(reN, negS, ctx)).divide(two);
+        Numeric oneMinusS = one.subtract(s);
+        Numeric sMinusOne = s.subtract(one);
         logger.log(Level.FINE,
                 "Computing {0}^({1}) / {2}",
-                new Object[] {reN, one.subtract(s), s.subtract(one)});
-        Numeric endTerm = ((s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) one.subtract(s), ctx) :
-                generalizedExponent(reN, one.subtract(s), ctx))).divide(s.subtract(one));
+                new Object[] {reN, oneMinusS, sMinusOne});
+        Numeric endTerm = ((s instanceof ComplexType ? generalizedExponent(reN, (ComplexType) oneMinusS, ctx) :
+                generalizedExponent(reN, oneMinusS, ctx))).divide(sMinusOne);
         return jsum.add(midTerm).add(endTerm);
     }
 
@@ -753,19 +755,21 @@ public final class MathUtils {
             }
         };
         final Numeric one = One.getInstance(s.getMathContext());
+        final RealImpl nval = new RealImpl(BigDecimal.valueOf(n), s.getMathContext());
         // n^(1 - s - 2k)
         Numeric npow;
         if (s instanceof ComplexType) {
             // 1 - s - 2k is going to be complex here, so use the special version of generalizedExponent()
-            npow = generalizedExponent(new RealImpl(BigDecimal.valueOf(n), s.getMathContext()),
+            npow = generalizedExponent(nval,
                     (ComplexType) one.subtract(s).subtract(twoK), s.getMathContext());
         } else {
-            npow = generalizedExponent(new RealImpl(BigDecimal.valueOf(n), s.getMathContext()),
+            npow = generalizedExponent(nval,
                     one.subtract(s).subtract(twoK), s.getMathContext());
         }
         Numeric coeff = bn.getB(k << 1L).multiply(npow).divide(factorial(twoK));
         return LongStream.rangeClosed(0L, 2L * k - 2L).parallel()
-                .mapToObj(j -> s.add(new RealImpl(BigDecimal.valueOf(j), s.getMathContext())))
+                .mapToObj(BigDecimal::valueOf)
+                .map(j -> s.add(new RealImpl(j, s.getMathContext())))
                 .reduce(one, Numeric::multiply).multiply(coeff);
     }
 
