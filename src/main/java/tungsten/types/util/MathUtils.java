@@ -3203,6 +3203,61 @@ public final class MathUtils {
         return true;
     }
 
+    /**
+     * Compute the softmax function for a given vector.  Maximal values in the input
+     * vector are emphasized in the output.
+     * @param input an input vector
+     * @return a vector in which all values are in the range (0,&nbsp;1)
+     *   and the components sum to 1
+     * @see <a href="https://en.wikipedia.org/wiki/Softmax_function">the Wikipedia article</a>
+     */
+    public static Vector<RealType> softMax(Vector<RealType> input) {
+        RealVector result = new RealVector(input.length());
+        result.setMathContext(input.getMathContext());
+        final Euler e = Euler.getInstance(input.getMathContext());
+        List<RealType> tmp = new LinkedList<>();
+        for (long k = 0L; k < input.length(); k++) {
+            tmp.add(e.exp(input.elementAt(k)));
+        }
+        final RealType sum = tmp.parallelStream().reduce((a, b) -> (RealType) a.add(b))
+                .orElseThrow();
+        for (RealType element : tmp) {
+            result.append((RealType) element.divide(sum));
+        }
+
+        return result;
+    }
+
+    /**
+     * Compute the softmax function for a given vector and a value {@code beta}.  Maximal values in the input
+     * vector are emphasized in the output.<br>
+     * The factor of {@code beta} is related to the concept of temperature using the relationship
+     * &beta;=1&#x2215;kT where k is a constant (e.g., Boltzmann's constant, or simply set to unity)
+     * and T is the temperature, with higher values of T resulting in a more uniform distribution
+     * and lower values resulting in a sharper distribution with one value dominating.
+     * @param input an input vector
+     * @param beta  a factor which effectively changes the base of the exponential
+     * @return a vector in which all values are in the range (0,&nbsp;1)
+     *   and the components sum to 1
+     * @see <a href="https://en.wikipedia.org/wiki/Softmax_function">the Wikipedia article</a>
+     */
+    public static Vector<RealType> softMax(Vector<RealType> input, RealType beta) {
+        RealVector result = new RealVector(input.length());
+        result.setMathContext(input.getMathContext());
+        final Euler e = Euler.getInstance(input.getMathContext());
+        List<RealType> tmp = new LinkedList<>();
+        for (long k = 0L; k < input.length(); k++) {
+            tmp.add(e.exp((RealType) input.elementAt(k).multiply(beta)));
+        }
+        final RealType sum = tmp.parallelStream().reduce((a, b) -> (RealType) a.add(b))
+                .orElseThrow();
+        for (RealType element : tmp) {
+            result.append((RealType) element.divide(sum));
+        }
+
+        return result;
+    }
+
     private static List<List<Long>> permuteIndices(long n, long k) {
         if (k < 0L || k > n) throw new IllegalArgumentException("Bad parameters");
         final long limit = 1L << n;  // 2^n
