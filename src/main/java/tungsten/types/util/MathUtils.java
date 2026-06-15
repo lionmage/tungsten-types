@@ -3242,6 +3242,9 @@ public final class MathUtils {
      * @see <a href="https://en.wikipedia.org/wiki/Softmax_function">the Wikipedia article</a>
      */
     public static Vector<RealType> softMax(Vector<RealType> input, RealType beta) {
+        if (Zero.isZero(beta)) {
+            throw new IllegalArgumentException("\uD835\uDEFD must not be zero");
+        }
         RealVector result = new RealVector(input.length());
         result.setMathContext(input.getMathContext());
         final Euler e = Euler.getInstance(input.getMathContext());
