@@ -233,13 +233,6 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
             }
             return result;
         }
-        if (multiplier instanceof ColumnVector<T> other) {
-            ColumnarMatrix<T> result = new ColumnarMatrix<>();
-            for (long index = 0L; index < columns(); index++) {
-                result.append(this.getColumn(index).scale(other.elementAt(index)));
-            }
-            return result;
-        }
         final Class<T> clazz = columns.get(0).getElementType();
         T[][] temp = (T[][]) Array.newInstance(clazz, (int) this.rows(), (int) multiplier.columns());
         for (long row = 0L; row < rows(); row++) {
