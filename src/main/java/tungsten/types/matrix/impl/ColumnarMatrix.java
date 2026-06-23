@@ -241,6 +241,13 @@ public class ColumnarMatrix<T extends Numeric> implements Matrix<T> {
                 temp[(int) row][(int) column] = rowvec.dotProduct(multiplier.getColumn(column));
             }
         }
+        if (multiplier instanceof ColumnVector<T>) {
+            ColumnVector<T> result = new ArrayColumnVector<>(clazz, temp.length);
+            for (int i = 0; i < temp.length; i++) {
+                result.setElementAt(temp[i][0], i);
+            }
+            return result;
+        }
         return new ColumnarMatrix<>(temp);
     }
 
