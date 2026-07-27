@@ -221,11 +221,11 @@ public final class RegressionHelper {
             throw new IllegalArgumentException("size must be a positive integer");
         }
         if (source.size() < size) {
-            throw new IllegalArgumentException("Source already has < " + size + " elements");
+            throw new IllegalArgumentException("source already has < " + size + " elements");
         }
 
         final Random rand = new Random();
-        TreeSet<Integer> indices = new TreeSet<>();
+        final TreeSet<Integer> indices = new TreeSet<>();
         while (indices.size() < size) {
             indices.add(rand.nextInt(source.size()));
         }
