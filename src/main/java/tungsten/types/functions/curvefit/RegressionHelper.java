@@ -26,6 +26,9 @@
 package tungsten.types.functions.curvefit;
 
 import tungsten.types.Matrix;
+import tungsten.types.functions.ArgMap;
+import tungsten.types.functions.ArgVector;
+import tungsten.types.functions.NumericFunction;
 import tungsten.types.functions.support.Coordinates;
 import tungsten.types.functions.support.Coordinates2D;
 import tungsten.types.functions.support.Coordinates3D;
@@ -42,10 +45,9 @@ import tungsten.types.vector.impl.ArrayColumnVector;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -205,5 +207,55 @@ public final class RegressionHelper {
         final Matrix<RealType> transpose = design.transpose();
         Matrix<RealType> intermediate = (Matrix<RealType>) transpose.multiply(weights).multiply(design).inverse();
         return intermediate.multiply(transpose).multiply(weights);
+    }
+
+    /**
+     * Obtain a subset of data samples.  One common use case for this is to take
+     * a smaller set of data points to do some type of curve fitting or regression.
+     * The data for the subset is chosen pseudo-randomly.
+     * @param source the source data to subsample
+     * @param size   the number of data samples to include in the subset
+     * @return a reduced list of data points taken from {@code source}
+     */
+    public static List<Coordinates> subsample(List<Coordinates> source, int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("size must be a positive integer");
+        }
+        if (source.size() < size) {
+            throw new IllegalArgumentException("Source already has < " + size + " elements");
+        }
+
+        final Random rand = new Random();
+        TreeSet<Integer> indices = new TreeSet<>();
+        while (indices.size() < size) {
+            indices.add(rand.nextInt(source.size()));
+        }
+        return indices.stream().map(source::get).toList();
+    }
+
+    /**
+     * Compute a proxy standard deviation (&sigma;) value for a data set
+     * given a fitted curve.  The resulting values (computed from the difference
+     * between a datum's value and the function's evaluation at the datum's
+     * ordinal values) are populated into each datum using {@link Coordinates#setSigma(RealType)}.
+     * <br>One application of this is to use {@link #subsample(List, int)} to generate
+     * a smaller set of data to then fit to a curve; this curve can be used to then
+     * compute the deviations from the curve's predictions for the entire set of data.
+     * @param data the {@code List} of data points, which is modified by this method
+     * @param func the fitted curve for the data
+     */
+    public static void stdevFrom(List<Coordinates> data, NumericFunction<RealType, RealType> func) {
+        String[] argNames = func.expectedArguments();
+        for (Coordinates datum : data) {
+            ArgMap<RealType> map = new ArgMap<>();
+            for (int k = 0; k < argNames.length; k++) {
+                map.put(argNames[k], datum.getOrdinate(k));
+            }
+            ArgVector<RealType> arg = new ArgVector<>(argNames, map);
+            RealType expected = func.apply(arg);
+            RealType actual = datum.getValue();
+            // TODO revisit this, since this calculation seems too simplistic
+            datum.setSigma(actual.subtract(expected).magnitude());
+        }
     }
 }
