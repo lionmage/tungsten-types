@@ -47,7 +47,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -234,7 +233,7 @@ public final class RegressionHelper {
     }
 
     /**
-     * Compute a proxy standard deviation (&sigma;) value for a data set
+     * Compute a deviation (&sigma; or error) value for a data set
      * given a fitted curve.  The resulting values (computed from the difference
      * between a datum's value and the function's evaluation at the datum's
      * ordinal values) are populated into each datum using {@link Coordinates#setSigma(RealType)}.
@@ -244,7 +243,7 @@ public final class RegressionHelper {
      * @param data the {@code List} of data points, which is modified by this method
      * @param func the fitted curve for the data
      */
-    public static void stdevFrom(List<Coordinates> data, NumericFunction<RealType, RealType> func) {
+    public static void deviationFrom(List<Coordinates> data, NumericFunction<RealType, RealType> func) {
         String[] argNames = func.expectedArguments();
         for (Coordinates datum : data) {
             ArgMap<RealType> map = new ArgMap<>();
@@ -254,7 +253,6 @@ public final class RegressionHelper {
             ArgVector<RealType> arg = new ArgVector<>(argNames, map);
             RealType expected = func.apply(arg);
             RealType actual = datum.getValue();
-            // TODO revisit this, since this calculation seems too simplistic
             datum.setSigma(actual.subtract(expected).magnitude());
         }
     }
