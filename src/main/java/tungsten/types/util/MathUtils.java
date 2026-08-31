@@ -3261,6 +3261,53 @@ public final class MathUtils {
         return result;
     }
 
+    /**
+     * Split or &ldquo;chop&rdquo; a vector into a series of vectors of a given size.
+     * @param source the source vector to be split
+     * @param size   the maximum size of each resulting vector
+     * @return a {@code List} of the resulting vectors
+     */
+    public static List<Vector<RealType>> chop(Vector<RealType> source, int size) {
+        long elementsLeft = source.length();
+        List<Vector<RealType>> result = new LinkedList<>();
+
+        List<RealType> block = new ArrayList<>(size);
+        for (long idx = 0L; idx < source.length(); idx++) {
+            block.add(source.elementAt(idx));
+            if (block.size() >= size || elementsLeft < (long) size) {
+                if (source instanceof ColumnVector<RealType>) {
+                    result.add(new ArrayColumnVector<>(block));
+                } else {
+                    result.add(new RealVector(block));
+                }
+                elementsLeft -= block.size();
+                block.clear();
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Join a list of vectors into a single, longer vector.
+     * @param source a {@code List} of vectors
+     * @return the single vector formed by concatenating the vectors contained in {@code source}
+     */
+    public static Vector<RealType> join(List<Vector<RealType>> source) {
+        if (source.parallelStream().allMatch(ColumnVector.class::isInstance)) {
+            List<RealType> values = source.stream().map(ColumnVector.class::cast).flatMap(cv -> cv.stream()).toList();
+            return new ArrayColumnVector<>(values);
+        }
+        // otherwise, iterate painfully
+        List<RealType> aggregate = new ArrayList<>();
+        for (Vector<RealType> vector : source) {
+            for (long index = 0L; index < vector.length(); index++) {
+                aggregate.add(vector.elementAt(index));
+            }
+        }
+        return new RealVector(aggregate);
+    }
+
     private static List<List<Long>> permuteIndices(long n, long k) {
         if (k < 0L || k > n) throw new IllegalArgumentException("Bad parameters");
         final long limit = 1L << n;  // 2^n
