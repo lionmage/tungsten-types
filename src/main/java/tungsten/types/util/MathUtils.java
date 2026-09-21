@@ -3266,6 +3266,7 @@ public final class MathUtils {
      * @param source the source vector to be split
      * @param size   the maximum size of each resulting vector
      * @return a {@code List} of the resulting vectors
+     * @since 1.5
      */
     public static List<Vector<RealType>> chop(Vector<RealType> source, int size) {
         long elementsLeft = source.length();
@@ -3292,6 +3293,7 @@ public final class MathUtils {
      * Join a list of vectors into a single, longer vector.
      * @param source a {@code List} of vectors
      * @return the single vector formed by concatenating the vectors contained in {@code source}
+     * @since 1.5
      */
     public static Vector<RealType> join(List<Vector<RealType>> source) {
         if (source.parallelStream().allMatch(ColumnVector.class::isInstance)) {
