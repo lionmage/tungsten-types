@@ -24,15 +24,20 @@ package tungsten.types.functions.impl;
  */
 
 import tungsten.types.Range;
+import tungsten.types.annotations.Differentiable;
 import tungsten.types.functions.ArgVector;
 import tungsten.types.functions.UnaryFunction;
 import tungsten.types.numerics.RealType;
 import tungsten.types.numerics.impl.Euler;
 import tungsten.types.numerics.impl.One;
+import tungsten.types.numerics.impl.RealImpl;
+import tungsten.types.util.MathUtils;
 import tungsten.types.util.RangeUtils;
 import tungsten.types.util.UnicodeTextEffects;
 
+import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -92,6 +97,18 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
      */
     public RealType getCentroid() {
         return x0;
+    }
+
+    @Differentiable
+    public UnaryFunction<RealType, RealType> diff() {
+        final MathContext ctx = MathUtils.inferMathContext(List.of(x0, alpha));
+
+        RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        Const<RealType, RealType> c1 = Const.getInstance(one);
+        Sigmoid s1 = new Sigmoid(getArgumentName(), x0, alpha);
+        Negate<RealType, RealType> negate = Negate.getInstance(RealType.class);
+        Sum<RealType, RealType> difference = new Sum<>(c1, s1.andThen(negate));
+        return new Product<>(getArgumentName(), s1, difference);
     }
 
     @Override
