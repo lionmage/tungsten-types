@@ -185,12 +185,12 @@ public abstract class UnaryFunction<T extends Numeric, R extends Numeric> extend
             }
 
             @Override
-            public <R3 extends R2> UnaryFunction<T, R3> andThen(UnaryFunction<R2, R3> after) {
-                final Class<R3> r3Class = (Class<R3>) ClassTools.getTypeArguments(NumericFunction.class, after.getClass()).get(1);
-                if (MathUtils.inverseFunctionFor(composingFunction.getClass()) == after.getClass()) {
+            public <R3 extends R2> UnaryFunction<T, R3> andThen(UnaryFunction<R2, R3> andThenAfter) {
+                final Class<R3> r3Class = andThenAfter.getReturnType(); // (Class<R3>) ClassTools.getTypeArguments(NumericFunction.class, andThenAfter.getClass()).get(1);
+                if (MathUtils.inverseFunctionFor(composingFunction.getClass()) == andThenAfter.getClass()) {
                     return originalFunction.forReturnType(r3Class);
                 }
-                return super.andThen(after.forReturnType(rtnClass)).forReturnType(r3Class);
+                return super.andThen(andThenAfter.forReturnType(rtnClass)).forReturnType(r3Class);
             }
 
             @Override
