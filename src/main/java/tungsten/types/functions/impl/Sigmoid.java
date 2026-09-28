@@ -103,10 +103,10 @@ public class Sigmoid extends UnaryFunction<RealType, RealType> {
     public UnaryFunction<RealType, RealType> diff() {
         final MathContext ctx = MathUtils.inferMathContext(List.of(x0, alpha));
 
-        RealType one = new RealImpl(BigDecimal.ONE, ctx);
+        final RealType one = new RealImpl(BigDecimal.ONE, ctx);
         Const<RealType, RealType> c1 = Const.getInstance(one);
         Sigmoid s1 = new Sigmoid(getArgumentName(), x0, alpha);
-        Negate<RealType, RealType> negate = Negate.getInstance(RealType.class);
+        final Negate<RealType, RealType> negate = Negate.getInstance(RealType.class);
         Sum<RealType, RealType> difference = new Sum<>(c1, s1.andThen(negate));
         return new Product<>(getArgumentName(), s1, difference);
     }
