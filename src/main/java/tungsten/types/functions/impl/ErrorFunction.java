@@ -42,6 +42,7 @@ import java.math.RoundingMode;
  * Implementation of the Gauss Error Function, erf(x) for real x.
  * @see <a href="https://en.wikipedia.org/wiki/Error_function">the Wikipedia article</a>
  * @author Robert Poole and Gemma&nbsp;4
+ * @since 1.5
  */
 public class ErrorFunction extends UnaryFunction<RealType, RealType> {
     public ErrorFunction(String varName) {
